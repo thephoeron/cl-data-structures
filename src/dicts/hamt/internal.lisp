@@ -97,40 +97,39 @@ Macros
 
 
 (defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
-  (with-gensyms (!path !depth !indexes !max-depth !copy-on-write)
+  (with-gensyms (!path !depth !indexes !copy-on-write)
     (once-only (container)
-      `(let ((,!max-depth (read-max-depth ,container)))
-         (flet ((,!copy-on-write (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
-                  (declare (type (simple-array fixnum) ,!indexes)
-                           (type simple-array ,!path)
-                           (type fixnum ,!depth)
-                           (type maybe-node conflict))
-                  (with-vectors (,!path ,!indexes)
-                    (iterate
-                      (for i from (- ,!depth 1) downto 0) ;reverse order (starting from deepest node)
-                      (for node = (,!path i))
-                      (for index = (,!indexes i))
-                      (for ac initially (if (or (hash-node-p conflict)
-                                                (null conflict))
-                                            ;;if we didn't find element or element was found but depth was already maximal,
-                                            ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
-                                            conflict
-                                            ;;rehash actually returns cl:hash-table, build-rehashed-node transforms it into another hash-node, depth is increased by 1 this way
-                                            (rebuild-rehashed-node ,container
-                                                                   ,!depth
-                                                                   ,!max-depth
-                                                                   conflict))
-                           then (if ac
-                                    (if (hash-node-contains node index)
-                                        (hash-node-replace-in-the-copy node ac index)
-                                        (hash-node-insert-into-copy node ac index))
-                                    (if (eql 1 (hash-node-size node))
-                                        ac
-                                        (hash-node-remove-from-the-copy node index))))
-                      (finally (return ac))))))
-           (declare (dynamic-extent (function ,!copy-on-write))
-                    (inline ,!copy-on-write))
-           (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!copy-on-write))))))
+      `(flet ((,!copy-on-write (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
+                (declare (type (simple-array fixnum) ,!indexes)
+                         (type simple-array ,!path)
+                         (type fixnum ,!depth)
+                         (type maybe-node conflict))
+                (with-vectors (,!path ,!indexes)
+                  (iterate
+                    (for i from (- ,!depth 1) downto 0) ;reverse order (starting from deepest node)
+                    (for node = (,!path i))
+                    (for index = (,!indexes i))
+                    (for ac initially (if (or (hash-node-p conflict)
+                                              (null conflict))
+                                          ;;if we didn't find element or element was found but depth was already maximal,
+                                          ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
+                                          conflict
+                                          ;;rehash actually returns cl:hash-table, build-rehashed-node transforms it into another hash-node, depth is increased by 1 this way
+                                          (rebuild-rehashed-node ,container
+                                                                 ,!depth
+                                                                 (read-max-depth ,container)
+                                                                 conflict))
+                         then (if ac
+                                  (if (hash-node-contains node index)
+                                      (hash-node-replace-in-the-copy node ac index)
+                                      (hash-node-insert-into-copy node ac index))
+                                  (if (eql 1 (hash-node-size node))
+                                      ac
+                                      (hash-node-remove-from-the-copy node index))))
+                    (finally (return ac))))))
+         (declare (dynamic-extent (function ,!copy-on-write))
+                  (inline ,!copy-on-write))
+         (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!copy-on-write)))))
 
 
 (defmacro set-in-leaf-mask (node position bit)
