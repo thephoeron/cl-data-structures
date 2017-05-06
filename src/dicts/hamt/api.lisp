@@ -426,3 +426,21 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:erase ((container functional-hamt-dictionary) location)
   (functional-hamt-dictionary-erase container location))
+
+
+(defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))
+  (make 'mutable-hamt-dictionary
+        :hash-fn (read-hash-fn container)
+        :root (access-root container)
+        :max-depth (read-max-depth container)
+        :equal-fn (read-equal-fn container)
+        :size (access-size container)))
+
+
+(defmethod cl-ds:become-functional ((container functional-hamt-dictionary))
+  (make 'functional-hamt-dictionary
+        :hash-fn (read-hash-fn container)
+        :root (access-root container)
+        :max-depth (read-max-depth container)
+        :equal-fn (read-equal-fn container)
+        :size (access-size container)))
