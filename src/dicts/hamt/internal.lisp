@@ -405,7 +405,7 @@ Copy nodes and stuff.
   `(satisfies non-empty-hash-table-p))
 
 
-(defgeneric rehash (container conflict level)
+(defgeneric rehash (container conflict level cont)
   (:documentation "Attempts to divide conflct into smaller ones. Retudnerd hash table maps position of conflict to conflict itself and should contain at least one element"))
 
 
@@ -414,26 +414,32 @@ Copy nodes and stuff.
 
 
 (-> rebuild-rehashed-node (fundamental-hamt-container fixnum fixnum bottom-node) just-node)
-(-> build-rehashed-node (fundamental-hamt-container fixnum fixnum hash-table) just-node)
+(-> build-rehashed-node (fundamental-hamt-container fixnum fixnum (simple-vector 64)) just-node)
 (defun build-rehashed-node (container depth max-depth content)
   (let ((mask 0)
         (node-mask 0)
-        (leaf-mask 0))
+        (leaf-mask 0)
+        (size 0))
     (iterate
-      (for (index conflict) in-hashtable content)
-      (setf (ldb (byte 1 index) mask) 1))
-    (with-vectors ((array (make-array (hash-table-count content))))
+      (for elt in-vector content)
+      (for index from 0)
+      (when elt
+        (incf size)
+        (setf (ldb (byte 1 index) mask) 1)))
+    (with-vectors ((array (make-array size)))
       (iterate
-        (for (index conflict) in-hashtable content)
-        (for i = (logcount (ldb (byte index 0) mask)))
-        (setf (array i)
-              (rebuild-rehashed-node container
-                                     depth
-                                     max-depth
-                                     conflict))
-        (if (hash-node-p (array i))
-            (setf (ldb (byte 1 index) node-mask) 1)
-            (setf (ldb (byte 1 index) leaf-mask) 1)))
+        (for conflict in-vector content)
+        (for index from 0)
+        (when conflict
+          (for i = (logcount (ldb (byte index 0) mask)))
+          (setf (array i)
+                (rebuild-rehashed-node container
+                                       depth
+                                       max-depth
+                                       conflict))
+          (if (hash-node-p (array i))
+              (setf (ldb (byte 1 index) node-mask) 1)
+              (setf (ldb (byte 1 index) leaf-mask) 1))))
       (make-hash-node :leaf-mask leaf-mask
                       :node-mask node-mask
                       :content array))))
@@ -442,8 +448,8 @@ Copy nodes and stuff.
 (defun rebuild-rehashed-node (container depth max-depth conflict)
   (if (or (>= depth max-depth) (single-elementp conflict))
       conflict
-      (let ((table (rehash container conflict depth)))
-        (build-rehashed-node container (1+ depth) max-depth table))))
+      (rehash container conflict depth
+              (bind-lambda #'build-rehashed-node container (1+ depth) max-depth :_))))
 
 
 (-> build-node (hash-node-index just-node) hash-node)
@@ -498,19 +504,9 @@ Copy nodes and stuff.
 (-> hash-node-remove-from-the-copy (hash-node fixnum) hash-node)
 (-> hash-node-remove! (hash-node fixnum) hash-node)
 (flet ((new-array (node index)
-         (let ((size (hash-node-size node)))
-           (let ((result (make-array (1- size)))
-                 (position (1- (logcount (ldb (byte (1+ index) 0)
-                                              (hash-node-whole-mask node)))))
-                 (input (hash-node-content node)))
-             (iterate
-               (for i from 0 below position)
-               (setf (aref result i) (aref input i)))
-             (iterate
-               (for i from position)
-               (for j from (1+ position) below size)
-               (setf (aref result i) (aref input j)))
-             result))))
+         (copy-without (hash-node-content node)
+                       (1- (logcount (ldb (byte (1+ index) 0)
+                                          (hash-node-whole-mask node)))))))
 
   (defun hash-node-remove-from-the-copy (node index)
     "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
@@ -569,20 +565,21 @@ Copy nodes and stuff.
         hash-fn)))
 
 
-(defmethod rehash ((container hamt-dictionary) conflict level)
+(defmethod rehash ((container hamt-dictionary) conflict level cont)
   (declare (type conflict-node conflict))
-  (let ((result (make-hash-table))
+  (let ((result (make-array 64 :initial-element nil))
         (byte (byte +hash-level+ (* +hash-level+ level))))
-    (declare (dynamic-extent byte))
+    (declare (dynamic-extent byte)
+             (dynamic-extent result))
     (with-hash-tree-functions container
       (iterate
-       (for key.value in (access-conflict conflict))
-       (for (key . value) = key.value)
-       (for hash = (hash-fn key))
-       (for index = (ldb byte hash))
-       (push key.value (access-conflict (ensure (gethash index result)
-                                                (make-instance 'conflict-node))))))
-    result))
+        (for key.value in (access-conflict conflict))
+        (for (key . value) = key.value)
+        (for hash = (hash-fn key))
+        (for index = (ldb byte hash))
+        (push key.value (access-conflict (ensure (aref result index)
+                                           (make 'conflict-node))))))
+    (funcall cont result)))
 
 
 (defmethod single-elementp ((conflict conflict-node))

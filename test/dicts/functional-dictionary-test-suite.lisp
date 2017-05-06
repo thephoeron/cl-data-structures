@@ -84,8 +84,9 @@
        (iterate
          (for s from 1 below ,limit)
          (for word in-vector *all-words*)
-         (multiple-value-bind (v r) (erase dict word)
+         (multiple-value-bind (v r o) (erase dict word)
            (ok r)
+           (is o v :test #'string=)
            (is (1- (size dict)) (size v))
            (is nil (at v word))
            (setf dict v))))))

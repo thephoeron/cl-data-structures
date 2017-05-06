@@ -14,6 +14,7 @@
    :pop-last
    :cond-compare
    :insert-or-replace
+   :copy-without
    :try-find
    :ordered-p
    :try-find-cell

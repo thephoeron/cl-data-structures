@@ -36,6 +36,37 @@
                       (return vector))))))
 
 
+(-> erase-from-vector (vector &rest index) vector)
+(defun copy-without (vector &rest indexes)
+  (declare (optimize (speed 3)))
+  (let* ((s (length indexes))
+         (vs (length vector))
+         (nvs (- vs s))
+         (next-array (make-array nvs
+                                 :element-type (array-element-type vector)
+                                 :adjustable (adjustable-array-p vector)))
+         (indexes (sort indexes #'<))
+         (last 0)
+         (count 0)
+         (position 0))
+    (iterate
+      (for sub on indexes)
+      (for index = (car sub))
+      (for next = (or (cadr sub) nvs))
+      (replace next-array vector
+               :start2 last
+               :end2 index
+               :start1 position)
+      (incf position (- index last))
+      (setf last (1+ index))
+      (incf count))
+    (replace next-array vector
+             :start2 last
+             :end2 nil
+             :start1 position)
+    next-array))
+
+
 (-> swapop (extendable-vector index) vector)
 (defun swapop (vector index)
   "Swaps element under INDEX with last element of VECTOR. Pops last element and returns VECTOR.
