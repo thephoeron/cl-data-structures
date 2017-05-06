@@ -22,6 +22,7 @@
    :mutable-hamt-dictionary-insert!
    :mutable-hamt-dictionary-update!
    :mutable-hamt-dictionary-add!
+   :mutable-hamt-dictionary-erase!
 
    :functional-hamt-dictionary-insert
    :functional-hamt-dictionary-add

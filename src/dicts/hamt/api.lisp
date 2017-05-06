@@ -194,22 +194,22 @@
                                       (progn
                                         (assert (not (hash-node-contains-leaf prev-node prev-index)))
                                         (hash-node-insert! prev-node
-                                                                prev-index
-                                                                (rebuild-rehashed-node container
-                                                                                       c
-                                                                                       (read-max-depth container)
-                                                                                       (make-conflict-node (list (list* location new-value)))))
-                                             root)
+                                                           (rebuild-rehashed-node container
+                                                                                  c
+                                                                                  (read-max-depth container)
+                                                                                  (make-conflict-node (list (list* location new-value))))
+                                                           prev-index)
+                                        root)
                                       (make-conflict-node (list (list* location new-value))))
                           :on-leaf (if prev-node
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
                                          (hash-node-replace! prev-node
-                                                             prev-index
                                                              (rebuild-rehashed-node container
                                                                                     c
                                                                                     (read-max-depth container)
-                                                                                    (destructive-insert node)))
+                                                                                    (destructive-insert node))
+                                                             prev-index)
                                               root)
                                        (rebuild-rehashed-node container
                                                               c
@@ -304,7 +304,7 @@
 (-> mutable-hamt-dictionary-add! (functional-hamt-dictionary t t)
     (values functional-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 0) (safety 0) (debug 3)))
   "Implementation of add!"
   (flet ((destructive-insert (node)
            (multiple-value-bind (next-list r v)
@@ -328,22 +328,22 @@
                                     (progn
                                       (assert (not (hash-node-contains-leaf prev-node prev-index)))
                                       (hash-node-insert! prev-node
-                                                         prev-index
                                                          (rebuild-rehashed-node container
                                                                                 c
                                                                                 (read-max-depth container)
-                                                                                (make-conflict-node (list (list* location new-value)))))
+                                                                                (make-conflict-node (list (list* location new-value))))
+                                                         prev-index)
                                       root)
                                     (make-conflict-node (list (list* location new-value))))
                         :on-leaf (if prev-node
                                      (progn
                                        (assert (hash-node-contains-leaf prev-node prev-index))
                                        (hash-node-replace! prev-node
-                                                           prev-index
                                                            (rebuild-rehashed-node container
                                                                                   c
                                                                                   (read-max-depth container)
-                                                                                  (destructive-insert node)))
+                                                                                  (destructive-insert node))
+                                                           prev-index)
                                        root)
                                      (rebuild-rehashed-node container
                                                             c
@@ -362,6 +362,25 @@
   (access-size container))
 
 
+(-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
+(defun mutable-hamt-dictionary-erase! (container location)
+  (let ((old-value nil))
+    (with-hash-tree-functions container
+      (with-destructive-erase-hamt node container (hash-fn location)
+        :on-leaf (multiple-value-bind (next found value) (try-remove location
+                                                                     (access-conflict node)
+                                                                     :key #'car
+                                                                     :test (read-equal-fn container))
+                   (if found
+                       (when next
+                         (setf (access-conflict node) next
+                               old-value (cdr value))
+                         node)
+                       (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
+        :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
+    (incf (access-size container))
+    (values container t old-value)))
+
 #|
 
 Methods. Those will just call non generic functions.
@@ -371,6 +390,14 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:update! ((container mutable-hamt-dictionary) location new-value)
   (mutable-hamt-dictionary-update! container location new-value))
+
+
+(defmethod (setf cl-ds:at) (new-value (container mutable-hamt-dictionary) location)
+  (mutable-hamt-dictionary-insert! container location new-value))
+
+
+(defmethod cl-ds:erase! ((container mutable-hamt-dictionary) location)
+  (mutable-hamt-dictionary-erase! container location))
 
 
 (defmethod cl-ds:add! ((container mutable-hamt-dictionary) location new-value)
@@ -391,10 +418,6 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:add ((container functional-hamt-dictionary) location new-value)
   (functional-hamt-dictionary-add container location new-value))
-
-
-(defmethod (setf cl-ds:at) (new-value (container mutable-hamt-dictionary) location)
-  (mutable-hamt-dictionary-insert! container location new-value))
 
 
 (defmethod cl-ds:insert ((container functional-hamt-dictionary) location new-value)

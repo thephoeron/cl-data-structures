@@ -76,13 +76,13 @@ Macros
   (with-gensyms (!count !path !indexes !depth !max-depth !root !index)
     (once-only (container)
       `(let* ((,!max-depth (read-max-depth ,container))
-              (,!path (make-array 11))
-              (,!indexes (make-array ,!max-depth :element-type 'fixnum))
+              (,!path (make-array 12))
+              (,!indexes (make-array 12 :element-type 'fixnum))
               (,!depth 0)
               (,!root (access-root ,container)))
          (declare (type fixnum ,!depth)
-                  (type (simple-array fixnum) ,!indexes)
-                  (type simple-array ,!path)
+                  (type (simple-array fixnum (12)) ,!indexes)
+                  (type (simple-vector 12) ,!path)
                   (dynamic-extent ,!path ,!indexes ,!depth))
          (hash-do
              (,node ,!index ,!count)
@@ -130,6 +130,33 @@ Macros
          (declare (dynamic-extent (function ,!copy-on-write))
                   (inline ,!copy-on-write))
          (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!copy-on-write)))))
+
+
+(defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
+  (with-gensyms (!path !depth !indexes !rewrite)
+    (once-only (container)
+      `(flet ((,!rewrite (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
+                (declare (type (simple-array fixnum) ,!indexes)
+                         (type simple-array ,!path)
+                         (type fixnum ,!depth)
+                         (type maybe-node conflict))
+                (with-vectors (,!path ,!indexes)
+                  (iterate
+                    (for i from (- ,!depth 1) downto 0) ;reverse order (starting from deepest node)
+                    (for node = (,!path i))
+                    (for index = (,!indexes i))
+                    (for ac initially conflict
+                         ;;rehash actually returns cl:hash-table, build-rehashed-node transforms it into another hash-node, depth is increased by 1 this way
+                         then (if ac
+                                  (progn (hash-node-replace! node ac index)
+                                         (finish))
+                                  (if (eql 1 (hash-node-size node))
+                                      ac
+                                      (hash-node-remove! node index))))
+                    (finally (return ac))))))
+         (declare (dynamic-extent (function ,!rewrite))
+                  (inline ,!rewrite))
+         (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!rewrite)))))
 
 
 (defmacro set-in-leaf-mask (node position bit)
@@ -337,7 +364,7 @@ Copy nodes and stuff.
 
 
 (-> hash-node-insert-into-copy (hash-node t hash-node-index) hash-node)
-(defun hash-node-insert-into-copy (hash-node item index)
+(defun hash-node-insert-into-copy (hash-node content index)
   (let ((position (hash-node-to-masked-index hash-node index)))
     (with-vectors ((current-array (hash-node-content hash-node))
                    (new-array (make-array (1+ (array-dimension current-array 0)))))
@@ -352,7 +379,7 @@ Copy nodes and stuff.
 
       ;;new element
       (setf (new-array position)
-            item)
+            content)
 
       ;;after new element
       (iterate
@@ -363,7 +390,7 @@ Copy nodes and stuff.
       ;;just make new hash-node
       (let ((node-mask (hash-node-node-mask hash-node))
             (leaf-mask (hash-node-leaf-mask hash-node)))
-        (if (hash-node-p item)
+        (if (hash-node-p content)
             (setf (ldb (byte 1 index) node-mask) 1)
             (setf (ldb (byte 1 index) leaf-mask) 1))
         (make-hash-node :node-mask node-mask
@@ -402,12 +429,10 @@ Copy nodes and stuff.
         (for (index conflict) in-hashtable content)
         (for i = (logcount (ldb (byte index 0) mask)))
         (setf (array i)
-              (if (or (<= depth max-depth) (single-elementp conflict))
-                  conflict
-                  (rebuild-rehashed-node container
-                                         depth
-                                         max-depth
-                                         conflict)))
+              (rebuild-rehashed-node container
+                                     depth
+                                     max-depth
+                                     conflict))
         (if (hash-node-p (array i))
             (setf (ldb (byte 1 index) node-mask) 1)
             (setf (ldb (byte 1 index) leaf-mask) 1)))
@@ -432,7 +457,8 @@ Copy nodes and stuff.
                       :content (make-array 1 :initial-element content))))
 
 
-(defun hash-node-insert! (node index content)
+(-> hash-node-insert! (hash-node t hash-node-index) hash-node)
+(defun hash-node-insert! (node content index)
   (assert (zerop (ldb (byte 1 index) (hash-node-whole-mask node))))
   (let* ((next-size (~> node
                         hash-node-content
@@ -458,7 +484,7 @@ Copy nodes and stuff.
       node)))
 
 
-(defun hash-node-replace! (node index content)
+(defun hash-node-replace! (node content index)
   (assert (not (zerop (ldb (byte 1 index) (hash-node-whole-mask node)))))
   (with-vectors ((a (hash-node-content node)))
     (setf (a (hash-node-to-masked-index node index))
@@ -471,28 +497,35 @@ Copy nodes and stuff.
   node)
 
 
-(-> hash-node-remove-from-the-copy (hash-node fixnum) maybe-node)
-(defun hash-node-remove-from-the-copy (node index)
-  "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
-  (and (hash-node-contains node index)
-       (let ((new-array (let ((size (hash-node-size node)))
-                          (unless (eql 1 size)
-                            (let ((result (make-array (1- size)))
-                                  (position (1- (logcount (ldb (byte (1+ index) 0)
-                                                               (hash-node-whole-mask node)))))
-                                  (input (hash-node-content node)))
-                              (iterate
-                                (for i from 0 below position)
-                                (setf (aref result i) (aref input i)))
-                              (iterate
-                                (for i from position)
-                                (for j from (1+ position) below size)
-                                (setf (aref result i) (aref input j)))
-                              result)))))
-         (when new-array
-           (make-hash-node :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
-                           :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
-                           :content new-array)))))
+(-> hash-node-remove-from-the-copy (hash-node fixnum) hash-node)
+(-> hash-node-remove! (hash-node fixnum) hash-node)
+(flet ((new-array (node index)
+         (let ((size (hash-node-size node)))
+           (let ((result (make-array (1- size)))
+                 (position (1- (logcount (ldb (byte (1+ index) 0)
+                                              (hash-node-whole-mask node)))))
+                 (input (hash-node-content node)))
+             (iterate
+               (for i from 0 below position)
+               (setf (aref result i) (aref input i)))
+             (iterate
+               (for i from position)
+               (for j from (1+ position) below size)
+               (setf (aref result i) (aref input j)))
+             result))))
+
+  (defun hash-node-remove-from-the-copy (node index)
+    "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
+    (make-hash-node :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
+                    :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
+                    :content (new-array node index)))
+
+  (defun hash-node-remove! (node index)
+    (setf (hash-node-content node)
+          (new-array node index))
+    (set-in-leaf-mask node index 0)
+    (set-in-node-mask node index 0)
+    node))
 
 
 (-> map-hash-tree ((-> (bottom-node) t) hash-node) hash-node)
