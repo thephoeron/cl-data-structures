@@ -316,6 +316,8 @@ Functions with basic bit logic.
 
 
 (declaim (inline hash-node-contains))
+(declaim (inline hash-node-contains-leaf))
+(declaim (inline hash-node-contains-node))
 
 
 (-> hash-node-access (hash-node hash-node-index) t)
