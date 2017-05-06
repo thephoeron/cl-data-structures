@@ -378,7 +378,7 @@
                          node)
                        (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
         :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
-    (incf (access-size container))
+    (decf (access-size container))
     (values container t old-value)))
 
 #|
