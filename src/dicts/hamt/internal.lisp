@@ -72,8 +72,8 @@ Macros
      ,@body))
 
 
-(defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
-  (with-gensyms (!count !final-fn !path !indexes !depth !max-depth !root !index)
+(defmacro with-hamt-path (node container hash &key on-leaf on-nil operation)
+  (with-gensyms (!count !path !indexes !depth !max-depth !root !index)
     (once-only (container)
       `(let* ((,!max-depth (read-max-depth ,container))
               (,!path (make-array 11))
@@ -84,7 +84,23 @@ Macros
                   (type (simple-array fixnum) ,!indexes)
                   (type simple-array ,!path)
                   (dynamic-extent ,!path ,!indexes ,!depth))
-         (flet ((,!final-fn (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
+         (hash-do
+             (,node ,!index ,!count)
+             (,!root ,hash ,!max-depth)
+             :on-every (progn (setf (aref ,!path ,!count) node
+                                    (aref ,!indexes ,!count) ,!index)
+                              (incf ,!depth))
+             :on-nil (let ((next ,on-nil))
+                       (,operation ,!indexes ,!path ,!depth next))
+             :on-leaf (let ((next ,on-leaf))
+                        (,operation ,!indexes ,!path ,!depth next)))))))
+
+
+(defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
+  (with-gensyms (!path !depth !indexes !max-depth !copy-on-write)
+    (once-only (container)
+      `(let ((,!max-depth (read-max-depth ,container)))
+         (flet ((,!copy-on-write (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
                   (declare (type (simple-array fixnum) ,!indexes)
                            (type simple-array ,!path)
                            (type fixnum ,!depth)
@@ -112,18 +128,9 @@ Macros
                                         ac
                                         (hash-node-remove-from-the-copy node index))))
                       (finally (return ac))))))
-           (declare (dynamic-extent (function ,!final-fn))
-                    (inline ,!final-fn))
-           (hash-do
-               (,node ,!index ,!count)
-               (,!root ,hash ,!max-depth)
-               :on-every (progn (setf (aref ,!path ,!count) node
-                                      (aref ,!indexes ,!count) ,!index)
-                                (incf ,!depth))
-               :on-nil (let ((next ,on-nil))
-                         (,!final-fn ,!indexes ,!path ,!depth next))
-               :on-leaf (let ((next ,on-leaf))
-                          (,!final-fn ,!indexes ,!path ,!depth next))))))))
+           (declare (dynamic-extent (function ,!copy-on-write))
+                    (inline ,!copy-on-write))
+           (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!copy-on-write))))))
 
 
 (defmacro set-in-leaf-mask (node position bit)
