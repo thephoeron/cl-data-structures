@@ -403,4 +403,3 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:erase ((container functional-hamt-dictionary) location)
   (functional-hamt-dictionary-erase container location))
-

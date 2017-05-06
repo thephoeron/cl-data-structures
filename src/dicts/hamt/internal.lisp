@@ -551,3 +551,43 @@ Copy nodes and stuff.
 
 (defmethod single-elementp ((conflict conflict-node))
   (endp (cdr (access-conflict conflict))))
+
+
+(defgeneric print-hamt (obj stream &optional indent)
+  (:method ((obj hash-node) stream &optional indent)
+    (ensure indent 0)
+    (format stream "~v@{~a~:*~}<HN: " indent " ")
+    (format stream "~b~%" (hash-node-whole-mask obj))
+    (iterate
+      (for elt in-vector (hash-node-content obj))
+      (for i from 1)
+      (print-hamt elt stream (1+ indent))
+      (unless (eql i (length (hash-node-content obj)))
+        (format stream "~%")))
+    (format stream ">")
+    obj)
+  (:method ((obj (eql nil)) stream &optional indent)
+    (ensure indent 0)
+    (format stream "~v@{~a~:*~}EMPTY" indent " ")
+    obj)
+  (:method ((obj conflict-node) stream &optional indent)
+    (ensure indent 0)
+    (format stream "~v@{~a~:*~}(" indent " ")
+    (iterate
+      (for sub on (access-conflict obj))
+      (for (key . value) = (car sub))
+      (if (cdr sub)
+          (format stream "~A:~A, " key value)
+          (format stream "~A:~A" key value)))
+    (format stream ")")
+    obj))
+
+
+(defmethod print-object ((obj hash-node) stream)
+  (print-hamt obj stream)
+  obj)
+
+
+(defmethod print-object ((obj conflict-node) stream)
+  (print-hamt obj stream)
+  obj)
