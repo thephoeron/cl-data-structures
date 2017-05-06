@@ -58,9 +58,7 @@ Macros
                      ,on-leaf)))
              ,on-every
              (when (or ,!leaf (null ,node))
-               (return-from ,!block
-                 (values ,node
-                         ,count)))))))))
+               (return-from ,!block ,node))))))))
 
 
 (defmacro with-hash-tree-functions (container &body body)

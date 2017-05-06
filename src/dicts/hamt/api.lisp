@@ -30,11 +30,11 @@
    In theory, HAMT can use infinite length of HASH, but this implementation uses 60 oldest bits at most."
   (assert (<= max-depth 10))
   (assert (> max-depth 0))
-  (assure functional-hamt-dictionary (make-instance 'functional-hamt-dictionary
-                                                    :hash-fn hash-fn
-                                                    :root nil
-                                                    :max-depth max-depth
-                                                    :equal-fn equal-fn)))
+  (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
+                                           :hash-fn hash-fn
+                                           :root nil
+                                           :max-depth max-depth
+                                           :equal-fn equal-fn)))
 
 
 (-> make-mutable-hamt-dictionary ((-> (t) fixnum)
@@ -56,11 +56,11 @@
    In theory, HAMT can use infinite length of HASH, but this implementation uses 60 oldest bits at most."
   (assert (<= max-depth 10))
   (assert (> max-depth 0))
-  (assure mutable-hamt-dictionary (make-instance 'mutable-hamt-dictionary
-                                                 :equal-fn equal-fn
-                                                 :hash-fn hash-fn
-                                                 :root nil
-                                                 :max-depth max-depth)))
+  (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
+                                        :equal-fn equal-fn
+                                        :hash-fn hash-fn
+                                        :root nil
+                                        :max-depth max-depth)))
 
 
 #|
@@ -298,7 +298,8 @@
                      (setf (cdr r) new-value)
                      (values container t old))
                    (values container nil nil))
-        :on-nil (values container nil nil))))
+        :on-nil (values container nil nil))
+    (values container nil nil)))
 
 
 (-> mutable-hamt-dictionary-add! (functional-hamt-dictionary t t)
@@ -323,7 +324,8 @@
              (root (access-root container))
              (result
                (hash-do (node index c) ((access-root container) (hash-fn location))
-                        :on-every (setf prev-node node prev-index index)
+                        :on-every (setf prev-node node
+                                        prev-index index)
                         :on-nil (if prev-node
                                     (progn
                                       (assert (not (hash-node-contains-leaf prev-node prev-index)))

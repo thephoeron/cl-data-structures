@@ -18,16 +18,22 @@
 (defun erase-from-vector (vector &rest indexes)
   "Remove elements under indexes from vector, preserving order of elements.
 
- @b(Side effects:) reduce fill pointer."
-  (iterate
-    (for el in indexes)
-    (for i from 0)
-    (for index = (- el i))
-    (replace vector vector
-             :start1 index
-             :start2 (1+ index))
-    (finally (progn (decf (fill-pointer vector) (1+ i))
-                    (return vector)))))
+ @b(Side effects:) Reduces fill pointer. Removes elements from vector and shifts elements that are left."
+  (let ((indexes (sort indexes #'<))
+        (count 0))
+    (iterate
+      (for sub on indexes)
+      (for next = (cadr sub))
+      (for index = (car sub))
+      (for start = (- index count))
+      (for end = (and next (fill-pointer vector)))
+      (replace vector vector
+               :start1 start
+               :end1 end
+               :start2 (1+ start))
+      (incf count)
+      (finally (progn (decf (fill-pointer vector) count)
+                      (return vector))))))
 
 
 (-> swapop (extendable-vector index) vector)
