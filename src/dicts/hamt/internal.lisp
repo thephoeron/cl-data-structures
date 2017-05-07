@@ -112,7 +112,6 @@ Macros
                                           ;;if we didn't find element or element was found but depth was already maximal,
                                           ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                                           conflict
-                                          ;;rehash actually returns cl:hash-table, build-rehashed-node transforms it into another hash-node, depth is increased by 1 this way
                                           (rebuild-rehashed-node ,container
                                                                  ,!depth
                                                                  (read-max-depth ,container)
