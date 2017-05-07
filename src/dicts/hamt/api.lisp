@@ -89,20 +89,22 @@
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 0) (safety 0) (debug 3)))
   "Implementation of AT"
   (with-hash-tree-functions container
     (let* ((hash (hash-fn location))
            (root (access-root container)))
-      (hash-do
-          (node index)
-          (root hash)
-        :on-leaf (multiple-value-bind (r f) (try-find location
-                                                      (access-conflict (the conflict-node node))
-                                                      :test (read-equal-fn container)
-                                                      :key #'car)
-                   (values (cdr r) f))
-        :on-nil (values nil nil)))))
+      (flet ((location-test (loc location)
+               (and (eql hash (hash.location.value-hash loc))
+                    (equal-fn location (hash.location.value-location loc)))))
+        (hash-do
+            (node index)
+            (root hash)
+            :on-leaf (multiple-value-bind (r f) (try-find location
+                                                          (access-conflict (the conflict-node node))
+                                                          :test #'location-test)
+                       (values (hash.location.value-value r) f))
+            :on-nil (values nil nil))))))
 
 
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
@@ -110,27 +112,31 @@
 (defun functional-hamt-dictionary-erase (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ERASE"
-  (let* ((old-value nil)
-         (result
-           (with-hash-tree-functions container
-             (with-copy-on-write-hamt node container (hash-fn location)
-               :on-leaf (multiple-value-bind (list removed value)
-                            (try-remove location (access-conflict node)
-                                        :test (read-equal-fn container)
-                                        :key #'car)
-                          (unless removed
-                            (return-from functional-hamt-dictionary-erase (values container nil nil)))
-                          (setf old-value (cdr value))
-                          (and list (make-conflict-node list)))
-               :on-nil (return-from functional-hamt-dictionary-erase (values container nil nil))))))
-    (values (make-instance (type-of container)
-                           :hash-fn (read-hash-fn container)
-                           :root result
-                           :equal-fn (read-equal-fn container)
-                           :max-depth (read-max-depth container)
-                           :size (1- (access-size container)))
-            t
-            old-value)))
+  (with-hash-tree-functions container
+    (let* ((old-value nil)
+           (hash (hash-fn location))
+           (result
+             (flet ((location-test (loc location)
+                      (and (eql hash (hash.location.value-hash loc))
+                           (equal-fn location (hash.location.value-location loc)))))
+               (with-copy-on-write-hamt node container (hash-fn location)
+                 :on-leaf (multiple-value-bind (list removed value)
+                              (try-remove location
+                                          (access-conflict node)
+                                          :test #'location-test)
+                            (unless removed
+                              (return-from functional-hamt-dictionary-erase (values container nil nil)))
+                            (setf old-value (hash.location.value-value value))
+                            (and list (make-conflict-node list)))
+                 :on-nil (return-from functional-hamt-dictionary-erase (values container nil nil))))))
+      (values (make-instance (type-of container)
+                             :hash-fn (read-hash-fn container)
+                             :root result
+                             :equal-fn (read-equal-fn container)
+                             :max-depth (read-max-depth container)
+                             :size (1- (access-size container)))
+              t
+              old-value))))
 
 
 (-> functional-hamt-dictionary-insert (functional-hamt-dictionary t t)
@@ -138,31 +144,34 @@
 (defun functional-hamt-dictionary-insert (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of INSERT"
-  (let* ((old nil)
-         (rep nil)
-         (result
-           (with-hash-tree-functions container
-               (with-copy-on-write-hamt node container (hash-fn location)
-                 :on-leaf (multiple-value-bind (next-list replaced old-value)
-                              (insert-or-replace (access-conflict (the conflict-node node))
-                                                 (list* location new-value)
-                                                 :test (read-equal-fn container)
-                                                 :list-key #'car
-                                                 :item-key #'car)
-                            (setf old (cdr old-value)
-                                  rep replaced)
-                            (values (make-conflict-node next-list)))
-                 :on-nil (make-conflict-node (list (list* location new-value)))))))
-    (values (make-instance (type-of container)
-                           :equal-fn (read-equal-fn container)
-                           :hash-fn (read-hash-fn container)
-                           :root result
-                           :max-depth (read-max-depth container)
-                           :size (if rep
-                                     (access-size container)
-                                     (1+ (access-size container))))
-            rep
-            old)))
+  (with-hash-tree-functions container
+    (let* ((old nil)
+           (rep nil)
+           (hash (hash-fn location))
+           (result
+             (with-copy-on-write-hamt node container hash
+               :on-leaf (multiple-value-bind (next-list replaced old-value)
+                            (insert-or-replace (access-conflict (the conflict-node node))
+                                               (make-hash.location.value :hash hash
+                                                                         :location location
+                                                                         :value new-value)
+                                               :test #'compare-fn)
+                          (setf old (hash.location.value-value old-value)
+                                rep replaced)
+                          (values (make-conflict-node next-list)))
+               :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                           :location location
+                                                                           :value new-value))))))
+      (values (make-instance (type-of container)
+                             :equal-fn (read-equal-fn container)
+                             :hash-fn (read-hash-fn container)
+                             :root result
+                             :max-depth (read-max-depth container)
+                             :size (if rep
+                                       (access-size container)
+                                       (1+ (access-size container))))
+              rep
+              old))))
 
 
 (-> functional-hamt-dictionary-insert! (functional-hamt-dictionary t t)
@@ -170,25 +179,26 @@
 (defun mutable-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of (SETF AT)"
-  (let ((replaced nil)
-        (old-value nil))
-    (flet ((destructive-insert (node)
-             (multiple-value-bind (next-list r v)
-                 (insert-or-replace (access-conflict (the conflict-node node))
-                                    (list* location new-value)
-                                    :test (read-equal-fn container)
-                                    :list-key #'car
-                                    :item-key #'car)
-               (setf (access-conflict node) next-list
-                     replaced r
-                     old-value (cdr v))
-               node)))
-      (with-hash-tree-functions container
+  (with-hash-tree-functions container
+    (let ((replaced nil)
+          (old-value nil)
+          (hash (hash-fn location)))
+      (flet ((destructive-insert (node)
+               (multiple-value-bind (next-list r v)
+                   (insert-or-replace (access-conflict (the conflict-node node))
+                                      (make-hash.location.value :hash hash
+                                                                :location location
+                                                                :value new-value)
+                                      :test #'compare-fn)
+                 (setf (access-conflict node) next-list
+                       replaced r
+                       old-value (hash.location.value-value v))
+                 node)))
         (let* ((prev-node nil)
                (prev-index 0)
                (root (access-root container))
                (result
-                 (hash-do (node index c) ((access-root container) (hash-fn location))
+                 (hash-do (node index c) ((access-root container) hash)
                           :on-every (setf prev-node node prev-index index)
                           :on-nil (if prev-node
                                       (progn
@@ -197,10 +207,16 @@
                                                            (rebuild-rehashed-node container
                                                                                   c
                                                                                   (read-max-depth container)
-                                                                                  (make-conflict-node (list (list* location new-value))))
+                                                                                  (make-conflict-node (list (make-hash.location.value
+                                                                                                             :hash hash
+                                                                                                             :location location
+                                                                                                             :value new-value))))
                                                            prev-index)
                                         root)
-                                      (make-conflict-node (list (list* location new-value))))
+                                      (make-conflict-node (list (make-hash.location.value
+                                                                 :hash hash
+                                                                 :location location
+                                                                 :value new-value))))
                           :on-leaf (if prev-node
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
@@ -210,7 +226,7 @@
                                                                                     (read-max-depth container)
                                                                                     (destructive-insert node))
                                                              prev-index)
-                                              root)
+                                         root)
                                        (rebuild-rehashed-node container
                                                               c
                                                               (read-max-depth container)
@@ -228,57 +244,66 @@
 (defun functional-hamt-dictionary-update (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE"
-  (let* ((old nil)
-        (result
-          (with-hash-tree-functions container
-            (with-copy-on-write-hamt node container (hash-fn location)
-              :on-leaf (multiple-value-bind (next-list replaced old-value)
-                           (insert-or-replace (the list (access-conflict (the conflict-node node)))
-                                              (list* location new-value)
-                                              :test (read-equal-fn container)
-                                              :list-key #'car
-                                              :item-key #'car)
-                         (unless replaced
-                           (return-from functional-hamt-dictionary-update (values container nil nil)))
-                         (setf old (cdr old-value))
-                         (make-conflict-node next-list))
-              :on-nil (return-from functional-hamt-dictionary-update (values container nil nil))))))
-    (values (make-instance (type-of container)
-                           :equal-fn (read-equal-fn container)
-                           :hash-fn (read-hash-fn container)
-                           :root result
-                           :max-depth (read-max-depth container)
-                           :size (access-size container))
-            t
-            old)))
+  (with-hash-tree-functions container
+    (let* ((old nil)
+           (hash (hash-fn location))
+           (result
+             (with-copy-on-write-hamt node container hash
+               :on-leaf (multiple-value-bind (next-list replaced old-value)
+                            (insert-or-replace (access-conflict (the conflict-node node))
+                                               (make-hash.location.value :hash hash
+                                                                         :location location
+                                                                         :value new-value)
+                                               :test #'compare-fn)
+                          (unless replaced
+                            (return-from functional-hamt-dictionary-update (values container nil nil)))
+                          (setf old (hash.location.value-value old-value))
+                          (make-conflict-node next-list))
+               :on-nil (return-from functional-hamt-dictionary-update (values container nil nil)))))
+      (values (make-instance (type-of container)
+                             :equal-fn (read-equal-fn container)
+                             :hash-fn (read-hash-fn container)
+                             :root result
+                             :max-depth (read-max-depth container)
+                             :size (access-size container))
+              t
+              old))))
 
 (-> functional-hamt-dictionary-add (functional-hamt-dictionary t t)
     (values functional-hamt-dictionary boolean t))
 (defun functional-hamt-dictionary-add (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD"
-  (let* ((existing-value nil)
-         (result
-           (with-hash-tree-functions container
-             (with-copy-on-write-hamt node container (hash-fn location)
-               :on-leaf (let* ((list (access-conflict node))
-                               (item (find location (the list list)
-                                           :key #'car
-                                           :test (read-equal-fn container))))
-                          (when item
-                            (return-from functional-hamt-dictionary-add (values container nil (cdr item))))
-                          (setf existing-value (cdr item))
-                          (make-conflict-node (cons (list* location new-value)
-                                                    list)))
-               :on-nil (make-conflict-node (list (list* location new-value)))))))
-    (values (make-instance (type-of container)
-                           :equal-fn (read-equal-fn container)
-                           :hash-fn (read-hash-fn container)
-                           :root result
-                           :max-depth (read-max-depth container)
-                           :size (1+ (access-size container)))
-            t
-            existing-value)))
+  (with-hash-tree-functions container
+    (let* ((existing-value nil)
+           (hash (hash-fn location))
+           (result
+             (flet ((location-test (location loc)
+                      (and (eql hash (hash.location.value-hash loc))
+                           (equal-fn location (hash.location.value-location loc)))))
+               (with-copy-on-write-hamt node container hash
+                 :on-leaf (let* ((list (access-conflict node))
+                                 (item (find location (the list list)
+                                             :test #'location-test)))
+                            (when item
+                              (return-from functional-hamt-dictionary-add (values container
+                                                                                  nil
+                                                                                  (hash.location.value-value item))))
+                            (make-conflict-node (cons (make-hash.location.value :hash hash
+                                                                                :location location
+                                                                                :value new-value)
+                                                      list)))
+                 :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                             :location location
+                                                                             :value new-value)))))))
+      (values (make-instance (type-of container)
+                             :equal-fn (read-equal-fn container)
+                             :hash-fn (read-hash-fn container)
+                             :root result
+                             :max-depth (read-max-depth container)
+                             :size (1+ (access-size container)))
+              t
+              existing-value))))
 
 
 (-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
@@ -287,75 +312,83 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE!"
   (with-hash-tree-functions container
-    (hash-do
-        (node index)
-        ((access-root container) (hash-fn location))
-        :on-leaf (if-let ((r (find location
-                                (access-conflict (the conflict-node node))
-                                :test (read-equal-fn container)
-                                :key #'car)))
-                   (let ((old (cdr r)))
-                     (setf (cdr r) new-value)
-                     (values container t old))
-                   (values container nil nil))
-        :on-nil (values container nil nil))
+    (let ((hash (hash-fn location)))
+      (flet ((location-test (loc location)
+               (and (eql hash (hash.location.value-hash loc))
+                    (equal-fn location (hash.location.value-location loc)))))
+        (hash-do
+            (node index)
+            ((access-root container) hash)
+            :on-leaf (if-let ((r (find location
+                                       (the list (access-conflict (the conflict-node node)))
+                                       :test #'location-test)))
+                       (let ((old (hash.location.value-value r)))
+                         (setf (hash.location.value-value r) new-value
+                               (hash.location.value-hash r) hash)
+                         (values container t old))
+                       (values container nil nil))
+            :on-nil (values container nil nil))))
     (values container nil nil)))
 
 
 (-> mutable-hamt-dictionary-add! (functional-hamt-dictionary t t)
     (values functional-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 0) (safety 0) (debug 3)))
+  (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of add!"
-  (flet ((destructive-insert (node)
-           (multiple-value-bind (next-list r v)
-               (insert-or-replace (access-conflict (the conflict-node node))
-                                  (list* location new-value)
-                                  :test (read-equal-fn container)
-                                  :list-key #'car
-                                  :item-key #'car)
-             (when r
-               (return-from mutable-hamt-dictionary-add! (values container nil (cdr v))))
-             (setf (access-conflict node) next-list)
-             node)))
-    (with-hash-tree-functions container
-      (let* ((prev-node nil)
-             (prev-index 0)
-             (root (access-root container))
-             (result
-               (hash-do (node index c) ((access-root container) (hash-fn location))
-                        :on-every (setf prev-node node
-                                        prev-index index)
-                        :on-nil (if prev-node
-                                    (progn
-                                      (assert (not (hash-node-contains-leaf prev-node prev-index)))
-                                      (hash-node-insert! prev-node
-                                                         (rebuild-rehashed-node container
-                                                                                c
-                                                                                (read-max-depth container)
-                                                                                (make-conflict-node (list (list* location new-value))))
-                                                         prev-index)
-                                      root)
-                                    (make-conflict-node (list (list* location new-value))))
-                        :on-leaf (if prev-node
-                                     (progn
-                                       (assert (hash-node-contains-leaf prev-node prev-index))
-                                       (hash-node-replace! prev-node
+  (with-hash-tree-functions container
+    (let ((hash (hash-fn location)))
+      (flet ((destructive-insert (node)
+               (multiple-value-bind (next-list r v)
+                   (insert-or-replace (access-conflict (the conflict-node node))
+                                      (make-hash.location.value :hash hash
+                                                                :location location
+                                                                :value new-value))
+                 (when r
+                   (return-from mutable-hamt-dictionary-add! (values container nil (hash.location.value-value v))))
+                 (setf (access-conflict node) next-list)
+                 node)))
+        (let* ((prev-node nil)
+               (prev-index 0)
+               (root (access-root container))
+               (result
+                 (hash-do (node index c) ((access-root container) hash)
+                          :on-every (setf prev-node node
+                                          prev-index index)
+                          :on-nil (if prev-node
+                                      (progn
+                                        (assert (not (hash-node-contains-leaf prev-node prev-index)))
+                                        (hash-node-insert! prev-node
                                                            (rebuild-rehashed-node container
                                                                                   c
                                                                                   (read-max-depth container)
-                                                                                  (destructive-insert node))
+                                                                                  (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                                                                                      :location location
+                                                                                                                                      :value new-value))))
                                                            prev-index)
-                                       root)
-                                     (rebuild-rehashed-node container
-                                                            c
-                                                            (read-max-depth container)
-                                                            (destructive-insert node))))))
-        (setf (access-root container) result)
-        (incf (access-size container))
-        (values container
-                t
-                nil)))))
+                                        root)
+                                      (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                                          :location location
+                                                                                          :value new-value))))
+                          :on-leaf (if prev-node
+                                       (progn
+                                         (assert (hash-node-contains-leaf prev-node prev-index))
+                                         (hash-node-replace! prev-node
+                                                             (rebuild-rehashed-node container
+                                                                                    c
+                                                                                    (read-max-depth container)
+                                                                                    (destructive-insert node))
+                                                             prev-index)
+                                         root)
+                                       (rebuild-rehashed-node container
+                                                              c
+                                                              (read-max-depth container)
+                                                              (destructive-insert node))))))
+          (setf (access-root container) result)
+          (incf (access-size container))
+          (values container
+                  t
+                  nil))))))
 
 
 (-> hamt-dictionary-size (hamt-dictionary) positive-fixnum)
@@ -366,22 +399,25 @@
 
 (-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-erase! (container location)
-  (let ((old-value nil))
-    (with-hash-tree-functions container
-      (with-destructive-erase-hamt node container (hash-fn location)
-        :on-leaf (multiple-value-bind (next found value) (try-remove location
-                                                                     (access-conflict node)
-                                                                     :key #'car
-                                                                     :test (read-equal-fn container))
-                   (if found
-                       (when next
-                         (setf (access-conflict node) next
-                               old-value (cdr value))
-                         node)
-                       (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
-        :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
-    (decf (access-size container))
-    (values container t old-value)))
+  (with-hash-tree-functions container
+    (let ((old-value nil)
+          (hash (hash-fn location)))
+      (flet ((location-test (loc location)
+               (and (eql hash (hash.location.value-hash loc))
+                    (equal-fn location (hash.location.value-location loc)))))
+        (with-destructive-erase-hamt node container (hash-fn location)
+          :on-leaf (multiple-value-bind (next found value) (try-remove location
+                                                                       (access-conflict node)
+                                                                       :test #'location-test)
+                     (if found
+                         (when next
+                           (setf (access-conflict node) next
+                                 old-value (hash.location.value-value value))
+                           node)
+                         (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
+          :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
+      (decf (access-size container))
+      (values container t old-value))))
 
 #|
 

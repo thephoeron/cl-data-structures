@@ -50,7 +50,7 @@
        (iterate
          (for word in-vector *all-words*)
          (for s from 1 below ,limit)
-         (multiple-value-bind (v u o) (update dict word s)
+         (multiple-value-bind (v u o) (update dict word word)
            (is o word :test #'string=)
            (ok u)
            (setf dict v)))
@@ -58,7 +58,7 @@
        (iterate
          (for s from 1 below ,limit)
          (for word in-vector *all-words*)
-         (multiple-value-bind (v a) (add dict word s)
+         (multiple-value-bind (v a) (add dict word word)
            (is a nil)
            (is (size dict) (size v))))
        (diag "Testing add")
@@ -67,7 +67,7 @@
          (repeat ,limit)
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
-         (multiple-value-bind (v a) (add dict word s)
+         (multiple-value-bind (v a) (add dict word word)
            (is a t)
            (is (1+ (size dict)) (size v))
            (setf dict v)))
@@ -76,7 +76,7 @@
          (repeat ,limit)
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
-         (multiple-value-bind (v a) (add dict word s)
+         (multiple-value-bind (v a) (add dict word word)
            (is a nil)
            (is (size dict) (size v))
            (setf dict v)))
@@ -86,7 +86,7 @@
          (for word in-vector *all-words*)
          (multiple-value-bind (v r o) (erase dict word)
            (ok r)
-           (is o v :test #'string=)
+           (is o word :test #'string=)
            (is (1- (size dict)) (size v))
            (is nil (at v word))
            (setf dict v))))))
@@ -102,7 +102,7 @@
 
 
 (defun run-suite ()
-  (plan 25)
+  (plan 26)
   (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 2)
   (finalize))
 

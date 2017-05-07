@@ -63,11 +63,15 @@ Macros
 
 (defmacro with-hash-tree-functions (container &body body)
   "Simple macro adding local functions (all forwards to the container closures)."
-  `(fbind ((equal-fn (read-equal-fn ,container))
-           (hash-fn (read-hash-fn ,container)))
-     (declare (ignorable (function hash-fn)
-                         (function equal-fn)))
-     ,@body))
+  (once-only (container)
+    `(fbind ((equal-fn (read-equal-fn ,container))
+             (hash-fn (read-hash-fn ,container)))
+       (declare (ignorable (function hash-fn)
+                           (function equal-fn)))
+       (flet ((compare-fn (a b)
+                (the boolean (same-location a b (read-equal-fn ,container)))))
+         (declare (ignorable (function compare-fn)))
+         ,@body))))
 
 
 (defmacro with-hamt-path (node container hash &key on-leaf on-nil operation)
@@ -182,6 +186,25 @@ Tree structure of HAMT
 
 (defclass bottom-node () ()
   (:documentation "Base class of the last (conflict) node. Subclasses present to dispatch relevant logic."))
+
+
+(defstruct hash.location.value
+  (hash 0 :type fixnum)
+  location
+  value)
+
+
+(declaim (inline make-hash.location.value))
+
+
+(-> same-location (hash.location.value hash.location.value (-> (t t) boolean)) boolean)
+(defun same-location (existing new-location equal-fn)
+  (declare (optimize (speed 3)))
+  (and (eql (hash.location.value-hash existing)
+            (hash.location.value-hash new-location))
+       (funcall equal-fn
+                (hash.location.value-location existing)
+                (hash.location.value-location new-location))))
 
 
 (defclass conflict-node (bottom-node)
@@ -447,10 +470,13 @@ Copy nodes and stuff.
 
 
 (defun rebuild-rehashed-node (container depth max-depth conflict)
-  (if (or (>= depth max-depth) (single-elementp conflict))
-      conflict
-      (rehash container conflict depth
-              (bind-lambda #'build-rehashed-node container (1+ depth) max-depth :_))))
+  (flet ((cont (array)
+           (build-rehashed-node container (1+ depth) max-depth array)))
+    (declare (dynamic-extent #'cont))
+    (if (or (>= depth max-depth) (single-elementp conflict))
+        conflict
+        (rehash container conflict depth
+                #'cont))))
 
 
 (-> build-node (hash-node-index just-node) hash-node)
@@ -572,14 +598,12 @@ Copy nodes and stuff.
         (byte (byte +hash-level+ (* +hash-level+ level))))
     (declare (dynamic-extent byte)
              (dynamic-extent result))
-    (with-hash-tree-functions container
-      (iterate
-        (for key.value in (access-conflict conflict))
-        (for (key . value) = key.value)
-        (for hash = (hash-fn key))
-        (for index = (ldb byte hash))
-        (push key.value (access-conflict (ensure (aref result index)
-                                           (make 'conflict-node))))))
+    (iterate
+      (for item in (access-conflict conflict))
+      (for hash = (hash.location.value-hash item))
+      (for index = (ldb byte hash))
+      (push item (access-conflict (ensure (aref result index)
+                                    (make 'conflict-node)))))
     (funcall cont result)))
 
 
@@ -609,7 +633,9 @@ Copy nodes and stuff.
     (format stream "~v@{~a~:*~}(" indent " ")
     (iterate
       (for sub on (access-conflict obj))
-      (for (key . value) = (car sub))
+      (for elt = (car sub))
+      (for key = (hash.location.value-location elt))
+      (for value = (hash.location.value-value elt))
       (if (cdr sub)
           (format stream "~A:~A, " key value)
           (format stream "~A:~A" key value)))
