@@ -100,6 +100,12 @@
         (hash-do
             (node index)
             (root hash)
+            :on-every (when-let ((data (hash-node-data node)))
+                        (when (and (eql (hash.location.value-hash data) hash)
+                                   (equal-fn (hash.location.value-location data)
+                                             location))
+                          (return-from hamt-dictionary-at (values (hash.location.value-value data)
+                                                                  t))))
             :on-leaf (multiple-value-bind (r f) (try-find location
                                                           (access-conflict (the conflict-node node))
                                                           :test #'location-test)
@@ -119,7 +125,14 @@
              (flet ((location-test (loc location)
                       (and (eql hash (hash.location.value-hash loc))
                            (equal-fn location (hash.location.value-location loc)))))
-               (with-copy-on-write-hamt node container (hash-fn location)
+               (with-copy-on-write-hamt node container hash
+                 :on-every (when-let ((data (hash-node-data node)))
+                             (when (and (eql (hash.location.value-hash data) hash)
+                                        (equal-fn (hash.location.value-location data)
+                                                  location))
+                               (setf old-value (hash.location.value-value data))
+                               (perform-operation (reconstruct-data-from-subtree node
+                                                                                 (read-max-depth container)))))
                  :on-leaf (multiple-value-bind (list removed value)
                               (try-remove location
                                           (access-conflict node)
@@ -150,6 +163,18 @@
            (hash (hash-fn location))
            (result
              (with-copy-on-write-hamt node container hash
+               :on-every (when-let ((data (hash-node-data node)))
+                           (when (and (eql (hash.location.value-hash data) hash)
+                                      (equal-fn (hash.location.value-location data)
+                                                location))
+                             (setf old (hash.location.value-value data)
+                                   rep t)
+                             (perform-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
+                                                                :node-mask (hash-node-node-mask node)
+                                                                :content (hash-node-content node)
+                                                                :data (make-hash.key.value :hash hash
+                                                                                           :key location
+                                                                                           :value new-value)))))
                :on-leaf (multiple-value-bind (next-list replaced old-value)
                             (insert-or-replace (access-conflict (the conflict-node node))
                                                (make-hash.location.value :hash hash

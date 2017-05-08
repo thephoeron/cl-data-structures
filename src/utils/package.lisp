@@ -18,6 +18,7 @@
    :try-find
    :ordered-p
    :try-find-cell
+   :import-all-package-symbols
    :try-remove))
 
 

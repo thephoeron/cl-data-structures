@@ -130,3 +130,12 @@
     `(cond ((< ,a ,b) ,<)
            ((= ,a ,b) ,=)
            ((> ,a ,b) ,>))))
+
+
+(defmacro import-all-package-symbols (from to)
+  (let ((from-package (find-package from))
+        (to-package (find-package to)))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (do-symbols (symbol ,from-package)
+         (when (nth-value 1 (find-symbol (string-upcase symbol) ,from-package))
+           (import symbol ,to-package))))))
