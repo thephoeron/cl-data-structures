@@ -247,7 +247,8 @@ Tree structure of HAMT
   (:documentation "Conflict node simply holds list of elements that are conflicting."))
 
 
-(defun reconstruct-data-from-subtree (node max-depth)
+(-> reconstruct-data-from-subtree (hash-node) maybe-node)
+(defun reconstruct-data-from-subtree (node)
   (let* ((path (make-array +path-array-size+))
          (indexes (make-array +path-array-size+ :element-type 'fixnum)))
     (declare (dynamic-extent path indexes))
@@ -273,7 +274,7 @@ Tree structure of HAMT
         (if-let ((length (impl node 1)))
           (let* ((next-list (cdr (access-conflict (aref path (1- length)))))
                  (item (car (access-conflict (aref path (1- length)))))
-                 (reconstructed-node (copy-on-write max-depth
+                 (reconstructed-node (copy-on-write 5 ;;this value is not going to be used. I just like number 5. ;-)
                                                     indexes
                                                     path
                                                     (1- length)

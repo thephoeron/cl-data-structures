@@ -131,8 +131,7 @@
                                         (equal-fn (hash.location.value-location data)
                                                   location))
                                (setf old-value (hash.location.value-value data))
-                               (perform-operation (reconstruct-data-from-subtree node
-                                                                                 (read-max-depth container)))))
+                               (perform-operation (reconstruct-data-from-subtree node))))
                  :on-leaf (multiple-value-bind (list removed value)
                               (try-remove location
                                           (access-conflict node)
