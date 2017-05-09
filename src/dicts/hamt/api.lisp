@@ -273,6 +273,18 @@
            (hash (hash-fn location))
            (result
              (with-copy-on-write-hamt node container hash
+               :on-every (flet ((location-test (location loc)
+                                  (and (eql hash (hash.location.value-hash loc))
+                                       (equal-fn location (hash.location.value-location loc)))))
+                           (when-let ((data (hash-node-data node)))
+                             (when (location-test data location)
+                               (setf old (hash.location.value-value data))
+                               (perform-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
+                                                                  :node-mask (hash-node-node-mask node)
+                                                                  :content (hash-node-content node)
+                                                                  :data (make-hash.location.value :hash hash
+                                                                                                  :location location
+                                                                                                  :value new-value))))))
                :on-leaf (multiple-value-bind (next-list replaced old-value)
                             (insert-or-replace (access-conflict (the conflict-node node))
                                                (make-hash.location.value :hash hash
