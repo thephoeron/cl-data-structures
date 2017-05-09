@@ -343,6 +343,11 @@
         (hash-do
             (node index)
             ((access-root container) hash)
+            :on-every (when-let ((data (hash-node-data node)))
+                        (when (location-test data location)
+                          (let ((old (hash.location.value-value data)))
+                            (setf (hash.location.value-value data) new-value))
+                          (return-from mutable-hamt-dictionary-update! (values container t old))))
             :on-leaf (if-let ((r (find location
                                        (the list (access-conflict (the conflict-node node)))
                                        :test #'location-test)))
@@ -359,7 +364,7 @@
     (values functional-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 1) (debug 0)))
-  "Implementation of add!"
+  "Implementation of ADD!"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
       (flet ((destructive-insert (node)
@@ -423,6 +428,7 @@
 
 (-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-erase! (container location)
+  "Implementation of ERASE!"
   (with-hash-tree-functions container
     (let ((old-value nil)
           (hash (hash-fn location)))
@@ -506,3 +512,4 @@ Methods. Those will just call non generic functions.
         :max-depth (read-max-depth container)
         :equal-fn (read-equal-fn container)
         :size (access-size container)))
+
