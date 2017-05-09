@@ -247,31 +247,34 @@ Tree structure of HAMT
   (:documentation "Conflict node simply holds list of elements that are conflicting."))
 
 
+(-> reconstruct-data-from-subtree! (hash-node) maybe-node)
 (-> reconstruct-data-from-subtree (hash-node) maybe-node)
-(defun reconstruct-data-from-subtree (node)
-  (let* ((path (make-array +path-array-size+))
-         (indexes (make-array +path-array-size+ :element-type 'fixnum)))
-    (declare (dynamic-extent path indexes))
-    (with-vectors (path indexes)
-      (labels ((impl (node depth) ;;recursivly scan structure
-                 (with-vectors ((children (hash-node-content node)))
-                   (iterate
-                     (for i from 0 below 64)
-                     (cond ((hash-node-contains-leaf node i)
-                            (let ((index (hash-node-to-masked-index node i)))
-                              (setf (path depth) (children index))
-                              (setf (indexes depth) index)
-                              (leave (1+ depth))))
-                           ((hash-node-contains-node node i)
-                            (let* ((index (hash-node-to-masked-index node i))
-                                  (subnode (children index)))
-                              (setf (path depth) subnode)
-                              (setf (indexes depth) index)
-                              (when-let ((result (impl subnode (1+ depth))))
-                                (leave result)))))))))
+(labels ((scan (path indexes node depth) ;;recursivly scan structure
+           (with-vectors ((children (hash-node-content node)))
+             (iterate
+               (for i from 0 below 64)
+               (cond ((hash-node-contains-leaf node i)
+                      (let ((index (hash-node-to-masked-index node i)))
+                        (setf (path depth) (children index))
+                        (setf (indexes depth) index)
+                        (leave (1+ depth))))
+                     ((hash-node-contains-node node i)
+                      (let* ((index (hash-node-to-masked-index node i))
+                             (subnode (children index)))
+                        (setf (path depth) subnode
+                              (indexes depth)) index
+                        (when-let ((result (scan path indexes subnode (1+ depth))))
+                          (leave result))))
+                     (t nil))))))
+
+  (defun reconstruct-data-from-subtree (node)
+    (let* ((path (make-array +path-array-size+))
+           (indexes (make-array +path-array-size+ :element-type 'fixnum)))
+      (declare (dynamic-extent path indexes))
+      (with-vectors (path indexes)
         (setf (path 0) node
               (indexes 0) 0)
-        (if-let ((length (impl node 1)))
+        (if-let ((length (path indexes scan node 1)))
           (let* ((next-list (cdr (access-conflict (aref path (1- length)))))
                  (item (car (access-conflict (aref path (1- length)))))
                  (reconstructed-node (copy-on-write 5 ;;this value is not going to be used. I just like number 5. ;-)
