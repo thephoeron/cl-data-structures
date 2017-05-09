@@ -171,9 +171,9 @@
                              (perform-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
                                                                 :node-mask (hash-node-node-mask node)
                                                                 :content (hash-node-content node)
-                                                                :data (make-hash.key.value :hash hash
-                                                                                           :key location
-                                                                                           :value new-value)))))
+                                                                :data (make-hash.location.value :hash hash
+                                                                                                :location location
+                                                                                                :value new-value)))))
                :on-leaf (multiple-value-bind (next-list replaced old-value)
                             (insert-or-replace (access-conflict (the conflict-node node))
                                                (make-hash.location.value :hash hash
