@@ -116,7 +116,7 @@
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
     (values functional-hamt-dictionary boolean))
 (defun functional-hamt-dictionary-erase (container location)
-  (declare (optimize (speed 0) (safety 0) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ERASE"
   (with-hash-tree-functions container
     (let* ((old-value nil)
