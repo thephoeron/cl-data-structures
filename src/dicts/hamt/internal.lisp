@@ -89,7 +89,7 @@ Macros
          (hash-do
              (,node ,!index ,!count)
              (,!root ,hash ,!max-depth)
-             :on-every (progn (setf (aref ,!path ,!count) node
+             :on-every (progn (setf (aref ,!path ,!count) ,node
                                     (aref ,!indexes ,!count) ,!index)
                               (incf ,!depth))
              :on-nil (let ((next ,on-nil))
