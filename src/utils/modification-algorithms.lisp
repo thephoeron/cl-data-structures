@@ -38,7 +38,7 @@
 
 (-> erase-from-vector (vector &rest index) vector)
 (defun copy-without (vector &rest indexes)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 3)))
   (let* ((s (length indexes))
          (vs (length vector))
          (nvs (- vs s))

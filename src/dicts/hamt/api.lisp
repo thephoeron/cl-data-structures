@@ -89,7 +89,7 @@
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
-  (declare (optimize (speed 0) (safety 0) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of AT"
   (with-hash-tree-functions container
     (let* ((hash (hash-fn location))
@@ -109,14 +109,14 @@
             :on-leaf (multiple-value-bind (r f) (try-find location
                                                           (access-conflict (the conflict-node node))
                                                           :test #'location-test)
-                       (values (hash.location.value-value r) f))
+                       (values (and f (hash.location.value-value r)) f))
             :on-nil (values nil nil))))))
 
 
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
     (values functional-hamt-dictionary boolean))
 (defun functional-hamt-dictionary-erase (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 0) (safety 0) (debug 3)))
   "Implementation of ERASE"
   (with-hash-tree-functions container
     (let* ((old-value nil)
@@ -160,9 +160,10 @@
     (let* ((old nil)
            (rep nil)
            (hash (hash-fn location))
+           (hole nil)
            (result
              (with-copy-on-write-hamt node container hash
-               :on-every (when-let ((data (hash-node-data node)))
+               :on-every (if-let ((data (hash-node-data node)))
                            (when (and (eql (hash.location.value-hash data) hash)
                                       (equal-fn (hash.location.value-location data)
                                                 location))
@@ -173,19 +174,30 @@
                                                                 :content (hash-node-content node)
                                                                 :data (make-hash.location.value :hash hash
                                                                                                 :location location
-                                                                                                :value new-value)))))
+                                                                                                :value new-value))))
+                           (unless hole
+                             (setf hole (delay-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
+                                                                         :node-mask (hash-node-node-mask node)
+                                                                         :content (hash-node-content node)
+                                                                         :data (make-hash.location.value :hash hash
+                                                                                                         :location location
+                                                                                                         :value new-value))))))
                :on-leaf (multiple-value-bind (next-list replaced old-value)
                             (insert-or-replace (access-conflict (the conflict-node node))
                                                (make-hash.location.value :hash hash
                                                                          :location location
                                                                          :value new-value)
                                                :test #'compare-fn)
-                          (setf old (hash.location.value-value old-value)
-                                rep replaced)
-                          (values (make-conflict-node next-list)))
-               :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                           :location location
-                                                                           :value new-value))))))
+                          (if (and (not replaced) hole)
+                              (funcall hole)
+                              (progn
+                                (setf old (and replaced (hash.location.value-value old-value))
+                                      rep replaced)
+                                (values (make-conflict-node next-list)))))
+               :on-nil (if hole (funcall hole)
+                           (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                               :location location
+                                                                               :value new-value)))))))
       (values (make-instance (type-of container)
                              :equal-fn (read-equal-fn container)
                              :hash-fn (read-hash-fn container)
@@ -204,55 +216,65 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of (SETF AT)"
   (with-hash-tree-functions container
-    (let ((replaced nil)
-          (old-value nil)
-          (hash (hash-fn location)))
+    (let* ((replaced nil)
+           (old-value nil)
+           (hole nil)
+           (hash (hash-fn location))
+           (tuple (make-hash.location.value :hash hash
+                                            :location location
+                                            :value new-value)))
       (flet ((destructive-insert (node)
                (multiple-value-bind (next-list r v)
                    (insert-or-replace (access-conflict (the conflict-node node))
-                                      (make-hash.location.value :hash hash
-                                                                :location location
-                                                                :value new-value)
+                                      tuple
                                       :test #'compare-fn)
-                 (setf (access-conflict node) next-list
-                       replaced r
-                       old-value (hash.location.value-value v))
+                 (if (and hole (not r))
+                     (setf (hash-node-data hole) tuple
+                           replaced r)
+                     (setf (access-conflict node) next-list
+                           replaced r
+                           old-value (and v (hash.location.value-value v))))
                  node)))
         (let* ((prev-node nil)
                (prev-index 0)
                (root (access-root container))
                (result
                  (hash-do (node index c) ((access-root container) hash)
-                          :on-every (setf prev-node node prev-index index)
-                          :on-nil (if prev-node
-                                      (progn
-                                        (assert (not (hash-node-contains-leaf prev-node prev-index)))
-                                        (hash-node-insert! prev-node
-                                                           (rebuild-rehashed-node container
-                                                                                  c
-                                                                                  (read-max-depth container)
-                                                                                  (make-conflict-node (list (make-hash.location.value
-                                                                                                             :hash hash
-                                                                                                             :location location
-                                                                                                             :value new-value))))
-                                                           prev-index)
-                                        root)
-                                      (make-conflict-node (list (make-hash.location.value
-                                                                 :hash hash
-                                                                 :location location
-                                                                 :value new-value))))
+                          :on-every (let ((item (hash-node-data node)))
+                                      (when (and item (compare-fn tuple item))
+                                        (setf (hash-node-data node) tuple)
+                                        (return-from mutable-hamt-dictionary-insert! (values container
+                                                                                             t
+                                                                                             (hash.location.value-value item))))
+                                      (setf prev-node node
+                                            prev-index index
+                                            hole (or hole (and (null item) node))))
+                          :on-nil (if hole
+                                      (progn (setf (hash-node-data hole) tuple)
+                                             (return-from mutable-hamt-dictionary-insert! (values container nil nil)))
+                                      (if prev-node
+                                          (progn
+                                            (assert (not (hash-node-contains-leaf prev-node prev-index)))
+                                            (hash-node-insert! prev-node
+                                                               (rebuild-rehashed-node c
+                                                                                      (read-max-depth container)
+                                                                                      (make-conflict-node (list tuple)))
+                                                               prev-index)
+                                            root)
+                                          (make-conflict-node (list (make-hash.location.value
+                                                                     :hash hash
+                                                                     :location location
+                                                                     :value new-value)))))
                           :on-leaf (if prev-node
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
                                          (hash-node-replace! prev-node
-                                                             (rebuild-rehashed-node container
-                                                                                    c
+                                                             (rebuild-rehashed-node c
                                                                                     (read-max-depth container)
                                                                                     (destructive-insert node))
                                                              prev-index)
                                          root)
-                                       (rebuild-rehashed-node container
-                                                              c
+                                       (rebuild-rehashed-node c
                                                               (read-max-depth container)
                                                               (destructive-insert node))))))
           (setf (access-root container) result)
@@ -277,7 +299,7 @@
                                   (and (eql hash (hash.location.value-hash loc))
                                        (equal-fn location (hash.location.value-location loc)))))
                            (when-let ((data (hash-node-data node)))
-                             (when (location-test data location)
+                             (when (location-test location data)
                                (setf old (hash.location.value-value data))
                                (perform-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
                                                                   :node-mask (hash-node-node-mask node)
@@ -311,27 +333,42 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD"
   (with-hash-tree-functions container
-    (let* ((existing-value nil)
-           (hash (hash-fn location))
+    (let* ((hash (hash-fn location))
+           (hole nil)
            (result
              (flet ((location-test (location loc)
                       (and (eql hash (hash.location.value-hash loc))
                            (equal-fn location (hash.location.value-location loc)))))
                (with-copy-on-write-hamt node container hash
+                 :on-every (if-let ((item (hash-node-data node)))
+                             (when (location-test location item)
+                                 (return-from functional-hamt-dictionary-add (values container
+                                                                                     nil
+                                                                                     (hash.location.value-value item))))
+                             (setf hole (delay-operation (make-hash-node :leaf-mask (hash-node-leaf-mask node)
+                                                                         :node-mask (hash-node-node-mask node)
+                                                                         :content (hash-node-content node)
+                                                                         :data (make-hash.location.value :location location
+                                                                                                         :hash hash
+                                                                                                         :value new-value)))))
                  :on-leaf (let* ((list (access-conflict node))
                                  (item (find location (the list list)
                                              :test #'location-test)))
-                            (when item
-                              (return-from functional-hamt-dictionary-add (values container
-                                                                                  nil
-                                                                                  (hash.location.value-value item))))
-                            (make-conflict-node (cons (make-hash.location.value :hash hash
-                                                                                :location location
-                                                                                :value new-value)
-                                                      list)))
-                 :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                             :location location
-                                                                             :value new-value)))))))
+                            (if item
+                                (return-from functional-hamt-dictionary-add (values container
+                                                                                    nil
+                                                                                    (hash.location.value-value item)))
+                                (if hole
+                                    (funcall hole)
+                                    (make-conflict-node (cons (make-hash.location.value :hash hash
+                                                                                        :location location
+                                                                                        :value new-value)
+                                                              list)))))
+                 :on-nil (if hole
+                             (funcall hole)
+                             (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                                 :location location
+                                                                                 :value new-value))))))))
       (values (make-instance (type-of container)
                              :equal-fn (read-equal-fn container)
                              :hash-fn (read-hash-fn container)
@@ -339,7 +376,7 @@
                              :max-depth (read-max-depth container)
                              :size (1+ (access-size container)))
               t
-              existing-value))))
+              nil))))
 
 
 (-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
@@ -358,8 +395,8 @@
             :on-every (when-let ((data (hash-node-data node)))
                         (when (location-test data location)
                           (let ((old (hash.location.value-value data)))
-                            (setf (hash.location.value-value data) new-value))
-                          (return-from mutable-hamt-dictionary-update! (values container t old))))
+                            (setf (hash.location.value-value data) new-value)
+                            (return-from mutable-hamt-dictionary-update! (values container t old)))))
             :on-leaf (if-let ((r (find location
                                        (the list (access-conflict (the conflict-node node)))
                                        :test #'location-test)))
@@ -378,51 +415,54 @@
   (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of ADD!"
   (with-hash-tree-functions container
-    (let ((hash (hash-fn location)))
-      (flet ((destructive-insert (node)
-               (multiple-value-bind (next-list r v)
-                   (insert-or-replace (access-conflict (the conflict-node node))
-                                      (make-hash.location.value :hash hash
-                                                                :location location
-                                                                :value new-value))
-                 (when r
-                   (return-from mutable-hamt-dictionary-add! (values container nil (hash.location.value-value v))))
-                 (setf (access-conflict node) next-list)
-                 node)))
+    (let* ((hash (hash-fn location))
+           (hole nil)
+           (tuple (make-hash.location.value :hash hash
+                                            :location location
+                                            :value new-value)))
+      (labels ((test (a b) (same-location a b (read-equal-fn container)))
+               (destructive-insert (node)
+                 (multiple-value-bind (next-list r v)
+                     (insert-or-replace (access-conflict (the conflict-node node))
+                                        tuple
+                                        :test #'test)
+                   (when r
+                     (return-from mutable-hamt-dictionary-add! (values container nil (hash.location.value-value v))))
+                   (if hole
+                       (setf (hash-node-data hole) tuple)
+                       (setf (access-conflict node) next-list))
+                   node)))
         (let* ((prev-node nil)
                (prev-index 0)
                (root (access-root container))
                (result
                  (hash-do (node index c) ((access-root container) hash)
-                          :on-every (setf prev-node node
+                          :on-every (setf hole (or hole
+                                                   (and (null (hash-node-data node))
+                                                        node))
+                                          prev-node node
                                           prev-index index)
-                          :on-nil (if prev-node
-                                      (progn
-                                        (assert (not (hash-node-contains-leaf prev-node prev-index)))
-                                        (hash-node-insert! prev-node
-                                                           (rebuild-rehashed-node container
-                                                                                  c
-                                                                                  (read-max-depth container)
-                                                                                  (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                                                                                      :location location
-                                                                                                                                      :value new-value))))
-                                                           prev-index)
-                                        root)
-                                      (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                                          :location location
-                                                                                          :value new-value))))
+                          :on-nil (cond (hole (progn (setf (hash-node-data hole) tuple)
+                                                     root))
+                                        (prev-node (progn
+                                                     (assert (not (hash-node-contains-leaf prev-node prev-index)))
+                                                     (hash-node-insert! prev-node
+                                                                        (rebuild-rehashed-node c
+                                                                                               (read-max-depth container)
+                                                                                               (make-conflict-node (list tuple)))
+                                                                        prev-index)
+                                                     root))
+                                        (t (make-conflict-node (list tuple))))
                           :on-leaf (if prev-node
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
                                          (hash-node-replace! prev-node
-                                                             (rebuild-rehashed-node container
-                                                                                    c
+                                                             (rebuild-rehashed-node c
                                                                                     (read-max-depth container)
                                                                                     (destructive-insert node))
                                                              prev-index)
                                          root)
-                                       (rebuild-rehashed-node container
-                                                              c
+                                       (rebuild-rehashed-node c
                                                               (read-max-depth container)
                                                               (destructive-insert node))))))
           (setf (access-root container) result)
@@ -448,6 +488,9 @@
                (and (eql hash (hash.location.value-hash loc))
                     (equal-fn location (hash.location.value-location loc)))))
         (with-destructive-erase-hamt node container (hash-fn location)
+          :on-every (when (location-test (hash-node-data node) location)
+                      (setf old-value (hash.location.value-value (hash-node-data node)))
+                      (perform-operation (reconstruct-data-from-subtree! node)))
           :on-leaf (multiple-value-bind (next found value) (try-remove location
                                                                        (access-conflict node)
                                                                        :test #'location-test)
@@ -524,4 +567,5 @@ Methods. Those will just call non generic functions.
         :max-depth (read-max-depth container)
         :equal-fn (read-equal-fn container)
         :size (access-size container)))
+
 

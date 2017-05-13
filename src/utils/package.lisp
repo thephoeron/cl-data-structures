@@ -19,6 +19,7 @@
    :ordered-p
    :try-find-cell
    :import-all-package-symbols
+   :range-sub-vector
    :try-remove))
 
 

@@ -68,17 +68,19 @@
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
          (multiple-value-bind (v a) (add dict word word)
-           (is a t)
+           (ok a)
            (is (1+ (size dict)) (size v))
-           (setf dict v)))
+           (setf dict v)
+           (is (at dict word) word :test #'string=)))
        (iterate
          (for s from ,limit)
          (repeat ,limit)
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
+         (is (at dict word) word :test #'string=)
          (multiple-value-bind (v a) (add dict word word)
            (is a nil)
-           (is (size dict) (size v))
+           (is (size v) (size dict))
            (setf dict v)))
        (diag "Testing erase")
        (iterate
@@ -88,7 +90,7 @@
            (ok r)
            (is o word :test #'string=)
            (is (1- (size dict)) (size v))
-           (is nil (at v word))
+           (is (at v word) nil)
            (setf dict v))))))
 
 

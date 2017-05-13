@@ -101,8 +101,13 @@ Macros
                          (flet ((perform-operation (next)
                                   (return-from ,!block (,operation ,!indexes ,!path ,!depth next))))
                            (declare (ignorable (function perform-operation)))
-                           ,on-every)
-                         (setf (aref ,!path ,!count) node
+                           (macrolet ((delay-operation (next)
+                                        `(let ((,',!depth ,',!depth)
+                                               (,',node ,',node))
+                                           (lambda ()
+                                             (return-from ,',!block (,',operation ,',!indexes ,',!path ,',!depth ,next))))))
+                             ,on-every))
+                         (setf (aref ,!path ,!count) ,node
                                (aref ,!indexes ,!count) ,!index)
                          (incf ,!depth))
              :on-nil (let ((next ,on-nil))
@@ -112,32 +117,33 @@ Macros
 
 
 (defun copy-on-write (max-depth indexes path depth conflict)
-  (declare (optimize (debug 3)))
-  (declare (type (simple-array fixnum) indexes)
-           (type simple-array path)
+  (declare (optimize (speed 3)))
+  (declare (type (vector fixnum) indexes)
+           (type vector path)
            (type fixnum depth)
            (type maybe-node conflict))
-  (with-vectors (path indexes)
-    (iterate
-      (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
-      (for node = (path i))
-      (for index = (indexes i))
-      (for ac initially (if (or (hash-node-p conflict)
-                                (null conflict))
-                            ;;if we didn't find element or element was found but depth was already maximal,
-                            ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
-                            conflict
-                            (rebuild-rehashed-node depth
-                                                   max-depth
-                                                   conflict))
-           then (if ac
-                    (if (hash-node-contains node index)
-                        (hash-node-replace-in-the-copy node ac index)
-                        (hash-node-insert-into-copy node ac index))
-                    (if (eql 1 (hash-node-size node))
-                        ac
-                        (hash-node-remove-from-the-copy node index))))
-      (finally (return ac)))))
+  (let ((ac (if (or (hash-node-p conflict)
+                    (null conflict))
+                ;;if we didn't find element or element was found but depth was already maximal,
+                ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
+                conflict
+                (rebuild-rehashed-node depth
+                                       max-depth
+                                       conflict))))
+    (with-vectors (path indexes)
+      (iterate
+        (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
+        (for node = (path i))
+        (for index = (indexes i))
+        (setf ac (if ac
+                     (if (hash-node-contains node index)
+                         (hash-node-replace-in-the-copy node ac index)
+                         (hash-node-insert-into-copy node ac index))
+                     (if (eql 1 (hash-node-size node))
+                         (if-let ((data (hash-node-data node)))
+                           (make-conflict-node (list data)))
+                         (hash-node-remove-from-the-copy node index))))
+        (finally (return ac))))))
 
 
 (defmacro with-copy-on-write-hamt (node container hash &key on-every on-leaf on-nil)
@@ -247,48 +253,84 @@ Tree structure of HAMT
   (:documentation "Conflict node simply holds list of elements that are conflicting."))
 
 
+(-> destructive-erase-node (vector (vector fixnum) fixnum) t)
+(defun destructive-erase-node (path indexes length)
+  (with-vectors (path indexes)
+    (iterate
+      (for i from (- length 1) downto 0) ;;next to last, because last has to be a conflicting node
+      (for n = (path i))
+      (for index = (indexes i))
+      (for del = (eql 1 (hash-node-size n)))
+      (unless del
+        (hash-node-remove! n index))
+      (while del))))
+
+
 (-> reconstruct-data-from-subtree! (hash-node) maybe-node)
 (-> reconstruct-data-from-subtree (hash-node) maybe-node)
-(labels ((scan (path indexes node depth) ;;recursivly scan structure
-           (with-vectors ((children (hash-node-content node)))
+(labels ((scan-impl (path indexes node depth) ;;recursivly scan-impl structure
+           (with-vectors ((children (hash-node-content node)) path indexes)
              (iterate
                (for i from 0 below 64)
                (cond ((hash-node-contains-leaf node i)
                       (let ((index (hash-node-to-masked-index node i)))
-                        (setf (path depth) (children index))
-                        (setf (indexes depth) index)
+                        (setf (path depth) (children index)
+                              (indexes (1- depth)) i)
                         (leave (1+ depth))))
                      ((hash-node-contains-node node i)
                       (let* ((index (hash-node-to-masked-index node i))
                              (subnode (children index)))
                         (setf (path depth) subnode
-                              (indexes depth)) index
-                        (when-let ((result (scan path indexes subnode (1+ depth))))
+                              (indexes (1- depth)) i)
+                        (when-let ((result (scan-impl path indexes subnode (1+ depth))))
                           (leave result))))
                      (t nil))))))
 
   (defun reconstruct-data-from-subtree (node)
+    (declare (optimize (speed 3)))
+    (let* ((path (make-array +path-array-size+))
+           (indexes (make-array +path-array-size+ :element-type 'fixnum)))
+      (declare (dynamic-extent path indexes))
+      (with-vectors (path indexes)
+        (setf (path 0) node)
+        (when-let ((length (scan-impl path indexes node 1)))
+          (let* ((last (access-conflict (path (1- length))))
+                 (next-list (cdr last))
+                 (item (car last))
+                 (reconstructed-node (copy-on-write 5 ;;this value is not going to be used. I just like number 5. ;-)
+                                                    (range-sub-vector indexes 1 length)
+                                                    (range-sub-vector path 1 length)
+                                                    (- length 2)
+                                                    (and next-list (make-conflict-node next-list)))))
+            (if reconstructed-node
+                (hash-node-replace-in-the-copy node reconstructed-node (indexes 0))
+                (if (eql (hash-node-size node) 1)
+                    (make-conflict-node (list item))
+                    (let ((new-node (hash-node-remove-from-the-copy node (indexes 0))))
+                      (setf (hash-node-data new-node) item)
+                      new-node))))))))
+
+  (defun reconstruct-data-from-subtree! (node)
     (let* ((path (make-array +path-array-size+))
            (indexes (make-array +path-array-size+ :element-type 'fixnum)))
       (declare (dynamic-extent path indexes))
       (with-vectors (path indexes)
         (setf (path 0) node
               (indexes 0) 0)
-        (if-let ((length (path indexes scan node 1)))
-          (let* ((next-list (cdr (access-conflict (aref path (1- length)))))
-                 (item (car (access-conflict (aref path (1- length)))))
-                 (reconstructed-node (copy-on-write 5 ;;this value is not going to be used. I just like number 5. ;-)
-                                                    indexes
-                                                    path
-                                                    (1- length)
-                                                    (and next-list (make-conflict-node next-list)))))
-            (if reconstructed-node
-                (setf (hash-node-data reconstructed-node)
-                      item)
-                (setf reconstructed-node
-                      (make-conflict-node (list item))))
-            reconstructed-node)
-          node)))))
+        (if-let ((length (scan-impl path indexes node 1)))
+          (let* ((last (path (1- length)))
+                 (conflict (access-conflict last))
+                 (next-list (cdr conflict))
+                 (item (car conflict)))
+            (cond+ (item next-list)
+              ((t t) (progn (setf (access-conflict last) next-list
+                                  (hash-node-data node) item)
+                            node))
+              ((t nil) (progn (setf (hash-node-data node) item)
+                              (destructive-erase-node path indexes (1- length))
+                              (if (zerop (hash-node-size node))
+                                  (make-conflict-node (list next-list))
+                                  node))))))))))
 
 
 (-> make-conflict-node (list) conflict-node)
@@ -443,7 +485,8 @@ Copy nodes and stuff.
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
   (let* ((content (copy-array (hash-node-content hash-node)))
          (leaf-mask (hash-node-leaf-mask hash-node))
-         (node-mask (hash-node-node-mask hash-node)))
+         (node-mask (hash-node-node-mask hash-node))
+         (data (hash-node-data hash-node)))
     (declare (type (unsigned-byte 64) leaf-mask node-mask))
     (if (hash-node-p item)
         (setf (ldb (byte 1 index) node-mask) 1
@@ -454,7 +497,8 @@ Copy nodes and stuff.
           item)
     (make-hash-node :leaf-mask leaf-mask
                     :node-mask node-mask
-                    :content content)))
+                    :content content
+                    :data data)))
 
 
 (declaim (inline hash-node-replace-in-the-copy))
@@ -486,13 +530,15 @@ Copy nodes and stuff.
 
       ;;just make new hash-node
       (let ((node-mask (hash-node-node-mask hash-node))
-            (leaf-mask (hash-node-leaf-mask hash-node)))
+            (leaf-mask (hash-node-leaf-mask hash-node))
+            (data (hash-node-data hash-node)))
         (if (hash-node-p content)
             (setf (ldb (byte 1 index) node-mask) 1)
             (setf (ldb (byte 1 index) leaf-mask) 1))
         (make-hash-node :node-mask node-mask
                         :leaf-mask leaf-mask
-                        :content new-array)))))
+                        :content new-array
+                        :data data)))))
 
 
 (defun non-empty-hash-table-p (table)
@@ -613,7 +659,8 @@ Copy nodes and stuff.
     "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
     (make-hash-node :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
                     :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
-                    :content (new-array node index)))
+                    :content (new-array node index)
+                    :data (hash-node-data node)))
 
   (defun hash-node-remove! (node index)
     (setf (hash-node-content node)
