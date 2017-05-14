@@ -88,6 +88,11 @@
   @b(Side effects:) None, but some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
 
+(defgeneric become-transactional (container)
+  (:method ((container transactional)) container)
+  (:documentation "TODO"))
+
+
 (defgeneric mutable-p (container)
   (:method ((container mutable)) t)
   (:method ((container fundamental-container)) nil)

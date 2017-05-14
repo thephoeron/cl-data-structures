@@ -11,6 +11,12 @@
   ())
 
 
+(defclass transactional-hamt-dictionary (mutable-hamt-dictionary)
+  ((%root-was-modified :type boolean
+                       :initform nil
+                       :accessor access-root-was-modified)))
+
+
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
                                      (-> (t t) boolean)
                                      &key (:max-depth (integer 1 11)))
@@ -156,7 +162,7 @@
                                                                          :location location
                                                                          :value new-value)
                                                :test #'compare-fn)
-                          (setf old (hash.location.value-value old-value)
+                          (setf old (and replaced (hash.location.value-value old-value))
                                 rep replaced)
                           (values (make-conflict-node next-list)))
                :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
@@ -175,7 +181,7 @@
 
 
 (-> functional-hamt-dictionary-insert! (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+    (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of (SETF AT)"
@@ -204,8 +210,7 @@
                                       (progn
                                         (assert (not (hash-node-contains-leaf prev-node prev-index)))
                                         (hash-node-insert! prev-node
-                                                           (rebuild-rehashed-node container
-                                                                                  c
+                                                           (rebuild-rehashed-node c
                                                                                   (read-max-depth container)
                                                                                   (make-conflict-node (list (make-hash.location.value
                                                                                                              :hash hash
@@ -221,14 +226,12 @@
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
                                          (hash-node-replace! prev-node
-                                                             (rebuild-rehashed-node container
-                                                                                    c
+                                                             (rebuild-rehashed-node c
                                                                                     (read-max-depth container)
                                                                                     (destructive-insert node))
                                                              prev-index)
                                          root)
-                                       (rebuild-rehashed-node container
-                                                              c
+                                       (rebuild-rehashed-node c
                                                               (read-max-depth container)
                                                               (destructive-insert node))))))
           (setf (access-root container) result)
@@ -359,8 +362,7 @@
                                       (progn
                                         (assert (not (hash-node-contains-leaf prev-node prev-index)))
                                         (hash-node-insert! prev-node
-                                                           (rebuild-rehashed-node container
-                                                                                  c
+                                                           (rebuild-rehashed-node c
                                                                                   (read-max-depth container)
                                                                                   (make-conflict-node (list (make-hash.location.value :hash hash
                                                                                                                                       :location location
@@ -374,14 +376,12 @@
                                        (progn
                                          (assert (hash-node-contains-leaf prev-node prev-index))
                                          (hash-node-replace! prev-node
-                                                             (rebuild-rehashed-node container
-                                                                                    c
+                                                             (rebuild-rehashed-node c
                                                                                     (read-max-depth container)
                                                                                     (destructive-insert node))
                                                              prev-index)
                                          root)
-                                       (rebuild-rehashed-node container
-                                                              c
+                                       (rebuild-rehashed-node c
                                                               (read-max-depth container)
                                                               (destructive-insert node))))))
           (setf (access-root container) result)
@@ -418,6 +418,32 @@
           :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
       (decf (access-size container))
       (values container t old-value))))
+
+
+(-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t) (values transactional-hamt-dictionary boolean t))
+(defun transactional-hamt-dictionary-insert! (container location new-value)
+  (with-hash-tree-functions container
+    (let* ((old nil)
+           (rep nil)
+           (hash (hash-fn location))
+           (result
+             (with-transactional-copy-on-write-hamt node container hash
+               :on-leaf (multiple-value-bind (next-list replaced old-value)
+                            (insert-or-replace (access-conflict (the conflict-node node))
+                                               (make-hash.location.value :hash hash
+                                                                         :location location
+                                                                         :value new-value)
+                                               :test #'compare-fn)
+                          (setf old (and replaced (hash.location.value-value old-value))
+                                rep replaced)
+                          (values (make-conflict-node next-list)))
+               :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
+                                                                           :location location
+                                                                           :value new-value))))))
+      (setf (access-root container) result)
+      (values container
+              rep
+              old))))
 
 #|
 
@@ -466,6 +492,10 @@ Methods. Those will just call non generic functions.
   (functional-hamt-dictionary-erase container location))
 
 
+(defmethod (setf cl-ds:at) (new-value (container transactional-hamt-dictionary) location)
+  (transactional-hamt-dictionary-insert! container location new-value))
+
+
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))
   (make 'mutable-hamt-dictionary
         :hash-fn (read-hash-fn container)
@@ -482,3 +512,15 @@ Methods. Those will just call non generic functions.
         :max-depth (read-max-depth container)
         :equal-fn (read-equal-fn container)
         :size (access-size container)))
+
+
+(defmethod cl-ds:become-transactional ((container hamt-dictionary))
+  (make 'transactional-hamt-dictionary
+        :hash-fn (read-hash-fn container)
+        :root (access-root container)
+        :max-depth (read-max-depth container)
+        :equal-fn (read-equal-fn container)
+        :size (access-size container)))
+
+
+

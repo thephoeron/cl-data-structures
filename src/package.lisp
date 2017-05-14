@@ -15,9 +15,11 @@
    :update!
    :become-functional
    :become-mutable
+   :become-transactional
    :mutable-p
    :functional-p
    ;; trait classes
    :fundamental-container
    :functional
+   :transactional
    :mutable))

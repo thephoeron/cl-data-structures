@@ -14,3 +14,8 @@
 (defclass mutable (fundamental-container)
   ()
   (:documentation "Object implements mutable api."))
+
+
+(defclass transactional (mutable)
+  ()
+  (:documentation "Object implements mutable api in transactional way."))
