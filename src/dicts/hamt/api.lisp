@@ -11,7 +11,7 @@
   ())
 
 
-(defclass transactional-hamt-dictionary (mutable-hamt-dictionary)
+(defclass transactional-hamt-dictionary (cl-ds:transactional mutable-hamt-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
                        :accessor access-root-was-modified)))
