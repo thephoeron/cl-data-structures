@@ -853,7 +853,11 @@ Copy nodes and stuff.
            old-value)))))
 
 
+(-> copying-insert-implementation
+    (fundamental-hamt-container fixnum t t function list)
+    (values maybe-node boolean t))
 (defun copying-insert-implementation (container hash location new-value after after-args)
+  (declare (optimize (speed 3)))
   (with-hash-tree-functions container
     (go-down-on-path container hash
                      :on-nil #'wrap-conflict :on-nil-args (list hash location new-value)
@@ -861,7 +865,15 @@ Copy nodes and stuff.
                      :after after :after-args after-args)))
 
 
+(-> copying-erase-implementation
+    (fundamental-hamt-container
+     fixnum
+     t
+     function
+     list)
+    (values maybe-node boolean t))
 (defun copying-erase-implementation (container hash location after after-args)
+  (declare (optimize (speed 3) (safety 0)))
   (flet ((remove-from-conflict (node)
            (let ((equal-fn (read-equal-fn container)))
              (flet ((location-test (node location)
@@ -883,7 +895,16 @@ Copy nodes and stuff.
                      :after after :after-args after-args)))
 
 
+(-> copying-udpate-implementation
+    (fundamental-hamt-container
+     fixnum
+     t
+     t
+     function
+     list)
+    (values maybe-node boolean t))
 (defun copying-update-implementation (container hash location new-value after after-args)
+  (declare (optimize (safety 0) (speed 3)))
   (with-hash-tree-functions container
     (flet ((update-in-conflict (node)
              (multiple-value-bind (next-list replaced old-value)
@@ -906,7 +927,15 @@ Copy nodes and stuff.
                        :after after :after-args after-args))))
 
 
+(-> copying-add-implementation
+    (fundamental-hamt-container fixnum
+                                t
+                                t
+                                function
+                                list)
+    (values maybe-node boolean t))
 (defun copying-add-implementation (container hash location new-value after after-args)
+  (declare (optimize (speed 3) (safety 0)))
   (with-hash-tree-functions container
     (labels ((location-test (location node)
                (and (eql hash (hash.location.value-hash node))

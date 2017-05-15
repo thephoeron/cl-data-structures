@@ -433,7 +433,7 @@
         (unless (eq new-root (access-root container))
           (setf (access-root container) new-root
                 (access-root-was-modified container) new-root))
-        (values container 
+        (values container
                 found
                 old-value)))))
 
