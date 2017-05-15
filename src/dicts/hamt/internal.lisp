@@ -98,11 +98,20 @@ Macros
                         (,operation ,!indexes ,!path ,!depth next)))))))
 
 
+(-> go-down-on-path (fundamental-hamt-container fixnum &key
+                                                (:on-leaf function)
+                                                (:on-nil function)
+                                                (:after-args list)
+                                                (:on-nil-args list)
+                                                (:on-leaf-args list)
+                                                (:after function))
+    (values maybe-node boolean t))
 (defun go-down-on-path (container hash  &key on-leaf-args on-nil-args after-args on-leaf on-nil after)
+  (declare (optimize (speed 3) (safety 0)))
   (let ((old-value nil)
         (found nil))
     (flet ((after (indexes path depth next)
-             (apply after indexes path depth (read-max-depth container) next after-args)))
+             (the maybe-node (apply after indexes path depth (read-max-depth container) next after-args))))
       (let ((result (with-hamt-path node container hash
                       :operation after
                       :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
