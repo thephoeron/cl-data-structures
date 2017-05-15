@@ -168,7 +168,7 @@
               old))))
 
 
-(-> functional-hamt-dictionary-insert! (functional-hamt-dictionary t t)
+(-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
     (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
@@ -408,7 +408,8 @@
       (values container t old-value))))
 
 
-(-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t) (values transactional-hamt-dictionary boolean t))
+(-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
+    (values transactional-hamt-dictionary boolean t))
 (defun transactional-hamt-dictionary-insert! (container location new-value)
   (with-hash-tree-functions container
     (let* ((old nil)
@@ -416,7 +417,11 @@
            (hash (hash-fn location))
            (result (insert-macro with-transactional-copy-on-write-hamt
                        rep old new-value location node container hash)))
-      (setf (access-root container) result)
+      (unless (eq (access-root container) result)
+        (setf (access-root-was-modified container) t
+              (access-root container) result))
+      (unless rep
+        (incf (access-size container)))
       (values container
               rep
               old))))

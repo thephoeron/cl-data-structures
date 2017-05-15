@@ -116,15 +116,12 @@ Macros
 (defmacro with-transactional-copy-on-write-hamt (node container hash &key on-leaf on-nil)
   (once-only (container)
     `(flet ((copy-on-write (indexes path depth conflict)
-              (let ((result (transactional-copy-on-write indexes
-                                                         path
-                                                         depth
-                                                         (read-max-depth container)
-                                                         conflict
-                                                         (access-root-was-modified container))))
-                (unless (eq (aref path 0) result)
-                  (setf (access-root-was-modified ,container) t))
-                result)))
+              (transactional-copy-on-write indexes
+                                           path
+                                           depth
+                                           (read-max-depth container)
+                                           conflict
+                                           (access-root-was-modified container))))
        (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation copy-on-write))))
 
 
