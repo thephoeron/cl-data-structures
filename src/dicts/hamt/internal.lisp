@@ -875,11 +875,7 @@ Copy nodes and stuff.
 
 
 (-> copying-erase-implementation
-    (fundamental-hamt-container
-     fixnum
-     t
-     function
-     list)
+    (fundamental-hamt-container fixnum t function list)
     (values maybe-node boolean t))
 (defun copying-erase-implementation (container hash location after after-args)
   (declare (optimize (speed 3) (safety 0)))
@@ -905,12 +901,7 @@ Copy nodes and stuff.
 
 
 (-> copying-udpate-implementation
-    (fundamental-hamt-container
-     fixnum
-     t
-     t
-     function
-     list)
+    (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (defun copying-update-implementation (container hash location new-value after after-args)
   (declare (optimize (safety 0) (speed 3)))
@@ -937,11 +928,7 @@ Copy nodes and stuff.
 
 
 (-> copying-add-implementation
-    (fundamental-hamt-container fixnum
-                                t
-                                t
-                                function
-                                list)
+    (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (defun copying-add-implementation (container hash location new-value after after-args)
   (declare (optimize (speed 3) (safety 0)))
