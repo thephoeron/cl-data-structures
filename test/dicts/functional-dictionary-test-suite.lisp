@@ -59,7 +59,7 @@
          (for s from 1 below ,limit)
          (for word in-vector *all-words*)
          (multiple-value-bind (v a) (add dict word word)
-           (is a nil)
+           (is a t)
            (is (size dict) (size v))))
        (diag "Testing add")
        (iterate
@@ -68,7 +68,7 @@
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
          (multiple-value-bind (v a) (add dict word word)
-           (is a t)
+           (is a nil)
            (is (1+ (size dict)) (size v))
            (setf dict v)))
        (iterate
@@ -77,7 +77,7 @@
          (while (< s (fill-pointer *all-words*)))
          (for word = (aref *all-words* s))
          (multiple-value-bind (v a) (add dict word word)
-           (is a nil)
+           (is a t)
            (is (size dict) (size v))
            (setf dict v)))
        (diag "Testing erase")
