@@ -789,15 +789,15 @@ Copy nodes and stuff.
                  :on-nil ,on-nil)))))
 
 
-(def-copy-on-write-macro insert-macro (node hash location new-value old replaced)
+(def-copy-on-write-macro insert-macro (node hash location new-value old rep)
   :on-leaf `(multiple-value-bind (next-list replaced old-value)
                (insert-or-replace (access-conflict (the conflict-node ,node))
                                   (make-hash.location.value :hash ,hash
                                                             :location ,location
                                                             :value ,new-value)
                                   :test #'compare-fn)
-             (setf old (and replaced (hash.location.value-value old-value))
-                   rep replaced)
+             (setf ,old (and replaced (hash.location.value-value old-value))
+                   ,rep replaced)
              (values (make-conflict-node next-list)))
   :on-nil `(make-conflict-node (list (make-hash.location.value :hash ,hash
                                                               :location ,location
