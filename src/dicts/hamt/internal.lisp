@@ -98,33 +98,6 @@ Macros
                         (,operation ,!indexes ,!path ,!depth next)))))))
 
 
-(-> go-down-on-path (fundamental-hamt-container fixnum &key
-                                                (:on-leaf function)
-                                                (:on-nil function)
-                                                (:after-args list)
-                                                (:on-nil-args list)
-                                                (:on-leaf-args list)
-                                                (:after function))
-    (values maybe-node boolean t))
-(defun go-down-on-path (container hash  &key on-leaf-args on-nil-args after-args on-leaf on-nil after)
-  (declare (optimize (speed 3) (safety 0)))
-  (let ((old-value nil)
-        (found nil))
-    (flet ((after (indexes path depth next)
-             (the maybe-node (apply after indexes path depth (read-max-depth container) next after-args))))
-      (let ((result (with-hamt-path node container hash
-                      :operation after
-                      :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
-                                 (setf old-value o
-                                       found f)
-                                 n)
-                      :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
-                                (setf old-value o
-                                      found f)
-                                n))))
-        (values result found old-value)))))
-
-
 (defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
   (once-only (container)
     `(flet ((copy-on-write (indexes path depth conflict)
@@ -374,6 +347,30 @@ Functions with basic bit logic.
 Copy nodes and stuff.
 
 |#
+
+
+(-> go-down-on-path (fundamental-hamt-container fixnum 
+                                                function list
+                                                function list
+                                                function list)
+    (values maybe-node boolean t))
+(defun go-down-on-path (container hash on-leaf on-leaf-args on-nil  on-nil-args after after-args)
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((old-value nil)
+        (found nil))
+    (flet ((after (indexes path depth next)
+             (the maybe-node (apply after indexes path depth (read-max-depth container) next after-args))))
+      (let ((result (with-hamt-path node container hash
+                      :operation after
+                      :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
+                                 (setf old-value o
+                                       found f)
+                                 n)
+                      :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
+                                (setf old-value o
+                                      found f)
+                                n))))
+        (values result found old-value)))))
 
 
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
@@ -869,9 +866,9 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)))
   (with-hash-tree-functions container
     (go-down-on-path container hash
-                     :on-nil #'wrap-conflict :on-nil-args (list hash location new-value)
-                     :on-leaf #'insert-conflict :on-leaf-args (list hash location new-value #'compare-fn)
-                     :after after :after-args after-args)))
+                     #'insert-conflict (list hash location new-value #'compare-fn)
+                     #'wrap-conflict (list hash location new-value)
+                     after after-args)))
 
 
 (-> copying-erase-implementation
@@ -895,9 +892,9 @@ Copy nodes and stuff.
                          (hash.location.value-value value))))))
          (return-nil () (return-from copying-erase-implementation (values (access-root container) nil nil))))
     (go-down-on-path container hash
-                     :on-nil #'return-nil
-                     :on-leaf #'remove-from-conflict 
-                     :after after :after-args after-args)))
+                     #'remove-from-conflict nil
+                     #'return-nil nil
+                     after after-args)))
 
 
 (-> copying-udpate-implementation
@@ -922,9 +919,9 @@ Copy nodes and stuff.
            (return-nil () (return-from copying-update-implementation
                             (values (access-root container) nil nil))))
       (go-down-on-path container hash
-                       :on-nil #'return-nil
-                       :on-leaf #'update-in-conflict
-                       :after after :after-args after-args))))
+                       #'update-in-conflict nil
+                       #'return-nil nil
+                       after after-args))))
 
 
 (-> copying-add-implementation
@@ -951,6 +948,6 @@ Copy nodes and stuff.
                          nil
                          nil))))
       (go-down-on-path container hash
-                       :on-nil #'wrap-conflict :on-nil-args (list hash location new-value)
-                       :on-leaf #'add-into-conflict
-                       :after after :after-args after-args))))
+                       #'add-into-conflict nil
+                       #'wrap-conflict (list hash location new-value)
+                       after after-args))))
