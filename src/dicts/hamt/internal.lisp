@@ -98,6 +98,14 @@ Macros
                         (,operation ,!indexes ,!path ,!depth next)))))))
 
 
+(defun go-down-on-path (container hash &key on-leaf on-nil after)
+  (fbind (after)
+    (with-hamt-path node container hash
+      :operation after
+      :on-leaf (funcall on-leaf node)
+      :on-nil (funcall on-nil node))))
+
+
 (defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
   (once-only (container)
     `(flet ((copy-on-write (indexes path depth conflict)
