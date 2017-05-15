@@ -154,20 +154,8 @@
     (let* ((old nil)
            (rep nil)
            (hash (hash-fn location))
-           (result
-             (with-copy-on-write-hamt node container hash
-               :on-leaf (multiple-value-bind (next-list replaced old-value)
-                            (insert-or-replace (access-conflict (the conflict-node node))
-                                               (make-hash.location.value :hash hash
-                                                                         :location location
-                                                                         :value new-value)
-                                               :test #'compare-fn)
-                          (setf old (and replaced (hash.location.value-value old-value))
-                                rep replaced)
-                          (values (make-conflict-node next-list)))
-               :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                           :location location
-                                                                           :value new-value))))))
+           (result (insert-macro with-copy-on-write-hamt
+                       rep old new-value location node container hash)))
       (values (make-instance (type-of container)
                              :equal-fn (read-equal-fn container)
                              :hash-fn (read-hash-fn container)
@@ -426,20 +414,8 @@
     (let* ((old nil)
            (rep nil)
            (hash (hash-fn location))
-           (result
-             (with-transactional-copy-on-write-hamt node container hash
-               :on-leaf (multiple-value-bind (next-list replaced old-value)
-                            (insert-or-replace (access-conflict (the conflict-node node))
-                                               (make-hash.location.value :hash hash
-                                                                         :location location
-                                                                         :value new-value)
-                                               :test #'compare-fn)
-                          (setf old (and replaced (hash.location.value-value old-value))
-                                rep replaced)
-                          (values (make-conflict-node next-list)))
-               :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                           :location location
-                                                                           :value new-value))))))
+           (result (insert-macro with-transactional-copy-on-write-hamt
+                       rep old new-value location node container hash)))
       (setf (access-root container) result)
       (values container
               rep
