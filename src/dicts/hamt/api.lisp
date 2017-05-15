@@ -109,40 +109,54 @@
             :on-leaf (multiple-value-bind (r f) (try-find location
                                                           (access-conflict (the conflict-node node))
                                                           :test #'location-test)
-                       (values (hash.location.value-value r) f))
+                       (values (and f (hash.location.value-value r)) f))
             :on-nil (values nil nil))))))
 
 
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
-    (values functional-hamt-dictionary boolean))
+    (values functional-hamt-dictionary boolean t))
 (defun functional-hamt-dictionary-erase (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ERASE"
   (with-hash-tree-functions container
-    (let* ((old-value nil)
-           (hash (hash-fn location))
-           (result
-             (flet ((location-test (loc location)
-                      (and (eql hash (hash.location.value-hash loc))
-                           (equal-fn location (hash.location.value-location loc)))))
-               (with-copy-on-write-hamt node container (hash-fn location)
-                 :on-leaf (multiple-value-bind (list removed value)
-                              (try-remove location
-                                          (access-conflict node)
-                                          :test #'location-test)
-                            (unless removed
-                              (return-from functional-hamt-dictionary-erase (values container nil nil)))
-                            (setf old-value (hash.location.value-value value))
-                            (and list (make-conflict-node list)))
-                 :on-nil (return-from functional-hamt-dictionary-erase (values container nil nil))))))
-      (values (make-instance (type-of container)
-                             :hash-fn (read-hash-fn container)
-                             :root result
-                             :equal-fn (read-equal-fn container)
-                             :max-depth (read-max-depth container)
-                             :size (1- (access-size container)))
-              t
-              old-value))))
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-erase-implementation container
+                                        hash
+                                        location
+                                        #'copy-on-write
+                                        nil)
+        (if found
+            (values (make-instance (type-of container)
+                                   :hash-fn (read-hash-fn container)
+                                   :root new-root
+                                   :equal-fn (read-equal-fn container)
+                                   :max-depth (read-max-depth container)
+                                   :size (1- (access-size container)))
+                    t
+                    old-value)
+            (values container nil nil))))))
+
+
+(-> transactional-hamt-dictionary-erase! (transactional-hamt-dictionary t)
+    (values transactional-hamt-dictionary boolean t))
+(defun transactional-hamt-dictionary-erase! (container location)
+  (declare (optimize (speed 3)))
+  "Implementation of ERASE!"
+  (with-hash-tree-functions container
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-erase-implementation container
+                                        hash
+                                        location
+                                        #'transactional-copy-on-write
+                                        (list (access-root-was-modified container)))
+        (when found
+          (decf (access-size container)))
+        (unless (eq new-root (access-root container))
+          (setf (access-root-was-modified container) t
+                (access-root container) new-root))
+        (values container found old-value)))))
 
 
 (-> functional-hamt-dictionary-insert (functional-hamt-dictionary t t)
@@ -151,21 +165,21 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of INSERT"
   (with-hash-tree-functions container
-    (let* ((old nil)
-           (rep nil)
-           (hash (hash-fn location))
-           (result (insert-macro with-copy-on-write-hamt
-                       rep old new-value location node container hash)))
-      (values (make-instance (type-of container)
-                             :equal-fn (read-equal-fn container)
-                             :hash-fn (read-hash-fn container)
-                             :root result
-                             :max-depth (read-max-depth container)
-                             :size (if rep
-                                       (access-size container)
-                                       (1+ (access-size container))))
-              rep
-              old))))
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-insert-implementation container hash location new-value
+                                         #'copy-on-write
+                                         nil)
+        (values (make-instance (type-of container)
+                               :equal-fn (read-equal-fn container)
+                               :hash-fn (read-hash-fn container)
+                               :root new-root
+                               :max-depth (read-max-depth container)
+                               :size (if found
+                                         (access-size container)
+                                         (1+ (access-size container))))
+                found
+                old-value)))))
 
 
 (-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
@@ -236,29 +250,24 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE"
   (with-hash-tree-functions container
-    (let* ((old nil)
-           (hash (hash-fn location))
-           (result
-             (with-copy-on-write-hamt node container hash
-               :on-leaf (multiple-value-bind (next-list replaced old-value)
-                            (insert-or-replace (access-conflict (the conflict-node node))
-                                               (make-hash.location.value :hash hash
-                                                                         :location location
-                                                                         :value new-value)
-                                               :test #'compare-fn)
-                          (unless replaced
-                            (return-from functional-hamt-dictionary-update (values container nil nil)))
-                          (setf old (hash.location.value-value old-value))
-                          (make-conflict-node next-list))
-               :on-nil (return-from functional-hamt-dictionary-update (values container nil nil)))))
-      (values (make-instance (type-of container)
-                             :equal-fn (read-equal-fn container)
-                             :hash-fn (read-hash-fn container)
-                             :root result
-                             :max-depth (read-max-depth container)
-                             :size (access-size container))
-              t
-              old))))
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-update-implementation container hash location new-value
+                                         #'copy-on-write
+                                         nil)
+        (if found
+            (values (make-instance (type-of container)
+                                   :equal-fn (read-equal-fn container)
+                                   :hash-fn (read-hash-fn container)
+                                   :root new-root
+                                   :max-depth (read-max-depth container)
+                                   :size (access-size container))
+                    found
+                    old-value)
+            (values container
+                    nil
+                    nil))))))
+
 
 (-> functional-hamt-dictionary-add (functional-hamt-dictionary t t)
     (values functional-hamt-dictionary boolean t))
@@ -266,35 +275,20 @@
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD"
   (with-hash-tree-functions container
-    (let* ((existing-value nil)
-           (hash (hash-fn location))
-           (result
-             (flet ((location-test (location loc)
-                      (and (eql hash (hash.location.value-hash loc))
-                           (equal-fn location (hash.location.value-location loc)))))
-               (with-copy-on-write-hamt node container hash
-                 :on-leaf (let* ((list (access-conflict node))
-                                 (item (find location (the list list)
-                                             :test #'location-test)))
-                            (when item
-                              (return-from functional-hamt-dictionary-add (values container
-                                                                                  nil
-                                                                                  (hash.location.value-value item))))
-                            (make-conflict-node (cons (make-hash.location.value :hash hash
-                                                                                :location location
-                                                                                :value new-value)
-                                                      list)))
-                 :on-nil (make-conflict-node (list (make-hash.location.value :hash hash
-                                                                             :location location
-                                                                             :value new-value)))))))
-      (values (make-instance (type-of container)
-                             :equal-fn (read-equal-fn container)
-                             :hash-fn (read-hash-fn container)
-                             :root result
-                             :max-depth (read-max-depth container)
-                             :size (1+ (access-size container)))
-              t
-              existing-value))))
+    (let* ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old)
+          (copying-add-implementation container hash location new-value
+                                      #'copy-on-write nil)
+        (if found
+            (values container t old)
+            (values (make-instance (type-of container)
+                                   :equal-fn (read-equal-fn container)
+                                   :hash-fn (read-hash-fn container)
+                                   :root new-root
+                                   :max-depth (read-max-depth container)
+                                   :size (1+ (access-size container)))
+                    nil
+                    nil))))))
 
 
 (-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
@@ -412,19 +406,56 @@
     (values transactional-hamt-dictionary boolean t))
 (defun transactional-hamt-dictionary-insert! (container location new-value)
   (with-hash-tree-functions container
-    (let* ((old nil)
-           (rep nil)
-           (hash (hash-fn location))
-           (result (insert-macro with-transactional-copy-on-write-hamt
-                       rep old new-value location node container hash)))
-      (unless (eq (access-root container) result)
-        (setf (access-root-was-modified container) t
-              (access-root container) result))
-      (unless rep
-        (incf (access-size container)))
-      (values container
-              rep
-              old))))
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-insert-implementation container hash location new-value
+                                         #'transactional-copy-on-write
+                                         (list (access-root-was-modified container)))
+        (unless (eq (access-root container) new-root)
+          (setf (access-root-was-modified container) t
+                (access-root container) new-root))
+        (unless found
+          (incf (access-size container)))
+        (values container
+                (not found)
+                old-value)))))
+
+
+(-> transactional-hamt-dictionary-update! (transactional-hamt-dictionary t t)
+    (values transactional-hamt-dictionary boolean t))
+(defun transactional-hamt-dictionary-update! (container location new-value)
+  (with-hash-tree-functions container
+    (let ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old-value)
+          (copying-update-implementation container hash location new-value
+                                         #'transactional-copy-on-write
+                                         (list (access-root-was-modified container)))
+        (unless (eq new-root (access-root container))
+          (setf (access-root container) new-root
+                (access-root-was-modified container) new-root))
+        (values container 
+                found
+                old-value)))))
+
+
+(-> transactional-hamt-dictionary-add! (transactional-hamt-dictionary t t)
+    (values transactional-hamt-dictionary boolean t))
+(defun transactional-hamt-dictionary-add! (container location new-value)
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  "Implementation of ADD!"
+  (with-hash-tree-functions container
+    (let* ((hash (hash-fn location)))
+      (multiple-value-bind (new-root found old)
+          (copying-add-implementation container hash location new-value
+                                      #'transactional-copy-on-write (list (access-root-was-modified container)))
+        (unless found
+          (incf (access-size container)))
+        (unless (eq new-root (access-root container))
+          (setf (access-root container) new-root
+                (access-root-was-modified container) t))
+        (if found
+            (values container found old))))))
+
 
 #|
 
@@ -475,6 +506,18 @@ Methods. Those will just call non generic functions.
 
 (defmethod (setf cl-ds:at) (new-value (container transactional-hamt-dictionary) location)
   (transactional-hamt-dictionary-insert! container location new-value))
+
+
+(defmethod cl-ds:erase! ((container transactional-hamt-dictionary) location)
+  (transactional-hamt-dictionary-erase! container location))
+
+
+(defmethod cl-ds:add! ((container transactional-hamt-dictionary) location new-value)
+  (transactional-hamt-dictionary-add! container location new-value))
+
+
+(defmethod cl-ds:update! ((container transactional-hamt-dictionary) location new-value)
+  (transactional-hamt-dictionary-update! container location new-value))
 
 
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))

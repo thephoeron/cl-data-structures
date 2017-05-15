@@ -20,16 +20,17 @@
 
 
 (defgeneric add (container location new-value)
-  (:documentation "@b(Functional API:) Non-destructively insert NEW-VALUE into CONTAINER at LOCATION. Will return two values: first one is the new container, second one is boolean informing if insert took place.
+  (:documentation "@b(Functional API:) Non-destructively insert NEW-VALUE into CONTAINER at LOCATION. Will return three values: first one is the new container, second one is boolean informing if item was already in the container, third is value found in the container (or nil).
 
   @b(Side effects:) None"))
 
 
 (defgeneric add! (container location new-value)
-  (:documentation "@b(Mutable API:) Destructively insert NEW-VALUE into CONTAINER at LOCATION. Will @b(return) two values:
+  (:documentation "@b(Mutable API:) Destructively insert NEW-VALUE into CONTAINER at LOCATION. Will @b(return) three values:
   @begin(list)
   @item(first -- is the modified CONTAINER)
-  @item(second -- boolean informing if insert took place)
+  @item(second -- boolean informing if item was found in the container)
+  @item(third -- value found in the container (or nil))
   @end(list)
   @b(Side effencts:) If insert took place, destructivly transform CONTAINER."))
 

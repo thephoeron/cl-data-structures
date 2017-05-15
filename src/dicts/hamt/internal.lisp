@@ -98,12 +98,22 @@ Macros
                         (,operation ,!indexes ,!path ,!depth next)))))))
 
 
-(defun go-down-on-path (container hash &key on-leaf on-nil after)
-  (fbind (after)
-    (with-hamt-path node container hash
-      :operation after
-      :on-leaf (funcall on-leaf node)
-      :on-nil (funcall on-nil node))))
+(defun go-down-on-path (container hash  &key on-leaf-args on-nil-args after-args on-leaf on-nil after)
+  (let ((old-value nil)
+        (found nil))
+    (flet ((after (indexes path depth next)
+             (apply after indexes path depth (read-max-depth container) next after-args)))
+      (let ((result (with-hamt-path node container hash
+                      :operation after
+                      :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
+                                 (setf old-value o
+                                       found f)
+                                 n)
+                      :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
+                                (setf old-value o
+                                      found f)
+                                n))))
+        (values result found old-value)))))
 
 
 (defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
@@ -675,8 +685,11 @@ Copy nodes and stuff.
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
            (type fixnum depth)
-           (type maybe-node conflict))
+           (type maybe-node conflict)
+           (optimize (speed 3)))
   (with-vectors (path indexes)
+    (when (and (not (zerop depth)) (eq conflict (path (- depth 1))))
+      (return-from copy-on-write (path 0)))
     (iterate
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
       (for node = (path i))
@@ -807,3 +820,112 @@ Copy nodes and stuff.
   :on-nil `(make-conflict-node (list (make-hash.location.value :hash ,hash
                                                               :location ,location
                                                               :value ,new-value))))
+
+
+(defun wrap-conflict (hash location new-value)
+  (values (make-conflict-node
+           (list
+            (make-hash.location.value :hash hash
+                                      :location location
+                                      :value new-value)))
+          nil
+          nil))
+
+
+(defun insert-conflict (node hash location new-value compare-fn)
+  (multiple-value-bind
+        (next-list replaced old-value)
+      (insert-or-replace
+       (access-conflict
+        (the conflict-node node))
+       (make-hash.location.value :hash
+                                 hash
+                                 :location
+                                 location
+                                 :value
+                                 new-value)
+       :test compare-fn)
+    (values
+     (make-conflict-node next-list)
+     replaced
+     (and replaced
+          (hash.location.value-value
+           old-value)))))
+
+
+(defun copying-insert-implementation (container hash location new-value after after-args)
+  (with-hash-tree-functions container
+    (go-down-on-path container hash
+                     :on-nil #'wrap-conflict :on-nil-args (list hash location new-value)
+                     :on-leaf #'insert-conflict :on-leaf-args (list hash location new-value #'compare-fn)
+                     :after after :after-args after-args)))
+
+
+(defun copying-erase-implementation (container hash location after after-args)
+  (flet ((remove-from-conflict (node)
+           (let ((equal-fn (read-equal-fn container)))
+             (flet ((location-test (node location)
+                      (and (eql hash (hash.location.value-hash node))
+                           (funcall equal-fn location (hash.location.value-location node)))))
+               (multiple-value-bind (list removed value)
+                   (try-remove location
+                               (access-conflict node)
+                               :test #'location-test)
+                 (unless removed
+                   (return-from copying-erase-implementation (values (access-root container) nil nil)))
+                 (values (and list (make-conflict-node list))
+                         removed
+                         (hash.location.value-value value))))))
+         (return-nil () (return-from copying-erase-implementation (values (access-root container) nil nil))))
+    (go-down-on-path container hash
+                     :on-nil #'return-nil
+                     :on-leaf #'remove-from-conflict 
+                     :after after :after-args after-args)))
+
+
+(defun copying-update-implementation (container hash location new-value after after-args)
+  (with-hash-tree-functions container
+    (flet ((update-in-conflict (node)
+             (multiple-value-bind (next-list replaced old-value)
+                 (insert-or-replace (access-conflict (the conflict-node node))
+                                    (make-hash.location.value :hash hash
+                                                              :location location
+                                                              :value new-value)
+                                    :test #'compare-fn)
+               (unless replaced
+                 (return-from copying-update-implementation
+                   (values (access-root container) nil nil)))
+               (values (make-conflict-node next-list)
+                       replaced
+                       (and replaced old-value (hash.location.value-value old-value)))))
+           (return-nil () (return-from copying-update-implementation
+                            (values (access-root container) nil nil))))
+      (go-down-on-path container hash
+                       :on-nil #'return-nil
+                       :on-leaf #'update-in-conflict
+                       :after after :after-args after-args))))
+
+
+(defun copying-add-implementation (container hash location new-value after after-args)
+  (with-hash-tree-functions container
+    (labels ((location-test (location node)
+               (and (eql hash (hash.location.value-hash node))
+                    (equal-fn location (hash.location.value-location node))))
+             (add-into-conflict (node)
+               (let* ((list (access-conflict node))
+                      (item (find location (the list list)
+                                  :test #'location-test)))
+                 (when item
+                   (return-from copying-add-implementation (values container
+                                                                   t
+                                                                   (hash.location.value-value item))))
+                 (values (make-conflict-node (cons (make-hash.location.value :hash hash
+                                                                             :location location
+                                                                             :value new-value)
+                                                   list))
+                         nil
+                         nil))))
+      (go-down-on-path container hash
+                       :on-nil #'wrap-conflict :on-nil-args (list hash location new-value)
+                       :on-leaf #'add-into-conflict
+                       :after after :after-args after-args))))
