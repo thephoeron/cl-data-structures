@@ -316,8 +316,8 @@
     (values container nil nil)))
 
 
-(-> mutable-hamt-dictionary-add! (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+(-> mutable-hamt-dictionary-add! (mutable-hamt-dictionary t t)
+    (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of add!"
