@@ -95,7 +95,7 @@
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
-  (declare (optimize (speed 0) (safety 0) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of AT"
   (with-hash-tree-functions container
     (let* ((hash (hash-fn location))
@@ -319,7 +319,7 @@
 (-> mutable-hamt-dictionary-add! (mutable-hamt-dictionary t t)
     (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 0) (safety 1) (debug 3)))
+  (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of add!"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
