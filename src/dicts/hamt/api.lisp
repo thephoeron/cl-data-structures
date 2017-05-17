@@ -299,8 +299,9 @@
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
       (flet ((location-test (loc location)
-               (and (eql hash (hash.location.value-hash loc))
-                    (equal-fn location (hash.location.value-location loc)))))
+               (let ((result (and (eql hash (hash.location.value-hash location))
+                                  (equal-fn loc (hash.location.value-location location)))))
+                 result)))
         (hash-do
             (node index)
             ((access-root container) hash)
@@ -312,14 +313,13 @@
                                (hash.location.value-hash r) hash)
                          (values container t old))
                        (values container nil nil))
-            :on-nil (values container nil nil))))
-    (values container nil nil)))
+            :on-nil (values container nil nil))))))
 
 
 (-> mutable-hamt-dictionary-add! (mutable-hamt-dictionary t t)
     (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 3) (safety 1) (debug 0)))
+  (declare (optimize (speed 0) (safety 1) (debug 3)))
   "Implementation of add!"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
@@ -328,9 +328,10 @@
                    (insert-or-replace (access-conflict (the conflict-node node))
                                       (make-hash.location.value :hash hash
                                                                 :location location
-                                                                :value new-value))
+                                                                :value new-value)
+                                      :test #'compare-fn)
                  (when r
-                   (return-from mutable-hamt-dictionary-add! (values container nil (hash.location.value-value v))))
+                   (return-from mutable-hamt-dictionary-add! (values container t (hash.location.value-value v))))
                  (setf (access-conflict node) next-list)
                  node)))
         (let* ((prev-node nil)
@@ -369,7 +370,7 @@
           (setf (access-root container) result)
           (incf (access-size container))
           (values container
-                  t
+                  nil
                   nil))))))
 
 
@@ -381,25 +382,28 @@
 
 (-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-erase! (container location)
+  (declare (optimize (debug 3)))
   (with-hash-tree-functions container
     (let ((old-value nil)
           (hash (hash-fn location)))
       (flet ((location-test (loc location)
                (and (eql hash (hash.location.value-hash loc))
                     (equal-fn location (hash.location.value-location loc)))))
-        (with-destructive-erase-hamt node container (hash-fn location)
-          :on-leaf (multiple-value-bind (next found value) (try-remove location
-                                                                       (access-conflict node)
-                                                                       :test #'location-test)
-                     (if found
-                         (when next
-                           (setf (access-conflict node) next
-                                 old-value (hash.location.value-value value))
-                           node)
-                         (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
-          :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
-      (decf (access-size container))
-      (values container t old-value))))
+        (let ((new-root (with-destructive-erase-hamt node container (hash-fn location)
+                          :on-leaf (multiple-value-bind (next found value) (try-remove location
+                                                                                       (access-conflict node)
+                                                                                       :test #'location-test)
+                                     (if found
+                                         (progn
+                                           (setf old-value (hash.location.value-value value))
+                                           (when next
+                                             (setf (access-conflict node) next)
+                                             node))
+                                         (return-from mutable-hamt-dictionary-erase! (values container nil nil))))
+                          :on-nil (return-from mutable-hamt-dictionary-erase! (values container nil nil)))))
+          (decf (access-size container))
+          (setf (access-root container) new-root)
+          (values container t old-value))))))
 
 
 (-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
