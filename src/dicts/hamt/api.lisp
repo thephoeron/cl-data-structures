@@ -382,7 +382,7 @@
 
 (-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-erase! (container location)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (with-hash-tree-functions container
     (let ((old-value nil)
           (hash (hash-fn location)))
