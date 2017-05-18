@@ -349,13 +349,13 @@ Copy nodes and stuff.
 |#
 
 
-(-> go-down-on-path (fundamental-hamt-container fixnum 
+(-> go-down-on-path (fundamental-hamt-container fixnum
                                                 function list
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
 (defun go-down-on-path (container hash on-leaf on-leaf-args on-nil  on-nil-args after after-args)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (debug 3) (safety 0)))
   (let ((old-value nil)
         (found nil))
     (flet ((after (indexes path depth next)
@@ -928,7 +928,7 @@ Copy nodes and stuff.
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (defun copying-add-implementation (container hash location new-value after after-args)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (debug 3) (safety 0)))
   (with-hash-tree-functions container
     (labels ((location-test (location node)
                (and (eql hash (hash.location.value-hash node))
@@ -938,7 +938,7 @@ Copy nodes and stuff.
                       (item (find location (the list list)
                                   :test #'location-test)))
                  (when item
-                   (return-from copying-add-implementation (values container
+                   (return-from copying-add-implementation (values (access-root container)
                                                                    t
                                                                    (hash.location.value-value item))))
                  (values (make-conflict-node (cons (make-hash.location.value :hash hash

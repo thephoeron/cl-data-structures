@@ -421,7 +421,7 @@
         (unless found
           (incf (access-size container)))
         (values container
-                (not found)
+                found
                 old-value)))))
 
 
