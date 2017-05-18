@@ -6,8 +6,6 @@
    :run-suite)) 
 (in-package :mutable-dictionary-test-suite)
 
-(in-package :mutable-dictionary-test-suite)
-
 (setf prove:*enable-colors* nil)
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
@@ -98,8 +96,8 @@
   (defun run-stress-test (limit)
     (with-open-file (str path :direction :output :if-exists :supersede)
       (let ((prove:*test-result-output* str))
-        (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
-        (diag "Running functional HAMT tests:")
+        (format t "Running mutable HAMT tests, output redirected to ~a:~%" path)
+        (diag "Running mutable HAMT tests:")
         (time (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit))))))
 
 
