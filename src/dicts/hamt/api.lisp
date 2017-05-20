@@ -69,30 +69,6 @@
                                         :max-depth max-depth)))
 
 
-#|
-(-> make-functional-key-tree-container ((-> (t) fixnum)
-                                        positive-fixnum
-                                        &key (:max-depth positive-fixnum) (:shallow boolean))
-    functional-key-tree-container)
-(let ((empty-box (make-instance 'box-node))) ;default node, avoid allocating empty nodes without reason
-  (defun make-functional-key-tree-container (hash-fn &key (max-depth 8) (shallow t))
-    (make-instance 'functional-key-tree-container
-                   :equal-fn #'eq
-                   :hash-fn hash-fn
-                   :max-depth max-depth
-                   :root (make-instance 'hash-node)
-                   :shallow shallow
-                   :remove-fn (lambda (item node equal) (declare (ignore node equal item))
-                                (values empty-box t))
-                   :last-node-fn (lambda (item node equal)
-                                   (declare (ignore item equal))
-                                   (read-content node))
-                   :insert-fn (lambda (item node equal) (declare (ignore node equal))
-                                (make-instance 'box-node
-                                               :content (cadr item))))))
-|#
-
-
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
@@ -127,12 +103,12 @@
                                         #'copy-on-write
                                         nil)
         (if found
-            (values (make-instance (type-of container)
-                                   :hash-fn (read-hash-fn container)
-                                   :root new-root
-                                   :equal-fn (read-equal-fn container)
-                                   :max-depth (read-max-depth container)
-                                   :size (1- (access-size container)))
+            (values (make (type-of container)
+                          :hash-fn (read-hash-fn container)
+                          :root new-root
+                          :equal-fn (read-equal-fn container)
+                          :max-depth (read-max-depth container)
+                          :size (1- (access-size container)))
                     t
                     old-value)
             (values container nil nil))))))
@@ -170,14 +146,14 @@
           (copying-insert-implementation container hash location new-value
                                          #'copy-on-write
                                          nil)
-        (values (make-instance (type-of container)
-                               :equal-fn (read-equal-fn container)
-                               :hash-fn (read-hash-fn container)
-                               :root new-root
-                               :max-depth (read-max-depth container)
-                               :size (if found
-                                         (access-size container)
-                                         (1+ (access-size container))))
+        (values (make (type-of container)
+                      :equal-fn (read-equal-fn container)
+                      :hash-fn (read-hash-fn container)
+                      :root new-root
+                      :max-depth (read-max-depth container)
+                      :size (if found
+                                (access-size container)
+                                (1+ (access-size container))))
                 found
                 old-value)))))
 
@@ -256,12 +232,12 @@
                                          #'copy-on-write
                                          nil)
         (if found
-            (values (make-instance (type-of container)
-                                   :equal-fn (read-equal-fn container)
-                                   :hash-fn (read-hash-fn container)
-                                   :root new-root
-                                   :max-depth (read-max-depth container)
-                                   :size (access-size container))
+            (values (make (type-of container)
+                          :equal-fn (read-equal-fn container)
+                          :hash-fn (read-hash-fn container)
+                          :root new-root
+                          :max-depth (read-max-depth container)
+                          :size (access-size container))
                     found
                     old-value)
             (values container
@@ -281,12 +257,12 @@
                                       #'copy-on-write nil)
         (if found
             (values container t old)
-            (values (make-instance (type-of container)
-                                   :equal-fn (read-equal-fn container)
-                                   :hash-fn (read-hash-fn container)
-                                   :root new-root
-                                   :max-depth (read-max-depth container)
-                                   :size (1+ (access-size container)))
+            (values (make (type-of container)
+                          :equal-fn (read-equal-fn container)
+                          :hash-fn (read-hash-fn container)
+                          :root new-root
+                          :max-depth (read-max-depth container)
+                          :size (1+ (access-size container)))
                     nil
                     nil))))))
 
@@ -549,6 +525,3 @@ Methods. Those will just call non generic functions.
         :max-depth (read-max-depth container)
         :equal-fn (read-equal-fn container)
         :size (access-size container)))
-
-
-

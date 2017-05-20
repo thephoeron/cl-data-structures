@@ -125,12 +125,18 @@ Macros
          (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!rewrite)))))
 
 
-(defmacro set-in-leaf-mask (node position bit)
-  `(setf (ldb (byte 1 ,position) (hash-node-leaf-mask ,node)) ,bit))
+(-> set-in-leaf-mask (hash-node hash-node-index (integer 0 1)) hash-node)
+(defun set-in-leaf-mask (node position bit)
+  (declare (optimize (speed 3) (size 0) (safety 0)))
+  (setf (ldb (byte 1 position) (hash-node-leaf-mask node)) bit)
+  node)
 
 
-(defmacro set-in-node-mask (node position bit)
-  `(setf (ldb (byte 1 ,position) (hash-node-node-mask ,node)) ,bit))
+(-> set-in-node-mask (hash-node hash-node-index (integer 0 1)) hash-node)
+(defun set-in-node-mask (node position bit)
+  (declare (optimize (speed 3) (size 0) (safety 0)))
+  (setf (ldb (byte 1 position) (hash-node-node-mask node)) bit)
+  node)
 
 
 #|
@@ -184,7 +190,7 @@ Tree structure of HAMT
 
 (-> make-conflict-node (list) conflict-node)
 (defun make-conflict-node (content)
-  (assure conflict-node (make-instance 'conflict-node :conflict content)))
+  (assure conflict-node (make 'conflict-node :conflict content)))
 
 
 (defclass box-node (bottom-node)
