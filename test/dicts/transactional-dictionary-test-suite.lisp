@@ -129,7 +129,7 @@
            (for s from ,limit)
            (repeat ,limit)
            (for word = (aref *all-words* (1+ s)))
-           (multiple-value-bind (v f) (at t-dict word) 
+           (multiple-value-bind (v f) (at t-dict word)
              (is v word :test #'string=)
              (is f t)))
          (diag "Testing erase")
@@ -142,7 +142,7 @@
          (iterate
            (for s from 1 below ,limit)
            (for word in-vector *all-words*)
-           (multiple-value-bind (v f) (at t-dict word) 
+           (multiple-value-bind (v f) (at t-dict word)
              (is v nil)
              (is f nil)))
          (diag "Testing isolation from original container")
@@ -150,7 +150,7 @@
            (for s from ,limit)
            (repeat ,limit)
            (for word = (aref *all-words* (1+ s)))
-           (multiple-value-bind (v f) (at dict word) 
+           (multiple-value-bind (v f) (at dict word)
              (is v word :test #'string=)
              (ok f)))))))
 
@@ -165,7 +165,7 @@
 
 
 (defun run-suite ()
-  (plan 112)
+  (plan 1917)
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
-  (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 5)
+  (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100)
   (finalize))
