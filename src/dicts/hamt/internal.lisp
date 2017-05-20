@@ -98,25 +98,6 @@ Macros
                         (,operation ,!indexes ,!path ,!depth next)))))))
 
 
-(defmacro with-copy-on-write-hamt (node container hash &key on-leaf on-nil)
-  (once-only (container)
-    `(flet ((copy-on-write (indexes path depth conflict)
-              (copy-on-write indexes path depth (read-max-depth container) conflict)))
-       (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation copy-on-write))))
-
-
-(defmacro with-transactional-copy-on-write-hamt (node container hash &key on-leaf on-nil)
-  (once-only (container)
-    `(flet ((copy-on-write (indexes path depth conflict)
-              (transactional-copy-on-write indexes
-                                           path
-                                           depth
-                                           (read-max-depth container)
-                                           conflict
-                                           (access-root-was-modified container))))
-       (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation copy-on-write))))
-
-
 (defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
   (with-gensyms (!path !depth !indexes !rewrite)
     (once-only (container)
@@ -687,6 +668,7 @@ Copy nodes and stuff.
   obj)
 
 
+(-> copy-on-write ((vector fixnum) vector fixnum fixnum maybe-node) maybe-node)
 (defun copy-on-write (indexes path depth max-depth conflict)
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
@@ -760,6 +742,7 @@ Copy nodes and stuff.
     result))
 
 
+(-> transactional-copy-on-write ((vector fixnum) vector fixnum fixnum maybe-node boolean) maybe-node)
 (defun transactional-copy-on-write (indexes path depth max-depth conflict root-already-copied)
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
@@ -801,31 +784,6 @@ Copy nodes and stuff.
     (when (hash-node-contains-node node i)
       (clear-modification-masks (hash-node-access node i))))
   (setf (hash-node-modification-mask node) 0))
-
-
-(defmacro def-copy-on-write-macro (name args &key on-leaf on-nil)
-  (let ((effective-args (union '(node container hash) args)))
-    `(defmacro ,name (type ,@effective-args)
-       (let ((on-leaf ,on-leaf)
-             (on-nil ,on-nil))
-         `(,type ,node ,container ,hash
-                 :on-leaf ,on-leaf
-                 :on-nil ,on-nil)))))
-
-
-(def-copy-on-write-macro insert-macro (node hash location new-value old rep)
-  :on-leaf `(multiple-value-bind (next-list replaced old-value)
-               (insert-or-replace (access-conflict (the conflict-node ,node))
-                                  (make-hash.location.value :hash ,hash
-                                                            :location ,location
-                                                            :value ,new-value)
-                                  :test #'compare-fn)
-             (setf ,old (and replaced (hash.location.value-value old-value))
-                   ,rep replaced)
-             (values (make-conflict-node next-list)))
-  :on-nil `(make-conflict-node (list (make-hash.location.value :hash ,hash
-                                                              :location ,location
-                                                              :value ,new-value))))
 
 
 (defun wrap-conflict (hash location new-value)
