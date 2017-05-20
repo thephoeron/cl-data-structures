@@ -525,3 +525,27 @@ Methods. Those will just call non generic functions.
         :max-depth (read-max-depth container)
         :equal-fn (read-equal-fn container)
         :size (access-size container)))
+
+
+(defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
+  (let ((root (access-root container)))
+    (when (and root (hash-node-p root))
+      (clear-modification-masks root))
+    (make 'mutable-hamt-dictionary
+          :hash-fn (read-hash-fn container)
+          :root root
+          :max-depth (read-max-depth container)
+          :equal-fn (read-equal-fn container)
+          :size (access-size container))))
+
+
+(defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
+  (let ((root (access-root container)))
+    (when (and root (hash-node-p root))
+      (clear-modification-masks root))
+    (make 'functional-hamt-dictionary
+          :hash-fn (read-hash-fn container)
+          :root root
+          :max-depth (read-max-depth container)
+          :equal-fn (read-equal-fn container)
+          :size (access-size container))))
