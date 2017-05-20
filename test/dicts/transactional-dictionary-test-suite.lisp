@@ -2,8 +2,7 @@
 (defpackage transactional-dictionary-test-suite
   (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
   (:shadowing-import-from :iterate :collecting :summing :in)
-  (:export :run-stress-test
-   :run-suite))
+  (:export :run-stress-test :run-suite))
 (in-package :transactional-dictionary-test-suite)
 
 (setf prove:*enable-colors* nil)
@@ -92,6 +91,70 @@
              (is (at v word) nil)))))))
 
 
+(defmacro isolation-test (init-form limit)
+  (once-only (limit)
+    `(let ((dict ,init-form))
+       (is (size dict) 0)
+       (ok (empty-p dict))
+       (diag "filling up origingal dictionary")
+       (iterate
+         (for s from 1 below ,limit)
+         (for word in-vector *all-words*)
+         (ok (not (cl-ds:at dict word)))
+         (multiple-value-bind (next replaced old) (setf (at dict word) word)
+           (is replaced nil)
+           (is old nil))
+         (multiple-value-bind (v f) (at dict word)
+           (is v word :test #'string=)
+           (ok f))
+         (is (size dict) s))
+       (let ((t-dict (become-transactional dict)))
+         (diag "replacing items in the transactional dictionary")
+         (iterate
+           (for s from 1 below ,limit)
+           (for word in-vector *all-words*)
+           (ok (at t-dict word))
+           (multiple-value-bind (n rep old) (setf (at t-dict word) s)
+             (ok rep)
+             (is old word :test #'string=)))
+         (diag "adding items to transactional dictionary")
+         (iterate
+           (for s from ,limit)
+           (repeat ,limit)
+           (for word = (aref *all-words* (1+ s)))
+           (multiple-value-bind (n rep old) (setf (at t-dict word) word)
+             (is rep nil)
+             (is old nil)))
+         (iterate
+           (for s from ,limit)
+           (repeat ,limit)
+           (for word = (aref *all-words* (1+ s)))
+           (multiple-value-bind (v f) (at t-dict word) 
+             (is v word :test #'string=)
+             (is f t)))
+         (diag "Testing erase")
+         (iterate
+           (for s from 1 below ,limit)
+           (for word in-vector *all-words*)
+           (multiple-value-bind (n e o) (erase! t-dict word)
+             (ok e)
+             (is o s)))
+         (iterate
+           (for s from 1 below ,limit)
+           (for word in-vector *all-words*)
+           (multiple-value-bind (v f) (at t-dict word) 
+             (is v nil)
+             (is f nil)))
+         (diag "Testing isolation from original container")
+         (iterate
+           (for s from ,limit)
+           (repeat ,limit)
+           (for word = (aref *all-words* (1+ s)))
+           (multiple-value-bind (v f) (at dict word) 
+             (is v word :test #'string=)
+             (ok f)))))))
+
+
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))
   (defun run-stress-test (limit)
     (with-open-file (str path :direction :output :if-exists :supersede)
@@ -102,6 +165,7 @@
 
 
 (defun run-suite ()
-  (plan 28)
-  (insert-every-word (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 2)
+  (plan 112)
+  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
+  (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 5)
   (finalize))
