@@ -93,7 +93,7 @@
   (:method ((container transactional)) container)
   (:documentation "@b(Returns) transactional instance. Transactional instance exposes mutable api, but any side effects peformed on instance are isolated to the said instance.
 
-  @b(Side effects:) None, but side effects from original CONTAINER may leak into transactional instance. Original CONTAINER is guaranteed to be isolated from side effects in the transactional instance, though."))
+  @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
 
 (defgeneric mutable-p (container)
