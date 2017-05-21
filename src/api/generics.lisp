@@ -91,7 +91,9 @@
 
 (defgeneric become-transactional (container)
   (:method ((container transactional)) container)
-  (:documentation "TODO"))
+  (:documentation "@b(Returns) transactional instance. Transactional instance exposes mutable api, but any side effects peformed on instance are isolated to the said instance.
+
+@b(Side effects:) None, but side effects from original CONTAINER may leak into transactional instance. Original CONTAINER is guaranteed to be isolated from side effects in the transactional instance, though."))
 
 
 (defgeneric mutable-p (container)
