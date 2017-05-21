@@ -151,8 +151,47 @@
            (repeat ,limit)
            (for word = (aref *all-words* (1+ s)))
            (multiple-value-bind (v f) (at dict word)
-             (is v word :test #'string=)
-             (ok f)))))))
+             (ok (not v))
+             (ok (not f))))
+         (diag "Testing isolation between transactional instances")
+         (let ((t-another-dict (become-transactional t-dict)))
+           (iterate
+             (for s from ,limit)
+             (repeat ,limit)
+             (for word in-vector *all-words*)
+             (setf (at t-another-dict word) s))
+           (iterate
+             (for s from ,limit)
+             (repeat ,limit)
+             (for word in-vector *all-words*)
+             (multiple-value-bind (value found) (at t-another-dict word)
+               (is value s)
+               (ok found)))
+           (iterate
+             (for s from ,limit)
+             (repeat ,limit)
+             (for word = (aref *all-words* (1+ s)))
+             (setf (at t-another-dict word) 98789))
+           (iterate
+             (for s from ,limit)
+             (repeat ,limit)
+             (for word = (aref *all-words* (1+ s)))
+             (multiple-value-bind (value found) (at t-another-dict word)
+               (is value 98789)
+               (ok found)))
+           (iterate
+             (for s from 1 below ,limit)
+             (for word in-vector *all-words*)
+             (multiple-value-bind (value found) (at t-dict word)
+               (ok (not value))
+               (ok (not found))))
+           (iterate
+             (for s from ,limit)
+             (repeat ,limit)
+             (for word = (aref *all-words* (1+ s)))
+             (multiple-value-bind (value found) (at t-dict word)
+               (is value word :test #'string=)
+               (ok found))))))))
 
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))
@@ -165,7 +204,7 @@
 
 
 (defun run-suite ()
-  (plan 1917)
+  (plan 2715)
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
   (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100)
   (finalize))

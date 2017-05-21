@@ -527,6 +527,19 @@ Methods. Those will just call non generic functions.
         :size (access-size container)))
 
 
+(defmethod cl-ds:become-transactional ((container transactional-hamt-dictionary))
+  (let ((root (access-root container)))
+    (when (and root (hash-node-p root))
+      (setf root (isolate-transactional-instance root
+                                                 (access-root-was-modified container))))
+    (make 'transactional-hamt-dictionary
+          :hash-fn (read-hash-fn container)
+          :root root
+          :max-depth (read-max-depth container)
+          :equal-fn (read-equal-fn container)
+          :size (access-size container))))
+
+
 (defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
   (let ((root (access-root container)))
     (when (and root (hash-node-p root))

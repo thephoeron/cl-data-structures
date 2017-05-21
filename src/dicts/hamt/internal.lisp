@@ -915,3 +915,25 @@ Copy nodes and stuff.
                        #'add-into-conflict nil
                        #'wrap-conflict (list hash location new-value)
                        after after-args))))
+
+
+(-> hash-node-deep-copy (hash-node) hash-node)
+(defun hash-node-deep-copy (node)
+  (copy-node node
+             :content (copy-array (hash-node-content node))))
+
+
+(defun isolate-transactional-instance (parent parent-was-modified)
+  (let ((parent (if parent-was-modified
+                    (hash-node-deep-copy parent)
+                    parent)))
+    (with-vectors ((content (hash-node-content parent)))
+      (iterate
+        (for i from 0 below 64)
+        (for was-modified = (and (hash-node-contains-node parent i)
+                                 (hash-node-content-modified parent i)))
+        (when was-modified
+          (let ((masked-index (hash-node-to-masked-index parent i)))
+            (setf (content masked-index) (isolate-transactional-instance (content masked-index)
+                                                                         t))))))
+    parent))
