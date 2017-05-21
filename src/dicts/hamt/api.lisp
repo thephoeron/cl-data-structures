@@ -14,7 +14,8 @@
 (defclass transactional-hamt-dictionary (cl-ds:transactional mutable-hamt-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
-                       :accessor access-root-was-modified)))
+                       :accessor access-root-was-modified
+                       :initarg :root-was-modified)))
 
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
@@ -537,6 +538,7 @@ Methods. Those will just call non generic functions.
           :root root
           :max-depth (read-max-depth container)
           :equal-fn (read-equal-fn container)
+          :root-was-modified (access-root-was-modified container)
           :size (access-size container))))
 
 

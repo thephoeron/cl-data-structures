@@ -127,14 +127,14 @@ Macros
 
 (-> set-in-leaf-mask (hash-node hash-node-index (integer 0 1)) hash-node)
 (defun set-in-leaf-mask (node position bit)
-  (declare (optimize (speed 3) (size 0) (safety 0)))
+  (declare (optimize (speed 3) (space 0) (safety 0)))
   (setf (ldb (byte 1 position) (hash-node-leaf-mask node)) bit)
   node)
 
 
 (-> set-in-node-mask (hash-node hash-node-index (integer 0 1)) hash-node)
 (defun set-in-node-mask (node position bit)
-  (declare (optimize (speed 3) (size 0) (safety 0)))
+  (declare (optimize (speed 3) (space 0) (safety 0)))
   (setf (ldb (byte 1 position) (hash-node-node-mask node)) bit)
   node)
 
@@ -360,6 +360,12 @@ Copy nodes and stuff.
         (values result found old-value)))))
 
 
+(-> copy-node (hash-node &key
+                         (:leaf-mask (unsigned-byte 64))
+                         (:node-mask (unsigned-byte 64))
+                         (:modification-mask (unsigned-byte 64))
+                         (:content simple-vector))
+    hash-node)
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
   (make-hash-node :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
                   :node-mask (or node-mask (hash-node-node-mask node))
@@ -923,6 +929,7 @@ Copy nodes and stuff.
              :content (copy-array (hash-node-content node))))
 
 
+(-> isolate-transactional-instance (hash-node boolean) hash-node)
 (defun isolate-transactional-instance (parent parent-was-modified)
   (let ((parent (if parent-was-modified
                     (hash-node-deep-copy parent)
