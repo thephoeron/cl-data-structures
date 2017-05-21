@@ -790,12 +790,15 @@ Copy nodes and stuff.
       (finally (return ac)))))
 
 
+(-> clear-modification-masks (hash-node) hash-node)
 (defun clear-modification-masks (node)
   (iterate
     (for i from 0 below 64)
-    (when (hash-node-contains-node node i)
+    (when (and (hash-node-content-modified node i)
+               (hash-node-contains-node node i))
       (clear-modification-masks (hash-node-access node i))))
-  (setf (hash-node-modification-mask node) 0))
+  (setf (hash-node-modification-mask node) 0)
+  node)
 
 
 (defun wrap-conflict (hash location new-value)
