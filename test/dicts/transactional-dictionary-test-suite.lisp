@@ -153,6 +153,12 @@
            (multiple-value-bind (v f) (at dict word)
              (ok (not v))
              (ok (not f))))
+         (iterate
+           (for s from 1 below ,limit)
+           (for word in-vector *all-words*)
+           (multiple-value-bind (v f) (at dict word)
+             (is v word :test #'string=)
+             (ok f)))
          (diag "Testing isolation between transactional instances")
          (let ((t-another-dict (become-transactional t-dict)))
            (iterate
@@ -204,7 +210,7 @@
 
 
 (defun run-suite ()
-  (plan 2715)
+  (plan 2913)
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
   (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100)
   (finalize))
