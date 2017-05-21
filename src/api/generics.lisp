@@ -77,7 +77,7 @@
 
   @b(Note:) Not all containers implement this GF, but returned object should also implement become-mutable GF.
 
-  @b(Side effects:) None, but some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
+  @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
 
 (defgeneric become-mutable (container)
@@ -86,14 +86,14 @@
 
   @b(Note:) Not all containers implement this GF, but returned object should also implement become-functional GF.
 
-  @b(Side effects:) None, but some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
+  @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
 
 (defgeneric become-transactional (container)
   (:method ((container transactional)) container)
   (:documentation "@b(Returns) transactional instance. Transactional instance exposes mutable api, but any side effects peformed on instance are isolated to the said instance.
 
-@b(Side effects:) None, but side effects from original CONTAINER may leak into transactional instance. Original CONTAINER is guaranteed to be isolated from side effects in the transactional instance, though."))
+  @b(Side effects:) None, but side effects from original CONTAINER may leak into transactional instance. Original CONTAINER is guaranteed to be isolated from side effects in the transactional instance, though."))
 
 
 (defgeneric mutable-p (container)
