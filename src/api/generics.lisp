@@ -26,13 +26,13 @@
 
 
 (defgeneric add! (container location new-value)
-  (:documentation "@b(Mutable API:) Destructively insert NEW-VALUE into CONTAINER at LOCATION. Will @b(return) three values:
+  (:documentation "@b(Mutable API:) Destructively add NEW-VALUE into CONTAINER at LOCATION. This will do nothing if container already contains value under LOCATION. Will @b(return) three values:
   @begin(list)
-  @item(first -- is the modified CONTAINER)
-  @item(second -- boolean informing if item was found in the container)
-  @item(third -- value found in the container (or nil))
+  @item(first -- CONTAINER)
+  @item(second -- boolean informing if item was found in the container (in other words: nil if item was sucessfully added))
+  @item(third -- value found in the container (or nil, if it was not found))
   @end(list)
-  @b(Side effencts:) If insert took place, destructivly transform CONTAINER."))
+  @b(Side effencts:) If item was not found in the container, destructivly transform CONTAINER."))
 
 
 (defgeneric insert (container location new-value)
@@ -42,13 +42,24 @@
 
 
 (defgeneric erase (container location)
-  (:documentation "@b(Functional API:) Non-destructively remove element at LOCATION from the CONTAINER.
+  (:documentation "@b(Functional API:) Non-destructively remove element at LOCATION from the CONTAINER. Will @b(return) three values:
+                   @begin(list)
+                   @item(first -- instance of container)
+                   @item(second -- if item was found (or: if erase took place))
+                   @item(third -- old value assigned to the LOCATION in the container. NIL if LOCATION was not found)
+                   @end(list)
 
   @b(Side effects:) None"))
 
 
 (defgeneric erase! (container location)
-  (:documentation "@b(Mutable API:) Destructively remove element at LOCATION from the CONTAINER."))
+  (:documentation "@b(Mutable API:) Destructively remove element at LOCATION from the CONTAINER. Will @b(return) three values:
+                   @begin(list)
+                   @item(first -- CONTAINER)
+                   @item(second -- boolean informing if item was found (and erased) from container)
+                   @item(third -- value that was assigned to the LOCATION (nil if it was not found))
+                   @end(list)
+                   @b(Side effects:) If erase took place, destructivly transform CONTAINER"))
 
 
 (defgeneric size (container)
@@ -58,24 +69,30 @@
 
 
 (defgeneric update (container location new-value)
-  (:documentation "@b(Functional API:) If LOCATION is taken in the CONTAINER, update it. @b(Returns) three values:
+  (:documentation "@b(Functional API:) If LOCATION is taken in the CONTAINER, update it with NEW-VALUE. @b(Returns) three values:
    @begin(list)
-   @item(first -- new CONTAINER with update LOCATION)
+   @item(first -- new CONTAINER with updated LOCATION)
    @item(second -- t if update took place nil otherwise)
    @item(third -- previous value).
    @end(list)
    @b(Side effects:) None"))
 
 
-(defgeneric update! (new-value container location)
-  (:documentation "@b(Mutable API:) Destructive version of UPDATE."))
+(defgeneric update! (container location new-value)
+  (:documentation "@b(Mutable API:) Destructive version of UPDATE. If LOCATION is taken in the CONTAINER, destructivly update it with NEW-VALUE. @b(Returns) three values:
+   @begin(list)
+   @item(first -- CONTAINER)
+   @item(second -- t if update took place nil otherwise)
+   @item(third -- previous value).
+   @end(list)
+   @b(Side effects:) If update took place, destructivly transform CONTAINER"))
 
 
 (defgeneric become-functional (container)
   (:method ((container functional)) container)
   (:documentation "@b(Returns) new CONTAINER presenting functional API of CONTAINER. Content of returned CONTAINER is identical to the input CONTAINER.
 
-  @b(Note:) Not all containers implement this GF, but returned object should also implement become-mutable GF.
+  @b(Note:) Not all containers implement this function.
 
   @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
@@ -84,7 +101,7 @@
   (:method ((container mutable)) container)
   (:documentation "@b(Returns) new CONTAINER presenting mutable API of CONTAINER. Content of returned CONTAINER is identical to the input CONTAINER.
 
-  @b(Note:) Not all containers implement this GF, but returned object should also implement become-functional GF.
+  @b(Note:) Not all containers implement this function.
 
   @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
@@ -93,19 +110,34 @@
   (:method ((container transactional)) container)
   (:documentation "@b(Returns) transactional instance. Transactional instance exposes mutable api, but any side effects peformed on instance are isolated to the said instance.
 
+  @b(Note:) This does not prevent destructive operations to leak informations into returned CONTAINER.
+
+  @b(Note:) Not all containers implement this function.
+
   @b(Side effects:) May vary, depending on type of CONTAINER. Also, some (or all) parts of internal representation are shared beetween both instances. Side effects from mutable CONTAINER may leak into functional CONTAINER."))
 
 
 (defgeneric mutable-p (container)
   (:method ((container mutable)) t)
   (:method ((container fundamental-container)) nil)
-  (:documentation "Will @b(return) T if CONTAINER exposes mutable API."))
+  (:documentation "Will @b(return) T if CONTAINER exposes mutable API.
+
+  @b (Side effects:) None"))
 
 
 (defgeneric functional-p (container)
   (:method ((container functional)) t)
   (:method ((container fundamental-container)) nil)
-  (:documentation "Will @b(return) T if CONTAINER exposes functional API."))
+  (:documentation "Will @b(return) T if CONTAINER exposes functional API.
+
+                  @b(Side effects:) None"))
+
+(defgeneric transactional-p (container)
+  (:method ((container transactional)) t)
+  (:method ((container fundamental-container)) nil)
+  (:documentation "@b(Returns) T if container is transactional and @b(returns) nil if it is not.
+
+  @b(Side effects:) None"))
 
 
 (defgeneric empty-p (container)

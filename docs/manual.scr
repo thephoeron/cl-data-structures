@@ -23,6 +23,23 @@ Methods that implements API generic functions redirect logic to good, old fashio
 
 @end(section)
 
+@begin(section)
+@title(Key concepts)
+Cl-data-structures makes use of few key concepts. It is important to understand those concepts as they will allow you to write better, safer and more efficient code. First of: there are different approaches to handling mutatating operations.
+
+You can just allow arbitrary changes happening on any level. This usual gives you the best raw performance, but at the high cost: state that you are mutating can be shared in arbitrary way. If execution of your code is interupted, changes made in the container are preserved, even if the represent incoherent or invalid data. You need to clean it yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called @b(mutable) in this library.
+
+
+@b(Functional) containers do not suffer from the same problems. Every operation that would change existing state in the mutable container instead will return new container, with changes visible only there. This, however has another limitation: copying is costly. Although copying whole structure is usually not required, we still need to copy at least parts of it.
+
+
+@b(Transactional) containers represent compromise between those two opposite approaches. Transactional containers implement @(mutable) api in distinct way: instead of performing destructive operations in arbitrary way, we are trying to @b(isolate) changes so they will be visible only in the instance that we passed into method. This allows us to achieve compromise between safety, simplicity and speed.
+
+
+Containers can be converted between functional, transactional and mutable container using @b(become) methods. However, not every container is avaible in all three variants. It is also important to remember that @b(become) methods have limited guaranteens. @b(Become-transactional) guaranteens that changes from returned instance won't leak outside of this instance, but not that destructive changes from original instance can leak into it. Same applies for @b(become-functional). Be careful.
+
+@end(section)
+
 @end(section)
 
 @begin(section)
@@ -36,6 +53,7 @@ These are classes that act as traits, providing user with information on how ins
 @cl:doc(class fundamental-container)
 @cl:doc(class functional)
 @cl:doc(class mutable)
+@cl:doc(class transactional)
 )
 
 In addition to the classes above cl-data-structures also implements more specific classes, describing higher level class usage. In package cl-ds.dicts:
@@ -53,8 +71,10 @@ In addition to the classes above cl-data-structures also implements more specifi
 @cl:doc(generic empty-p)
 @cl:doc(generic become-functional)
 @cl:doc(generic become-mutable)
+@cl:doc(generic become-transactional)
 @cl:doc(generic functional-p)
 @cl:doc(generic mutable-p)
+@cl:doc(generic transactional-p)
 )
 @end(section)
 
@@ -85,10 +105,21 @@ In addition to the classes above cl-data-structures also implements more specifi
 @begin(section)
 @title(HAMT)
 
-HAMT stands from hash array mapped trie. It is essentially hash tree, allowing to implement simple and efficient functional hash table. Described in great detail in the article http://lampwww.epfl.ch/papers/idealhashtrees.pdf and already used in few functional languages (for instance: clojure). cl-data-structures also offers mutable variant of hamt, because it offers faster insert and erase which can be beneficial if you already identified part of your code that bottle necks application and you are sure that your side effects won't leak outside.
+HAMT stands from hash array mapped trie. It is essentially hash tree, allowing to implement simple and efficient functional hash table. Described in great detail in the article http://lampwww.epfl.ch/papers/idealhashtrees.pdf and already used in few functional languages (for instance: clojure). cl-data-structures also offers mutable variant of hamt, because it offers faster insert and erase which can be beneficial if you already identified part of your code that bottle necks application and you are sure that your side effects won't leak outside. Both functional and mutable dictionary hamt containers implements become-transactional GF, which offers good compromise between functional and mutable approaches.
 
 
-@b(API implementation:)
+@begin(section)
+@title(Structure specific behaviors)
+
+BECOME-MUTABLE and BECOME-FUNCTIONAL functions will have destructive inpact on transactional-hamt-dictionary. Flags marking changed nodes will be cleared. This means that transactional instance preserves it's properties, but performance may suffer, as operations that normally would not require copying in transactional container will require it.
+
+
+@b(Note:) This implementation uses only 60 least significant bits of hash at most.
+
+@end(section)
+
+@begin(section)
+@title(API implementation:)
 @cl:with-package[name="cl-data-structures.dicts.hamt"](
 @cl:doc(function functional-hamt-dictionary-update)
 @cl:doc(function functional-hamt-dictionary-add)
@@ -99,7 +130,11 @@ HAMT stands from hash array mapped trie. It is essentially hash tree, allowing t
 @cl:doc(function mutable-hamt-dictionary-update!)
 @cl:doc(function mutable-hamt-dictionary-insert!)
 @cl:doc(function mutable-hamt-dictionary-add!)
-@cl:doc(function functional-hamt-dictionary-erase!)
+@cl:doc(function mutable-hamt-dictionary-erase!)
+@cl:doc(function transactional-hamt-dictionary-update!)
+@cl:doc(function transactional-hamt-dictionary-add!)
+@cl:doc(function transactional-hamt-dictionary-insert!)
+@cl:doc(function transactional-hamt-dictionary-erase!)
 @cl:doc(function make-mutable-hamt-dictionary)
 @cl:doc(function make-functional-hamt-dictionary)
 )
@@ -128,7 +163,6 @@ Although implementing those is not in the scope of the project, it was sometimes
 @cl:doc(function swapop)
 @cl:doc(function pop-last)
 @cl:doc(function erase-from-vector)
-@cl:doc(function erase-from-vector)
 @cl:doc(function merge-ordered-vectors)
 @cl:doc(function ordered-p)
 )
@@ -145,5 +179,6 @@ Macros used for implementation of data structures.
 @cl:doc(macro cond+)
 )
 
+@end(section)
 @end(section)
 @end(section)

@@ -11,7 +11,7 @@
   ())
 
 
-(defclass transactional-hamt-dictionary (cl-ds:transactional mutable-hamt-dictionary)
+(defclass transactional-hamt-dictionary (cl-ds:transactional hamt-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
                        :accessor access-root-was-modified
@@ -27,7 +27,7 @@
    @begin(list)
    @item(hash-fn -- function that will be used to hash keys. Should return fixnum and follow all rules of hashing.)
    @item(equal-fn -- function that will be used to resolve hash conflicts.)
-   @item(max-depth -- how many levels this hamt can have at most?)
+   @item(max-depth -- how many levels this hamt can have at most? Each level translates into additional 6 bits of hash used.)
    @end(list)
 
    @b(Description:)
@@ -53,7 +53,7 @@
    @begin(list)
    @item(hash-fn -- function that will be used to hash keys. Should return fixnum and follow all rules of hashing.)
    @item(equal-fn -- function that will be used to resolve hash conflicts.)
-   @item(max-depth -- how many levels this hamt can have at most?)
+   @item(max-depth -- how many levels this hamt can have at most? Each level translates into additional 6 bits of hash used.)
    @end(list)
 
    @b(Description:)
@@ -360,6 +360,7 @@
 (-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
 (defun mutable-hamt-dictionary-erase! (container location)
   (declare (optimize (speed 3)))
+  "Implementation of ERASE!"
   (with-hash-tree-functions container
     (let ((old-value nil)
           (hash (hash-fn location)))
@@ -386,6 +387,8 @@
 (-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
     (values transactional-hamt-dictionary boolean t))
 (defun transactional-hamt-dictionary-insert! (container location new-value)
+  (declare (optimize (speed 3)))
+  "Implementation of INSERT!"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
@@ -405,6 +408,8 @@
 (-> transactional-hamt-dictionary-update! (transactional-hamt-dictionary t t)
     (values transactional-hamt-dictionary boolean t))
 (defun transactional-hamt-dictionary-update! (container location new-value)
+  (declare (optimize (speed 3)))
+  "Implementation of UPDATE!"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)

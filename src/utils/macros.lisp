@@ -121,7 +121,13 @@
 
 
 (defmacro cond+ (tests &body forms)
-  "If else ladder generator."
+  "If else ladder generator.
+
+  @b(Values and arguments:)
+  @begin(list)
+  @item(tests -- list of conditions)
+  @item(forms -- list of clauses that are supposed to be checked against conditions)
+  @end(list)"
   (generate-if-else tests forms))
 
 

@@ -18,6 +18,7 @@
    :become-transactional
    :mutable-p
    :functional-p
+   :transactional-p
    ;; trait classes
    :fundamental-container
    :functional
