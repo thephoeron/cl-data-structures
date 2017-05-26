@@ -33,10 +33,10 @@ You can just allow arbitrary changes happening on any level. This usual gives yo
 @b(Functional) containers do not suffer from the same problems. Every operation that would change existing state in the mutable container instead will return new container, with changes visible only there. This, however has another limitation: copying is costly. Although copying whole structure is usually not required, we still need to copy at least parts of it.
 
 
-@b(Transactional) containers represent compromise between those two opposite approaches. Transactional containers implement @(mutable) api in distinct way: instead of performing destructive operations in arbitrary way, we are trying to @b(isolate) changes so they will be visible only in the instance that we passed into method. This allows us to achieve compromise between safety, simplicity and speed.
+@b(Transactional) containers represent compromise between those two opposite approaches. Transactional containers implement @b(mutable) api in distinct way: instead of performing destructive operations in arbitrary way, we are trying to @b(isolate) changes so they will be visible only in the instance that we passed into method. This allows us to achieve compromise between safety, simplicity and speed.
 
 
-Containers can be converted between functional, transactional and mutable container using @b(become) methods. However, not every container is avaible in all three variants. It is also important to remember that @b(become) methods have limited guaranteens. @b(Become-transactional) guaranteens that changes from returned instance won't leak outside of this instance, but not that destructive changes from original instance can leak into it. Same applies for @b(become-functional). Be careful.
+Containers can be converted between functional, transactional and mutable container using @b(become) methods. However, not every container is avaible in all three variants. It is also important to remember that @b(become) methods have limited guaranteens. For instance: @b(BECOME-TRANSACTIONAL) guaranteens that changes from returned instance won't leak outside of returned instance, but not that destructive changes from original instance can't leak into it. Same applies for @b(become-functional) method. Be careful and keep this in mind.
 
 @end(section)
 
@@ -68,13 +68,13 @@ In addition to the classes above cl-data-structures also implements more specifi
 @cl:with-package[name="cl-data-structures"](
 @cl:doc(generic at)
 @cl:doc(generic size)
-@cl:doc(generic empty-p)
+@cl:doc(generic emptyp)
 @cl:doc(generic become-functional)
 @cl:doc(generic become-mutable)
 @cl:doc(generic become-transactional)
-@cl:doc(generic functional-p)
-@cl:doc(generic mutable-p)
-@cl:doc(generic transactional-p)
+@cl:doc(generic functionalp)
+@cl:doc(generic mutablep)
+@cl:doc(generic transactionalp)
 )
 @end(section)
 

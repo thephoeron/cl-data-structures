@@ -569,3 +569,7 @@ Methods. Those will just call non generic functions.
           :max-depth (read-max-depth container)
           :equal-fn (read-equal-fn container)
           :size (access-size container))))
+
+
+(defmethod cl-ds:emptyp ((container hamt-dictionary))
+  (null (access-root container)))

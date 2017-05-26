@@ -9,16 +9,16 @@
    :add
    :add!
    :insert
-   :empty-p
+   :emptyp
    :size
    :update
    :update!
    :become-functional
    :become-mutable
    :become-transactional
-   :mutable-p
-   :functional-p
-   :transactional-p
+   :mutablep
+   :functionalp
+   :transactionalp
    ;; trait classes
    :fundamental-container
    :functional

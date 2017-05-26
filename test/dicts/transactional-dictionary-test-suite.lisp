@@ -23,7 +23,7 @@
   (once-only (limit)
     `(let ((dict ,init-form))
        (is (size dict) 0)
-       (ok (empty-p dict))
+       (ok (emptyp dict))
        (diag "Testing insert")
        (iterate
          (for s from 1 below ,limit)
@@ -95,7 +95,7 @@
   (once-only (limit)
     `(let ((dict ,init-form))
        (is (size dict) 0)
-       (ok (empty-p dict))
+       (ok (emptyp dict))
        (diag "filling up origingal dictionary")
        (iterate
          (for s from 1 below ,limit)
