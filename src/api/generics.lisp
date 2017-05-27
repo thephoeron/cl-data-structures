@@ -131,7 +131,7 @@
 
 (defgeneric become-functional (container)
   (:method ((container functional)) container)
-  (:documentation "@b(Returns) instance implementing functional API. Content of returned instance is identical to the input CONTAINER.
+  (:documentation "@b(Returns) instance implementing functional API. Content of returned instance is identical to the content of input CONTAINER.
 
   @b(Note:) Not all containers implement this function.
 
@@ -142,7 +142,7 @@
 
 (defgeneric become-mutable (container)
   (:method ((container mutable)) container)
-  (:documentation "@b(Returns) instance implementing mutable API. Content of returned instance is identical to the input CONTAINER.
+  (:documentation "@b(Returns) instance implementing mutable API. Content of returned instance is identical to the content of input CONTAINER.
 
   @b(Note:) Not all containers implement this function.
 
@@ -151,7 +151,7 @@
 
 (defgeneric become-transactional (container)
   (:method ((container transactional)) container)
-  (:documentation "@b(Returns) transactional instance implementing mutable API. Operations performed on returned instance are guaranteed to not leak side effects outside of it. Content of returned instance is identical to the input CONTAINER.
+  (:documentation "@b(Returns) transactional instance implementing mutable API. Operations performed on returned instance are guaranteed to not leak side effects outside of it. Content of returned instance is identical to the content of input CONTAINER.
 
   @b(Note:) Not all containers implement this function.
 

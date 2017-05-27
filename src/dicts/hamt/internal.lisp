@@ -122,7 +122,11 @@ Macros
                     (finally (return ac))))))
          (declare (dynamic-extent (function ,!rewrite))
                   (inline ,!rewrite))
-         (with-hamt-path ,node ,container ,hash :on-leaf ,on-leaf :on-nil ,on-nil :operation ,!rewrite)))))
+         (with-hamt-path ,node
+           ,container ,hash
+           :on-leaf ,on-leaf
+           :on-nil ,on-nil
+           :operation ,!rewrite)))))
 
 
 (-> set-in-leaf-mask (hash-node hash-node-index (integer 0 1)) hash-node)
@@ -367,10 +371,11 @@ Copy nodes and stuff.
                          (:content simple-vector))
     hash-node)
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
-  (make-hash-node :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
-                  :node-mask (or node-mask (hash-node-node-mask node))
-                  :content (or content (hash-node-content node))
-                  :modification-mask (or modification-mask (hash-node-modification-mask node))))
+  (make-hash-node
+   :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
+   :node-mask (or node-mask (hash-node-node-mask node))
+   :content (or content (hash-node-content node))
+   :modification-mask (or modification-mask (hash-node-modification-mask node))))
 
 
 (-> hash-node-replace-in-the-copy (hash-node t hash-node-index) hash-node)
@@ -385,7 +390,8 @@ Copy nodes and stuff.
               (ldb (byte 1 index) leaf-mask) 0)
         (setf (ldb (byte 1 index) node-mask) 0
               (ldb (byte 1 index) leaf-mask) 1))
-    (setf (aref content (logcount (ldb (byte index 0) (logior leaf-mask node-mask))))
+    (setf (aref content
+                (logcount (ldb (byte index 0) (logior leaf-mask node-mask))))
           item)
     (copy-node hash-node
                :leaf-mask leaf-mask
@@ -768,7 +774,8 @@ Copy nodes and stuff.
       (for parent = (and (not (zerop i))
                          (path (1- i))))
       (for must-copy = (if parent
-                           (hash-node-content-modified parent (indexes (1- i)))
+                           (hash-node-content-modified parent
+                                                       (indexes (1- i)))
                            (not root-already-copied)))
       (for ac initially (if (or (hash-node-p conflict)
                                 (null conflict))
@@ -781,7 +788,8 @@ Copy nodes and stuff.
            then (if ac
                     (if (hash-node-contains node index)
                         (hash-node-transactional-replace must-copy node ac index)
-                        (hash-node-transactional-insert must-copy node ac index))
+                        (hash-node-transactional-insert must-copy
+                                                        node ac index))
                     (if (eql 1 (hash-node-size node))
                         ac
                         (hash-node-transactional-remove must-copy node index))))
@@ -839,7 +847,8 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)))
   (with-hash-tree-functions container
     (go-down-on-path container hash
-                     #'insert-conflict (list hash location new-value #'compare-fn)
+                     #'insert-conflict (list hash location new-value
+                                             #'compare-fn)
                      #'wrap-conflict (list hash location new-value)
                      after after-args)))
 
@@ -853,17 +862,20 @@ Copy nodes and stuff.
            (let ((equal-fn (read-equal-fn container)))
              (flet ((location-test (node location)
                       (and (eql hash (hash.location.value-hash node))
-                           (funcall equal-fn location (hash.location.value-location node)))))
+                           (funcall equal-fn location
+                                    (hash.location.value-location node)))))
                (multiple-value-bind (list removed value)
                    (try-remove location
                                (access-conflict node)
                                :test #'location-test)
                  (unless removed
-                   (return-from copying-erase-implementation (values (access-root container) nil nil)))
+                   (return-from copying-erase-implementation
+                     (values (access-root container) nil nil)))
                  (values (and list (make-conflict-node list))
                          removed
                          (hash.location.value-value value))))))
-         (return-nil () (return-from copying-erase-implementation (values (access-root container) nil nil))))
+         (return-nil () (return-from copying-erase-implementation
+                          (values (access-root container) nil nil))))
     (go-down-on-path container hash
                      #'remove-from-conflict nil
                      #'return-nil nil
@@ -888,7 +900,8 @@ Copy nodes and stuff.
                    (values (access-root container) nil nil)))
                (values (make-conflict-node next-list)
                        replaced
-                       (and replaced old-value (hash.location.value-value old-value)))))
+                       (and replaced old-value
+                            (hash.location.value-value old-value)))))
            (return-nil () (return-from copying-update-implementation
                             (values (access-root container) nil nil))))
       (go-down-on-path container hash
@@ -911,15 +924,18 @@ Copy nodes and stuff.
                       (item (find location (the list list)
                                   :test #'location-test)))
                  (when item
-                   (return-from copying-add-implementation (values (access-root container)
-                                                                   t
-                                                                   (hash.location.value-value item))))
-                 (values (make-conflict-node (cons (make-hash.location.value :hash hash
-                                                                             :location location
-                                                                             :value new-value)
-                                                   list))
-                         nil
-                         nil))))
+                   (return-from copying-add-implementation
+                     (values (access-root container)
+                             t
+                             (hash.location.value-value item))))
+                 (values
+                  (make-conflict-node (cons (make-hash.location.value
+                                             :hash hash
+                                             :location location
+                                             :value new-value)
+                                            list))
+                  nil
+                  nil))))
       (go-down-on-path container hash
                        #'add-into-conflict nil
                        #'wrap-conflict (list hash location new-value)
@@ -944,6 +960,7 @@ Copy nodes and stuff.
                                  (hash-node-content-modified parent i)))
         (when was-modified
           (let ((masked-index (hash-node-to-masked-index parent i)))
-            (setf (content masked-index) (isolate-transactional-instance (content masked-index)
-                                                                         t))))))
+            (setf (content masked-index)
+                  (isolate-transactional-instance (content masked-index)
+                                                  t))))))
     parent))
