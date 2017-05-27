@@ -40,9 +40,9 @@
 (defgeneric add! (container location new-value)
   (:documentation "@b(Mutable API:) Destructively add NEW-VALUE into CONTAINER at LOCATION. Will not replace value at LOCATION if it was already occupied. Will @b(return) three values:
   @begin(list)
-  @item(first -- CONTAINER)
-  @item(second -- boolean informing if LOCATION was found in the container (in other words: nil if item was sucessfully added))
-  @item(third -- value in the CONTAINER at LOCATION before destructive modification took place (or nil, if LOCATION was not found))
+  @item(first -- CONTAINER.)
+  @item(second -- Boolean informing if LOCATION was found in the container (in other words: NIL if item was sucessfully added).)
+  @item(third -- Value in the CONTAINER at LOCATION before destructive modification took place (or nil, if LOCATION was not found).)
   @end(list)
 
   @b(Arguments and values:)
@@ -174,6 +174,7 @@
   (:documentation "Will @b(return) T if CONTAINER exposes functional API and NIL if not.
 
    @b(Side effects:) None"))
+
 
 (defgeneric transactionalp (container)
   (:method ((container transactional)) t)
