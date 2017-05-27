@@ -130,7 +130,8 @@
                                         hash
                                         location
                                         #'transactional-copy-on-write
-                                        (list (access-root-was-modified container)))
+                                        (list (access-root-was-modified
+                                               container)))
         (when found
           (decf (access-size container)))
         (unless (eq new-root (access-root container))
