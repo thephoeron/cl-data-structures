@@ -1,4 +1,4 @@
-(in-package :cl-ds.dicts)
+(in-package #:cl-ds.dicts)
 
 
 (defclass dictionary () ()

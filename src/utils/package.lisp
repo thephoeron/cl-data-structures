@@ -19,7 +19,3 @@
    #:ordered-p
    #:try-find-cell
    #:try-remove))
-
-
-(in-package :cl-ds.utils)
-

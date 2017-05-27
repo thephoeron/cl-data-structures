@@ -1,4 +1,4 @@
-(in-package :cl-data-structures.utils)
+(in-package #:cl-data-structures.utils)
 
 
 (defmacro lazy-let (bindings &body body)

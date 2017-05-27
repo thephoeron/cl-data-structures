@@ -1,4 +1,4 @@
-(in-package :cl-ds.dicts.hamt)
+(in-package #:cl-ds.dicts.hamt)
 
 
 (defclass functional-hamt-dictionary (hamt-dictionary
