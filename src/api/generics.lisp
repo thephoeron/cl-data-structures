@@ -42,7 +42,7 @@
   @begin(list)
   @item(first -- CONTAINER)
   @item(second -- Boolean informing if LOCATION was found in the container (in other words: NIL if item was sucessfully added).)
-  @item(third -- Value in the CONTAINER at LOCATION before destructive modification took place (or nil, if LOCATION was not found).)
+  @item(third -- Value found in the CONTAINER at LOCATION before destructive modification (or nil if LOCATION was not occupied))
   @end(list)
 
   @b(Arguments and values:)
@@ -61,7 +61,7 @@
   @begin(list)
   @item(first -- Instance of the same type as CONTAINER, with NEW-VALUE at LOCATION)
   @item(second -- T if LOCATION was found in the CONTAINER, NIL otherwise)
-  @item(third -- Value in the CONTAINER at LOCATION (or NIL, if LOCATION was not found))
+  @item(third -- value at LOCATION in the CONTAINER. (NIL if LOCATION was not found))
   @end(list)
 
   @b(Arguments and values:)
@@ -90,7 +90,7 @@
   @begin(list)
   @item(first -- CONTAINER)
   @item(second -- T if LOCATION was found in the CONTAINER (or: if erase took place), NIL otherwise)
-  @item(third -- erased value at LOCATION in the CONTAINER (NIL if LOCATION was not found))
+  @item(third -- Value found in the CONTAINER at LOCATION before destructive modification (or nil if LOCATION was not occupied))
   @end(list)
 
   @b(Arguments and values:)
@@ -111,9 +111,9 @@
 (defgeneric update (container location new-value)
   (:documentation "@b(Functional API:) If there is value at LOCATION in the CONTAINER, return new instance with NEW-VALUE at LOCATION. @b(Returns) three values:
    @begin(list)
-   @item(first -- new CONTAINER, with updated value at LOCATION if UPDATE took place)
-   @item(second -- t if update took place, nil otherwise)
-   @item(third -- previous value found in the CONTAINER at LOCATION (or NIL if LOCATION was not occupied))
+   @item(first -- New CONTAINER, with updated value at LOCATION if UPDATE took place)
+   @item(second -- T if update took place, nil otherwise)
+   @item(third -- Value found in the CONTAINER at LOCATION (or NIL if LOCATION was not occupied))
    @end(list)
    @b(Side effects:) None"))
 
@@ -122,8 +122,8 @@
   (:documentation "@b(Mutable API:) Destructive version of UPDATE. If LOCATION is taken in the CONTAINER, destructivly update it with NEW-VALUE. @b(Returns) three values:
    @begin(list)
    @item(first -- CONTAINER)
-   @item(second -- t if update took place nil otherwise)
-   @item(third -- previous value (or nil if LOCATION could not be found in the CONTAINER))
+   @item(second -- T if update took place nil otherwise)
+   @item(third -- Value found in the CONTAINER at LOCATION before destructive modification (or nil if LOCATION was not occupied))
    @end(list)
 
    @b(Side effects:) If update took place, destructivly transform CONTAINER"))
