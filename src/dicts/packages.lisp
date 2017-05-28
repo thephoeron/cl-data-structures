@@ -1,3 +1,6 @@
+(in-package #:cl-user)
+
+
 (defpackage :cl-data-structures.dicts
   (:use #:common-lisp)
   (:nicknames #:cl-ds.dicts)

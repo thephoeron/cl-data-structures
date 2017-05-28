@@ -1,3 +1,6 @@
+(in-package #:cl-user)
+
+
 (defpackage :cl-data-structures.utils
   (:use #:common-lisp #:iterate #:alexandria #:serapeum)
   (:nicknames #:cl-ds.utils)

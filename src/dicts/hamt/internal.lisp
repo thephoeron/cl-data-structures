@@ -666,7 +666,7 @@ Copy nodes and stuff.
     (format stream "~v@{~a~:*~}(" indent " ")
     (iterate
       (for sub on (access-conflict obj))
-      (for elt = (car sub))
+      (for elt = (first sub))
       (for key = (hash.location.value-location elt))
       (for value = (hash.location.value-value elt))
       (if (cdr sub)
