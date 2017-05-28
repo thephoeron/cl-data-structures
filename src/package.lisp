@@ -26,4 +26,7 @@
    #:fundamental-container
    #:functional
    #:transactional
-   #:mutable))
+   #:mutable
+
+   #:data-structure-condition
+   #:argument-out-of-bounds))
