@@ -105,7 +105,7 @@ In addition to the classes above cl-data-structures also implements more specifi
 @begin(section)
 @title(HAMT)
 
-HAMT stands from hash array mapped trie. It is essentially hash tree, allowing to implement simple and efficient functional hash table. Described in great detail in the article http://lampwww.epfl.ch/papers/idealhashtrees.pdf and already used in few functional languages (for instance: clojure). cl-data-structures also offers mutable variant of hamt, because it offers faster insert and erase which can be beneficial if you already identified part of your code that bottle necks application and you are sure that your side effects won't leak outside. Both functional and mutable dictionary hamt containers implements become-transactional GF, which offers good compromise between functional and mutable approaches.
+HAMT stands from hash array mapped trie. It is essentially hash tree, allowing to implement simple and efficient functional hash table. Described in great detail in the article http://lampwww.epfl.ch/papers/idealhashtrees.pdf and already used in few functional languages (for instance: clojure). cl-data-structures also offers mutable variant of HAMT, because it offers faster insert and erase which can be beneficial if you already identified part of your code that bottle necks application and you are sure that your side effects won't leak outside. Both functional and mutable dictionary HAMT containers implements become-transactional GF, which offers good compromise between functional and mutable approaches.
 
 
 @begin(section)
