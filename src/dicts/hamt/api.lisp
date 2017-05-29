@@ -20,7 +20,7 @@
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
                                      (-> (t t) boolean)
-                                     &key (:max-depth (integer 1 11)))
+                                     &key (:max-depth fixnum))
     functional-hamt-dictionary)
 (defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
@@ -49,7 +49,7 @@
 
 (-> make-mutable-hamt-dictionary ((-> (t) fixnum)
                                   (-> (t t) boolean)
-                                  &key (:max-depth (integer 1 11)))
+                                  &key (:max-depth fixnum))
     mutable-hamt-dictionary)
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
