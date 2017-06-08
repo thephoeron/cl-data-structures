@@ -20,7 +20,7 @@
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
                                      (-> (t t) boolean)
-                                     &key (:max-depth fixnum))
+                                     &key (:max-depth positive-fixnum))
     functional-hamt-dictionary)
 (defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
@@ -49,7 +49,7 @@
 
 (-> make-mutable-hamt-dictionary ((-> (t) fixnum)
                                   (-> (t t) boolean)
-                                  &key (:max-depth fixnum))
+                                  &key (:max-depth positive-fixnum))
     mutable-hamt-dictionary)
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
@@ -418,7 +418,7 @@
                   cl-ds.common:empty-eager-modification-operation-status))))))
 
 
-(-> hamt-dictionary-size (hamt-dictionary) positive-fixnum)
+(-> hamt-dictionary-size (hamt-dictionary) non-negative-fixnum)
 (defun hamt-dictionary-size (container)
   "Implementation of SIZE"
   (access-size container))

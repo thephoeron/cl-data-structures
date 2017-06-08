@@ -249,7 +249,7 @@ Interface class.
                :documentation "Maximal depth of tree.")
    (%size :initarg :size
           :initform 0
-          :type positive-integer
+          :type non-negative-fixnum
           :accessor access-size
           :documentation "How many elements are in there?"))
   (:documentation "Base class of other containers. Acts as any container for bunch of closures (those vary depending on the concrete container) and root of the tree."))
