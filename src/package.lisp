@@ -11,6 +11,8 @@
    #:erase!
    #:add
    #:add!
+   #:value
+   #:found
    #:insert
    #:emptyp
    #:size
@@ -24,6 +26,7 @@
    #:transactionalp
    ;; trait classes
    #:fundamental-container
+   #:fundamental-modification-operation-status
    #:functional
    #:transactional
    #:mutable

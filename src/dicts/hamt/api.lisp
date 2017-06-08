@@ -100,7 +100,8 @@
 
 
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
-    (values functional-hamt-dictionary boolean t))
+    (values functional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun functional-hamt-dictionary-erase (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ERASE"
@@ -119,13 +120,15 @@
                           :equal-fn (read-equal-fn container)
                           :max-depth (read-max-depth container)
                           :size (1- (access-size container)))
-                    t
-                    old-value)
-            (values container nil nil))))))
+                    (cl-ds.common:make-eager-modification-operation-status
+                     t old-value))
+            (values container
+                    cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> transactional-hamt-dictionary-erase! (transactional-hamt-dictionary t)
-    (values transactional-hamt-dictionary boolean t))
+    (values transactional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-erase! (container location)
   (declare (optimize (speed 3)))
   "Implementation of ERASE!"
@@ -143,11 +146,15 @@
         (unless (eq new-root (access-root container))
           (setf (access-root-was-modified container) t
                 (access-root container) new-root))
-        (values container found old-value)))))
+        (values container
+                (cl-ds.common:make-eager-modification-operation-status
+                 found
+                 old-value))))))
 
 
 (-> functional-hamt-dictionary-insert (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+    (values functional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun functional-hamt-dictionary-insert (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of INSERT"
@@ -165,12 +172,14 @@
                       :size (if found
                                 (access-size container)
                                 (1+ (access-size container))))
-                found
-                old-value)))))
+                (cl-ds.common:make-eager-modification-operation-status
+                 found
+                 old-value))))))
 
 
 (-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
-    (values mutable-hamt-dictionary boolean t))
+    (values mutable-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of (SETF AT)"
@@ -239,12 +248,14 @@
           (unless replaced
             (incf (access-size container)))
           (values container
-                  replaced
-                  old-value))))))
+                  (cl-ds.common:make-eager-modification-operation-status
+                   replaced
+                   old-value)))))))
 
 
 (-> functional-hamt-dictionary-update (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+    (values functional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun functional-hamt-dictionary-update (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE"
@@ -261,15 +272,16 @@
                           :root new-root
                           :max-depth (read-max-depth container)
                           :size (access-size container))
-                    found
-                    old-value)
+                    (cl-ds.common:make-eager-modification-operation-status
+                     found
+                     old-value))
             (values container
-                    nil
-                    nil))))))
+                    cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> functional-hamt-dictionary-add (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+    (values functional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun functional-hamt-dictionary-add (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD"
@@ -279,19 +291,21 @@
           (copying-add-implementation container hash location new-value
                                       #'copy-on-write nil)
         (if found
-            (values container t old)
+            (values container
+                    (cl-ds.common:make-eager-modification-operation-status
+                     t old))
             (values (make (type-of container)
                           :equal-fn (read-equal-fn container)
                           :hash-fn (read-hash-fn container)
                           :root new-root
                           :max-depth (read-max-depth container)
                           :size (1+ (access-size container)))
-                    nil
-                    nil))))))
+                    cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary boolean t))
+    (values functional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-update! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE!"
@@ -315,13 +329,21 @@
                        (let ((old (hash.location.value-value r)))
                          (setf (hash.location.value-value r) new-value
                                (hash.location.value-hash r) hash)
-                         (values container t old))
-                       (values container nil nil))
-            :on-nil (values container nil nil))))))
+                         (values
+                          container
+                          (cl-ds.common:make-eager-modification-operation-status
+                           t old)))
+                       (values
+                        container
+                        cl-ds.common:empty-eager-modification-operation-status))
+            :on-nil (values
+                     container
+                     cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> mutable-hamt-dictionary-add! (mutable-hamt-dictionary t t)
-    (values mutable-hamt-dictionary boolean t))
+    (values mutable-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of add!"
@@ -337,7 +359,11 @@
                     :test #'compare-fn)
                  (when r
                    (return-from mutable-hamt-dictionary-add!
-                     (values container t (hash.location.value-value v))))
+                     (values
+                      container
+                      (cl-ds.common:make-eager-modification-operation-status
+                       t
+                       (hash.location.value-value v)))))
                  (setf (access-conflict node) next-list)
                  node)))
         (let* ((prev-node nil)
@@ -389,8 +415,7 @@
           (setf (access-root container) result)
           (incf (access-size container))
           (values container
-                  nil
-                  nil))))))
+                  cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> hamt-dictionary-size (hamt-dictionary) positive-fixnum)
@@ -399,7 +424,9 @@
   (access-size container))
 
 
-(-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t) (values mutable-hamt-dictionary boolean t))
+(-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t)
+    (values mutable-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-erase! (container location)
   (declare (optimize (speed 3)))
   "Implementation of ERASE!"
@@ -411,28 +438,37 @@
                     (equal-fn location (hash.location.value-location loc)))))
         (let ((new-root
                 (with-destructive-erase-hamt node container (hash-fn location)
-                  :on-leaf (multiple-value-bind (next found value)
-                               (try-remove location
-                                           (access-conflict node)
-                                           :test #'location-test)
-                             (if found
-                                 (progn
-                                   (setf old-value
-                                         (hash.location.value-value value))
-                                   (when next
-                                     (setf (access-conflict node) next)
-                                     node))
-                                 (return-from mutable-hamt-dictionary-erase!
-                                   (values container nil nil))))
-                  :on-nil (return-from mutable-hamt-dictionary-erase!
-                            (values container nil nil)))))
+                  :on-leaf
+                  (multiple-value-bind (next found value)
+                      (try-remove location
+                                  (access-conflict node)
+                                  :test #'location-test)
+                    (if found
+                        (progn
+                          (setf old-value
+                                (hash.location.value-value value))
+                          (when next
+                            (setf (access-conflict node) next)
+                            node))
+                        (return-from mutable-hamt-dictionary-erase!
+                          (values
+                           container
+                           cl-ds.common:empty-eager-modification-operation-status))))
+                  :on-nil
+                  (return-from mutable-hamt-dictionary-erase!
+                    (values
+                     container
+                     cl-ds.common:empty-eager-modification-operation-status)))))
           (decf (access-size container))
           (setf (access-root container) new-root)
-          (values container t old-value))))))
+          (values container
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t old-value)))))))
 
 
 (-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary boolean t))
+    (values transactional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3)))
   "Implementation of INSERT!"
@@ -449,13 +485,16 @@
                 (access-root container) new-root))
         (unless found
           (incf (access-size container)))
-        (values container
-                found
-                old-value)))))
+        (values
+         container
+         (cl-ds.common:make-eager-modification-operation-status
+          found
+          old-value))))))
 
 
 (-> transactional-hamt-dictionary-update! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary boolean t))
+    (values transactional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-update! (container location new-value)
   (declare (optimize (speed 3)))
   "Implementation of UPDATE!"
@@ -469,13 +508,16 @@
         (unless (eq new-root (access-root container))
           (setf (access-root container) new-root
                 (access-root-was-modified container) new-root))
-        (values container
-                found
-                old-value)))))
+        (values
+         container
+         (cl-ds.common:make-eager-modification-operation-status
+          found
+          old-value))))))
 
 
 (-> transactional-hamt-dictionary-add! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary boolean t))
+    (values transactional-hamt-dictionary
+            cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD!"
@@ -492,7 +534,10 @@
           (setf (access-root container) new-root
                 (access-root-was-modified container) t))
         (if found
-            (values container found old))))))
+            (values
+             container
+             (cl-ds.common:make-eager-modification-operation-status
+              found old)))))))
 
 
 #|

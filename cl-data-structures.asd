@@ -12,9 +12,13 @@
   :pathname "src"
   :components ((:file "package")
                (:module "api"
-                :components ((:file "trait-classes")
+                :components ((:file "fundamental-classes")
+                             (:file "trait-classes")
                              (:file "generics")
                              (:file "conditions")))
+               (:module "common"
+                :components ((:file "package")
+                             (:file "eager-modification-operation-status")))
                (:module "utils"
                 :components ((:file "package")
                              (:file "macros")

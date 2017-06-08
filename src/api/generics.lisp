@@ -189,3 +189,9 @@
   (:documentation "@b(Returns) T if container is empty and @b(returns) NIL if there is something in it.
 
   @b(Side effects:) None"))
+
+
+(defgeneric value (status))
+
+
+(defgeneric found (status))
