@@ -178,7 +178,7 @@
 
 
 (-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
-    (values mutable-hamt-dictionary
+    (values t
             cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
@@ -247,7 +247,7 @@
           (setf (access-root container) result)
           (unless replaced
             (incf (access-size container)))
-          (values container
+          (values new-value
                   (cl-ds.common:make-eager-modification-operation-status
                    replaced
                    old-value)))))))
@@ -467,11 +467,11 @@
 
 
 (-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary
+    (values t
             cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3)))
-  "Implementation of INSERT!"
+  "Implementation of (setf (at container location) new-value)"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
@@ -486,7 +486,7 @@
         (unless found
           (incf (access-size container)))
         (values
-         container
+         new-value
          (cl-ds.common:make-eager-modification-operation-status
           found
           old-value))))))
