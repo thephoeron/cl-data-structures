@@ -15,7 +15,8 @@
                 :components ((:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
-                             (:file "conditions")))
+                             (:file "conditions")
+                             (:file "macros")))
                (:module "common"
                 :components ((:file "package")
                              (:file "eager-modification-operation-status")))

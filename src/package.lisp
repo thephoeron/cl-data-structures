@@ -32,4 +32,6 @@
    #:mutable
 
    #:data-structure-condition
-   #:argument-out-of-bounds))
+   #:argument-out-of-bounds
+
+   #:mod-bind))
