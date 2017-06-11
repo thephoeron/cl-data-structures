@@ -2,7 +2,7 @@
 
 
 (defpackage :cl-data-structures
-  (:use #:common-lisp)
+  (:use #:common-lisp #:docstample)
   (:nicknames #:cl-ds)
   (:export
    ;; generic functions
@@ -34,4 +34,8 @@
    #:data-structure-condition
    #:argument-out-of-bounds
 
-   #:mod-bind))
+   #:mod-bind
+   #:*documentation*))
+
+(in-package #:cl-ds)
+(defvar *documentation* nil)

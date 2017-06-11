@@ -7,7 +7,9 @@
   :license "MIT"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
-  :depends-on (:iterate :alexandria :serapeum :prove)
+  :depends-on (:iterate :alexandria
+               :serapeum :prove
+               :docstample)
   :serial T
   :pathname "src"
   :components ((:file "package")
@@ -16,7 +18,8 @@
                              (:file "trait-classes")
                              (:file "generics")
                              (:file "conditions")
-                             (:file "macros")))
+                             (:file "macros")
+                             (:file "docstrings")))
                (:module "common"
                 :components ((:file "package")
                              (:file "eager-modification-operation-status")))
