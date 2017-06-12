@@ -24,18 +24,6 @@
     functional-hamt-dictionary)
 (defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
-  "@b(Arguments and Values:)
-   @begin(list)
-   @item(hash-fn -- function that will be used to hash keys. Should return fixnum and follow all rules of hashing.)
-   @item(equal-fn -- function that will be used to resolve hash conflicts.)
-   @item(max-depth -- how many levels this hamt can have at most? Each level translates into additional 6 bits of hash used.)
-   @end(list)
-
-   @b(Description:)
-   Constructs and returns new functional-hamt-dictionary object.
-
-   @b(Notes:)
-   In theory, HAMT can use infinite length of HASH, but this implementation uses 60 oldest bits at most."
   (unless (< 0 max-depth 11)
     (error 'cl-ds:argument-out-of-bounds
            "MAX-DEPTH has value = ~a but it has to be between 0 and 11"
@@ -53,18 +41,6 @@
     mutable-hamt-dictionary)
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
   (declare (optimize (safety 3)))
-  "@b(Arguments and Values:)
-   @begin(list)
-   @item(hash-fn -- function that will be used to hash keys. Should return fixnum and follow all rules of hashing.)
-   @item(equal-fn -- function that will be used to resolve hash conflicts.)
-   @item(max-depth -- how many levels this hamt can have at most? Each level translates into additional 6 bits of hash used.)
-   @end(list)
-
-   @b(Description:)
-   Constructs and returns new mutable-hamt-dictionary object.
-
-   @b(Notes:)
-   In theory, HAMT can use infinite length of HASH, but this implementation uses 60 oldest bits at most."
   (unless (< 0 max-depth 11)
     (error 'cl-ds:argument-out-of-bounds
            "MAX-DEPTH has value = ~a but it has to be between 0 and 11"

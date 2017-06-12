@@ -3,8 +3,8 @@
 
 (set-documentation
  'at <mechanics> <generic> *documentation*
- :syntax '("for dictionary containers: (at dictionary key) -> value found"
-           "for everything else: (at sequence location) -> value")
+ :syntax '("for dictionary containers: at dictionary key => value found"
+           "for everything else: at sequence location => value")
  :arguments-and-values
  '(("CONTAINER" "Instance of subclass of fundamental-container."
     ("LOCATION" "Where are we looking at? Key in hashtable, index of vector, etc.")))
@@ -19,7 +19,7 @@
 
 (set-documentation
  'add <mechanics> <generic> *documentation*
- :syntax "(add dictionary key value) -> new-dictionary-instance status"
+ :syntax "add dictionary key value => new-dictionary-instance status"
  :arguments-and-values
  '(("CONTAINER" "Instance that we want to modify.")
    ("LOCATION" "Place where NEW-VALUE shall be added.")
@@ -43,14 +43,14 @@
  :returns '("CONTAINER"
             "Modification status object")
 
- :syntax "(add! container location new-value) -> same-container status"
+ :syntax "add! container location new-value => same-container status"
 
  :side-effects "If item was not found in the CONTAINER, destructivly transform CONTAINER.")
 
 
 (set-documentation
  'insert <mechanics> <generic> *documentation*
- :syntax "(insert container location new-value) -> new-instance status"
+ :syntax "insert container location new-value => new-instance status"
  :description
  "Functional API: non-destructively insert NEW-VALUE into CONTAINER at LOCATION. Will replace element value at LOCATION if it was already occupied."
 
@@ -66,7 +66,7 @@
 
 (set-documentation
  'erase <mechanics> <generic> *documentation*
- :syntax "(erase container location new-value) -> new-instance status"
+ :syntax "erase container location new-value => new-instance status"
  :description
  "Functional API: non-destructively remove element at LOCATION from the CONTAINER."
 
@@ -82,7 +82,7 @@
 (set-documentation
  'erase! <mechanics> <generic> *documentation*
  :description "Mutable API: destructively remove element at LOCATION from the CONTAINER."
- :syntax "(erase! container location new-value) -> same-instance status"
+ :syntax "erase! container location new-value => same-instance status"
  :returns '("CONTAINER" "Modification status object")
  :arguments-and-values
  '(("container" "Instance that is intended to be destructivly modified.")
@@ -92,7 +92,7 @@
 
 (set-documentation
  'size <mechanics> <generic> *documentation*
- :syntax "(size container) -> count"
+ :syntax "size container => count"
  :description "How many elements CONTAINER holds currently?"
  :arguments-and-values '(("container" "instance that will be checked."))
  :returns "number of elements in the container.")
@@ -104,7 +104,7 @@
  "Functional API: if there is value at LOCATION in the CONTAINER, return new instance with NEW-VALUE at LOCATION."
 
  :syntax
- "(update container location new-value) -> new-instance status"
+ "update container location new-value => new-instance status"
 
  :returns
  '("New container, with updated value at LOCATION if UPDATE took place"
@@ -138,7 +138,7 @@
  "Transforms CONTAINER into functional variant."
 
  :syntax
- "(become-functional container) -> functional-container"
+ "become-functional container => functional-container"
 
  :returns
  "instance implementing functional API. Content of returned instance is identical to the content of input CONTAINER."
@@ -160,7 +160,7 @@
  "Transforms CONTAINER into mutable variant."
 
  :syntax
- "(become-mutable container) -> mutable-container"
+ "become-mutable container => mutable-container"
 
  :returns
  "instance implementing mutable API. Content of returned instance is identical to the content of input CONTAINER."
@@ -182,7 +182,7 @@
  "Transforms CONTAINER into transactional variant."
 
  :syntax
- "(become-functional container) -> mutable-container"
+ "become-functional container => mutable-container"
 
  :returns
  "instance implementing transactional API. Content of returned instance is identical to the content of input CONTAINER."
@@ -200,8 +200,8 @@
 
 (set-documentation
  'mutablep <mechanics> <generic> *documentation*
- :syntax '("(mutablep mutable-container) -> t"
-           "(mutablep functional-container) -> nil")
+ :syntax '("mutablep mutable-container => t"
+           "mutablep functional-container => nil")
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
  :returns "T if CONTAINER exposes mutable API and NIL if not.")
 
@@ -216,28 +216,27 @@
 
 (set-documentation
  'transactionalp <mechanics> <generic> *documentation*
- :syntax '("(transactionalp functional-container) -> nil"
-           "(transactionalpp transactional-container) -> t")
+ :syntax "transactionalp container => boolean"
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
  :returns "T if CONTAINER is transactional and NIL if it is not.")
 
 
 (set-documentation
  'emptyp <mechanics> <generic> *documentation*
- :syntax "(emptyp container) -> boolean"
+ :syntax "emptyp container => boolean"
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
  :returns "T if CONTAINER is empty and NIL if it is not.")
 
 
 (set-documentation
  'value <mechanics> <generic> *documentation*
- :syntax "(value status) -> value-or-nil"
+ :syntax "value status => value"
  :arguments-and-values '(("status" "instance of modification status class."))
  :returns "Value that was present in the container at location before operation took place. Returns NIL if location was free.")
 
 
 (set-documentation
  'found <mechanics> <generic> *documentation*
- :syntax "(found status) -> boolean"
+ :syntax "found status => boolean"
  :arguments-and-values '(("status" "instance of modification status class."))
  :returns "T if LOCATION was occupied before operation took place, NIL otherwise.")

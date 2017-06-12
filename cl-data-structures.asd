@@ -35,4 +35,5 @@
                              (:file "trait-classes")
                              (:module "hamt"
                               :components ((:file "internal")
-                                           (:file "api")))))))
+                                           (:file "api")
+                                           (:file "docstrings")))))))

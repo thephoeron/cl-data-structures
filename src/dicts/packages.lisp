@@ -9,7 +9,7 @@
 
 
 (defpackage :cl-data-structures.dicts.hamt
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils)
+  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils #:docstample)
   (:nicknames #:cl-ds.dicts.hamt)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
