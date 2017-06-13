@@ -231,12 +231,26 @@
 (set-documentation
  'value <mechanics> <generic> *documentation*
  :syntax "value status => value"
- :arguments-and-values '(("status" "instance of modification status class."))
+ :arguments-and-values '((status "instance of modification status class."))
  :returns "Value that was present in the container at location before operation took place. Returns NIL if location was free.")
 
 
 (set-documentation
  'found <mechanics> <generic> *documentation*
  :syntax "found status => boolean"
- :arguments-and-values '(("status" "instance of modification status class."))
+ :arguments-and-values '((status "instance of modification status class."))
  :returns "T if LOCATION was occupied before operation took place, NIL otherwise.")
+
+
+(set-documentation
+ 'mod-bind <mechanics> <macro> *documentation*
+ :syntax
+ "mod-bind (first &optional found value) values-form body"
+
+ :arguments-and-values
+ '((first "Symbol, will be bound to the first value returned by values-form.")
+   (found "Symbol, this macro will construct symbol-macrolet that will expand to call (found status)")
+   (value "Symbol, this macro will construct symbol-macrolet that will expand to call (value status)"))
+
+ :description
+ "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on containers. All of those operations will return secondary object representing operation status.")
