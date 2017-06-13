@@ -40,3 +40,16 @@
  :description "Container that provides location to value mapping. Either ordered or unordered.")
 
 
+(set-documentation
+ 'functional-hamt-dictionary <mechanics> <class> cl-ds:*documentation*
+ :description "HAMT dictionary that implements functional api.")
+
+
+(set-documentation
+ 'mutable-hamt-dictionary <mechanics> <class> cl-ds:*documentation*
+ :description "HAMT dictionary that implements mutable api.")
+
+
+(set-documentation
+ 'transactional-hamt-dictionary <mechanics> <class> cl-ds:*documentation*
+ :description "Transactional HAMT dictionary that implements mutable api.")
