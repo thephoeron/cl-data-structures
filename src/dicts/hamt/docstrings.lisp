@@ -35,3 +35,8 @@
  :exceptional-situations "Will raise condition of type ARGUMENT-OUT-OF-BOUNDS if max-depth is less than 1 or larger than 10.")
 
 
+(set-documentation
+ 'dictionary <mechanics> <class> cl-ds:*documentation*
+ :description "Container that provides location to value mapping. Either ordered or unordered.")
+
+

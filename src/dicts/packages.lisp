@@ -2,7 +2,7 @@
 
 
 (defpackage :cl-data-structures.dicts
-  (:use #:common-lisp)
+  (:use #:common-lisp #:docstample)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:dictionary))

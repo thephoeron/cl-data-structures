@@ -33,6 +33,7 @@
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
+                             (:file "docstrings")
                              (:module "hamt"
                               :components ((:file "internal")
                                            (:file "api")

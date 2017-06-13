@@ -254,3 +254,28 @@
 
  :description
  "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on containers. All of those operations will return secondary object representing operation status.")
+
+
+(set-documentation
+ 'fundamental-container <mechanics> <class> *documentation*
+ :description "Root class of containers.")
+
+
+(set-documentation
+ 'fundamental-modification-operation-status <mechanics> <class> *documentation*
+ :description "Base class of all fundamental modification status classes.")
+
+
+(set-documentation
+ 'functional  <mechanics> <class> *documentation*
+  :description "Object implements functional api.")
+
+
+(set-documentation
+ 'mutable <mechanics> <class> *documentation*
+  :description "Object implements mutable api.")
+
+
+(set-documentation
+ 'transactional <mechanics> <class> *documentation*
+ :description "Object implements mutable api in transactional way.")
