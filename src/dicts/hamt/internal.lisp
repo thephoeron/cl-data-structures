@@ -6,6 +6,9 @@ Basic types
 
 |#
 
+(define-constant +hash-level+ 6)
+
+
 (deftype maybe-node ()
   `(or null hash-node bottom-node))
 
@@ -15,7 +18,11 @@ Basic types
 
 
 (deftype hash-node-index ()
-  `(integer 0 63))
+  `(integer 0 ,(ash 2 (1- +hash-level+))))
+
+
+(deftype hash-mask ()
+  `(unsigned-byte ,(ash 2 (1- +hash-level+))))
 
 
 (deftype just-node ()
@@ -35,9 +42,9 @@ Macros
     (once-only (hash root max-depth)
       `(block ,!block
          (assert (<= ,max-depth 10))
-         (do ((,!pos 6 (+ ,!pos 6))
-              (,index (ldb (byte 6 0) ,hash)
-                      (ldb (byte 6 ,!pos) ,hash))
+         (do ((,!pos ,+hash-level+ (+ ,!pos ,+hash-level+))
+              (,index (ldb (byte ,+hash-level+ 0) ,hash)
+                      (ldb (byte ,+hash-level+ ,!pos) ,hash))
               (,count 0 (1+ ,count))
               (,!leaf (and ,root (not (hash-node-p ,root)))
                       (hash-node-contains-leaf ,node ,index))
@@ -155,9 +162,9 @@ Tree structure of HAMT
 
 
 (defstruct hash-node
-  (leaf-mask 0 :type (unsigned-byte 64))
-  (node-mask 0 :type (unsigned-byte 64))
-  (modification-mask 0 :type (unsigned-byte 64))
+  (leaf-mask 0 :type hash-mask)
+  (node-mask 0 :type hash-mask)
+  (modification-mask 0 :type hash-mask)
   (content #() :type simple-array))
 
 
@@ -225,8 +232,6 @@ Tree structure of HAMT
 (defmethod empty-node-p ((node conflict-node))
   (endp (access-conflict node)))
 
-
-(define-constant +hash-level+ 6)
 
 #|
 
