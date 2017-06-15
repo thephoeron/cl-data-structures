@@ -53,12 +53,16 @@ Macros
                    (return-from ,!block
                      ,on-nil)))
              ,(when on-leaf
-                `(when ,!leaf
-                   (return-from ,!block
-                     ,on-leaf)))
+                `(let ((,node ,node))
+                   (declare (type bottom-node ,node))
+                   (when ,!leaf
+                      (return-from ,!block
+                        ,on-leaf))))
              ,on-every
-             (when (or ,!leaf (null ,node))
-               (return-from ,!block ,node))))))))
+             (let ((,node ,node))
+               (declare (type hash-node ,node))
+               (when (or ,!leaf (null ,node))
+                 (return-from ,!block ,node)))))))))
 
 
 (defmacro with-hash-tree-functions (container &body body)
