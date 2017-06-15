@@ -60,16 +60,14 @@ Macros
                    (return-from ,!block
                      ,on-nil)))
              ,(when on-leaf
-                `(let ((,node ,node))
-                   (declare (type bottom-node ,node))
-                   (when ,!leaf
-                      (return-from ,!block
-                        ,on-leaf))))
+                `(when ,!leaf
+                   (let ((,node ,node))
+                     (declare (type bottom-node ,node))
+                     (return-from ,!block
+                       ,on-leaf))))
              ,on-every
-             (let ((,node ,node))
-               (declare (type hash-node ,node))
-               (when (or ,!leaf (null ,node))
-                 (return-from ,!block ,node)))))))))
+             (when (or ,!leaf (null ,node))
+               (return-from ,!block ,node))))))))
 
 
 (defmacro with-hash-tree-functions (container &body body)
@@ -202,6 +200,11 @@ Tree structure of HAMT
               :documentation "List of elements with conflicting hash."))
   (:documentation "Conflict node simply holds list of elements that are conflicting."))
 
+(-> fast-access-conflict (conflict-node) list)
+(defun fast-access-conflict (node)
+  (declare (optimize (speed 3) (safety 0)))
+  (slot-value node '%conflict))
+(declaim (inline fast-access-conflict))
 
 (-> make-conflict-node (list) conflict-node)
 (defun make-conflict-node (content)

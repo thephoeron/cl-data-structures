@@ -69,7 +69,7 @@
             :on-leaf (multiple-value-bind (r f)
                          (try-find
                           location
-                          (access-conflict (the conflict-node node))
+                          (fast-access-conflict node)
                           :test #'location-test)
                        (values (and f (hash.location.value-value r)) f))
             :on-nil (values nil nil))))))
