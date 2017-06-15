@@ -8,7 +8,7 @@
            :writer write-value)
    (%found :initarg :found
            :reader read-found
-           :writer write-value)))
+           :writer write-found)))
 
 
 (defclass eager-modification-operation-status

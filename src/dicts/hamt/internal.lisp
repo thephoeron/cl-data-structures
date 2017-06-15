@@ -371,6 +371,7 @@ Copy nodes and stuff.
                          (:content simple-vector))
     hash-node)
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
+  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
   (make-hash-node
    :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
    :node-mask (or node-mask (hash-node-node-mask node))

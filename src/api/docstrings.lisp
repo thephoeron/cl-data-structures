@@ -243,6 +243,20 @@
 
 
 (set-documentation
+ 'transaction <mechanics> <macro> *documentation*
+ :syntax
+ "transaction (binding instance) &body operations"
+
+ :arguments-and-values
+ '((binding "Symbol, will be bound to the transactionl instance.")
+   (instance "Form that evaluates to container that will be changed in transactional way.")
+   (operations "Body, containing operations that modify transactional instance"))
+
+ :description
+ "Utility macro. &body is executed in the lexical scope of transactional instance. After last operation, new instance is returned.")
+
+
+(set-documentation
  'mod-bind <mechanics> <macro> *documentation*
  :syntax
  "mod-bind (first &optional found value) values-form body"

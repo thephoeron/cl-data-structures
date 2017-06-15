@@ -35,6 +35,7 @@
    #:argument-out-of-bounds
 
    #:mod-bind
+   #:transaction
    #:*documentation*))
 
 (in-package #:cl-ds)
