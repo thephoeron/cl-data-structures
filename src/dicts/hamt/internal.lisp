@@ -6,7 +6,9 @@ Basic types
 
 |#
 
-(define-constant +hash-level+ 6)
+(define-constant +hash-level+ 5)
+(define-constant +maximum-children-count+ (ash 1 +hash-level+))
+(define-constant +depth+ (floor (/ 64 +hash-level+)))
 
 
 (deftype maybe-node ()
@@ -18,15 +20,27 @@ Basic types
 
 
 (deftype hash-node-index ()
-  `(integer 0 ,(ash 2 (1- +hash-level+))))
+  `(integer 0 ,+maximum-children-count+))
+
+
+(deftype hash-node-size ()
+  `(integer 0 ,(1+ +maximum-children-count+)))
 
 
 (deftype hash-mask ()
-  `(unsigned-byte ,(ash 2 (1- +hash-level+))))
+  `(unsigned-byte ,+maximum-children-count+))
 
 
 (deftype just-node ()
   `(or hash-node bottom-node))
+
+
+(deftype node-path ()
+  `(simple-vector ,+depth+))
+
+
+(deftype index-path ()
+  `(simple-array fixnum (,+depth+)))
 
 #|
 
@@ -41,7 +55,7 @@ Macros
   (with-gensyms (!pos !block !leaf)
     (once-only (hash root max-depth)
       `(block ,!block
-         (assert (<= ,max-depth 10))
+         (assert (<= ,max-depth +depth+))
          (do ((,!pos ,+hash-level+ (the fixnum (+ ,!pos ,+hash-level+)))
               (,index (ldb (byte ,+hash-level+ 0) ,hash)
                       (ldb (byte ,+hash-level+ ,!pos) ,hash))
@@ -51,9 +65,9 @@ Macros
               (,node ,root (and (hash-node-contains ,node ,index)
                                 (hash-node-access ,node ,index))))
              ((= ,count ,max-depth)
-              (values ,node
-                      ,count))
-           (declare (type fixnum ,hash ,!pos ,index ,count))
+              (values ,node ,count))
+           (declare (type fixnum ,hash ,!pos ,index ,count)
+                    (dynamic-extent ,!pos ,index ,count))
            (progn
              ,(when on-nil
                 `(when (null ,node)
@@ -87,13 +101,13 @@ Macros
   (with-gensyms (!count !path !indexes !depth !max-depth !root !index)
     (once-only (container)
       `(let* ((,!max-depth (read-max-depth ,container))
-              (,!path (make-array 12))
-              (,!indexes (make-array 12 :element-type 'fixnum))
+              (,!path (make-array +depth+))
+              (,!indexes (make-array +depth+ :element-type 'fixnum))
               (,!depth 0)
               (,!root (access-root ,container)))
          (declare (type fixnum ,!depth)
-                  (type (simple-array fixnum (12)) ,!indexes)
-                  (type (simple-vector 12) ,!path)
+                  (type index-path ,!indexes)
+                  (type node-path ,!path)
                   (dynamic-extent ,!path ,!indexes ,!depth))
          (hash-do
              (,node ,!index ,!count)
@@ -111,8 +125,8 @@ Macros
   (with-gensyms (!path !depth !indexes !rewrite)
     (once-only (container)
       `(flet ((,!rewrite (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
-                (declare (type (simple-array fixnum) ,!indexes)
-                         (type simple-array ,!path)
+                (declare (type index-path ,!indexes)
+                         (type node-path ,!path)
                          (type fixnum ,!depth)
                          (type maybe-node conflict))
                 (with-vectors (,!path ,!indexes)
@@ -278,7 +292,7 @@ Functions with basic bit logic.
 
 |#
 
-(-> hash-node-whole-mask (hash-node) (unsigned-byte 64))
+(-> hash-node-whole-mask (hash-node) hash-mask)
 (defun hash-node-whole-mask (node)
   (logior (hash-node-node-mask node) (hash-node-leaf-mask node)))
 
@@ -340,7 +354,7 @@ Functions with basic bit logic.
 (declaim (inline hash-node-access))
 
 
-(-> hash-node-size (hash-node) (integer 0 64))
+(-> hash-node-size (hash-node) hash-node-size)
 (defun hash-node-size (node)
   (logcount (hash-node-whole-mask node)))
 
@@ -376,9 +390,9 @@ Copy nodes and stuff.
 
 
 (-> copy-node (hash-node &key
-                         (:leaf-mask (unsigned-byte 64))
-                         (:node-mask (unsigned-byte 64))
-                         (:modification-mask (unsigned-byte 64))
+                         (:leaf-mask hash-mask)
+                         (:node-mask hash-mask)
+                         (:modification-mask hash-mask)
                          (:content simple-vector))
     hash-node)
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
@@ -396,7 +410,7 @@ Copy nodes and stuff.
   (let* ((content (copy-array (hash-node-content hash-node)))
          (leaf-mask (hash-node-leaf-mask hash-node))
          (node-mask (hash-node-node-mask hash-node)))
-    (declare (type (unsigned-byte 64) leaf-mask node-mask))
+    (declare (type hash-mask leaf-mask node-mask))
     (if (hash-node-p item)
         (setf (ldb (byte 1 index) node-mask) 1
               (ldb (byte 1 index) leaf-mask) 0)
@@ -420,7 +434,7 @@ Copy nodes and stuff.
     (with-vectors ((current-array (hash-node-content hash-node))
                    (new-array (make-array (1+ (array-dimension current-array 0)))))
       (assert (~> (array-dimension new-array 0)
-                  (<= 64)))
+                  (<= +maximum-children-count+)))
       ;;before new element
       (iterate
 
@@ -468,7 +482,7 @@ Copy nodes and stuff.
 
 
 (-> rebuild-rehashed-node (fixnum fixnum bottom-node) just-node)
-(-> build-rehashed-node (fixnum fixnum (simple-vector 64)) just-node)
+(-> build-rehashed-node (fixnum fixnum simple-vector) just-node)
 (defun build-rehashed-node (depth max-depth content)
   (let ((mask 0)
         (node-mask 0)
@@ -499,7 +513,7 @@ Copy nodes and stuff.
 
 
 (let ((max-mask (iterate
-                  (for i from 0 below 64)
+                  (for i from 0 below +maximum-children-count+)
                   (for result
                        initially 0
                        then (dpb 1 (byte 1 i) result))
@@ -605,7 +619,7 @@ Copy nodes and stuff.
 (-> map-hash-tree ((-> (bottom-node) t) hash-node) hash-node)
 (defun map-hash-tree (fn root)
   (iterate
-    (with stack = (make-array 32
+    (with stack = (make-array +depth+
                               :element-type 'maybe-node
                               :adjustable t
                               :fill-pointer 1
@@ -618,7 +632,7 @@ Copy nodes and stuff.
       (hash-node (with-accessors ((mask hash-node-whole-mask)
                                   (content hash-node-content)) node
                    (iterate
-                     (for i from 0 below 64)
+                     (for i from 0 below +maximum-children-count+)
                      (with index = 0)
                      (unless (~> (ldb (byte 1 i) mask)
                                  zerop)
@@ -629,7 +643,7 @@ Copy nodes and stuff.
   root)
 
 
-(-> contains-part-of-hash (fixnum fixnum (integer 0 64)) boolean)
+(-> contains-part-of-hash (fixnum fixnum non-negative-fixnum) boolean)
 (defun contains-part-of-hash (hash partial-hash depth)
   (~>> hash
        (logxor partial-hash)
@@ -639,7 +653,7 @@ Copy nodes and stuff.
 
 (defmethod rehash (conflict level cont)
   (declare (type conflict-node conflict))
-  (let ((result (make-array 64 :initial-element nil))
+  (let ((result (make-array +maximum-children-count+ :initial-element nil))
         (byte (byte +hash-level+ (* +hash-level+ level))))
     (declare (dynamic-extent byte)
              (dynamic-extent result))
@@ -700,8 +714,8 @@ Copy nodes and stuff.
 
 (-> copy-on-write ((vector fixnum) vector fixnum fixnum maybe-node) maybe-node)
 (defun copy-on-write (indexes path depth max-depth conflict)
-  (declare (type (simple-array fixnum) indexes)
-           (type simple-array path)
+  (declare (type index-path indexes)
+           (type node-path path)
            (type fixnum depth)
            (type maybe-node conflict)
            (optimize (speed 3)))
@@ -813,7 +827,7 @@ Copy nodes and stuff.
 (-> clear-modification-masks (hash-node) hash-node)
 (defun clear-modification-masks (node)
   (iterate
-    (for i from 0 below 64)
+    (for i from 0 below +maximum-children-count+)
     (when (and (hash-node-content-modified node i)
                (hash-node-contains-node node i))
       (clear-modification-masks (hash-node-access node i))))
@@ -967,7 +981,7 @@ Copy nodes and stuff.
                     parent)))
     (with-vectors ((content (hash-node-content parent)))
       (iterate
-        (for i from 0 below 64)
+        (for i from 0 below +maximum-children-count+)
         (for was-modified = (and (hash-node-contains-node parent i)
                                  (hash-node-content-modified parent i)))
         (when was-modified

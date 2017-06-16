@@ -3,7 +3,7 @@
   (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
   (:shadowing-import-from :iterate :collecting :summing :in)
   (:export :run-stress-test
-   :run-suite)) 
+   :run-suite))
 (in-package :mutable-dictionary-test-suite)
 
 (setf prove:*enable-colors* nil)

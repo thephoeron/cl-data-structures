@@ -648,3 +648,37 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:emptyp ((container hamt-dictionary))
   (null (access-root container)))
 
+
+(let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
+  (defun read-all-words ()
+    (let ((result (vect)))
+      (with-open-file (str path)
+        (iterate
+          (for word = (read-line str nil nil))
+          (while word)
+          (vector-push-extend word result)))
+      result)))
+
+
+(defvar *all-words* (read-all-words))
+(defparameter *hamt* (make-mutable-hamt-dictionary #'sxhash #'string=))
+(defparameter *hash-table* (make-hash-table :test 'equal))
+
+
+(iterate
+  (for i below 10000)
+  (for word in-vector *all-words*)
+  (setf (gethash word *hash-table*) word
+        (cl-ds:at *hamt* word) word))
+
+(time
+ (iterate
+   (for i below 10000)
+   (for word in-vector *all-words*)
+   (cl-ds:at *hamt* word)))
+(time
+ (iterate
+   (for i below 10000)
+   (for word in-vector *all-words*)
+   (gethash word *hash-table*)))
+
