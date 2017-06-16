@@ -344,7 +344,7 @@ Functions with basic bit logic.
 (declaim (inline hash-node-contains-node))
 
 
-(-> hash-node-access (hash-node hash-node-index) t)
+(-> hash-node-access (hash-node hash-node-index) (or hash-node bottom-node))
 (defun hash-node-access (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
   (~>> (hash-node-to-masked-index hash-node index)
