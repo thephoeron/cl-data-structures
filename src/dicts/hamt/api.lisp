@@ -22,9 +22,9 @@
                                      (-> (t t) boolean)
                                      &key (:max-depth positive-fixnum))
     functional-hamt-dictionary)
-(defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
+(defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
   (declare (optimize (safety 3)))
-  (unless (< 0 max-depth 11)
+  (unless (< 0 max-depth (1+ +depth+))
     (error 'cl-ds:argument-out-of-bounds
            "MAX-DEPTH has value = ~a but it has to be between 0 and 11"
            max-depth))
@@ -39,12 +39,13 @@
                                   (-> (t t) boolean)
                                   &key (:max-depth positive-fixnum))
     mutable-hamt-dictionary)
-(defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth 8))
+(defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
   (declare (optimize (safety 3)))
-  (unless (< 0 max-depth 11)
+  (unless (< 0 max-depth (1+ +depth+))
     (error 'cl-ds:argument-out-of-bounds
-           "MAX-DEPTH has value = ~a but it has to be between 0 and 11"
-           max-depth))
+           "MAX-DEPTH has value = ~a but it has to be between 0 and ~a"
+           max-depth
+           +depth+))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
                                         :equal-fn equal-fn
                                         :hash-fn hash-fn

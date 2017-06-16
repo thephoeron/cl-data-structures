@@ -270,7 +270,7 @@ Interface class.
               :initarg :equal-fn
               :documentation "Closure used for comparing items at the bottom level lists.")
    (%max-depth :initarg :max-depth
-               :type (integer 0 10)
+               :type non-negative-fixnum
                :reader read-max-depth
                :documentation "Maximal depth of tree.")
    (%size :initarg :size
