@@ -42,7 +42,7 @@ Macros
     (once-only (hash root max-depth)
       `(block ,!block
          (assert (<= ,max-depth 10))
-         (do ((,!pos ,+hash-level+ (+ ,!pos ,+hash-level+))
+         (do ((,!pos ,+hash-level+ (the fixnum (+ ,!pos ,+hash-level+)))
               (,index (ldb (byte ,+hash-level+ 0) ,hash)
                       (ldb (byte ,+hash-level+ ,!pos) ,hash))
               (,count 0 (1+ ,count))
@@ -56,7 +56,7 @@ Macros
            (declare (type fixnum ,hash ,!pos ,index ,count))
            (progn
              ,(when on-nil
-                `(unless ,node
+                `(when (null ,node)
                    (return-from ,!block
                      ,on-nil)))
              ,(when on-leaf
@@ -333,9 +333,8 @@ Functions with basic bit logic.
 (-> hash-node-access (hash-node hash-node-index) t)
 (defun hash-node-access (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
-  (handler-case
-      (~>> (hash-node-to-masked-index hash-node index)
-           (aref (hash-node-content hash-node)))))
+  (~>> (hash-node-to-masked-index hash-node index)
+       (aref (hash-node-content hash-node))))
 
 
 (declaim (inline hash-node-access))
