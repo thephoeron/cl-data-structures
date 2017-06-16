@@ -54,7 +54,7 @@
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Implementation of AT"
   (with-hash-tree-functions container
     (let* ((hash (hash-fn location))
@@ -79,7 +79,7 @@
     (values functional-hamt-dictionary
             cl-ds:fundamental-modification-operation-status))
 (defun functional-hamt-dictionary-erase (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Implementation of ERASE"
   (with-hash-tree-functions container
     (let ((hash (hash-fn location)))
@@ -647,3 +647,4 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:emptyp ((container hamt-dictionary))
   (null (access-root container)))
+
