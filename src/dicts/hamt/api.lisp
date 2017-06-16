@@ -59,10 +59,12 @@
   (with-hash-tree-functions container
     (let* ((hash (hash-fn location))
            (root (access-root container)))
+      (declare (type fixnum hash))
       (flet ((location-test (loc location)
                (and (eql hash (hash.location.value-hash loc))
                     (equal-fn location
                               (hash.location.value-location loc)))))
+        (declare (dynamic-extent (function location-test)))
         (hash-do
             (node index)
             (root hash)
@@ -647,4 +649,3 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:emptyp ((container hamt-dictionary))
   (null (access-root container)))
-
