@@ -5,5 +5,9 @@
   ())
 
 
-(define-condition argument-out-of-bounds (data-structure-condition)
+(define-condition argument-out-of-bounds ()
+  ())
+
+
+(define-condition not-implemented ()
   ())

@@ -29,6 +29,7 @@
                              (:file "types")
                              (:file "ordered-algorithms")
                              (:file "lists")
+                             (:file "trivial")
                              (:file "modification-algorithms")))
                (:module "dicts"
                 :components ((:file "packages")

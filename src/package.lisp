@@ -33,6 +33,7 @@
 
    #:data-structure-condition
    #:argument-out-of-bounds
+   #:not-implemented
 
    #:mod-bind
    #:transaction
