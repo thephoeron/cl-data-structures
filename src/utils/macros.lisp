@@ -120,7 +120,7 @@
           (cons 'progn (mapcar #'cadr forms)))))
 
   (defun every-possible-combination (count)
-    (assert (> count 0))
+    (assert (>= count 0))
     (labels ((impl (count ac)
                (if (zerop count)
                    ac
