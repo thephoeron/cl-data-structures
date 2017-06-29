@@ -103,6 +103,6 @@
 
 (defun run-suite ()
   (plan 28)
-  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
+  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 2)
   (finalize))
 

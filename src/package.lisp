@@ -2,7 +2,7 @@
 
 
 (defpackage :cl-data-structures
-  (:use #:common-lisp #:docstample)
+  (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
    ;; generic functions

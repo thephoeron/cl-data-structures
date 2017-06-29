@@ -117,7 +117,20 @@
                                     (remove-if #'check-test forms))))
                   (generate-if-else (cdr conditions) r)
                   '(error "Unhalded case!")))
-          (cons 'progn (mapcar #'cadr forms))))))
+          (cons 'progn (mapcar #'cadr forms)))))
+
+  (defun every-possible-combination (count)
+    (assert (> count 0))
+    (labels ((impl (count ac)
+               (if (zerop count)
+                   ac
+                   (append (impl (1- count)
+                                 (mapcar (curry #'cons t)
+                                         ac))
+                           (impl (1- count)
+                                 (mapcar (curry #'cons nil)
+                                         ac))))))
+      (impl count (list (list))))))
 
 
 (defmacro cond+ (tests &body forms)
@@ -129,6 +142,14 @@
   @item(forms -- list of clauses that are supposed to be checked against conditions)
   @end(list)"
   (generate-if-else tests forms))
+
+
+(defmacro cases (tests &body form)
+  "Macro, used for elemination of code branches by duplicating code."
+  (let* ((count (length tests)))
+    `(cond+ ,tests
+       ,@(mapcar (rcurry #'list `(progn ,@form))
+                 (every-possible-combination count)))))
 
 
 (defmacro cond-compare ((a b) < = >)

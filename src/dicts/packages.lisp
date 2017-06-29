@@ -2,14 +2,15 @@
 
 
 (defpackage :cl-data-structures.dicts
-  (:use #:common-lisp #:docstample)
+  (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:dictionary))
 
 
 (defpackage :cl-data-structures.dicts.hamt
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils #:docstample)
+  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
+        #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds.dicts.hamt)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
