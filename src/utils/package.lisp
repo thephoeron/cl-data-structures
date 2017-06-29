@@ -22,4 +22,5 @@
    #:ordered-p
    #:try-find-cell
    #:todo
+   #:cases
    #:try-remove))
