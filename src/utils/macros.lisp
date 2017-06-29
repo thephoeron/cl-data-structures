@@ -148,12 +148,12 @@
   "Macro, used for elemination of code branches by duplicating code."
   (let* ((count (length tests)))
     `(cond+ ,tests
-       ,@(mapcar (rcurry #'list `(progn ,@form))
+       ,@(mapcar (lambda (x) `(,x ,@form))
                  (every-possible-combination count)))))
 
 
 (defmacro cond-compare ((a b) < = >)
   (once-only (a b)
     `(cond ((< ,a ,b) ,<)
-           ((= ,a ,b) ,=)
-           ((> ,a ,b) ,>))))
+           ((> ,a ,b) ,>)
+           ((= ,a ,b) ,=))))
