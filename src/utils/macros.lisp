@@ -130,7 +130,7 @@
                            (impl (1- count)
                                  (mapcar (curry #'cons nil)
                                          ac))))))
-      (impl count (list (list))))))
+      (impl count '(nil)))))
 
 
 (defmacro cond+ (tests &body forms)
