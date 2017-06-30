@@ -70,7 +70,10 @@
     @item(second -- did anything was removed?)
     @item(third -- value that was removed (or nil if nothing was removed))
    @end(list)"
-  (cases ((eq test #'eql) (eq test #'equal) (eq test #'eq) (eq key #'identity))
+  (cases ((eq test #'eql)
+          (eq test #'equal)
+          (eq test #'eq)
+          (eq key #'identity))
     (iterate
       (for sublist on list)
       (for elt = (car sublist))
@@ -99,7 +102,10 @@
 (defun try-find-cell (item list &key (test #'eql) (key #'identity))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "@b(Returns) first matching sublist"
-  (cases ((eq test #'eql) (eq test #'equal) (eq test #'eq) (eq key #'identity))
+  (cases ((eq test #'eql)
+          (eq test #'equal)
+          (eq test #'eq)
+          (eq key #'identity))
     (iterate
       (for elt on list)
       (when (funcall test
