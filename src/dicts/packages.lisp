@@ -16,6 +16,10 @@
   (:export
 
    #:read-max-depth
+   #:transactional-hamt-dictionary
+   #:mutable-hamt-dictionary
+   #:functional-hamt-dictionary
+   #:hamt-dictionary
 
    #:make-functional-hamt-dictionary
    #:make-mutable-hamt-dictionary

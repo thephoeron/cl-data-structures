@@ -1,5 +1,5 @@
 (in-package #:cl-ds.dicts)
 
 
-(defclass dictionary () ())
+(defclass dictionary (cl-ds:fundamental-container) ())
 
