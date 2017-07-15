@@ -22,7 +22,9 @@
                              (:file "docstrings")))
                (:module "common"
                 :components ((:file "package")
-                             (:file "eager-modification-operation-status")))
+                             (:file "modification-operation-status")
+                             (:file "eager-modification-operation-status")
+                             (:file "lazy-box")))
                (:module "utils"
                 :components ((:file "package")
                              (:file "macros")

@@ -30,6 +30,9 @@
 
 (defgeneric become-transactional (container))
 
+(defgeneric become-lazy (container)
+  (:method ((container lazy)) container))
+
 (defgeneric mutablep (container)
   (:method ((container mutable)) t)
   (:method ((container fundamental-container)) nil))

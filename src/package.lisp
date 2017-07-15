@@ -21,6 +21,7 @@
    #:become-functional
    #:become-mutable
    #:become-transactional
+   #:become-lazy
    #:mutablep
    #:functionalp
    #:transactionalp
@@ -29,6 +30,7 @@
    #:fundamental-modification-operation-status
    #:functional
    #:transactional
+   #:lazy
    #:mutable
 
    #:data-structure-condition
