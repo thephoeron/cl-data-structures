@@ -113,7 +113,8 @@
                              :lazy-instance next-instance))))
    (flet ((wrapper (instance)
             (let ((eager-status (nth-value 1 (apply t-operation instance args))))
-              (setf (access-eager-status lazy-status) eager-status)
+              (unless (slot-boundp lazy-status '%eager-status)
+                (setf (access-eager-status lazy-status) eager-status))
               nil)))
      (vector-push-extend #'wrapper (access-operations next-operations-box))
      (values next-instance
