@@ -115,7 +115,7 @@
          (iterate
            (for s from 1 below limit)
            (for word in-vector *all-words*)
-           (cl-ds:at dict word)))))))
+           (cl-ds.dicts.hamt:hamt-dictionary-at dict word)))))))
   
 
 

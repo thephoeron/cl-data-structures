@@ -380,7 +380,6 @@ Copy nodes and stuff.
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
-(declaim (inline go-down-on-path))
 (defun go-down-on-path (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
   (declare (optimize (debug 3) (safety 0)))
   (let ((old-value nil)
@@ -894,7 +893,6 @@ Copy nodes and stuff.
 (-> copying-erase-implementation
     (fundamental-hamt-container fixnum t function list)
     (values maybe-node boolean t))
-(declaim (inline copying-erase-implementation))
 (defun copying-erase-implementation (container hash location after after-args)
   (declare (optimize (speed 3) (safety 0)))
   (flet ((remove-from-conflict (node)
