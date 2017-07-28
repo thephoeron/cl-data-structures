@@ -6,21 +6,21 @@
   (:nicknames #:cl-ds.utils)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:extendable-vector
-   #:lazy-let
-   #:with-vectors
    #:bind-lambda
-   #:merge-ordered-vectors
-   #:cond+
-   #:swapop
-   #:erase-from-vector
-   #:pop-last
-   #:cond-compare
-   #:insert-or-replace
-   #:copy-without
-   #:try-find
-   #:ordered-p
-   #:try-find-cell
-   #:todo
    #:cases
-   #:try-remove))
+   #:cond+
+   #:cond-compare
+   #:copy-without
+   #:erase-from-vector
+   #:extendable-vector
+   #:insert-or-replace
+   #:lazy-let
+   #:merge-ordered-vectors
+   #:ordered-p
+   #:pop-last
+   #:swapop
+   #:todo
+   #:try-find
+   #:try-find-cell
+   #:try-remove
+   #:with-vectors))

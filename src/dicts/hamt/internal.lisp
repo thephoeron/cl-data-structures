@@ -211,7 +211,9 @@ Tree structure of HAMT
 (declaim (inline make-hash.location.value))
 
 
-(-> same-location (hash.location.value hash.location.value (-> (t t) boolean)) boolean)
+(-> same-location
+    (hash.location.value hash.location.value (-> (t t) boolean))
+    boolean)
 (declaim (inline same-location))
 (defun same-location (existing new-location equal-fn)
   (declare (optimize (speed 3)))
@@ -318,7 +320,7 @@ Functions with basic bit logic.
 
 (-> hash-node-to-masked-index (hash-node (hash-node-index)) hash-node-index)
 (defun hash-node-to-masked-index (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> hash-node
        hash-node-whole-mask
        (ldb (byte index 0))
@@ -330,7 +332,7 @@ Functions with basic bit logic.
 
 (-> hash-node-contains (hash-node hash-node-index) boolean)
 (defun hash-node-contains (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-whole-mask hash-node)
        (ldb (byte 1 index))
        zerop
@@ -339,7 +341,7 @@ Functions with basic bit logic.
 
 (-> hash-node-contains-leaf (hash-node hash-node-index) boolean)
 (defun hash-node-contains-leaf (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-leaf-mask hash-node)
        (ldb (byte 1 index))
        zerop
@@ -348,7 +350,7 @@ Functions with basic bit logic.
 
 (-> hash-node-contains-node (hash-node hash-node-index) boolean)
 (defun hash-node-contains-node (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-node-mask hash-node)
        (ldb (byte 1 index))
        zerop
@@ -362,7 +364,7 @@ Functions with basic bit logic.
 
 (-> hash-node-access (hash-node hash-node-index) (or hash-node bottom-node))
 (defun hash-node-access (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-to-masked-index hash-node index)
        (aref (hash-node-content hash-node))))
 
@@ -373,6 +375,7 @@ Functions with basic bit logic.
 
 (-> hash-node-size (hash-node) hash-node-size)
 (defun hash-node-size (node)
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (logcount (hash-node-whole-mask node)))
 
 #|
@@ -388,7 +391,11 @@ Copy nodes and stuff.
                                                 function list)
     (values maybe-node boolean t))
 (defun go-down-on-path (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
-  (declare (optimize (debug 3) (safety 0)))
+  (declare (optimize (speed 3)
+                     (debug 0)
+                     (safety 0)
+                     (compilation-speed 0)
+                     (space 0)))
   (let ((old-value nil)
         (found nil))
     (flet ((after (indexes path depth next)
@@ -425,7 +432,11 @@ Copy nodes and stuff.
 (-> hash-node-replace-in-the-copy (hash-node t hash-node-index) hash-node)
 (declaim (inline hash-node-replace-in-the-copy))
 (defun hash-node-replace-in-the-copy (hash-node item index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3)
+                     (debug 0)
+                     (safety 0)
+                     (compilation-speed 0)
+                     (space 0)))
   (let* ((content (copy-array (hash-node-content hash-node)))
          (leaf-mask (hash-node-leaf-mask hash-node))
          (node-mask (hash-node-node-mask hash-node)))
@@ -447,9 +458,15 @@ Copy nodes and stuff.
 (-> hash-node-insert-into-copy (hash-node t hash-node-index) hash-node)
 (declaim (inline hash-node-insert-into-copy))
 (defun hash-node-insert-into-copy (hash-node content index)
+  (declare (optimize (speed 3)
+                     (debug 0)
+                     (safety 0)
+                     (compilation-speed 0)
+                     (space 0)))
   (let ((position (hash-node-to-masked-index hash-node index)))
-    (with-vectors ((current-array (hash-node-content hash-node))
-                   (new-array (make-array (1+ (array-dimension current-array 0)))))
+    (with-vectors
+        ((current-array (hash-node-content hash-node))
+         (new-array (make-array (1+ (array-dimension current-array 0)))))
       (assert (~> (array-dimension new-array 0)
                   (<= +maximum-children-count+)))
       ;;before new element
@@ -786,7 +803,9 @@ Copy nodes and stuff.
     result))
 
 
-(-> hash-node-transactional-insert (boolean hash-node just-node hash-node-index) hash-node)
+(-> hash-node-transactional-insert
+    (boolean hash-node just-node hash-node-index)
+    hash-node)
 (defun hash-node-transactional-insert (must-copy node content index)
   (let ((result (if must-copy
                     (hash-node-insert-into-copy node content index)
@@ -795,7 +814,9 @@ Copy nodes and stuff.
     result))
 
 
-(-> hash-node-transactional-remove (boolean hash-node hash-node-index) hash-node)
+(-> hash-node-transactional-remove
+    (boolean hash-node hash-node-index)
+    hash-node)
 (defun hash-node-transactional-remove (must-copy node index)
   (let ((result (if must-copy
                     (hash-node-remove! node index)
@@ -892,7 +913,8 @@ Copy nodes and stuff.
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (declaim (inline copying-insert-implementation))
-(defun copying-insert-implementation (container hash location new-value after after-args)
+(defun copying-insert-implementation
+    (container hash location new-value after after-args)
   (declare (optimize (speed 3)))
   (with-hash-tree-functions container
     (go-down-on-path container hash
@@ -969,7 +991,11 @@ Copy nodes and stuff.
 (defun copying-add-implementation (container hash
                                    location new-value
                                    after after-args)
-  (declare (optimize (debug 3) (safety 0)))
+  (declare (optimize (speed 3)
+                     (debug 0)
+                     (safety 0)
+                     (compilation-speed 0)
+                     (space 0)))
   (with-hash-tree-functions container
     (labels ((location-test (location node)
                (and (eql hash (hash.location.value-hash node))
