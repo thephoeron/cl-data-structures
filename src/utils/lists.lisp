@@ -7,6 +7,7 @@
                             (:item-key (-> (t) t))
                             (:preserve-order boolean))
     (values list boolean t))
+(declaim (inline insert-or-replace))
 (defun insert-or-replace (list element &key
                                          (test #'eql)
                                          (list-key #'identity)
@@ -60,6 +61,7 @@
                   (:key (-> (t) t))
                   (:preserve-order boolean))
     (values list boolean t))
+(declaim (inline try-remove))
 (defun try-remove (item list &key (test #'eql) (key #'identity) (preserve-order nil))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Try to remove first item matching from the list.
@@ -99,6 +101,7 @@
 
 
 (-> try-find-cell (t list &key (:test (-> (t t) boolean)) (:key (-> (t) t))) list)
+(declaim (inline try-find-cell))
 (defun try-find-cell (item list &key (test #'eql) (key #'identity))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "@b(Returns) first matching sublist"
@@ -111,10 +114,11 @@
       (when (funcall test
                      (funcall key (car elt))
                      item)
-        (return-from try-find-cell elt)))))
+        (leave elt)))))
 
 
 (-> try-find-cell (t list &key (:test (-> (t t) boolean)) (:key (-> (t) t))) (values t boolean))
+(declaim (inline try-find))
 (defun try-find (item list &key (test #'eql) (key #'identity))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "@b(Returns) first matching elements as first value and boolean telling if it was found as second"
