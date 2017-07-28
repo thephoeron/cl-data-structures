@@ -89,16 +89,34 @@
              (is o word :test #'string=)
              (is (size dict) (1- old-size))
              (is v dict)
-             (is (at v word) nil)))))))
+             (is (at v word) nil))))
+       dict)))
 
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))
   (defun run-stress-test (limit)
     (with-open-file (str path :direction :output :if-exists :supersede)
-      (let ((prove:*test-result-output* str))
+      (let ((prove:*test-result-output* str)
+            (dict nil)
+            (hashtable (make-hash-table :test 'equal)))
         (format t "Running mutable HAMT tests, output redirected to ~a:~%" path)
         (diag "Running mutable HAMT tests:")
-        (time (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit))))))
+        (time (setf dict (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit)))
+        (iterate
+          (for s from 1 below limit)
+          (for word in-vector *all-words*)
+          (setf (gethash word hashtable) word))
+        (time
+         (iterate
+           (for s from 1 below limit)
+           (for word in-vector *all-words*)
+           (gethash word hashtable)))
+        (time
+         (iterate
+           (for s from 1 below limit)
+           (for word in-vector *all-words*)
+           (cl-ds:at dict word)))))))
+  
 
 
 (defun run-suite ()
