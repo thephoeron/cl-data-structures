@@ -776,7 +776,8 @@ Copy nodes and stuff.
   node)
 
 
-(-> hash-node-transactional-replace (boolean hash-node just-node hash-node-index) hash-node)
+(-> hash-node-transactional-replace
+    (boolean hash-node just-node hash-node-index) hash-node)
 (defun hash-node-transactional-replace (must-copy node content index)
   (let ((result (if must-copy
                     (hash-node-replace-in-the-copy node content index)
@@ -803,8 +804,12 @@ Copy nodes and stuff.
     result))
 
 
-(-> transactional-copy-on-write ((vector fixnum) vector fixnum fixnum maybe-node boolean) maybe-node)
-(defun transactional-copy-on-write (indexes path depth max-depth conflict root-already-copied)
+(-> transactional-copy-on-write
+    ((vector fixnum) vector fixnum fixnum maybe-node boolean)
+    maybe-node)
+(defun transactional-copy-on-write (indexes path
+                                    depth max-depth
+                                    conflict root-already-copied)
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
            (type fixnum depth)
@@ -930,7 +935,9 @@ Copy nodes and stuff.
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (declaim (inline copying-update-implementation))
-(defun copying-update-implementation (container hash location new-value after after-args)
+(defun copying-update-implementation (container hash
+                                      location new-value
+                                      after after-args)
   (declare (optimize (safety 0) (speed 3)))
   (with-hash-tree-functions container
     (flet ((update-in-conflict (node)
@@ -959,7 +966,9 @@ Copy nodes and stuff.
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
 (declaim (inline copying-add-implementation))
-(defun copying-add-implementation (container hash location new-value after after-args)
+(defun copying-add-implementation (container hash
+                                   location new-value
+                                   after after-args)
   (declare (optimize (debug 3) (safety 0)))
   (with-hash-tree-functions container
     (labels ((location-test (location node)
@@ -1011,3 +1020,4 @@ Copy nodes and stuff.
                   (isolate-transactional-instance (content masked-index)
                                                   t))))))
     parent))
+
