@@ -92,7 +92,7 @@ Macros
              (,!hash (read-hash-fn ,container)))
          (cl-ds.utils:cases ((eq ,!test #'eql)
                              (eq ,!test #'equal)
-                             (eq ,!test #'strin=)
+                             (eq ,!test #'string=)
                              (eq ,!test #'eq))
            (fbind ((equal-fn ,!test)
                    (hash-fn ,!hash))
@@ -100,7 +100,8 @@ Macros
                                  (function equal-fn)))
              (flet ((compare-fn (a b)
                       (the boolean (same-location a b ,!test))))
-               (declare (ignorable (function compare-fn)))
+               (declare (ignorable (function compare-fn))
+                        (dynamic-extent (function compare-fn)))
                ,@body)))))))
 
 
@@ -207,15 +208,11 @@ Tree structure of HAMT
 (declaim (inline same-location))
 (defun same-location (existing new-location equal-fn)
   (declare (optimize (speed 3)))
-  (cases ((eq equal-fn #'string=)
-          (eq equal-fn #'equal)
-          (eq equal-fn #'eq)
-          (eq equal-fn #'eql))
-    (and (eql (hash.location.value-hash existing)
-              (hash.location.value-hash new-location))
-         (funcall equal-fn
-                  (hash.location.value-location existing)
-                  (hash.location.value-location new-location)))))
+  (and (eql (hash.location.value-hash existing)
+            (hash.location.value-hash new-location))
+       (funcall equal-fn
+                (hash.location.value-location existing)
+                (hash.location.value-location new-location))))
 
 
 (defclass conflict-node (bottom-node)
@@ -383,7 +380,8 @@ Copy nodes and stuff.
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
-(defun go-down-on-path (container hash on-leaf on-leaf-args on-nil  on-nil-args after after-args)
+(declaim (inline go-down-on-path))
+(defun go-down-on-path (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
   (declare (optimize (debug 3) (safety 0)))
   (let ((old-value nil)
         (found nil))
