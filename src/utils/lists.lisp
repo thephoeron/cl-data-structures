@@ -22,38 +22,33 @@
     @item(second -- was any item replaced?)
     @item(third -- old value that was replaced (or nil if there was no such value))
    @end(list)"
-  (cases ((eq test #'eql)
-          (eq test #'equal)
-          (eq test #'eql)
-          (eq list-key #'identity)
-          (eq item-key #'identity))
-    (iterate
-      (with last-cell = nil)
-      (with result = nil)
-      (with replaced = nil)
-      (with value = nil)
-      (for sublist on list)
-      (for elt = (car sublist))
-      (if (funcall test (funcall list-key elt) (funcall item-key element))
-          (progn
-            (push element result)
-            (setf replaced t
-                  value elt))
-          (push elt result))
-      (unless last-cell
-        (setf last-cell result))
-      (when (and replaced last-cell (not preserve-order))
-        (setf (cdr last-cell)
-              (cdr sublist))
-        (finish))
-      (finally (return (values (let ((r (if preserve-order
-                                            (nreverse result)
-                                            result)))
-                                 (if replaced
-                                     r
-                                     (cons element r)))
-                               replaced
-                               value))))))
+  (iterate
+    (with last-cell = nil)
+    (with result = nil)
+    (with replaced = nil)
+    (with value = nil)
+    (for sublist on list)
+    (for elt = (car sublist))
+    (if (funcall test (funcall list-key elt) (funcall item-key element))
+        (progn
+          (push element result)
+          (setf replaced t
+                value elt))
+        (push elt result))
+    (unless last-cell
+      (setf last-cell result))
+    (when (and replaced last-cell (not preserve-order))
+      (setf (cdr last-cell)
+            (cdr sublist))
+      (finish))
+    (finally (return (values (let ((r (if preserve-order
+                                          (nreverse result)
+                                          result)))
+                               (if replaced
+                                   r
+                                   (cons element r)))
+                             replaced
+                             value)))))
 
 
 (-> try-remove (t list &key
@@ -72,32 +67,28 @@
     @item(second -- did anything was removed?)
     @item(third -- value that was removed (or nil if nothing was removed))
    @end(list)"
-  (cases ((eq test #'eql)
-          (eq test #'equal)
-          (eq test #'eq)
-          (eq key #'identity))
-    (iterate
-      (for sublist on list)
-      (for elt = (car sublist))
-      (with removed = nil)
-      (with value = nil)
-      (with last-cell = nil)
-      (if (funcall test
-                   (funcall key elt)
-                   item)
-          (setf removed t
-                value elt)
-          (collect elt into result at start))
-      (unless last-cell
-        (setf last-cell result))
-      (when (and removed last-cell (not preserve-order))
-        (setf (cdr last-cell) (cdr sublist))
-        (finish))
-      (finally (return (values (if preserve-order
-                                   (nreverse result)
-                                   result)
-                               removed
-                               value))))))
+  (iterate
+    (for sublist on list)
+    (for elt = (car sublist))
+    (with removed = nil)
+    (with value = nil)
+    (with last-cell = nil)
+    (if (funcall test
+                 (funcall key elt)
+                 item)
+        (setf removed t
+              value elt)
+        (collect elt into result at start))
+    (unless last-cell
+      (setf last-cell result))
+    (when (and removed last-cell (not preserve-order))
+      (setf (cdr last-cell) (cdr sublist))
+      (finish))
+    (finally (return (values (if preserve-order
+                                 (nreverse result)
+                                 result)
+                             removed
+                             value)))))
 
 
 (-> try-find-cell (t list &key (:test (-> (t t) boolean)) (:key (-> (t) t))) list)
@@ -105,16 +96,12 @@
 (defun try-find-cell (item list &key (test #'eql) (key #'identity))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "@b(Returns) first matching sublist"
-  (cases ((eq test #'eql)
-          (eq test #'equal)
-          (eq test #'eq)
-          (eq key #'identity))
-    (iterate
-      (for elt on list)
-      (when (funcall test
-                     (funcall key (car elt))
-                     item)
-        (leave elt)))))
+  (iterate
+    (for elt on list)
+    (when (funcall test
+                   (funcall key (car elt))
+                   item)
+      (leave elt))))
 
 
 (-> try-find-cell (t list &key (:test (-> (t t) boolean)) (:key (-> (t) t))) (values t boolean))

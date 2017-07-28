@@ -178,6 +178,8 @@
                        replaced r
                        old-value (hash.location.value-value v))
                  node)))
+        (declare (dynamic-extent (function destructive-insert))
+                 (inline destructive-insert))
         (let* ((prev-node nil)
                (prev-index 0)
                (root (access-root container))

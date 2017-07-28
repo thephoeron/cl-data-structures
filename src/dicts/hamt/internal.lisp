@@ -92,6 +92,7 @@ Macros
              (,!hash (read-hash-fn ,container)))
          (cl-ds.utils:cases ((eq ,!test #'eql)
                              (eq ,!test #'equal)
+                             (eq ,!test #'strin=)
                              (eq ,!test #'eq))
            (fbind ((equal-fn ,!test)
                    (hash-fn ,!hash))
@@ -203,13 +204,18 @@ Tree structure of HAMT
 
 
 (-> same-location (hash.location.value hash.location.value (-> (t t) boolean)) boolean)
+(declaim (inline same-location))
 (defun same-location (existing new-location equal-fn)
   (declare (optimize (speed 3)))
-  (and (eql (hash.location.value-hash existing)
-            (hash.location.value-hash new-location))
-       (funcall equal-fn
-                (hash.location.value-location existing)
-                (hash.location.value-location new-location))))
+  (cases ((eq equal-fn #'string=)
+          (eq equal-fn #'equal)
+          (eq equal-fn #'eq)
+          (eq equal-fn #'eql))
+    (and (eql (hash.location.value-hash existing)
+              (hash.location.value-hash new-location))
+         (funcall equal-fn
+                  (hash.location.value-location existing)
+                  (hash.location.value-location new-location)))))
 
 
 (defclass conflict-node (bottom-node)
@@ -358,6 +364,7 @@ Functions with basic bit logic.
 
 
 (declaim (inline hash-node-access))
+(declaim (inline hash-node-size))
 
 
 (-> hash-node-size (hash-node) hash-node-size)
@@ -875,6 +882,7 @@ Copy nodes and stuff.
 (-> copying-insert-implementation
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
+(declaim (inline copying-insert-implementation))
 (defun copying-insert-implementation (container hash location new-value after after-args)
   (declare (optimize (speed 3)))
   (with-hash-tree-functions container
@@ -888,6 +896,7 @@ Copy nodes and stuff.
 (-> copying-erase-implementation
     (fundamental-hamt-container fixnum t function list)
     (values maybe-node boolean t))
+(declaim (inline copying-erase-implementation))
 (defun copying-erase-implementation (container hash location after after-args)
   (declare (optimize (speed 3) (safety 0)))
   (flet ((remove-from-conflict (node)
@@ -917,6 +926,7 @@ Copy nodes and stuff.
 (-> copying-udpate-implementation
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
+(declaim (inline copying-update-implementation))
 (defun copying-update-implementation (container hash location new-value after after-args)
   (declare (optimize (safety 0) (speed 3)))
   (with-hash-tree-functions container
@@ -945,6 +955,7 @@ Copy nodes and stuff.
 (-> copying-add-implementation
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
+(declaim (inline copying-add-implementation))
 (defun copying-add-implementation (container hash location new-value after after-args)
   (declare (optimize (debug 3) (safety 0)))
   (with-hash-tree-functions container
@@ -975,6 +986,7 @@ Copy nodes and stuff.
 
 
 (-> hash-node-deep-copy (hash-node) hash-node)
+(declaim (inline hash-node-deep-copy))
 (defun hash-node-deep-copy (node)
   (copy-node node
              :content (copy-array (hash-node-content node))))
