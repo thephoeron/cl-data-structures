@@ -406,6 +406,7 @@ Copy nodes and stuff.
                          (:modification-mask hash-mask)
                          (:content simple-vector))
     hash-node)
+(declaim (inline copy-node))
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
   (make-hash-node
@@ -416,6 +417,7 @@ Copy nodes and stuff.
 
 
 (-> hash-node-replace-in-the-copy (hash-node t hash-node-index) hash-node)
+(declaim (inline hash-node-replace-in-the-copy))
 (defun hash-node-replace-in-the-copy (hash-node item index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
   (let* ((content (copy-array (hash-node-content hash-node)))
@@ -436,10 +438,8 @@ Copy nodes and stuff.
                :content content)))
 
 
-(declaim (inline hash-node-replace-in-the-copy))
-
-
 (-> hash-node-insert-into-copy (hash-node t hash-node-index) hash-node)
+(declaim (inline hash-node-insert-into-copy))
 (defun hash-node-insert-into-copy (hash-node content index)
   (let ((position (hash-node-to-masked-index hash-node index)))
     (with-vectors ((current-array (hash-node-content hash-node))
