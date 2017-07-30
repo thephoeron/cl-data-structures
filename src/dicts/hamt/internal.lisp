@@ -892,7 +892,7 @@ Copy nodes and stuff.
 
 
 (-> clear-modification-masks (hash-node) hash-node)
-(declaim (inline clear-modification-masks))
+(declaim (notinline clear-modification-masks))
 (defun clear-modification-masks (node)
   (declare (optimize (speed 3)))
   (iterate
