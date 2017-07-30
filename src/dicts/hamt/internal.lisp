@@ -394,7 +394,7 @@ Copy nodes and stuff.
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
-(declaim (notinline go-down-on-path))
+(declaim (inline go-down-on-path))
 (defun go-down-on-path
     (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
   (declare (optimize (speed 3)
@@ -510,7 +510,9 @@ Copy nodes and stuff.
                    :content new-array)))))
 
 
+(declaim (inline non-empty-hash-table-p))
 (defun non-empty-hash-table-p (table)
+  (declare (optimize (speed 3)))
   (and (typep table 'hash-table)
        (not (zerop (hash-table-count table)))))
 
@@ -890,7 +892,9 @@ Copy nodes and stuff.
 
 
 (-> clear-modification-masks (hash-node) hash-node)
+(declaim (inline clear-modification-masks))
 (defun clear-modification-masks (node)
+  (declare (optimize (speed 3)))
   (iterate
     (for i from 0 below +maximum-children-count+)
     (when (and (hash-node-content-modified node i)
@@ -934,7 +938,7 @@ Copy nodes and stuff.
 (-> copying-insert-implementation
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
-(declaim (notinline copying-insert-implementation))
+(declaim (inline copying-insert-implementation))
 (defun copying-insert-implementation
     (container hash location new-value after after-args)
   (declare (optimize (speed 3))
@@ -1058,6 +1062,7 @@ Copy nodes and stuff.
 
 
 (-> isolate-transactional-instance (hash-node boolean) hash-node)
+(declaim (notinline isolate-transactional-instance))
 (defun isolate-transactional-instance (parent parent-was-modified)
   (let ((parent (if parent-was-modified
                     (hash-node-deep-copy parent)
