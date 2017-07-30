@@ -84,32 +84,36 @@ Macros
                (return-from ,!block ,node))))))))
 
 
-(defmacro with-hash-tree-functions (container &body body)
+(defmacro with-hash-tree-functions ((container &key (cases t)) &body body)
   "Simple macro adding local functions (all forwards to the container closures)."
   (once-only (container)
     (with-gensyms (!test !hash)
       `(let ((,!test (read-equal-fn ,container))
              (,!hash (read-hash-fn ,container)))
-         (cl-ds.utils:cases ((eq ,!test #'eql)
-                             (eq ,!test #'equal)
-                             (eq ,!test #'string=)
-                             (eq ,!test #'eq))
-           (flet ((compare-fn (a b)
-                    (the boolean (same-location a b ,!test)))
-                  (equal-fn (a b)
-                    (funcall ,!test a b))
-                  (hash-fn (x)
-                    (funcall ,!hash x)))
-             (declare (ignorable (function compare-fn)
-                                 (function hash-fn)
-                                 (function equal-fn))
-                      (inline compare-fn
-                              hash-fn
-                              equal-fn)
-                      (dynamic-extent (function compare-fn)
-                                      (function hash-fn)
-                                      (function equal-fn)))
-             ,@body))))))
+         (nest
+          ,(if cases
+               `(cl-ds.utils:cases
+                    ((eq ,!test #'eql)
+                     (eq ,!test #'equal)
+                     (eq ,!test #'string=)
+                     (eq ,!test #'eq)))
+               `(progn))
+          (flet ((compare-fn (a b)
+                   (the boolean (same-location a b ,!test)))
+                 (equal-fn (a b)
+                   (funcall ,!test a b))
+                 (hash-fn (x)
+                   (funcall ,!hash x)))
+            (declare (ignorable (function compare-fn)
+                                (function hash-fn)
+                                (function equal-fn))
+                     (inline compare-fn
+                             hash-fn
+                             equal-fn)
+                     (dynamic-extent (function compare-fn)
+                                     (function hash-fn)
+                                     (function equal-fn)))
+            ,@body))))))
 
 
 (defmacro with-hamt-path (node container hash &key on-leaf on-nil operation)
@@ -390,26 +394,34 @@ Copy nodes and stuff.
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
-(defun go-down-on-path (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
+(declaim (notinline go-down-on-path))
+(defun go-down-on-path
+    (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
                      (compilation-speed 0)
-                     (space 0)))
+                     (space 0))
+           (type fixnum hash))
   (let ((old-value nil)
         (found nil))
     (flet ((after (indexes path depth next)
-             (the maybe-node (apply after indexes path depth (read-max-depth container) next after-args))))
-      (let ((result (with-hamt-path node container hash
-                      :operation after
-                      :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
-                                 (setf old-value o
-                                       found f)
-                                 n)
-                      :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
-                                (setf old-value o
-                                      found f)
-                                n))))
+             (the maybe-node
+                  (apply after
+                         indexes path
+                         depth (read-max-depth container)
+                         next after-args))))
+      (let ((result
+              (with-hamt-path node container hash
+                :operation after
+                :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
+                           (setf old-value o
+                                 found f)
+                           n)
+                :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
+                          (setf old-value o
+                                found f)
+                          n))))
         (values result found old-value)))))
 
 
@@ -570,6 +582,12 @@ Copy nodes and stuff.
 
 
 (defun rebuild-rehashed-node (depth max-depth conflict)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 3)
+                     (compilation-speed 0))
+           (type fixnum depth max-depth))
   (flet ((cont (array)
            (build-rehashed-node (1+ depth) max-depth array)))
     (declare (dynamic-extent #'cont))
@@ -686,9 +704,13 @@ Copy nodes and stuff.
 
 
 (defmethod rehash (conflict level cont)
-  (declare (type conflict-node conflict))
+  (declare (type conflict-node conflict)
+           (optimize (speed 3)
+                     (safety 0)))
   (let ((result (make-array +maximum-children-count+ :initial-element nil))
-        (byte (byte +hash-level+ (* +hash-level+ level))))
+        (byte (byte +hash-level+ (the fixnum
+                                      (* (the fixnum +hash-level+)
+                                         (the fixnum level))))))
     (declare (dynamic-extent byte)
              (dynamic-extent result))
     (iterate
@@ -912,12 +934,14 @@ Copy nodes and stuff.
 (-> copying-insert-implementation
     (fundamental-hamt-container fixnum t t function list)
     (values maybe-node boolean t))
-(declaim (inline copying-insert-implementation))
+(declaim (notinline copying-insert-implementation))
 (defun copying-insert-implementation
     (container hash location new-value after after-args)
-  (declare (optimize (speed 3)))
-  (with-hash-tree-functions container
-    (go-down-on-path container hash
+  (declare (optimize (speed 3))
+           (type fixnum hash))
+  (with-hash-tree-functions (container :cases nil)
+    (go-down-on-path container
+                     hash
                      #'insert-conflict (list hash location new-value
                                              #'compare-fn)
                      #'wrap-conflict (list hash location new-value)
@@ -927,6 +951,7 @@ Copy nodes and stuff.
 (-> copying-erase-implementation
     (fundamental-hamt-container fixnum t function list)
     (values maybe-node boolean t))
+(declaim (inline copying-erase-implementation))
 (defun copying-erase-implementation (container hash location after after-args)
   (declare (optimize (speed 3) (safety 0)))
   (flet ((remove-from-conflict (node)
@@ -960,8 +985,9 @@ Copy nodes and stuff.
 (defun copying-update-implementation (container hash
                                       location new-value
                                       after after-args)
-  (declare (optimize (safety 0) (speed 3)))
-  (with-hash-tree-functions container
+  (declare (optimize (safety 0) (speed 3))
+           (type fixnum hash))
+  (with-hash-tree-functions (container :cases nil)
     (flet ((update-in-conflict (node)
              (multiple-value-bind (next-list replaced old-value)
                  (insert-or-replace (access-conflict (the conflict-node node))
@@ -995,8 +1021,9 @@ Copy nodes and stuff.
                      (debug 0)
                      (safety 0)
                      (compilation-speed 0)
-                     (space 0)))
-  (with-hash-tree-functions container
+                     (space 0))
+           (type fixnum hash))
+  (with-hash-tree-functions (container :cases nil)
     (labels ((location-test (location node)
                (and (eql hash (hash.location.value-hash node))
                     (equal-fn location (hash.location.value-location node))))

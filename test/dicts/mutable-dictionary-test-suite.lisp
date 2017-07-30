@@ -97,26 +97,11 @@
   (defun run-stress-test (limit)
     (with-open-file (str path :direction :output :if-exists :supersede)
       (let ((prove:*test-result-output* str)
-            (dict nil)
+            (dict (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=))
             (hashtable (make-hash-table :test 'equal)))
         (format t "Running mutable HAMT tests, output redirected to ~a:~%" path)
         (diag "Running mutable HAMT tests:")
-        (time (setf dict (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit)))
-        (iterate
-          (for s from 1 below limit)
-          (for word in-vector *all-words*)
-          (setf (gethash word hashtable) word))
-        (time
-         (iterate
-           (for s from 1 below limit)
-           (for word in-vector *all-words*)
-           (gethash word hashtable)))
-        (time
-         (iterate
-           (for s from 1 below limit)
-           (for word in-vector *all-words*)
-           (cl-ds.dicts.hamt:hamt-dictionary-at dict word)))))))
-  
+        (time (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit))))))
 
 
 (defun run-suite ()

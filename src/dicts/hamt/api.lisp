@@ -57,7 +57,7 @@
 (defun hamt-dictionary-at (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Implementation of AT"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let* ((hash (hash-fn location))
            (root (access-root container)))
       (declare (type fixnum hash))
@@ -84,7 +84,7 @@
 (defun functional-hamt-dictionary-erase (container location)
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Implementation of ERASE"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-erase-implementation container
@@ -111,7 +111,7 @@
 (defun transactional-hamt-dictionary-erase! (container location)
   (declare (optimize (speed 3)))
   "Implementation of ERASE!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-erase-implementation container
@@ -137,7 +137,7 @@
 (defun functional-hamt-dictionary-insert (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of INSERT"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-insert-implementation container hash location new-value
@@ -160,9 +160,10 @@
     (values t
             cl-ds:fundamental-modification-operation-status))
 (defun mutable-hamt-dictionary-insert! (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)
+                     (space 0) (compilation-speed 0)))
   "Implementation of (SETF AT)"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((replaced nil)
           (old-value nil)
           (hash (hash-fn location)))
@@ -227,7 +228,7 @@
                                    (destructive-insert node))))))
           (setf (access-root container) result)
           (unless replaced
-            (incf (access-size container)))
+            (incf (the fixnum (access-size container))))
           (values new-value
                   (cl-ds.common:make-eager-modification-operation-status
                    replaced
@@ -240,7 +241,7 @@
 (defun functional-hamt-dictionary-update (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-update-implementation container hash location new-value
@@ -266,7 +267,7 @@
 (defun functional-hamt-dictionary-add (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let* ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old)
           (copying-add-implementation container hash location new-value
@@ -290,7 +291,7 @@
 (defun mutable-hamt-dictionary-update! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of UPDATE!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (flet ((location-test (loc location)
                (let ((result
@@ -328,7 +329,7 @@
 (defun mutable-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 1) (debug 0)))
   "Implementation of add!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (flet ((destructive-insert (node)
                (multiple-value-bind (next-list r v)
@@ -411,7 +412,7 @@
 (defun mutable-hamt-dictionary-erase! (container location)
   (declare (optimize (speed 3)))
   "Implementation of ERASE!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((old-value nil)
           (hash (hash-fn location)))
       (flet ((location-test (loc location)
@@ -453,7 +454,7 @@
 (defun transactional-hamt-dictionary-insert! (container location new-value)
   (declare (optimize (speed 3)))
   "Implementation of (setf (at container location) new-value)"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-insert-implementation
@@ -465,7 +466,7 @@
           (setf (access-root-was-modified container) t
                 (access-root container) new-root))
         (unless found
-          (incf (access-size container)))
+          (incf (the fixnum (access-size container))))
         (values
          new-value
          (cl-ds.common:make-eager-modification-operation-status
@@ -479,7 +480,7 @@
 (defun transactional-hamt-dictionary-update! (container location new-value)
   (declare (optimize (speed 3)))
   "Implementation of UPDATE!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old-value)
           (copying-update-implementation
@@ -502,7 +503,7 @@
 (defun transactional-hamt-dictionary-add! (container location new-value)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   "Implementation of ADD!"
-  (with-hash-tree-functions container
+  (with-hash-tree-functions (container)
     (let* ((hash (hash-fn location)))
       (multiple-value-bind (new-root found old)
           (copying-add-implementation
