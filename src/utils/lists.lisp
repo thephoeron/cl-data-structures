@@ -110,27 +110,3 @@
   (let ((r (try-find-cell item list :test test :key key)))
     (values (car r)
             (not (null r)))))
-
-
-(define-compiler-macro try-find (&whole form &environment env item list &key (test #'eql) (key #'identity))
-  (if (nor (symbolp test) (symbolp key))
-      (let-functions ((test eql) (key identity))
-        `(let ((r (try-find-cell ,item ,list :test ,test :key ,key)))
-           (values (car r)
-                   (not (null r)))))
-      form))
-
-
-(define-compiler-macro try-find-cell (&whole form &environment env item list &key (test #'eql) (key #'identity))
-  (if (nor (symbolp test) (symbolp key))
-      (let-functions ((test eql) (key identity))
-        `(iterate
-           (for elt on list)
-           (for val = (inlined-funcall ,key (car elt)))
-           (when (inlined-funcall ,test
-                                  val
-                                  item)
-             (leave elt))))
-      form))
-
-
