@@ -14,7 +14,7 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
-   #:data-structure-condition
+   #:textual-error
    #:erase
    #:erase!
    #:found

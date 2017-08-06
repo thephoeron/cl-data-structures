@@ -1,21 +1,21 @@
 (in-package #:cl-data-structures)
 
 
-(define-condition data-structure-condition (error)
+(define-condition textual-error (error)
   ((%text :initarg :text
           :type (or null string)
           :initform nil
           :reader read-text)))
 
 
-(defmethod print-object :around ((condition data-structure-condition) stream)
+(defmethod print-object :around ((condition textual-error) stream)
   (unless (null (read-text condition))
     (format stream "~a~%~%" (read-text condition)))
   (call-next-method))
 
 
 (define-condition initialization-error (more-conditions:reference-condition
-                                        data-structure-condition)
+                                        textual-error)
   ((%class :initarg :class
            :reader read-class)))
 
@@ -27,13 +27,13 @@
 
 
 (define-condition invalid-argument (more-conditions:reference-condition
-                                    data-structure-condition)
+                                    textual-error)
   ((%argument :type symbol
               :initarg :argument
               :reader read-argument)))
 
 
-(define-condition out-of-bounds (data-structure-condition)
+(define-condition out-of-bounds (textual-error)
   ((%value :initarg :value
            :reader read-value)
    (%bounds :initarg :bounds

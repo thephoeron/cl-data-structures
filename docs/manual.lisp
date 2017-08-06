@@ -150,7 +150,7 @@
     @title{Conditions}
     @begin{documentation}
     @pack{CL-DATA-STRUCTURES}
-    @docclass['cl-ds:data-structure-condition]
+    @docclass['cl-ds:textual-error]
     @docclass['cl-ds:invalid-argument]
     @docclass['cl-ds:initialization-error]
     @docclass['cl-ds:out-of-bounds]
