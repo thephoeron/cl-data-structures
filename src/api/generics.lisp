@@ -3,8 +3,7 @@
 
 (defgeneric at (container location))
 
-(defgeneric (setf at) (new-value container location)
-  (:documentation "@b(Mutable API:) Destructively insert/replace element in the CONTAINER at LOCATION with NEW-VALUE."))
+(defgeneric (setf at) (new-value container location))
 
 (defgeneric add (container location new-value))
 

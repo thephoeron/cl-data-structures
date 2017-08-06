@@ -60,7 +60,7 @@
 
     @text{Most of cl-data-structures containers are available in few variants. Purpose of those is to aid programmer in avoidining errors by that may occur when mixing functional and destructive operations, while still providing access to both. To understand motivation behind this decission, consider other possible approaches that could be taken instead.}
 
-    @text{You can just allow arbitrary changes happening on any level. This usual gives you the best raw performance, but at the high cost: state that you are mutating can be shared in arbitrary way. If execution of your code is interupted, changes made in the container are preserved, even if the represent incoherent or invalid data. You need to clean it yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called @emph{mutable} in this library.}
+    @text{You can just allow arbitrary changes happening on any level. This usual gives you the best raw performance, but at the high cost: state that you are mutating can be shared in arbitrary way. If execution of your code is interupted, changes made in the container are preserved, even if they represent incoherent or invalid data. You need to clean it up yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called @emph{mutable} in this library.}
 
     @text{@emph{Functional} containers do not suffer from the same problems. Every operation that would change existing state in the mutable container instead will return new container, with changes visible only there. This, however has another limitation: copying is costly. Although copying whole structure is usually not required, we still need to copy at least parts of it.}
 
@@ -124,6 +124,7 @@
 
       @begin{documentation}
       @pack{CL-DATA-STRUCTURES}
+      @docgeneric['(setf cl-ds:at)]
       @docgeneric['cl-ds:add!]
       @docgeneric['cl-ds:update!]
       @docgeneric['cl-ds:erase!]
