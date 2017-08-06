@@ -15,7 +15,6 @@
    #:become-mutable
    #:become-transactional
    #:data-structure-condition
-   #:emptyp
    #:erase
    #:erase!
    #:found
