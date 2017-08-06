@@ -45,4 +45,4 @@
    #:value))
 
 (in-package #:cl-ds)
-(defvar *documentation* nil)
+(defparameter *documentation* (docstample:make-accumulator))
