@@ -45,8 +45,8 @@
   (:method ((container transactional)) t)
   (:method ((container fundamental-container)) nil))
 
-(defgeneric emptyp (container)
-  (:method ((container fundamental-container)) (zerop (size container))))
+(defmethod alexandria:emptyp ((container fundamental-container))
+  (zerop (size container)))
 
 (defgeneric value (status))
 

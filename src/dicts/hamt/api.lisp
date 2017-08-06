@@ -666,5 +666,5 @@ Methods. Those will just call non generic functions.
           :size (access-size container))))
 
 
-(defmethod cl-ds:emptyp ((container hamt-dictionary))
+(defmethod alexandria:emptyp ((container hamt-dictionary))
   (null (access-root container)))
