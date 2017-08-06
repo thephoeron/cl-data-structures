@@ -5,41 +5,40 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-   ;; generic functions
-   #:at
-   #:erase
-   #:erase!
+   #:*documentation*
    #:add
    #:add!
-   #:value
-   #:found
-   #:insert
-   #:emptyp
-   #:size
-   #:update
-   #:update!
+   #:argument-out-of-bounds
+   #:at
    #:become-functional
+   #:become-lazy
    #:become-mutable
    #:become-transactional
-   #:become-lazy
-   #:mutablep
+   #:data-structure-condition
+   #:emptyp
+   #:erase
+   #:erase!
+   #:found
+   #:functional
    #:functionalp
-   #:transactionalp
-   ;; trait classes
    #:fundamental-container
    #:fundamental-modification-operation-status
-   #:functional
-   #:transactional
+   #:initialization-error
+   #:initialization-out-of-bounds
+   #:insert
+   #:invalid-argument
    #:lazy
-   #:mutable
-
-   #:data-structure-condition
-   #:argument-out-of-bounds
-   #:not-implemented
-
    #:mod-bind
+   #:mutable
+   #:mutablep
+   #:not-implemented
+   #:size
    #:transaction
-   #:*documentation*))
+   #:transactional
+   #:transactionalp
+   #:update
+   #:update!
+   #:value))
 
 (in-package #:cl-ds)
 (defvar *documentation* nil)

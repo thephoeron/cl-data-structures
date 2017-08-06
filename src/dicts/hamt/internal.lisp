@@ -394,7 +394,6 @@ Copy nodes and stuff.
                                                 function list
                                                 function list)
     (values maybe-node boolean t))
-(declaim (inline go-down-on-path))
 (defun go-down-on-path
     (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
   (declare (optimize (speed 3)
@@ -1024,8 +1023,7 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
-                     (compilation-speed 0)
-                     (space 0))
+                     (compilation-speed 0))
            (type fixnum hash))
   (with-hash-tree-functions (container :cases nil)
     (labels ((location-test (location node)

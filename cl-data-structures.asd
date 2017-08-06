@@ -9,10 +9,18 @@
   :maintainer "Lisp Mechanics"
   :depends-on (:iterate :alexandria
                :serapeum :prove
-               :docstample)
+               :docstample :more-conditions)
   :serial T
   :pathname "src"
   :components ((:file "package")
+               (:module "utils"
+                :components ((:file "package")
+                             (:file "macros")
+                             (:file "types")
+                             (:file "ordered-algorithms")
+                             (:file "lists")
+                             (:file "trivial")
+                             (:file "modification-algorithms")))
                (:module "api"
                 :components ((:file "fundamental-classes")
                              (:file "trait-classes")
@@ -25,14 +33,6 @@
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
                              (:file "lazy-box")))
-               (:module "utils"
-                :components ((:file "package")
-                             (:file "macros")
-                             (:file "types")
-                             (:file "ordered-algorithms")
-                             (:file "lists")
-                             (:file "trivial")
-                             (:file "modification-algorithms")))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")

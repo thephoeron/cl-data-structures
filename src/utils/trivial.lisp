@@ -2,4 +2,5 @@
 
 
 (defmacro todo (&optional (description "Not implemented!"))
-  (error 'cl-ds:not-implemented description))
+  (error 'cl-ds:not-implemented description
+         :text "This function is not implemented!"))

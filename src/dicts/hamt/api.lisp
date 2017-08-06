@@ -25,9 +25,14 @@
 (defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
   (declare (optimize (safety 3)))
   (unless (< 0 max-depth (1+ +depth+))
-    (error 'cl-ds:argument-out-of-bounds
-           "MAX-DEPTH has value = ~a but it has to be between 0 and 11"
-           max-depth))
+    (error
+     'cl-ds:initialization-out-of-bounds
+     :text (format nil
+                   "MAX-DEPTH has value = ~a but it has to be between 0 and ~a."
+                   max-depth
+                   +depth+)
+     :class 'functional-hamt-dictionary
+     :references '((:make-functional-hamt-dictionary "max-depth"))))
   (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
                                            :hash-fn hash-fn
                                            :root nil
@@ -42,10 +47,14 @@
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
   (declare (optimize (safety 3)))
   (unless (< 0 max-depth (1+ +depth+))
-    (error 'cl-ds:argument-out-of-bounds
-           "MAX-DEPTH has value = ~a but it has to be between 0 and ~a"
-           max-depth
-           +depth+))
+    (error
+     'cl-ds:initialization-out-of-bounds
+     :text (format nil
+                   "MAX-DEPTH has value = ~a but it has to be between 0 and ~a."
+                   max-depth
+                   +depth+)
+     :class 'mutable-hamt-dictionary
+     :references '((:make-mutable-hamt-dictionary "max-depth"))))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
                                         :equal-fn equal-fn
                                         :hash-fn hash-fn
@@ -478,7 +487,10 @@
     (values transactional-hamt-dictionary
             cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-update! (container location new-value)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (compilation-speed 0)))
   "Implementation of UPDATE!"
   (with-hash-tree-functions (container)
     (let ((hash (hash-fn location)))
@@ -501,7 +513,10 @@
     (values transactional-hamt-dictionary
             cl-ds:fundamental-modification-operation-status))
 (defun transactional-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (compilation-speed 0)))
   "Implementation of ADD!"
   (with-hash-tree-functions (container)
     (let* ((hash (hash-fn location)))

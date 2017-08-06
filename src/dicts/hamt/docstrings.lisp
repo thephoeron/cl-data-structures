@@ -7,7 +7,7 @@
  :arguments-and-values
  '((hash-fn "function that will be used to hash keys. Should return fixnum and be proper hashing function.")
    (equal-fn "function used to resolve conflicts.")
-   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 6 bits of hash used"))
+   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, less than 12."))
  :description
  "Constructs and return new functional-hamt-dictionary"
 
@@ -15,7 +15,7 @@
  "new instance of functional-hamt-dictionary."
 
  :notes "In theory HAMT can use infinite length of hash but this implementation uses 60 oldest bits at most."
- :exceptional-situations "Will raise condition of type ARGUMENT-OUT-OF-BOUNDS if max-depth is less than 1 or larger than 10.")
+ :exceptional-situations "Will raise condition of type INITIALIZATION-OUT-OF-BOUNDS if max-depth is less than 1 or larger than 12.")
 
 
 (set-documentation
@@ -24,7 +24,7 @@
  :arguments-and-values
  '((hash-fn "function that will be used to hash keys. Should return fixnum and be proper hashing function.")
    (equal-fn "function used to resolve conflicts.")
-   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 6 bits of hash used"))
+   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, less than 12."))
  :description
  "Constructs and return new mutable-hamt-dictionary"
 
@@ -32,7 +32,7 @@
  "new instance of mutable-hamt-dictionary."
 
  :notes "In theory HAMT can use infinite length of hash but this implementation uses 60 oldest bits at most."
- :exceptional-situations "Will raise condition of type ARGUMENT-OUT-OF-BOUNDS if max-depth is less than 1 or larger than 10.")
+ :exceptional-situations "Will raise condition of type INITIALIZATION-OUT-OF-BOUNDS if max-depth is less than 1 or larger than 12.")
 
 
 (set-documentation
