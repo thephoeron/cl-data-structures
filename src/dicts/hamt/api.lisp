@@ -27,10 +27,9 @@
   (unless (< 0 max-depth (1+ +depth+))
     (error
      'cl-ds:initialization-out-of-bounds
-     :text (format nil
-                   "MAX-DEPTH has value = ~a but it has to be between 0 and ~a."
-                   max-depth
-                   +depth+)
+     :argument :max-depth
+     :value max-depth
+     :bounds (list 0 (1+ +depth+))
      :class 'functional-hamt-dictionary
      :references '((:make-functional-hamt-dictionary "max-depth"))))
   (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
@@ -49,10 +48,9 @@
   (unless (< 0 max-depth (1+ +depth+))
     (error
      'cl-ds:initialization-out-of-bounds
-     :text (format nil
-                   "MAX-DEPTH has value = ~a but it has to be between 0 and ~a."
-                   max-depth
-                   +depth+)
+     :argument :max-depth
+     :value max-depth
+     :bounds (list 0 (1+ +depth+))
      :class 'mutable-hamt-dictionary
      :references '((:make-mutable-hamt-dictionary "max-depth"))))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary

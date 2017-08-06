@@ -31,6 +31,10 @@
    #:mutable
    #:mutablep
    #:not-implemented
+   #:out-of-bounds
+   #:read-arguments
+   #:read-bounds
+   #:read-value
    #:size
    #:transaction
    #:transactional
