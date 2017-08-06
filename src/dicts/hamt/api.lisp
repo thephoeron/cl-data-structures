@@ -31,7 +31,7 @@
      :value max-depth
      :bounds (list 0 (1+ +depth+))
      :class 'functional-hamt-dictionary
-     :references '((:make-functional-hamt-dictionary "max-depth"))))
+     :references '((:make-functional-hamt-dictionary "MAX-DEPTH"))))
   (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
                                            :hash-fn hash-fn
                                            :root nil
@@ -52,7 +52,7 @@
      :value max-depth
      :bounds (list 0 (1+ +depth+))
      :class 'mutable-hamt-dictionary
-     :references '((:make-mutable-hamt-dictionary "max-depth"))))
+     :references '((:make-mutable-hamt-dictionary "MAX-DEPTH"))))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
                                         :equal-fn equal-fn
                                         :hash-fn hash-fn

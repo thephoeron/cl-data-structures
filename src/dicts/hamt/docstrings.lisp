@@ -7,7 +7,7 @@
  :arguments-and-values
  '((hash-fn "function that will be used to hash keys. Should return fixnum and be proper hashing function.")
    (equal-fn "function used to resolve conflicts.")
-   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, less than 12."))
+   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, at most 12."))
  :description
  "Constructs and return new functional-hamt-dictionary"
 
@@ -24,7 +24,7 @@
  :arguments-and-values
  '((hash-fn "function that will be used to hash keys. Should return fixnum and be proper hashing function.")
    (equal-fn "function used to resolve conflicts.")
-   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, less than 12."))
+   (max-depth "how many level this HAMT can hold at most? Each level translates into additional 5 bits of hash used. Should be larger than 0, at most 12."))
  :description
  "Constructs and return new mutable-hamt-dictionary"
 
