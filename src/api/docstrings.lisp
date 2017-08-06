@@ -182,10 +182,10 @@
  "Transforms CONTAINER into transactional variant."
 
  :syntax
- "become-functional container => mutable-container"
+ "become-transactional container => transactional-container"
 
  :returns
- "instance implementing transactional API. Content of returned instance is identical to the content of input CONTAINER."
+ "instance implementing mutable API. Content of returned instance is identical to the content of input CONTAINER."
 
  :arguments-and-values
  '(("container" "Container that we want to transform into transactional container."))
@@ -193,6 +193,28 @@
  :notes
  '("Side effects from destructive operations on CONTAINER may leak into returned instance."
    "Not all containers implement this function.")
+
+ :side-effects
+ "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
+
+
+(set-documentation
+ 'become-lazy <mechanics> <generic> *documentation*
+ :description
+ "Transforms CONTAINER into lazy variant."
+
+ :syntax
+ "become-lazy container => lazy-container"
+
+ :returns
+ "instance implementing functional, lazy API. Content of returned instance is identical to the content of input CONTAINER."
+
+ :arguments-and-values
+ '(("container" "Container that we want to transform into lazy container."))
+
+ :notes
+ '("Side effects from destructive operations on CONTAINER may leak into returned instance."
+   "All containers that implement become-transactional, also implement become-lazy")
 
  :side-effects
  "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
