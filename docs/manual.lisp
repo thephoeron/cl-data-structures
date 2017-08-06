@@ -17,6 +17,7 @@
     @item{Uniform -- data structures that are used for specific task should have common interface. User should just know how to use dictionary, and not specific implementation of it.}
     @item{Complete -- this package intends to be definitive common lisp data structures collection, containing both functional and mutable structures, for every use case possible.}
     @item{Universal -- there should be no limitations on when this library is useful.}
+    @item{Stable -- API should be backward compatible. Breaking software up is not acceptable.}
     @end{list}
 
     @text{To achieve this goals, package cl-data-structures contains common API and various implementations of it in separate packages. Implementations are divided into few categories:}
@@ -29,9 +30,9 @@
 
     @title{Conventions}
 
-    @text{Data structure types are not hidden under generic interface name (like std::unordered_map) but instead names are directly exposed to the user. User is encouraged to read Implementation details section of this manual fo figure out which data structure implementation works best for his use case. Destructive functions follow scheme style of adding '!' as a suffix (so we have GF ADD! that is destructive version of ADD).
+    @text{Data structure types are not hidden under generic interface name (like std::unordered_map) but instead names are directly exposed to the user. User is encouraged to read Implementation details section of this manual fo figure out which data structure implementation works best for his use case. Destructive functions follow scheme style of adding '!' as a suffix (so we have GF ADD! that is destructive version of ADD).}
 
-    Methods that implements API generic functions redirect logic to good, old fashioned functions named in convention data-structure-name-operation (for instance hamt-dictionary-at). If you @emph{really} want to squeeze all the performance you can get, you may want to skip generic function dispatch by using those functions directly.}
+    @text{Methods that implements API generic functions redirect logic to good, old fashioned functions named in convention data-structure-name-operation (for instance hamt-dictionary-at). If you @emph{really} want to squeeze all the performance you can get, you may want to skip generic function dispatch by using those functions directly. Please note, that this may be not always as easy as you would imagine, since proxy objects (that are present, for instance in the form of lazy-box) will prevent you from doing so.}
 
     @end{section}
 
@@ -42,6 +43,14 @@
 
     @begin{section}
     @title{Signaling errors}
+    @text{Cl-data-structures approach to signaling errors can be sumerized with two points:}
+
+    @begin{list}
+    @item{Signal error, only if without a doubt, error has occured.}
+    @item{Signal only well structured and documented errors.}
+    @end{list}
+
+    @text{To fullfill those requirements, library defines it's own hierarchy of conditions, with each error signaled only in very specific scenario. For instance, there is INITIALIZATION-OUT-OF-BOUNDS error, that will be signaled only if user attemts to initialize class with value that exceeds accepted bounds, as described in relevant reference. Such error also points to documentation that describes why this error was signaled, as well as information on what argument triggered signaling error, and what are accepted bounds. This is done such way primarly to make both learning and debugging as easy, as possible. In addition, it also makes automatic handling of errors actually possible, which is also desired.}
 
     @end{section}
 
@@ -104,6 +113,7 @@
       @end{documentation}
 
       @end{section})
+
     (progn
       @begin{section}
       @title{Functional modification API}
