@@ -34,6 +34,7 @@
    #:out-of-bounds
    #:read-arguments
    #:read-bounds
+   #:read-class
    #:read-value
    #:size
    #:transaction
