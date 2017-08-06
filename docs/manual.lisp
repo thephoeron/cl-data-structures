@@ -37,7 +37,22 @@
 
     @begin{section}
     @title{Key concepts}
-    @text{Cl-data-structures makes use of few key concepts. It is important to understand those concepts as they will allow you to write better, safer and more efficient code. First of: there are different approaches to handling destructive operations.}
+
+    @text{This section describes distinctive approach of cl-data-structure library in various areas.}
+
+    @begin{section}
+    @title{Signaling errors}
+    @end{section}
+
+    @begin{section}
+    @title{Trait classes}
+    @end{section}
+
+    @begin{section}
+    @title{Variants}
+
+    @text{Most of cl-data-structures containers are available in few variants. Purpose of those is to aid programmer in avoidining errors by that may occur when mixing functional and destructive operations, while still providing access to both. To understand motivation behind this decission, consider other possible approaches that could be taken instead.}
+
     @text{You can just allow arbitrary changes happening on any level. This usual gives you the best raw performance, but at the high cost: state that you are mutating can be shared in arbitrary way. If execution of your code is interupted, changes made in the container are preserved, even if the represent incoherent or invalid data. You need to clean it yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called @emph{mutable} in this library.}
 
     @text{@emph{Functional} containers do not suffer from the same problems. Every operation that would change existing state in the mutable container instead will return new container, with changes visible only there. This, however has another limitation: copying is costly. Although copying whole structure is usually not required, we still need to copy at least parts of it.}
@@ -50,13 +65,15 @@
 
     @end{section}
 
+    @end{section}
+
     @end{section}))
 
 (defun build-document ()
   (with-names (<documentation-names>)
     (document (cl-lore.mechanics:<mechanics-html-output-generator> out *cl-data-structures*
                :output-options (:css cl-lore.mechanics:*mechanics-html-style*))
-      @title{CL-DATA-STRUCTURES Documentation}
+      @title{CL-DATA-STRUCTURES}
       @include{cl-ds intro})))
 
 (cl-lore.protocol.output::save-output #P"/home/shka/lore/" (build-document))
