@@ -131,6 +131,20 @@
 
       @end{section})
 
+    (progn
+      @begin{section}
+      @title{Variants API}
+
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:become-functional]
+      @docgeneric['cl-ds:become-mutable]
+      @docgeneric['cl-ds:become-transactional]
+      @docgeneric['cl-ds:become-lazy]
+      @end{documentation}
+
+      @end{section})
+
     @end{section}
 
     @begin{section}
