@@ -81,6 +81,87 @@
     @title{API Reference}
     @text{This section contains reference of all functions, classes and macros provided by this library to the user.}
 
+    @begin{section}
+    @title{Common API}
+    @text{Following is the most abstract API of cl-data-structures library.}
+
+    @begin{section}
+    @title{Generic Functions}
+
+    (progn
+      @begin{section}
+      @title{Query Functions}
+      @text{Following generic functions check state of the container and are not allowed to change it.}
+
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:at]
+      @docgeneric['cl-ds:size]
+      @docgeneric['cl-ds:mutablep]
+      @docgeneric['cl-ds:transactionalp]
+      @docgeneric['cl-ds:functionalp]
+
+      @end{documentation}
+
+      @end{section})
+    (progn
+      @begin{section}
+      @title{Functional modification API}
+
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:insert]
+      @docgeneric['cl-ds:add]
+      @docgeneric['cl-ds:update]
+      @docgeneric['cl-ds:erase]
+      @end{documentation}
+
+      @end{section})
+
+    (progn
+      @begin{section}
+      @title{Mutable modification API}
+
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:add!]
+      @docgeneric['cl-ds:update!]
+      @docgeneric['cl-ds:erase!]
+      @end{documentation}
+
+      @end{section})
+
+    @end{section}
+
+    @begin{section}
+    @title{Classes}
+    @begin{documentation}
+    @pack{CL-DATA-STRUCTURES}
+    @docclass['cl-ds:fundamental-container]
+    @docclass['cl-ds:fundamental-modification-operation-status]
+    @docclass['cl-ds:functional]
+    @docclass['cl-ds:mutable]
+    @docclass['cl-ds:transactional]
+    @docclass['cl-ds:lazy]
+    @end{documentation}
+    @end{section}
+
+    @begin{section}
+    @title{Conditions}
+    @begin{documentation}
+    @pack{CL-DATA-STRUCTURES}
+    @docclass['cl-ds:data-structure-condition]
+    @docclass['cl-ds:invalid-argument]
+    @docclass['cl-ds:initialization-error]
+    @docclass['cl-ds:out-of-bounds]
+    @docclass['cl-ds:argument-out-of-bounds]
+    @docclass['cl-ds:initialization-out-of-bounds]
+    @docclass['cl-ds:not-implemented]
+    @end{documentation}
+    @end{section}
+
+    @end{section}
+
     @end{section}))
 
 (defun build-document ()

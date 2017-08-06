@@ -11,7 +11,7 @@
 
  :returns
  "In case of associative containers, second value informs if LOCATION was found in the CONTAINER (first value is NIL if element was not found).
- In case of non-associtive containers (e.g. vectors), the function returns value under LOCATION if LOCATION is valid, otherwise condition of type TODO will be raised."
+ In case of non-associtive containers (e.g. vectors), the function returns value under LOCATION if LOCATION is valid, otherwise condition of type ARGUMENT-OUT-OF-BOUNDS will be raised."
 
  :description
  "Obtain element stored at LOCATION in the CONTAINER.")
@@ -293,3 +293,8 @@
 (set-documentation
  'transactional <mechanics> <class> *documentation*
  :description "Object implements mutable api in transactional way.")
+
+
+(set-documentation
+ 'lazy <mechanics> <class> *documentation*
+ :description "Functional object, with lazy implementation.")

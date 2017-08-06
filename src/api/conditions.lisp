@@ -26,7 +26,8 @@
   (call-next-method))
 
 
-(define-condition invalid-argument (data-structure-condition)
+(define-condition invalid-argument (more-conditions:reference-condition
+                                    data-structure-condition)
   ((%argument :type symbol
               :initarg :argument
               :reader read-argument)))
@@ -39,8 +40,7 @@
             :reader read-bounds)))
 
 
-(define-condition argument-out-of-bounds (more-conditions:reference-condition
-                                          invalid-argument
+(define-condition argument-out-of-bounds (invalid-argument
                                           out-of-bounds)
   ())
 
@@ -58,6 +58,6 @@
   ())
 
 
-(define-condition not-implemented (data-structure-condition)
+(define-condition not-implemented (error)
   ())
 
