@@ -42,10 +42,17 @@
 
     @begin{section}
     @title{Signaling errors}
+
     @end{section}
 
     @begin{section}
     @title{Trait classes}
+
+    @end{section}
+
+    @begin{section}
+    @title{Modification Status}
+
     @end{section}
 
     @begin{section}
@@ -67,6 +74,13 @@
 
     @end{section}
 
+    @end{section})
+
+  (chunk *cl-data-structures*
+    @begin{section} @label{cl-ds API}
+    @title{API Reference}
+    @text{This section contains reference of all functions, classes and macros provided by this library to the user.}
+
     @end{section}))
 
 (defun build-document ()
@@ -74,6 +88,7 @@
     (document (cl-lore.mechanics:<mechanics-html-output-generator> out *cl-data-structures*
                :output-options (:css cl-lore.mechanics:*mechanics-html-style*))
       @title{CL-DATA-STRUCTURES}
-      @include{cl-ds intro})))
+      @include{cl-ds intro}
+      @include{cl-ds API})))
 
 (cl-lore.protocol.output::save-output #P"/home/shka/lore/" (build-document))
