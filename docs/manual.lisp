@@ -195,7 +195,7 @@
     @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of that.}
     @begin{section}
     @title{API}
-    @text{To change mapping use functions: INSERT, ADD, UPDATE. To obtain value under key use function AT.}
+    @text{To change mapping in functional dictionary use functions: INSERT, ADD, UPDATE. To obtain value under key use function AT.}
     @end{section}
     @end{section}))
 
