@@ -14,30 +14,29 @@
   (:nicknames #:cl-ds.dicts.hamt)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-
-   #:read-max-depth
-   #:transactional-hamt-dictionary
-   #:mutable-hamt-dictionary
    #:functional-hamt-dictionary
+   #:functional-hamt-dictionary-add
+   #:functional-hamt-dictionary-erase
+   #:functional-hamt-dictionary-insert
+   #:functional-hamt-dictionary-update
+
    #:hamt-dictionary
+   #:hamt-dictionary-at
+   #:hamt-dictionary-size
 
    #:make-functional-hamt-dictionary
    #:make-mutable-hamt-dictionary
 
-   #:hamt-dictionary-at
-   #:hamt-dictionary-size
-
-   #:mutable-hamt-dictionary-insert!
-   #:mutable-hamt-dictionary-update!
+   #:mutable-hamt-dictionary
    #:mutable-hamt-dictionary-add!
    #:mutable-hamt-dictionary-erase!
+   #:mutable-hamt-dictionary-insert!
+   #:mutable-hamt-dictionary-update!
 
-   #:functional-hamt-dictionary-insert
-   #:functional-hamt-dictionary-add
-   #:functional-hamt-dictionary-erase
-   #:functional-hamt-dictionary-update
+   #:read-max-depth
 
-   #:transactional-hamt-dictionary-insert!
-   #:transactional-hamt-dictionary-update!
+   #:transactional-hamt-dictionary
    #:transactional-hamt-dictionary-add!
-   #:transactional-hamt-dictionary-erase!))
+   #:transactional-hamt-dictionary-erase!
+   #:transactional-hamt-dictionary-insert!
+   #:transactional-hamt-dictionary-update!))

@@ -39,6 +39,9 @@
  'dictionary <mechanics> <class> cl-ds:*documentation*
  :description "Container that provides location to value mapping. Either ordered or unordered.")
 
+(set-documentation
+ 'hamt-dictionary <mechanics> <class> cl-ds:*documentation*
+ :description "Root HAMT dictionary class.")
 
 (set-documentation
  'functional-hamt-dictionary <mechanics> <class> cl-ds:*documentation*

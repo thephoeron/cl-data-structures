@@ -75,7 +75,7 @@
 
     @text{@emph{Transactional} containers represent compromise between those two opposite approaches. Transactional containers implement @emph{mutable} api in distinct way: instead of performing destructive operations in arbitrary way, we are trying to @emph{isolate} changes so they will be visible only in the instance that we passed into method. This allows us to achieve compromise between safety, simplicity and speed.}
 
-    @text{All containers with @emph{transactional} variant available can be also used as @emph{functional}, @emph{lazy} containers. Those containers reduce consing that troubles @emph{functional} containers by grouping all modification operations, and performing hidden, destructive modification of @emph{transactional} containers in the last possible moment.}
+    @text{All containers with @emph{transactional} variant available can be also used as @emph{functional}, @emph{lazy} containers. Those containers reduce consing that troubles @emph{functional} containers by grouping all modification operations, and performing hidden, destructive modification of @emph{transactional} containers in the last possible moment. Since all those fancy functional data structures are just trees with copy on write semantics it improves performance a little bit.}
 
     @text{Containers can be converted between functional, transactional and mutable variants using @emph{become} methods. However, not every container is available in all three variants. It is also important to remember that @emph{become} methods have limited guaranties. For instance: @emph{BECOME-TRANSACTIONAL} guaranties that changes from returned instance won't leak outside of returned instance, but not that destructive changes from original instance can't leak into it. Same applies for @emph{BECOME-FUNCTIONAL} method. Be careful and keep this in mind.}
 
@@ -173,6 +173,8 @@
 
     @begin{section}
     @title{Conditions}
+    @text{Cl-data-structures tries to signal only well structured errors that are possible to interpret. In order to achieve this hierarchy of condition classes is introduced. Below there is documentation explaining this.}
+
     @begin{documentation}
     @pack{CL-DATA-STRUCTURES}
     @docclass['cl-ds:textual-error]
@@ -192,11 +194,71 @@
   (chunk *cl-data-structures*
     @begin{section} @label{dicts}
     @title{Dictionary structures}
-    @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of that.}
+    @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.}
     @begin{section}
     @title{API}
-    @text{To change mapping use functions: INSERT, ADD, UPDATE. To obtain value under key use function AT.}
+    @text{To obtain value under key use function AT.}
+    @text{To change mapping use following purely functional functions:}
+    @begin{list}
+    @item{INSERT}
+    @item{ADD}
+    @item{UPDATE}
+    @end{list}
+    @text{To change mapping in destructive way, use following functions:}
+    @begin{list}
+    @item{(SETF AT)}
+    @item{ADD!}
+    @item{UPDATE!}
+    @end{list}
     @end{section}
+
+    @begin{section}
+    @title{HAMT}
+    @text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). This is not surprising since HAMT is both simple and efficient data structure, and perhaps ideal functional hashing-tree. Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copying on write whole path. Since HAMT contains transactional implementation, lazy functional implementation is also present.}
+    @text{Dictionary implementation of HAMT is present in the system as a class.}
+    @docclass['cl-ds.dicts.hamt:hamt-dictionary]
+    @text{As you can see, it inherits DICTIONARY trait class as well as lower level FUNDAMENTAL-HAMT-CONTAINER class. All instances of this class can be used with following functions:}
+    @docfun['cl-ds.dicts.hamt:hamt-dictionary-at]
+    @docfun['cl-ds.dicts.hamt:hamt-dictionary-size]
+    @text{Functional dictionary is represented by the following class:}
+
+    @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
+    @text{Instances of this class can be used with following functions:}
+    @begin{documentation}
+    @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-add]
+    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-erase]
+    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-insert]
+    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-update]
+    @end{documentation}
+
+    @text{Mutable dictionary is represented by the following class:}
+    @docclass['cl-ds.dicts.hamt:mutable-hamt-dictionary]
+    @text{Instances of this class can be used with following functions:}
+
+    @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-add!]
+    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-erase!]
+    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-insert!]
+    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-update!]
+    @end{documentation}
+
+    @text{Transactional dictionary is reprented by the following class:}
+    @docclass['cl-ds.dicts.hamt:transactional-hamt-dictionary]
+
+    @text{Instances of this class can be used with following functions:}
+    @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-add!] 
+    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-erase!] 
+    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-insert!] 
+    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-update!] 
+    @end{documentation}
+    @text{Note that you can use same functions as for mutable-hamt-dictionary but this may be a bad idea as there will be no guaranteens that side effects of those mutation will be isolated to the transactional instance of the container.}
+
+    @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a transactional-hamt-dictionary inside lazy-box.}
+
+    @end{section}
+
     @end{section}))
 
 (defun build-document ()

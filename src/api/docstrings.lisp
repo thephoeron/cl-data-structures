@@ -323,3 +323,38 @@
 (set-documentation
  'lazy <mechanics> <class> *documentation*
  :description "Functional object, with lazy implementation.")
+
+
+(set-documentation
+ 'textual-error <mechanics> <class> *documentation*
+ :description "Error with human readable text description.")
+
+
+(set-documentation
+ 'invalid-argument <mechanics> <class> *documentation*
+ :description "Error signaled if for some reason passed argument is invalid.")
+
+
+(set-documentation
+ 'initialization-error <mechanics> <class> *documentation*
+ :description "Error signaled when container can't be initialized.")
+
+
+(set-documentation
+ 'initialization-error <mechanics> <class> *documentation*
+ :description "Error signaled when variable exceeds allowed bounds.")
+
+
+(set-documentation
+ 'argument-out-of-bounds <mechanics> <class> *documentation*
+ :description "Error signaled when passed argument exceeds allowed bounds")
+
+
+(set-documentation
+ 'initialization-out-of-bounds <mechanics> <class> *documentation*
+ :description "Error signaled when container can't be initialized with value because value exceeds bounds.")
+
+
+(set-documentation
+ 'not-implemented <mechanics> <class> *documentation*
+ :description "Error signaled when not implemented functionality is accessed..")
