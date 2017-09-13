@@ -35,3 +35,7 @@
 
 (defgeneric grow-bucket (operation container bucket location value
                          &key hash &allow-other-keys))
+
+
+(defgeneric make-bucket (operation container bucket location value
+                         &key hash &allow-other-keys))

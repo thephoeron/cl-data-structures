@@ -30,6 +30,7 @@
    #:insert-function
    #:invalid-argument
    #:lazy
+   #:make-bucket
    #:mod-bind
    #:mutable
    #:mutablep
