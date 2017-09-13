@@ -44,8 +44,15 @@
 (defgeneric position-modification (operation container location new-value))
 
 
-(defgeneric transform-bucket (operation container bucket location value
-                              &key &allow-other-keys))
+(defgeneric position-erasure (operation container location))
+
+
+(defgeneric grow-bucket (operation container bucket location value
+                         &key &allow-other-keys))
+
+
+(defgeneric shrink-bucket (operation container bucket location
+                           &key &allow-other-keys))
 
 
 (defgeneric make-bucket (operation container bucket location value
