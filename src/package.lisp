@@ -22,8 +22,8 @@
    #:functionalp
    #:fundamental-container
    #:fundamental-modification-operation-status
-   #:grow-bucket
-   #:grow-modification
+   #:transform-bucket
+   #:position-modification
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert

@@ -8,14 +8,14 @@
 (defgeneric add (container location new-value)
   (:generic-function-class add-function)
   (:method ((container fundamental-container) location new-value)
-    (grow-modification #'add container location new-value)))
+    (position-modification #'add container location new-value)))
 
 (defgeneric add! (container location new-value))
 
 (defgeneric insert (container location new-value)
   (:generic-function-class insert-function)
   (:method ((container fundamental-container) location new-value)
-    (grow-modification #'insert container location new-value)))
+    (position-modification #'insert container location new-value)))
 
 (defgeneric erase (container location))
 
@@ -26,7 +26,7 @@
 (defgeneric update (container location new-value)
   (:generic-function-class update-function)
   (:method ((container fundamental-container) location new-value)
-    (grow-modification #'update container location new-value)))
+    (position-modification #'update container location new-value)))
 
 (defgeneric update! (container location new-value))
 

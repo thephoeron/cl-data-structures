@@ -26,12 +26,12 @@
     :accessor access-content)))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)
-                              (container hashing-dictionary)
-                              (bucket bucket)
-                              location
-                              value
-                              &key hash &allow-other-keys)
+(defmethod cl-ds:transform-bucket ((operation cl-ds:insert-function)
+                                   (container hashing-dictionary)
+                                   (bucket bucket)
+                                   location
+                                   value
+                                   &key hash &allow-other-keys)
   (flet ((compare-fn (a b)
            (and (eql (access-hash a) hash)
                 (funcall (read-compare-fn container)
@@ -52,12 +52,12 @@
               t))))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:add-function)
-                              (container hashing-dictionary)
-                              (bucket bucket)
-                              location
-                              value
-                              &key hash &allow-other-keys)
+(defmethod cl-ds:transform-bucket ((operation cl-ds:add-function)
+                                   (container hashing-dictionary)
+                                   (bucket bucket)
+                                   location
+                                   value
+     &key hash &allow-other-keys)
   (flet ((compare-fn (a b)
            (and (eql (access-hash a) hash)
                 (funcall (read-compare-fn container)
@@ -78,12 +78,12 @@
               (not replaced)))))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:update-function)
-                              (container hashing-dictionary)
-                              (bucket bucket)
-                              location
-                              value
-                              &key hash &allow-other-keys)
+(defmethod cl-ds:transform-bucket ((operation cl-ds:update-function)
+                                   (container hashing-dictionary)
+                                   (bucket bucket)
+                                   location
+                                   value
+                                   &key hash &allow-other-keys)
   (flet ((compare-fn (a b)
            (and (eql (access-hash a) hash)
                 (funcall (read-compare-fn container)
