@@ -6,7 +6,7 @@
 (defgeneric (setf at) (new-value container location))
 
 (defgeneric add (container location new-value)
-  (:generic-function-class update-function)
+  (:generic-function-class add-function)
   (:method ((container fundamental-container) location new-value)
     (grow-modification #'add container location new-value)))
 
@@ -24,7 +24,7 @@
 (defgeneric size (container))
 
 (defgeneric update (container location new-value)
-  (:generic-function-class add-function)
+  (:generic-function-class update-function)
   (:method ((container fundamental-container) location new-value)
     (grow-modification #'update container location new-value)))
 

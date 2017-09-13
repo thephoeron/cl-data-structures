@@ -2,7 +2,8 @@
 
 
 (defpackage :cl-data-structures.dicts
-  (:use #:common-lisp #:docstample #:docstample.mechanics)
+  (:use #:common-lisp #:docstample #:docstample.mechanics #:serapeum
+        #:cl-ds.utils)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:dictionary))
@@ -19,22 +20,18 @@
    #:functional-hamt-dictionary-erase
    #:functional-hamt-dictionary-insert
    #:functional-hamt-dictionary-update
-
    #:hamt-dictionary
    #:hamt-dictionary-at
    #:hamt-dictionary-size
-
+   #:hashing-dictionary
    #:make-functional-hamt-dictionary
    #:make-mutable-hamt-dictionary
-
    #:mutable-hamt-dictionary
    #:mutable-hamt-dictionary-add!
    #:mutable-hamt-dictionary-erase!
    #:mutable-hamt-dictionary-insert!
    #:mutable-hamt-dictionary-update!
-
    #:read-max-depth
-
    #:transactional-hamt-dictionary
    #:transactional-hamt-dictionary-add!
    #:transactional-hamt-dictionary-erase!

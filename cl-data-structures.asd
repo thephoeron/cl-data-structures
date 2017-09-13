@@ -38,6 +38,7 @@
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
+                             (:file "common")
                              (:file "docstrings")
                              (:module "hamt"
                               :components ((:file "internal")
