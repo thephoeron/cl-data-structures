@@ -56,8 +56,8 @@
                               (container hashing-dictionary)
                               (bucket bucket)
                               location
-                              value)
-     &key hash &allow-other-keys
+                              value
+                              &key hash &allow-other-keys)
   (flet ((compare-fn (a b)
            (and (eql (access-hash a) hash)
                 (funcall (read-compare-fn container)
@@ -107,7 +107,8 @@
 (defmethod cl-ds:make-bucket ((operation cl-ds:update-function)
                               (container hashing-dictionary)
                               (bucket bucket)
-                              location valu &key hash &allow-other-keys)
+                              location value
+                              &key hash &allow-other-keys)
   (values nil
           cl-ds.common:empty-eager-modification-operation-status
           nil))
@@ -116,7 +117,7 @@
 (defmethod cl-ds:make-bucket ((operation cl-ds:add-function)
                               (container hashing-dictionary)
                               (bucket bucket)
-                              location valu &key hash &allow-other-keys)
+                              location value &key hash &allow-other-keys)
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple
                                      :location location
@@ -129,7 +130,7 @@
 (defmethod cl-ds:make-bucket ((operation cl-ds:insert-function)
                               (container hashing-dictionary)
                               (bucket bucket)
-                              location valu &key hash &allow-other-keys)
+                              location value &key hash &allow-other-keys)
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple
                                      :location location
