@@ -8,13 +8,13 @@
    #:*documentation*
    #:add
    #:add!
+   #:add-function
    #:argument-out-of-bounds
    #:at
    #:become-functional
    #:become-lazy
    #:become-mutable
    #:become-transactional
-   #:textual-error
    #:erase
    #:erase!
    #:found
@@ -22,9 +22,12 @@
    #:functionalp
    #:fundamental-container
    #:fundamental-modification-operation-status
+   #:grow-bucket
+   #:grow-modification
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
+   #:insert-function
    #:invalid-argument
    #:lazy
    #:mod-bind
@@ -37,12 +40,15 @@
    #:read-class
    #:read-value
    #:size
+   #:textual-error
    #:transaction
    #:transactional
    #:transactionalp
    #:update
    #:update!
+   #:update-function
    #:value))
+
 
 (in-package #:cl-ds)
 (defparameter *documentation* (docstample:make-accumulator))
