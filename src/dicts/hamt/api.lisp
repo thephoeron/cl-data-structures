@@ -215,56 +215,6 @@
                    old-value)))))))
 
 
-(-> functional-hamt-dictionary-update (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun functional-hamt-dictionary-update (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  "Implementation of UPDATE"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-update-implementation container hash location new-value
-                                         #'copy-on-write
-                                         nil)
-        (if found
-            (values (make (type-of container)
-                          :equal-fn (read-equal-fn container)
-                          :hash-fn (read-hash-fn container)
-                          :root new-root
-                          :max-depth (read-max-depth container)
-                          :size (access-size container))
-                    (cl-ds.common:make-eager-modification-operation-status
-                     found
-                     old-value))
-            (values container
-                    cl-ds.common:empty-eager-modification-operation-status))))))
-
-
-(-> functional-hamt-dictionary-add (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun functional-hamt-dictionary-add (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  "Implementation of ADD"
-  (with-hash-tree-functions (container)
-    (let* ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old)
-          (copying-add-implementation container hash location new-value
-                                      #'copy-on-write nil)
-        (if found
-            (values container
-                    (cl-ds.common:make-eager-modification-operation-status
-                     t old))
-            (values (make (type-of container)
-                          :equal-fn (read-equal-fn container)
-                          :hash-fn (read-hash-fn container)
-                          :root new-root
-                          :max-depth (read-max-depth container)
-                          :size (1+ (access-size container)))
-                    cl-ds.common:empty-eager-modification-operation-status))))))
-
-
 (-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
     (values functional-hamt-dictionary
             cl-ds:fundamental-modification-operation-status))
@@ -428,85 +378,6 @@
                    t old-value)))))))
 
 
-(-> transactional-hamt-dictionary-insert! (transactional-hamt-dictionary t t)
-    (values t
-            cl-ds:fundamental-modification-operation-status))
-(defun transactional-hamt-dictionary-insert! (container location new-value)
-  (declare (optimize (speed 3)))
-  "Implementation of (setf (at container location) new-value)"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-insert-implementation
-           container hash location new-value
-           #'transactional-copy-on-write
-           (list
-            (access-root-was-modified container)))
-        (unless (eq (access-root container) new-root)
-          (setf (access-root-was-modified container) t
-                (access-root container) new-root))
-        (unless found
-          (incf (the fixnum (access-size container))))
-        (values
-         new-value
-         (cl-ds.common:make-eager-modification-operation-status
-          found
-          old-value))))))
-
-
-(-> transactional-hamt-dictionary-update! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun transactional-hamt-dictionary-update! (container location new-value)
-  (declare (optimize (speed 3)
-                     (safety 0)
-                     (debug 0)
-                     (compilation-speed 0)))
-  "Implementation of UPDATE!"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-update-implementation
-           container hash location new-value
-           #'transactional-copy-on-write
-           (list (access-root-was-modified container)))
-        (unless (eq new-root (access-root container))
-          (setf (access-root container) new-root
-                (access-root-was-modified container) new-root))
-        (values
-         container
-         (cl-ds.common:make-eager-modification-operation-status
-          found
-          old-value))))))
-
-
-(-> transactional-hamt-dictionary-add! (transactional-hamt-dictionary t t)
-    (values transactional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun transactional-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 3)
-                     (safety 0)
-                     (debug 0)
-                     (compilation-speed 0)))
-  "Implementation of ADD!"
-  (with-hash-tree-functions (container)
-    (let* ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old)
-          (copying-add-implementation
-           container hash location new-value
-           #'transactional-copy-on-write
-           (list (access-root-was-modified container)))
-        (unless found
-          (incf (access-size container)))
-        (unless (eq new-root (access-root container))
-          (setf (access-root container) new-root
-                (access-root-was-modified container) t))
-        (if found
-            (values
-             container
-             (cl-ds.common:make-eager-modification-operation-status
-              found old)))))))
-
 
 #|
 
@@ -568,8 +439,41 @@ Methods. Those will just call non generic functions.
                             :equal-fn (cl-ds.dicts:read-equal-fn container)
                             :root new-root
                             :max-depth (read-max-depth container)
-                            :size (1+ (access-size container)))
+                            :size (if (cl-ds:found status)
+                                      (access-size container)
+                                      (+ 1 (access-size container))))
                       container)
+                  status))))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
+                                        (container transactional-hamt-dictionary)
+                                        location &key value)
+  (with-hash-tree-functions (container :cases nil)
+    (let ((hash (hash-fn location))
+          (changed nil))
+      (flet ((grow-bucket (bucket)
+               (multiple-value-bind (a b c)
+                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
+                 (setf changed c)
+                 (values a b c)))
+             (make-bucket ()
+               (multiple-value-bind (a b c)
+                   (cl-ds:make-bucket operation container location :value value :hash hash)
+                 (setf changed c)
+                 (values a b c))))
+        (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
+        (multiple-value-bind (new-root status)
+            (go-down-on-path container
+                             hash
+                             #'grow-bucket
+                             #'make-bucket
+                             #'transactional-copy-on-write)
+          (when changed
+            (setf (access-root container) new-root)
+            (unless (cl-ds:found status)
+              (incf (access-size container))))
+          (values container
                   status))))))
 
 
