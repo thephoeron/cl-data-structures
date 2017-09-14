@@ -2,10 +2,10 @@
 
 
 (defclass dictionary (cl-ds:fundamental-container)
-  ((%compare-fn
+  ((%equal-fn
     :type (-> (t t) boolean)
-    :initarg :compare-fn
-    :reader read-compare-fn)))
+    :initarg :equal-fn
+    :reader read-equal-fn)))
 
 
 (defclass hashing-dictionary (dictionary)

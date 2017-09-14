@@ -76,12 +76,10 @@
         (hash-do
             (node index)
             (root hash)
-            :on-leaf (multiple-value-bind (r f)
-                         (try-find
-                          location
-                          (fast-access-conflict node)
-                          :test #'location-test)
-                       (values (and f (hash.location.value-value r)) f))
+            :on-leaf (cl-ds.dicts:find-content container
+                                               node
+                                               location
+                                               :hash hash)
             :on-nil (values nil nil))))))
 
 
@@ -133,31 +131,6 @@
           (setf (access-root-was-modified container) t
                 (access-root container) new-root))
         (values container
-                (cl-ds.common:make-eager-modification-operation-status
-                 found
-                 old-value))))))
-
-
-(-> functional-hamt-dictionary-insert (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun functional-hamt-dictionary-insert (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  "Implementation of INSERT"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-insert-implementation container hash location new-value
-                                         #'copy-on-write
-                                         nil)
-        (values (make (type-of container)
-                      :equal-fn (read-equal-fn container)
-                      :hash-fn (read-hash-fn container)
-                      :root new-root
-                      :max-depth (read-max-depth container)
-                      :size (if found
-                                (access-size container)
-                                (1+ (access-size container))))
                 (cl-ds.common:make-eager-modification-operation-status
                  found
                  old-value))))))
@@ -566,27 +539,38 @@ Methods. Those will just call non generic functions.
   (hamt-dictionary-at container location))
 
 
-(defmethod cl-ds:update ((container functional-hamt-dictionary) location new-value)
-  (functional-hamt-dictionary-update container location new-value))
-
-
-(defmethod cl-ds:add ((container functional-hamt-dictionary) location new-value)
-  (functional-hamt-dictionary-add container location new-value))
-
-
-(defmethod cl-ds:position-modification (operation (container functional-hamt-dictionary) location &key value)
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
+                                        (container functional-hamt-dictionary)
+                                        location &key value)
   (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location)))
+    (let ((hash (hash-fn location))
+          (changed nil))
       (flet ((grow-bucket (bucket)
-               (cl-ds:grow-bucket operation container bucket location :value value :hash hash))
+               (multiple-value-bind (a b c)
+                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
+                 (setf changed c)
+                 (values a b c)))
              (make-bucket ()
-               (cl-ds:make-bucket operation container location :value value :hash hash)))
+               (multiple-value-bind (a b c)
+                   (cl-ds:make-bucket operation container location :value value :hash hash)
+                 (setf changed c)
+                 (values a b c))))
         (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
-        (go-down-on-path container
-                         hash
-                         #'grow-bucket nil
-                         #'make-bucket nil
-                         #'copy-on-write nil)))))
+        (multiple-value-bind (new-root status)
+            (go-down-on-path container
+                             hash
+                             #'grow-bucket
+                             #'make-bucket
+                             #'copy-on-write)
+          (values (if changed
+                      (make 'functional-hamt-dictionary
+                            :hash-fn (cl-ds.dicts:read-hash-fn container)
+                            :equal-fn (cl-ds.dicts:read-equal-fn container)
+                            :root new-root
+                            :max-depth (read-max-depth container)
+                            :size (1+ (access-size container)))
+                      container)
+                  status))))))
 
 
 (defmethod cl-ds:erase ((container functional-hamt-dictionary) location)

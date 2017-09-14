@@ -12,7 +12,7 @@ Basic types
 
 
 (deftype maybe-node ()
-  `(or null hash-node bottom-node))
+  `(or null hash-node cl-ds.dicts:bucket))
 
 
 (deftype node-position ()
@@ -84,12 +84,12 @@ Macros
                (return-from ,!block ,node))))))))
 
 
-(defmacro with-hash-tree-functions ((container &key (cases t)) &body body)
+(defmacro with-hash-tree-functions ((container &key (cases nil)) &body body)
   "Simple macro adding local functions (all forwards to the container closures)."
   (once-only (container)
     (with-gensyms (!test !hash)
-      `(let ((,!test (read-equal-fn ,container))
-             (,!hash (read-hash-fn ,container)))
+      `(let ((,!test (cl-ds.dicts:read-equal-fn ,container))
+             (,!hash (cl-ds.dicts:read-hash-fn ,container)))
          (nest
           ,(if cases
                `(cl-ds.utils:cases
@@ -283,14 +283,6 @@ Interface class.
           :accessor access-root
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
-   (%hash-fn :type (-> (x) fixnum)
-             :reader read-hash-fn
-             :initarg :hash-fn
-             :documentation "Closure used for key hashing. Setted by the user.")
-   (%equal-fn :type (-> (t t) boolean)
-              :reader read-equal-fn
-              :initarg :equal-fn
-              :documentation "Closure used for comparing items at the bottom level lists.")
    (%max-depth :initarg :max-depth
                :type non-negative-fixnum
                :reader read-max-depth
@@ -304,7 +296,7 @@ Interface class.
 
 
 (defclass hamt-dictionary (fundamental-hamt-container
-                           cl-ds.dicts:dictionary)
+                           cl-ds.dicts:hashing-dictionary)
   ())
 
 
@@ -389,39 +381,39 @@ Copy nodes and stuff.
 |#
 
 
-(-> go-down-on-path (fundamental-hamt-container fixnum
-                                                function list
-                                                function list
-                                                function list)
-    (values maybe-node boolean t))
+(-> go-down-on-path (fundamental-hamt-container fixnum function function function)
+    (values fundamental-hamt-container cl-ds.common:eager-modification-operation-status))
 (defun go-down-on-path
-    (container hash on-leaf on-leaf-args on-nil on-nil-args after after-args)
+    (container hash on-leaf on-nil after)
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
                      (compilation-speed 0)
                      (space 0))
            (type fixnum hash))
-  (let ((old-value nil)
-        (found nil))
+  (let ((status nil))
     (flet ((after (indexes path depth next)
              (the maybe-node
-                  (apply after
-                         indexes path
-                         depth (read-max-depth container)
-                         next after-args))))
-      (let ((result
-              (with-hamt-path node container hash
-                :operation after
-                :on-leaf (multiple-value-bind (n f o) (apply on-leaf node on-leaf-args)
-                           (setf old-value o
-                                 found f)
-                           n)
-                :on-nil (multiple-value-bind (n f o) (apply on-nil on-nil-args)
-                          (setf old-value o
-                                found f)
-                          n))))
-        (values result found old-value)))))
+                  (funcall after
+                           indexes path
+                           depth (read-max-depth container)
+                           next))))
+      (values (block loop-block
+                (with-hamt-path node container hash
+                  :operation after
+                  :on-leaf (multiple-value-bind (b s c)
+                               (funcall on-leaf node)
+                             (setf status s)
+                             (unless c
+                               (return-from loop-block nil))
+                             b)
+                  :on-nil (multiple-value-bind (b s c)
+                              (funcall on-nil)
+                            (setf status s)
+                            (unless c
+                              (return-from loop-block nil))
+                            b)))
+              status))))
 
 
 (-> copy-node (hash-node &key
@@ -520,14 +512,6 @@ Copy nodes and stuff.
   `(satisfies non-empty-hash-table-p))
 
 
-(defgeneric rehash (conflict level cont)
-  (:documentation "Attempts to divide conflct into smaller ones. Retudnerd hash table maps position of conflict to conflict itself and should contain at least one element"))
-
-
-(defgeneric single-elementp (conflict)
-  (:documentation "Checks if conflict node holds just a single element. Returns t if it does, returns nil if it does not."))
-
-
 (-> rebuild-rehashed-node (fixnum fixnum bottom-node) just-node)
 (-> build-rehashed-node (fixnum fixnum simple-vector) just-node)
 (defun build-rehashed-node (depth max-depth content)
@@ -576,7 +560,7 @@ Copy nodes and stuff.
            (let ((result (build-rehashed-node (1+ depth) max-depth array)))
              (mark-everything-as-modified result))))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (single-elementp conflict))
+    (if (or (>= depth max-depth) (cl-ds.dicts:single-elementp conflict))
         conflict
         (rehash conflict depth
                 #'cont))))
@@ -592,7 +576,7 @@ Copy nodes and stuff.
   (flet ((cont (array)
            (build-rehashed-node (1+ depth) max-depth array)))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (single-elementp conflict))
+    (if (or (>= depth max-depth) (cl-ds.dicts:single-elementp conflict))
         conflict
         (rehash conflict depth
                 #'cont))))
@@ -704,8 +688,8 @@ Copy nodes and stuff.
        zerop))
 
 
-(defmethod rehash (conflict level cont)
-  (declare (type conflict-node conflict)
+(defun rehash (conflict level cont)
+  (declare (type cl-ds.dicts:bucket conflict)
            (optimize (speed 3)
                      (safety 0)))
   (let ((result (make-array +maximum-children-count+ :initial-element nil))
@@ -715,16 +699,14 @@ Copy nodes and stuff.
     (declare (dynamic-extent byte)
              (dynamic-extent result))
     (iterate
-      (for item in (access-conflict conflict))
-      (for hash = (hash.location.value-hash item))
+      (for item in (cl-ds.dicts:access-content conflict))
+      (for hash = (cl-ds.dicts:access-hash item))
       (for index = (ldb byte hash))
-      (push item (access-conflict (ensure (aref result index)
-                                    (make 'conflict-node)))))
+      (push
+       item
+       (cl-ds.dicts:access-content (ensure (aref result index)
+                                     (make 'cl-ds.dicts:bucket)))))
     (funcall cont result)))
-
-
-(defmethod single-elementp ((conflict conflict-node))
-  (endp (cdr (access-conflict conflict))))
 
 
 (defgeneric print-hamt (obj stream &optional indent)

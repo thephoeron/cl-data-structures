@@ -22,6 +22,7 @@
    #:fundamental-container
    #:fundamental-modification-operation-status
    #:grow-bucket
+   #:grow-function
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert

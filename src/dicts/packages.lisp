@@ -6,6 +6,17 @@
         #:cl-ds.utils)
   (:nicknames #:cl-ds.dicts)
   (:export
+   #:hashing-dictionary
+   #:read-equal-fn
+   #:bucket
+   #:hash-content-tuple
+   #:access-content
+   #:find-content
+   #:content-tuple
+   #:single-elementp
+   #:access-conflict
+   #:access-hash
+   #:read-hash-fn
    #:dictionary))
 
 
@@ -23,7 +34,6 @@
    #:hamt-dictionary
    #:hamt-dictionary-at
    #:hamt-dictionary-size
-   #:hashing-dictionary
    #:make-functional-hamt-dictionary
    #:make-mutable-hamt-dictionary
    #:mutable-hamt-dictionary
