@@ -14,7 +14,9 @@
    #:find-content
    #:content-tuple
    #:single-elementp
-   #:access-conflict
+   #:access-content
+   #:access-location
+   #:access-value
    #:access-hash
    #:read-hash-fn
    #:dictionary))

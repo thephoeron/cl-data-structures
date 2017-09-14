@@ -4,7 +4,7 @@
 (defclass content-tuple ()
   ((%location
     :initarg :location
-    :accessor access-key)
+    :accessor access-location)
    (%value
     :initarg :value
     :accessor access-value)))
@@ -39,7 +39,7 @@
     (flet ((compare-fn (a b)
              (and (eql (access-hash a) hash)
                   (funcall equal-fn
-                           (access-key a)
+                           (access-location a)
                            b))))
       (declare (dynamic-extent (function compare-fn)))
       (multiple-value-bind (r f) (try-find
@@ -57,10 +57,10 @@
                               &key hash value &allow-other-keys)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
-             (and (eql (access-hash a) hash)
+             (and (eql (access-hash a) (access-hash b))
                   (funcall equal-fn
-                           (access-key a)
-                           b))))
+                           (access-location a)
+                           (access-location b)))))
       (declare (dynamic-extent (function compare-fn)))
       (multiple-value-bind (next-list replaced old-value)
           (insert-or-replace (access-content bucket)
@@ -83,10 +83,10 @@
                               &key hash value &allow-other-keys)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
-             (and (eql (access-hash a) hash)
+             (and (eql (access-hash a) (access-hash b))
                   (funcall equal-fn
-                           (access-key a)
-                           b))))
+                           (access-location a)
+                           (access-location b)))))
       (declare (dynamic-extent (function compare-fn)))
       (multiple-value-bind (next-list replaced old-value)
           (insert-or-replace (access-content bucket)
@@ -109,10 +109,10 @@
                               &key hash value &allow-other-keys)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
-             (and (eql (access-hash a) hash)
+             (and (eql (access-hash a) (access-hash b))
                   (funcall equal-fn
-                           (access-key a)
-                           b))))
+                           (access-location a)
+                           (access-location b)))))
       (declare (dynamic-extent (function compare-fn)))
       (multiple-value-bind (next-list replaced old-value)
           (insert-or-replace (access-content bucket)
