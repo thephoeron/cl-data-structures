@@ -119,7 +119,7 @@
                                      :value value
                                      :hash hash)))
           cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          t))
 
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:insert-function)
@@ -131,4 +131,4 @@
                                      :value value
                                      :hash hash)))
           cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          t))
