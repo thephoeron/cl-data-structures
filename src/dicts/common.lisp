@@ -72,11 +72,37 @@
                      ,changed)))))))
 
 
+(defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-function)
+                                (container hashing-dictionary)
+                                (bucket bucket)
+                                location
+                                &key hash)
+  (let ((equal-fn (read-equal-fn container)))
+    (flet ((location-test (node location)
+             (and (eql hash (access-hash node))
+                  (funcall equal-fn location
+                           (access-location node)))))
+      (declare (dynamic-extent (function location-test)))
+      (multiple-value-bind (list removed value)
+          (try-remove location
+                      (access-content bucket)
+                      :test #'location-test)
+        (if removed
+            (values
+             (and list (make 'bucket :content list))
+             (cl-ds.common:make-eager-modification-operation-status t (access-value value))
+             t)
+            (values
+             bucket
+             cl-ds.common:empty-eager-modification-operation-status
+             nil))))))
+
+
 (defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)
                               (container hashing-dictionary)
                               (bucket bucket)
                               location
-                              &key hash value &allow-other-keys)
+                              &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -91,7 +117,7 @@
                               (container hashing-dictionary)
                               (bucket bucket)
                               location
-                              &key hash value &allow-other-keys)
+                              &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 

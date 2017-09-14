@@ -19,6 +19,7 @@
    #:erase
    #:erase!
    #:erase!-function
+   #:erase-function
    #:found
    #:functional
    #:functionalp
@@ -34,6 +35,7 @@
    #:invalid-argument
    #:lazy
    #:make-bucket
+   #:shrink-bucket
    #:mod-bind
    #:mutable
    #:mutablep
@@ -44,7 +46,7 @@
    #:read-bounds
    #:read-class
    #:read-value
-   #:shrink-bucke
+   #:shrink-function
    #:size
    #:textual-error
    #:transaction

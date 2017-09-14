@@ -83,6 +83,41 @@
             :on-nil (values nil nil))))))
 
 
+(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
+                                        (container functional-hamt-dictionary)
+                                        location &key)
+  (with-hash-tree-functions (container :cases nil)
+    (let ((hash (hash-fn location))
+          (changed nil))
+      (flet ((shrink-bucket (bucket)
+               (multiple-value-bind (a b c)
+                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
+                 (setf changed c)
+                 (values a b c)))
+             (just-return ()
+               (return-from cl-ds:position-modification
+                 (values container
+                         cl-ds.common:empty-eager-modification-operation-status))))
+        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
+        (multiple-value-bind (new-root status)
+            (go-down-on-path container
+                             hash
+                             #'shrink-bucket
+                             #'just-return
+                             #'copy-on-write)
+          (values (if changed
+                      (make 'functional-hamt-dictionary
+                            :hash-fn (cl-ds.dicts:read-hash-fn container)
+                            :equal-fn (cl-ds.dicts:read-equal-fn container)
+                            :root new-root
+                            :max-depth (read-max-depth container)
+                            :size (if (cl-ds:found status)
+                                      (access-size container)
+                                      (1- (access-size container))))
+                      container)
+                  status))))))
+
+
 (-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
     (values functional-hamt-dictionary
             cl-ds:fundamental-modification-operation-status))
@@ -441,7 +476,7 @@ Methods. Those will just call non generic functions.
                             :max-depth (read-max-depth container)
                             :size (if (cl-ds:found status)
                                       (access-size container)
-                                      (+ 1 (access-size container))))
+                                      (1+ (access-size container))))
                       container)
                   status))))))
 
