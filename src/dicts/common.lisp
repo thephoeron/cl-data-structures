@@ -50,30 +50,41 @@
                 f)))))
 
 
+(defmacro bucket-growing-macro ((container bucket location hash value) result status changed)
+  (with-gensyms (!equal-fn !compare-fn)
+    (once-only (container bucket location hash value)
+      `(let ((,!equal-fn (read-equal-fn ,container)))
+         (flet ((,!compare-fn (a b)
+                  (and (eql (access-hash a) (access-hash b))
+                       (funcall ,!equal-fn
+                                (access-location a)
+                                (access-location b)))))
+           (declare (dynamic-extent (function ,!compare-fn)))
+           (multiple-value-bind (^next-list ^replaced ^old-value)
+               (insert-or-replace (access-content ,bucket)
+                                  (make 'hash-content-tuple
+                                        :hash ,hash
+                                        :location ,location
+                                        :value ,value)
+                                  :test (function ,!compare-fn))
+             (values ,result
+                     ,status
+                     ,changed)))))))
+
+
 (defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)
                               (container hashing-dictionary)
                               (bucket bucket)
                               location
                               &key hash value &allow-other-keys)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((compare-fn (a b)
-             (and (eql (access-hash a) (access-hash b))
-                  (funcall equal-fn
-                           (access-location a)
-                           (access-location b)))))
-      (declare (dynamic-extent (function compare-fn)))
-      (multiple-value-bind (next-list replaced old-value)
-          (insert-or-replace (access-content bucket)
-                             (make 'hash-content-tuple
-                                   :hash hash
-                                   :location location
-                                   :value value)
-                             :test #'compare-fn)
-        (values (make 'bucket :content next-list)
-                (cl-ds.common:make-eager-modification-operation-status
-                 replaced
-                 (and replaced (access-value old-value)))
-                t)))))
+  (bucket-growing-macro
+      (container bucket location hash value)
+
+      (make 'bucket :content ^next-list)
+      (cl-ds.common:make-eager-modification-operation-status
+       ^replaced
+       (and ^replaced (access-value ^old-value)))
+      t))
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:add-function)
@@ -81,25 +92,14 @@
                               (bucket bucket)
                               location
                               &key hash value &allow-other-keys)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((compare-fn (a b)
-             (and (eql (access-hash a) (access-hash b))
-                  (funcall equal-fn
-                           (access-location a)
-                           (access-location b)))))
-      (declare (dynamic-extent (function compare-fn)))
-      (multiple-value-bind (next-list replaced old-value)
-          (insert-or-replace (access-content bucket)
-                             (make 'hash-content-tuple
-                                   :hash hash
-                                   :location location
-                                   :value value)
-                             :test #'compare-fn)
-        (values (if replaced bucket (make 'bucket :content next-list))
-                (cl-ds.common:make-eager-modification-operation-status
-                 replaced
-                 (and replaced (access-value old-value)))
-                (not replaced))))))
+  (bucket-growing-macro
+      (container bucket location hash value)
+
+      (if ^replaced bucket (make 'bucket :content ^next-list))
+      (cl-ds.common:make-eager-modification-operation-status
+       ^replaced
+       (and ^replaced (access-value ^old-value)))
+      (not ^replaced)))
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:update-function)
@@ -107,25 +107,16 @@
                               (bucket bucket)
                               location
                               &key hash value &allow-other-keys)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((compare-fn (a b)
-             (and (eql (access-hash a) (access-hash b))
-                  (funcall equal-fn
-                           (access-location a)
-                           (access-location b)))))
-      (declare (dynamic-extent (function compare-fn)))
-      (multiple-value-bind (next-list replaced old-value)
-          (insert-or-replace (access-content bucket)
-                             (make 'hash-content-tuple
-                                   :hash hash
-                                   :location location
-                                   :value value)
-                             :test #'compare-fn)
-        (values (if replaced (make 'bucket :content next-list) bucket) 
-                (cl-ds.common:make-eager-modification-operation-status
-                 replaced
-                 (and replaced (access-value old-value)))
-                replaced)))))
+  (bucket-growing-macro
+      (container bucket location hash value)
+
+      (if ^replaced (make 'bucket :content ^next-list) bucket)
+      (if ^replaced
+          (cl-ds.common:make-eager-modification-operation-status
+           ^replaced
+           (access-value ^old-value))
+          cl-ds.common:empty-eager-modification-operation-status)
+      ^replaced))
 
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:update-function)

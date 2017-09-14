@@ -3,7 +3,7 @@
 
 (defpackage :cl-data-structures.dicts
   (:use #:common-lisp #:docstample #:docstample.mechanics #:serapeum
-        #:cl-ds.utils)
+        #:cl-ds.utils #:alexandria)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:hashing-dictionary
