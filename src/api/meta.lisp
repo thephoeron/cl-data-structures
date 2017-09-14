@@ -55,5 +55,5 @@
                            &key &allow-other-keys))
 
 
-(defgeneric make-bucket (operation container bucket location
+(defgeneric make-bucket (operation container location
                          &key &allow-other-keys))

@@ -103,7 +103,6 @@
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:update-function)
                               (container hashing-dictionary)
-                              (bucket bucket)
                               location
                               &key hash value &allow-other-keys)
   (values nil
@@ -113,7 +112,6 @@
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:add-function)
                               (container hashing-dictionary)
-                              (bucket bucket)
                               location &key hash value &allow-other-keys)
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple
@@ -126,7 +124,6 @@
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:insert-function)
                               (container hashing-dictionary)
-                              (bucket bucket)
                               location &key hash value &allow-other-keys)
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple

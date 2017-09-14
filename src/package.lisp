@@ -5,7 +5,6 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-   #:*documentation*
    #:add
    #:add!
    #:add-function
@@ -22,8 +21,7 @@
    #:functionalp
    #:fundamental-container
    #:fundamental-modification-operation-status
-   #:transform-bucket
-   #:position-modification
+   #:grow-bucket
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
@@ -36,10 +34,12 @@
    #:mutablep
    #:not-implemented
    #:out-of-bounds
+   #:position-modification
    #:read-arguments
    #:read-bounds
    #:read-class
    #:read-value
+   #:shrink-bucke
    #:size
    #:textual-error
    #:transaction
@@ -48,7 +48,8 @@
    #:update
    #:update!
    #:update-function
-   #:value))
+   #:value
+   #:*documentation*))
 
 
 (in-package #:cl-ds)

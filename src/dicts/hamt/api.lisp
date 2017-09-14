@@ -574,8 +574,19 @@ Methods. Those will just call non generic functions.
   (functional-hamt-dictionary-add container location new-value))
 
 
-(defmethod cl-ds:insert ((container functional-hamt-dictionary) location new-value)
-  (functional-hamt-dictionary-insert container location new-value))
+(defmethod cl-ds:position-modification (operation (container functional-hamt-dictionary) location &key value)
+  (with-hash-tree-functions (container :cases nil)
+    (let ((hash (hash-fn location)))
+      (flet ((grow-bucket (bucket)
+               (cl-ds:grow-bucket operation container bucket location :value value :hash hash))
+             (make-bucket ()
+               (cl-ds:make-bucket operation container location :value value :hash hash)))
+        (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
+        (go-down-on-path container
+                         hash
+                         #'grow-bucket nil
+                         #'make-bucket nil
+                         #'copy-on-write nil)))))
 
 
 (defmethod cl-ds:erase ((container functional-hamt-dictionary) location)
