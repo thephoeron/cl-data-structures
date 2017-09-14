@@ -3,14 +3,20 @@
 
 (defgeneric at (container location))
 
-(defgeneric (setf at) (new-value container location))
+(defgeneric (setf at) (new-value container location)
+  (:generic-function-class insert!-function)
+  (:method ((container mutable) location new-value)
+    (position-modification #'(setf at) container location :value new-value)))
 
 (defgeneric add (container location new-value)
   (:generic-function-class add-function)
   (:method ((container fundamental-container) location new-value)
     (position-modification #'add container location :value new-value)))
 
-(defgeneric add! (container location new-value))
+(defgeneric add! (container location new-value)
+  (:generic-function-class add!-function)
+  (:method ((container mutable) location new-value)
+    (position-modification #'add! container location :value new-value)))
 
 (defgeneric insert (container location new-value)
   (:generic-function-class insert-function)
@@ -31,7 +37,10 @@
   (:method ((container fundamental-container) location new-value)
     (position-modification #'update container location :value new-value)))
 
-(defgeneric update! (container location new-value))
+(defgeneric update! (container location new-value)
+  (:generic-function-class update!-function)
+  (:method ((container mutable) location new-value)
+    (position-modification #'update! container location :value new-value)))
 
 (defgeneric become-functional (container)
   (:method ((container functional)) container))

@@ -461,16 +461,26 @@ Methods. Those will just call non generic functions.
                (multiple-value-bind (a b c)
                    (cl-ds:make-bucket operation container location :value value :hash hash)
                  (setf changed c)
-                 (values a b c))))
-        (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
+                 (values a b c)))
+             (copy-on-write (indexes path depth max-depth conflict)
+               (transactional-copy-on-write indexes
+                                            path
+                                            depth
+                                            max-depth
+                                            conflict
+                                            (access-root-was-modified container))))
+        (declare (dynamic-extent (function make-bucket)
+                                 (function grow-bucket)
+                                 (function copy-on-write)))
         (multiple-value-bind (new-root status)
             (go-down-on-path container
                              hash
                              #'grow-bucket
                              #'make-bucket
-                             #'transactional-copy-on-write)
+                             #'copy-on-write)
           (when changed
-            (setf (access-root container) new-root)
+            (setf (access-root container) new-root
+                  (access-root-was-modified container) t)
             (unless (cl-ds:found status)
               (incf (access-size container))))
           (values container
@@ -479,22 +489,6 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:erase ((container functional-hamt-dictionary) location)
   (functional-hamt-dictionary-erase container location))
-
-
-(defmethod (setf cl-ds:at) (new-value (container transactional-hamt-dictionary) location)
-  (transactional-hamt-dictionary-insert! container location new-value))
-
-
-(defmethod cl-ds:erase! ((container transactional-hamt-dictionary) location)
-  (transactional-hamt-dictionary-erase! container location))
-
-
-(defmethod cl-ds:add! ((container transactional-hamt-dictionary) location new-value)
-  (transactional-hamt-dictionary-add! container location new-value))
-
-
-(defmethod cl-ds:update! ((container transactional-hamt-dictionary) location new-value)
-  (transactional-hamt-dictionary-update! container location new-value))
 
 
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))

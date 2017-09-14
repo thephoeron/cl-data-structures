@@ -5,6 +5,10 @@
   ())
 
 
+(defclass destructive-function ()
+  ())
+
+
 (defclass grow-function ()
   ())
 
@@ -34,9 +38,30 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass erase-function (closer-mop:standard-generic-function
-                          functional-function
-                          shrink-function)
+(defclass insert!-function (closer-mop:standard-generic-function
+                            destructive-function
+                            grow-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass update!-function (closer-mop:standard-generic-function
+                            destructive-function
+                            grow-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass add!-function (closer-mop:standard-generic-function
+                         destructive-function
+                         grow-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass erase!-function (closer-mop:standard-generic-function
+                           destructive-function
+                           shrink-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 

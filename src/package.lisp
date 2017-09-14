@@ -7,6 +7,7 @@
   (:export
    #:add
    #:add!
+   #:add!-function
    #:add-function
    #:argument-out-of-bounds
    #:at
@@ -14,8 +15,10 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:destructive-function
    #:erase
    #:erase!
+   #:erase!-function
    #:found
    #:functional
    #:functionalp
@@ -26,6 +29,7 @@
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
+   #:insert!-function
    #:insert-function
    #:invalid-argument
    #:lazy
@@ -48,6 +52,7 @@
    #:transactionalp
    #:update
    #:update!
+   #:update!-function
    #:update-function
    #:value
    #:*documentation*))
