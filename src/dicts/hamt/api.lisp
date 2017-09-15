@@ -111,38 +111,9 @@
                             :equal-fn (cl-ds.dicts:read-equal-fn container)
                             :root new-root
                             :max-depth (read-max-depth container)
-                            :size (if (cl-ds:found status)
-                                      (access-size container)
-                                      (1- (access-size container))))
+                            :size (1- (access-size container)))
                       container)
                   status))))))
-
-
-(-> functional-hamt-dictionary-erase (functional-hamt-dictionary t)
-    (values functional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun functional-hamt-dictionary-erase (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
-  "Implementation of ERASE"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-erase-implementation container
-                                        hash
-                                        location
-                                        #'copy-on-write
-                                        nil)
-        (if found
-            (values (make (type-of container)
-                          :hash-fn (read-hash-fn container)
-                          :root new-root
-                          :equal-fn (read-equal-fn container)
-                          :max-depth (read-max-depth container)
-                          :size (1- (access-size container)))
-                    (cl-ds.common:make-eager-modification-operation-status
-                     t old-value))
-            (values container
-                    cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (-> transactional-hamt-dictionary-erase! (transactional-hamt-dictionary t)
@@ -520,10 +491,6 @@ Methods. Those will just call non generic functions.
               (incf (access-size container))))
           (values container
                   status))))))
-
-
-(defmethod cl-ds:erase ((container functional-hamt-dictionary) location)
-  (functional-hamt-dictionary-erase container location))
 
 
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))

@@ -5,6 +5,7 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
+   #:*documentation*
    #:add
    #:add!
    #:add!-function
@@ -19,6 +20,7 @@
    #:erase
    #:erase!
    #:erase!-function
+   #:erase-function
    #:erase-function
    #:found
    #:functional
@@ -35,7 +37,6 @@
    #:invalid-argument
    #:lazy
    #:make-bucket
-   #:shrink-bucket
    #:mod-bind
    #:mutable
    #:mutablep
@@ -46,6 +47,7 @@
    #:read-bounds
    #:read-class
    #:read-value
+   #:shrink-bucket
    #:shrink-function
    #:size
    #:textual-error
@@ -56,8 +58,7 @@
    #:update!
    #:update!-function
    #:update-function
-   #:value
-   #:*documentation*))
+   #:value))
 
 
 (in-package #:cl-ds)

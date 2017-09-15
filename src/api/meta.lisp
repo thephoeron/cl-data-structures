@@ -38,6 +38,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass erase-function (closer-mop:standard-generic-function
+                          functional-function
+                          shrink-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defclass insert!-function (closer-mop:standard-generic-function
                             destructive-function
                             grow-function)
