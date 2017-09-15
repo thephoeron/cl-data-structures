@@ -6,7 +6,13 @@
 (defgeneric (setf at) (new-value container location)
   (:generic-function-class insert!-function)
   (:method (new-value (container mutable) location)
-    (position-modification #'(setf at) container location :value new-value)))
+    (let ((status (nth-value
+                   1
+                   (position-modification #'(setf at)
+                                          container
+                                          location
+                                          :value new-value))))
+      (values new-value status))))
 
 (defgeneric add (container location new-value)
   (:generic-function-class functional-add-function)

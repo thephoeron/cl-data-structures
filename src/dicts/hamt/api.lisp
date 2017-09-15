@@ -323,7 +323,8 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (let ((status nil)
-        (hash (funcall (the (-> (t) fixnum) (cl-ds.dicts:read-hash-fn container)) location)))
+        (hash (funcall (the (-> (t) fixnum)
+                            (cl-ds.dicts:read-hash-fn container)) location)))
     (macrolet ((handle-bucket (&body body)
                  `(multiple-value-bind (bucket s changed)
                       ,@body
