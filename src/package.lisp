@@ -21,13 +21,11 @@
    #:erase!
    #:erase!-function
    #:erase-function
-   #:erase-function
    #:found
    #:functional
    #:functionalp
    #:fundamental-container
    #:fundamental-modification-operation-status
-   #:grow-bucket
    #:grow-function
    #:initialization-error
    #:initialization-out-of-bounds
@@ -36,7 +34,6 @@
    #:insert-function
    #:invalid-argument
    #:lazy
-   #:make-bucket
    #:mod-bind
    #:mutable
    #:mutablep
@@ -47,7 +44,6 @@
    #:read-bounds
    #:read-class
    #:read-value
-   #:shrink-bucket
    #:shrink-function
    #:size
    #:textual-error

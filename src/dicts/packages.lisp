@@ -6,20 +6,23 @@
         #:cl-ds.utils #:alexandria)
   (:nicknames #:cl-ds.dicts)
   (:export
-   #:hashing-dictionary
-   #:read-equal-fn
-   #:bucket
-   #:hash-content-tuple
    #:access-content
-   #:find-content
-   #:content-tuple
-   #:single-elementp
    #:access-content
+   #:access-hash
    #:access-location
    #:access-value
-   #:access-hash
+   #:bucket
+   #:content-tuple
+   #:dictionary
+   #:find-content
+   #:grow-bucket
+   #:hash-content-tuple
+   #:hashing-dictionary
+   #:make-bucket
+   #:read-equal-fn
    #:read-hash-fn
-   #:dictionary))
+   #:shrink-bucket
+   #:single-elementp))
 
 
 (defpackage :cl-data-structures.dicts.hamt

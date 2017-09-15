@@ -72,20 +72,3 @@
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
-
-(defgeneric position-modification (operation container location &key &allow-other-keys))
-
-
-(defgeneric position-erasure (operation container location))
-
-
-(defgeneric grow-bucket (operation container bucket location
-                         &key &allow-other-keys))
-
-
-(defgeneric shrink-bucket (operation container bucket location
-                           &key &allow-other-keys))
-
-
-(defgeneric make-bucket (operation container location
-                         &key &allow-other-keys))
