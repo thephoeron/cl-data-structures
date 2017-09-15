@@ -361,6 +361,10 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container functional-hamt-dictionary)
                                         location &key value)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
           (changed nil))
@@ -388,8 +392,8 @@ Methods. Those will just call non generic functions.
                             :root new-root
                             :max-depth (read-max-depth container)
                             :size (if (cl-ds:found status)
-                                      (access-size container)
-                                      (1+ (access-size container))))
+                                      (the non-negative-fixnum (access-size container))
+                                      (1+ (the non-negative-fixnum (access-size container)))))
                       container)
                   status))))))
 
@@ -397,6 +401,10 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container transactional-hamt-dictionary)
                                         location &key value)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
           (changed nil))
@@ -416,7 +424,7 @@ Methods. Those will just call non generic functions.
                                             depth
                                             max-depth
                                             conflict
-                                            (access-root-was-modified container))))
+                                            (the boolean (access-root-was-modified container)))))
         (declare (dynamic-extent (function make-bucket)
                                  (function grow-bucket)
                                  (function copy-on-write)))
@@ -430,7 +438,7 @@ Methods. Those will just call non generic functions.
             (setf (access-root container) new-root
                   (access-root-was-modified container) t)
             (unless (cl-ds:found status)
-              (incf (access-size container))))
+              (incf (the non-negative-fixnum (access-size container)))))
           (values container
                   status))))))
 
@@ -438,6 +446,10 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
                                         (container functional-hamt-dictionary)
                                         location &key)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
           (changed nil))
@@ -463,7 +475,7 @@ Methods. Those will just call non generic functions.
                             :equal-fn (cl-ds.dicts:read-equal-fn container)
                             :root new-root
                             :max-depth (read-max-depth container)
-                            :size (1- (access-size container)))
+                            :size (1- (the non-negative-fixnum (access-size container))))
                       container)
                   status))))))
 
@@ -471,6 +483,10 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
                                         (container transactional-hamt-dictionary)
                                         location &key)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
           (changed nil))
@@ -490,7 +506,9 @@ Methods. Those will just call non generic functions.
                                             max-depth
                                             conflict
                                             (access-root-was-modified container))))
-        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
+        (declare (dynamic-extent (function just-return)
+                                 (function shrink-bucket)
+                                 (function copy-on-write)))
         (multiple-value-bind (new-root status)
             (go-down-on-path container
                              hash
@@ -499,7 +517,7 @@ Methods. Those will just call non generic functions.
                              #'copy-on-write)
           (when changed
             (setf (access-root container) new-root)
-            (decf (access-size container)))
+            (decf (the non-negative-fixnum (access-size container))))
           (values container
                   status))))))
 
