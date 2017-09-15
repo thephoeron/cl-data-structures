@@ -11,7 +11,8 @@
   ())
 
 
-(defclass transactional-hamt-dictionary (cl-ds:transactional hamt-dictionary)
+(defclass transactional-hamt-dictionary (hamt-dictionary
+                                         cl-ds:transactional)
   ((%root-was-modified :type boolean
                        :initform nil
                        :accessor access-root-was-modified
@@ -81,65 +82,6 @@
                                                location
                                                :hash hash)
             :on-nil (values nil nil))))))
-
-
-(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
-                                        (container functional-hamt-dictionary)
-                                        location &key)
-  (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location))
-          (changed nil))
-      (flet ((shrink-bucket (bucket)
-               (multiple-value-bind (a b c)
-                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
-                 (setf changed c)
-                 (values a b c)))
-             (just-return ()
-               (return-from cl-ds:position-modification
-                 (values container
-                         cl-ds.common:empty-eager-modification-operation-status))))
-        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
-        (multiple-value-bind (new-root status)
-            (go-down-on-path container
-                             hash
-                             #'shrink-bucket
-                             #'just-return
-                             #'copy-on-write)
-          (values (if changed
-                      (make 'functional-hamt-dictionary
-                            :hash-fn (cl-ds.dicts:read-hash-fn container)
-                            :equal-fn (cl-ds.dicts:read-equal-fn container)
-                            :root new-root
-                            :max-depth (read-max-depth container)
-                            :size (1- (access-size container)))
-                      container)
-                  status))))))
-
-
-(-> transactional-hamt-dictionary-erase! (transactional-hamt-dictionary t)
-    (values transactional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun transactional-hamt-dictionary-erase! (container location)
-  (declare (optimize (speed 3)))
-  "Implementation of ERASE!"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (multiple-value-bind (new-root found old-value)
-          (copying-erase-implementation container
-                                        hash
-                                        location
-                                        #'transactional-copy-on-write
-                                        (list (access-root-was-modified
-                                               container)))
-        (when found
-          (decf (access-size container)))
-        (unless (eq new-root (access-root container))
-          (setf (access-root-was-modified container) t
-                (access-root container) new-root))
-        (values container
-                (cl-ds.common:make-eager-modification-operation-status
-                 found
-                 old-value))))))
 
 
 (-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
@@ -489,6 +431,75 @@ Methods. Those will just call non generic functions.
                   (access-root-was-modified container) t)
             (unless (cl-ds:found status)
               (incf (access-size container))))
+          (values container
+                  status))))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
+                                        (container functional-hamt-dictionary)
+                                        location &key)
+  (with-hash-tree-functions (container :cases nil)
+    (let ((hash (hash-fn location))
+          (changed nil))
+      (flet ((shrink-bucket (bucket)
+               (multiple-value-bind (a b c)
+                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
+                 (setf changed c)
+                 (values a b c)))
+             (just-return ()
+               (return-from cl-ds:position-modification
+                 (values container
+                         cl-ds.common:empty-eager-modification-operation-status))))
+        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
+        (multiple-value-bind (new-root status)
+            (go-down-on-path container
+                             hash
+                             #'shrink-bucket
+                             #'just-return
+                             #'copy-on-write)
+          (values (if changed
+                      (make 'functional-hamt-dictionary
+                            :hash-fn (cl-ds.dicts:read-hash-fn container)
+                            :equal-fn (cl-ds.dicts:read-equal-fn container)
+                            :root new-root
+                            :max-depth (read-max-depth container)
+                            :size (1- (access-size container)))
+                      container)
+                  status))))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
+                                        (container transactional-hamt-dictionary)
+                                        location &key)
+  (with-hash-tree-functions (container :cases nil)
+    (let ((hash (hash-fn location))
+          (changed nil))
+      (flet ((shrink-bucket (bucket)
+               (multiple-value-bind (a b c)
+                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
+                 (setf changed c)
+                 (values a b c)))
+             (just-return ()
+               (return-from cl-ds:position-modification
+                 (values container
+                         cl-ds.common:empty-eager-modification-operation-status)))
+             (copy-on-write (indexes path depth max-depth conflict)
+               (transactional-copy-on-write indexes
+                                            path
+                                            depth
+                                            max-depth
+                                            conflict
+                                            (access-root-was-modified container))))
+        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
+        (multiple-value-bind (new-root status)
+            (go-down-on-path container
+                             hash
+                             #'shrink-bucket
+                             #'just-return
+                             #'copy-on-write)
+          (when changed
+            (setf (access-root container) new-root)
+            (decf (access-size container)))
           (values container
                   status))))))
 

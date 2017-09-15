@@ -23,7 +23,7 @@
   (once-only (limit)
     `(let ((dict ,init-form))
        (is (size dict) 0)
-       (ok (cl-ds:emptyp dict))
+       (ok (alexandria:emptyp dict))
        (diag "Testing insert")
        (iterate
          (for s from 1 below ,limit)
@@ -95,7 +95,7 @@
   (once-only (limit)
     `(let ((dict ,init-form))
        (is (size dict) 0)
-       (ok (cl-ds:emptyp dict))
+       (ok (alexandria:emptyp dict))
        (diag "filling up origingal dictionary")
        (iterate
          (for s from 1 below ,limit)
@@ -214,3 +214,6 @@
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
   (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100)
   (finalize))
+
+
+(run-suite)
