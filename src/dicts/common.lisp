@@ -1,18 +1,6 @@
 (in-package #:cl-ds.dicts)
 
 
-(defgeneric grow-bucket (operation container bucket location
-                         &key &allow-other-keys))
-
-
-(defgeneric shrink-bucket (operation container bucket location
-                           &key &allow-other-keys))
-
-
-(defgeneric make-bucket (operation container location
-                         &key &allow-other-keys))
-
-
 (defclass content-tuple ()
   ((%location
     :initarg :location
@@ -84,11 +72,11 @@
                      ,changed)))))))
 
 
-(defmethod shrink-bucket ((operation cl-ds:erase-function)
-                          (container hashing-dictionary)
-                          (bucket bucket)
-                          location
-                          &key hash)
+(defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-function)
+                                (container hashing-dictionary)
+                                (bucket bucket)
+                                location
+                                &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
              (and (eql hash (access-hash node))
@@ -110,11 +98,11 @@
              nil))))))
 
 
-(defmethod grow-bucket ((operation cl-ds:insert-function)
-                        (container hashing-dictionary)
-                        (bucket bucket)
-                        location
-                        &key hash value)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)
+                              (container hashing-dictionary)
+                              (bucket bucket)
+                              location
+                              &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -125,11 +113,11 @@
       t))
 
 
-(defmethod grow-bucket ((operation cl-ds:add-function)
-                        (container hashing-dictionary)
-                        (bucket bucket)
-                        location
-                        &key hash value)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:functional-add-function)
+                              (container hashing-dictionary)
+                              (bucket bucket)
+                              location
+                              &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -140,11 +128,11 @@
       (not ^replaced)))
 
 
-(defmethod grow-bucket ((operation cl-ds:update-function)
-                        (container hashing-dictionary)
-                        (bucket bucket)
-                        location
-                        &key hash value &allow-other-keys)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:functional-update-function)
+                              (container hashing-dictionary)
+                              (bucket bucket)
+                              location
+                              &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -157,18 +145,19 @@
       ^replaced))
 
 
-(defmethod make-bucket ((operation cl-ds:update-function)
-                        (container hashing-dictionary)
-                        location
-                        &key hash value &allow-other-keys)
+(defmethod cl-ds:make-bucket ((operation cl-ds:functional-update-function)
+                              (container hashing-dictionary)
+                              location
+                              &key hash value)
+  (declare (ignore hash value location))
   (values nil
           cl-ds.common:empty-eager-modification-operation-status
           nil))
 
 
-(defmethod make-bucket ((operation cl-ds:add-function)
-                        (container hashing-dictionary)
-                        location &key hash value &allow-other-keys)
+(defmethod cl-ds:make-bucket ((operation cl-ds:add-function)
+                              (container hashing-dictionary)
+                              location &key hash value) 
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple
                                      :location location
@@ -178,9 +167,9 @@
           t))
 
 
-(defmethod make-bucket ((operation cl-ds:insert-function)
-                        (container hashing-dictionary)
-                        location &key hash value &allow-other-keys)
+(defmethod cl-ds:make-bucket ((operation cl-ds:insert-function)
+                              (container hashing-dictionary)
+                              location &key hash value)
   (values (make 'bucket
                 :content (list (make 'hash-content-tuple
                                      :location location
@@ -188,3 +177,71 @@
                                      :hash hash)))
           cl-ds.common:empty-eager-modification-operation-status
           t))
+
+
+(flet ((locate-tuple (container bucket hash location)
+         (declare (type hashing-dictionary container)
+                  (type bucket bucket)
+                  (type fixnum hash))
+         (fbind ((comp (read-equal-fn container)))
+           (iterate
+             (for tuple in (access-content bucket))
+             (finding
+              tuple
+              such-that (and (eql (access-hash tuple)
+                                  hash)
+                             (comp (access-location tuple)
+                                   location)))))))
+
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert!-function)
+                                 (container hashing-dictionary)
+                                 (bucket bucket)
+                                 location &key hash value)
+    (let* ((tuple (locate-tuple container bucket hash location))
+           (old-value (and tuple (access-value tuple))))
+      (if (null tuple)
+          (push (make 'hash-content-tuple
+                      :location location
+                      :value value
+                      :hash hash)
+                (access-content bucket))
+          (setf (access-hash tuple) hash
+                (access-value tuple) value))
+      (values bucket
+              (if (null tuple)
+                  cl-ds.common:empty-eager-modification-operation-status
+                  (cl-ds.common:make-eager-modification-operation-status t old-value))
+              t)))
+
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:update!-function)
+                                 (container hashing-dictionary)
+                                 (bucket bucket)
+                                 location &key hash value)
+    (let* ((tuple (locate-tuple container bucket hash location))
+           (old-value (and tuple (access-value tuple))))
+      (if (null tuple)
+          (values bucket cl-ds.common:empty-eager-modification-operation-status nil)
+          (progn
+            (setf (access-hash tuple) hash
+                  (access-value tuple) value)
+            (values bucket
+                    (cl-ds.common:make-eager-modification-operation-status t old-value)
+                    t)))))
+
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:add!-function)
+                                 (container hashing-dictionary)
+                                 (bucket bucket)
+                                 location &key hash value)
+    (let* ((tuple (locate-tuple container bucket hash location))
+           (old-value (and tuple (access-value tuple))))
+      (if (null tuple)
+          (progn
+            (push (make 'hash-content-tuple
+                        :location location
+                        :value value
+                        :hash hash)
+                  (access-content bucket))
+            (values bucket cl-ds.common:empty-eager-modification-operation-status t))
+          (values bucket
+                  (cl-ds.common:make-eager-modification-operation-status t old-value)
+                  nil)))))

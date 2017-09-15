@@ -84,200 +84,6 @@
             :on-nil (values nil nil))))))
 
 
-(-> mutable-hamt-dictionary-insert! (mutable-hamt-dictionary t t)
-    (values t
-            cl-ds:fundamental-modification-operation-status))
-(defun mutable-hamt-dictionary-insert! (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)
-                     (space 0) (compilation-speed 0)))
-  "Implementation of (SETF AT)"
-  (with-hash-tree-functions (container)
-    (let ((replaced nil)
-          (old-value nil)
-          (hash (hash-fn location)))
-      (flet ((destructive-insert (node)
-               (multiple-value-bind (next-list r v)
-                   (insert-or-replace
-                    (access-conflict (the conflict-node node))
-                    (make-hash.location.value :hash hash
-                                              :location location
-                                              :value new-value)
-                    :test #'compare-fn)
-                 (setf (access-conflict node) next-list
-                       replaced r
-                       old-value (hash.location.value-value v))
-                 node)))
-        (declare (dynamic-extent (function destructive-insert))
-                 (inline destructive-insert))
-        (let* ((prev-node nil)
-               (prev-index 0)
-               (root (access-root container))
-               (result
-                 (hash-do
-                     (node index c)
-                     ((access-root container) hash)
-                     :on-every (setf prev-node node prev-index index)
-                     :on-nil (if prev-node
-                                 (progn
-                                   (assert (not (hash-node-contains-leaf
-                                                 prev-node prev-index)))
-                                   (hash-node-insert!
-                                    prev-node
-                                    (rebuild-rehashed-node
-                                     c
-                                     (read-max-depth container)
-                                     (make-conflict-node
-                                      (list (make-hash.location.value
-                                             :hash hash
-                                             :location location
-                                             :value new-value))))
-                                    prev-index)
-                                   root)
-                                 (make-conflict-node
-                                  (list (make-hash.location.value
-                                         :hash hash
-                                         :location location
-                                         :value new-value))))
-                     :on-leaf (if prev-node
-                                  (progn
-                                    (assert (hash-node-contains-leaf
-                                             prev-node prev-index))
-                                    (hash-node-replace!
-                                     prev-node
-                                     (rebuild-rehashed-node
-                                      c
-                                      (read-max-depth container)
-                                      (destructive-insert node))
-                                     prev-index)
-                                    root)
-                                  (rebuild-rehashed-node
-                                   c
-                                   (read-max-depth container)
-                                   (destructive-insert node))))))
-          (setf (access-root container) result)
-          (unless replaced
-            (incf (the fixnum (access-size container))))
-          (values new-value
-                  (cl-ds.common:make-eager-modification-operation-status
-                   replaced
-                   old-value)))))))
-
-
-(-> mutable-hamt-dictionary-update! (functional-hamt-dictionary t t)
-    (values functional-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun mutable-hamt-dictionary-update! (container location new-value)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
-  "Implementation of UPDATE!"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (flet ((location-test (loc location)
-               (let ((result
-                       (and (eql
-                             hash (hash.location.value-hash location))
-                            (equal-fn
-                             loc (hash.location.value-location location)))))
-                 result)))
-        (hash-do
-            (node index)
-            ((access-root container) hash)
-            :on-leaf (if-let ((r (find
-                                  location
-                                  (the list (access-conflict
-                                             (the conflict-node node)))
-                                  :test #'location-test)))
-                       (let ((old (hash.location.value-value r)))
-                         (setf (hash.location.value-value r) new-value
-                               (hash.location.value-hash r) hash)
-                         (values
-                          container
-                          (cl-ds.common:make-eager-modification-operation-status
-                           t old)))
-                       (values
-                        container
-                        cl-ds.common:empty-eager-modification-operation-status))
-            :on-nil (values
-                     container
-                     cl-ds.common:empty-eager-modification-operation-status))))))
-
-
-(-> mutable-hamt-dictionary-add! (mutable-hamt-dictionary t t)
-    (values mutable-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun mutable-hamt-dictionary-add! (container location new-value)
-  (declare (optimize (speed 3) (safety 1) (debug 0)))
-  "Implementation of add!"
-  (with-hash-tree-functions (container)
-    (let ((hash (hash-fn location)))
-      (flet ((destructive-insert (node)
-               (multiple-value-bind (next-list r v)
-                   (insert-or-replace
-                    (access-conflict (the conflict-node node))
-                    (make-hash.location.value :hash hash
-                                              :location location
-                                              :value new-value)
-                    :test #'compare-fn)
-                 (when r
-                   (return-from mutable-hamt-dictionary-add!
-                     (values
-                      container
-                      (cl-ds.common:make-eager-modification-operation-status
-                       t
-                       (hash.location.value-value v)))))
-                 (setf (access-conflict node) next-list)
-                 node)))
-        (let* ((prev-node nil)
-               (prev-index 0)
-               (root (access-root container))
-               (result
-                 (hash-do
-                     (node index c)
-                     ((access-root container) hash)
-                     :on-every (setf prev-node node
-                                     prev-index index)
-                     :on-nil (if prev-node
-                                 (progn
-                                   (assert (not (hash-node-contains-leaf
-                                                 prev-node prev-index)))
-                                   (hash-node-insert!
-                                    prev-node
-                                    (rebuild-rehashed-node
-                                     c
-                                     (read-max-depth container)
-                                     (make-conflict-node
-                                      (list (make-hash.location.value
-                                             :hash hash
-                                             :location location
-                                             :value new-value))))
-                                    prev-index)
-                                   root)
-                                 (make-conflict-node
-                                  (list (make-hash.location.value
-                                         :hash hash
-                                         :location location
-                                         :value new-value))))
-                     :on-leaf (if prev-node
-                                  (progn
-                                    (assert (hash-node-contains-leaf
-                                             prev-node prev-index))
-                                    (hash-node-replace!
-                                     prev-node
-                                     (rebuild-rehashed-node
-                                      c
-                                      (read-max-depth container)
-                                      (destructive-insert node))
-                                     prev-index)
-                                    root)
-                                  (rebuild-rehashed-node
-                                   c
-                                   (read-max-depth container)
-                                   (destructive-insert node))))))
-          (setf (access-root container) result)
-          (incf (access-size container))
-          (values container
-                  cl-ds.common:empty-eager-modification-operation-status))))))
-
-
 (-> hamt-dictionary-size (hamt-dictionary) non-negative-fixnum)
 (defun hamt-dictionary-size (container)
   "Implementation of SIZE"
@@ -326,7 +132,6 @@
                    t old-value)))))))
 
 
-
 #|
 
 Methods. Those will just call non generic functions.
@@ -334,20 +139,8 @@ Methods. Those will just call non generic functions.
 |#
 
 
-(defmethod cl-ds:update! ((container mutable-hamt-dictionary) location new-value)
-  (mutable-hamt-dictionary-update! container location new-value))
-
-
-(defmethod (setf cl-ds:at) (new-value (container mutable-hamt-dictionary) location)
-  (mutable-hamt-dictionary-insert! container location new-value))
-
-
 (defmethod cl-ds:erase! ((container mutable-hamt-dictionary) location)
   (mutable-hamt-dictionary-erase! container location))
-
-
-(defmethod cl-ds:add! ((container mutable-hamt-dictionary) location new-value)
-  (mutable-hamt-dictionary-add! container location new-value))
 
 
 (defmethod cl-ds:size ((container hamt-dictionary))
@@ -370,12 +163,12 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:grow-bucket operation container bucket location :value value :hash hash)
+                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:make-bucket operation container location :value value :hash hash)
+                   (cl-ds:make-bucket operation container location :value value :hash hash)
                  (setf changed c)
                  (values a b c))))
         (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
@@ -410,12 +203,12 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:grow-bucket operation container bucket location :value value :hash hash)
+                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:make-bucket operation container location :value value :hash hash)
+                   (cl-ds:make-bucket operation container location :value value :hash hash)
                  (setf changed c)
                  (values a b c)))
              (copy-on-write (indexes path depth max-depth conflict)
@@ -455,7 +248,7 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:shrink-bucket operation container bucket location :hash hash)
+                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
@@ -492,7 +285,7 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds.dicts:shrink-bucket operation container bucket location :hash hash)
+                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
@@ -520,6 +313,89 @@ Methods. Those will just call non generic functions.
             (decf (the non-negative-fixnum (access-size container))))
           (values container
                   status))))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
+                                        (container mutable-hamt-dictionary)
+                                        location &key value)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
+  (let ((status nil)
+        (hash (funcall (the (-> (t) fixnum) (cl-ds.dicts:read-hash-fn container)) location)))
+    (macrolet ((handle-bucket (&body body)
+                 `(multiple-value-bind (bucket s changed)
+                      ,@body
+                    (unless changed
+                      (return-from cl-ds:position-modification
+                        (values container
+                                s)))
+                    (setf status s)
+                    bucket)))
+      (let* ((prev-node nil)
+             (prev-index 0)
+             (root (access-root container))
+             (result
+               (hash-do
+                   (node index c)
+                   ((access-root container) hash)
+                   :on-every (setf prev-node node prev-index index)
+                   :on-nil (if prev-node
+                                 (progn
+                                   (assert (not (hash-node-contains-leaf
+                                                 prev-node prev-index)))
+                                   (hash-node-insert!
+                                    prev-node
+                                    (rebuild-rehashed-node
+                                     c
+                                     (read-max-depth container)
+                                     (handle-bucket
+                                      (cl-ds:make-bucket operation
+                                                         container
+                                                         location
+                                                         :hash hash
+                                                         :value value)))
+                                    prev-index)
+                                   root)
+                                 (handle-bucket
+                                  (cl-ds:make-bucket operation
+                                                     container
+                                                     location
+                                                     :hash hash
+                                                     :value value)))
+                   :on-leaf (if prev-node
+                                  (progn
+                                    (assert (hash-node-contains-leaf
+                                             prev-node prev-index))
+                                    (hash-node-replace!
+                                     prev-node
+                                     (rebuild-rehashed-node
+                                      c
+                                      (read-max-depth container)
+                                      (handle-bucket
+                                       (cl-ds:grow-bucket! operation
+                                                           container
+                                                           node
+                                                           location
+                                                           :hash hash
+                                                           :value value)))
+                                     prev-index)
+                                    root)
+                                  (rebuild-rehashed-node
+                                   c
+                                   (read-max-depth container)
+                                   (handle-bucket
+                                    (cl-ds:grow-bucket! operation
+                                                        container
+                                                        node
+                                                        location
+                                                        :hash hash
+                                                        :value value)))))))
+        (setf (access-root container) result)
+        (incf (the fixnum (access-size container)))
+        (values container
+                status)))))
 
 
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))

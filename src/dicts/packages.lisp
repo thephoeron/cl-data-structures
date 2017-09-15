@@ -3,7 +3,8 @@
 
 (defpackage :cl-data-structures.dicts
   (:use #:common-lisp #:docstample #:docstample.mechanics #:serapeum
-        #:cl-ds.utils #:alexandria)
+        #:cl-ds.utils #:alexandria #:iterate)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:access-content
