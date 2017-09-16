@@ -163,12 +163,21 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
+                   (cl-ds:grow-bucket operation
+                                      container
+                                      bucket
+                                      location
+                                      :value value
+                                      :hash hash)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds:make-bucket operation container location :value value :hash hash)
+                   (cl-ds:make-bucket operation
+                                      container
+                                      location
+                                      :value value
+                                      :hash hash)
                  (setf changed c)
                  (values a b c))))
         (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
@@ -179,14 +188,15 @@ Methods. Those will just call non generic functions.
                              #'make-bucket
                              #'copy-on-write)
           (values (if changed
-                      (make 'functional-hamt-dictionary
-                            :hash-fn (cl-ds.dicts:read-hash-fn container)
-                            :equal-fn (cl-ds.dicts:read-equal-fn container)
-                            :root new-root
-                            :max-depth (read-max-depth container)
-                            :size (if (cl-ds:found status)
-                                      (the non-negative-fixnum (access-size container))
-                                      (1+ (the non-negative-fixnum (access-size container)))))
+                      (make
+                       'functional-hamt-dictionary
+                       :hash-fn (cl-ds.dicts:read-hash-fn container)
+                       :equal-fn (cl-ds.dicts:read-equal-fn container)
+                       :root new-root
+                       :max-depth (read-max-depth container)
+                       :size (if (cl-ds:found status)
+                                 (the non-negative-fixnum (access-size container))
+                                 (1+ (the non-negative-fixnum (access-size container)))))
                       container)
                   status))))))
 
@@ -203,21 +213,31 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:grow-bucket operation container bucket location :value value :hash hash)
+                   (cl-ds:grow-bucket operation
+                                      container
+                                      bucket
+                                      location
+                                      :value value
+                                      :hash hash)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds:make-bucket operation container location :value value :hash hash)
+                   (cl-ds:make-bucket operation
+                                      container
+                                      location
+                                      :value value
+                                      :hash hash)
                  (setf changed c)
                  (values a b c)))
              (copy-on-write (indexes path depth max-depth conflict)
-               (transactional-copy-on-write indexes
-                                            path
-                                            depth
-                                            max-depth
-                                            conflict
-                                            (the boolean (access-root-was-modified container)))))
+               (transactional-copy-on-write
+                indexes
+                path
+                depth
+                max-depth
+                conflict
+                (the boolean (access-root-was-modified container)))))
         (declare (dynamic-extent (function make-bucket)
                                  (function grow-bucket)
                                  (function copy-on-write)))
@@ -248,7 +268,11 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
+                   (cl-ds:shrink-bucket operation
+                                        container
+                                        bucket
+                                        location
+                                        :hash hash)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
@@ -285,7 +309,10 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:shrink-bucket operation container bucket location :hash hash)
+                   (cl-ds:shrink-bucket operation
+                                        container
+                                        bucket
+                                        location :hash hash)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
