@@ -34,7 +34,8 @@
 (defgeneric find-content (container bucket location &key &allow-other-keys))
 
 
-(defmethod find-content ((container hashing-dictionary) (bucket bucket) location &key hash)
+(defmethod find-content ((container hashing-dictionary)
+                         (bucket bucket) location &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
              (and (eql (access-hash a) hash)
@@ -50,7 +51,8 @@
                 f)))))
 
 
-(defmacro bucket-growing-macro ((container bucket location hash value) result status changed)
+(defmacro bucket-growing-macro ((container bucket location hash value)
+                                result status changed)
   (with-gensyms (!equal-fn !compare-fn)
     (once-only (container bucket location hash value)
       `(let ((,!equal-fn (read-equal-fn ,container)))
@@ -90,7 +92,9 @@
         (if removed
             (values
              (and list (make 'bucket :content list))
-             (cl-ds.common:make-eager-modification-operation-status t (access-value value))
+             (cl-ds.common:make-eager-modification-operation-status
+              t
+              (access-value value))
              t)
             (values
              bucket
@@ -139,8 +143,7 @@
       (if ^replaced (make 'bucket :content ^next-list) bucket)
       (if ^replaced
           (cl-ds.common:make-eager-modification-operation-status
-           ^replaced
-           (access-value ^old-value))
+           ^replaced (access-value ^old-value))
           cl-ds.common:empty-eager-modification-operation-status)
       ^replaced))
 
@@ -210,7 +213,8 @@
       (values bucket
               (if (null tuple)
                   cl-ds.common:empty-eager-modification-operation-status
-                  (cl-ds.common:make-eager-modification-operation-status t old-value))
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t old-value))
               t)))
 
   (defmethod cl-ds:grow-bucket! ((operation cl-ds:update!-function)
@@ -220,12 +224,15 @@
     (let* ((tuple (locate-tuple container bucket hash location))
            (old-value (and tuple (access-value tuple))))
       (if (null tuple)
-          (values bucket cl-ds.common:empty-eager-modification-operation-status nil)
+          (values bucket
+                  cl-ds.common:empty-eager-modification-operation-status
+                  nil)
           (progn
             (setf (access-hash tuple) hash
                   (access-value tuple) value)
             (values bucket
-                    (cl-ds.common:make-eager-modification-operation-status t old-value)
+                    (cl-ds.common:make-eager-modification-operation-status
+                     t old-value)
                     t)))))
 
   (defmethod cl-ds:grow-bucket! ((operation cl-ds:add!-function)
@@ -241,7 +248,39 @@
                         :value value
                         :hash hash)
                   (access-content bucket))
-            (values bucket cl-ds.common:empty-eager-modification-operation-status t))
+            (values bucket
+                    cl-ds.common:empty-eager-modification-operation-status
+                    t))
           (values bucket
-                  (cl-ds.common:make-eager-modification-operation-status t old-value)
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t
+                   old-value)
                   nil)))))
+
+
+(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase!-function)
+                                 (container hashing-dictionary)
+                                 (bucket bucket)
+                                 location &key hash)
+  (fbind ((comp (read-equal-fn container)))
+    (iterate
+      (for cell on (access-content bucket))
+      (for p-cell previous cell)
+      (for tuple = (car cell))
+      (when (and (eql (access-hash tuple) hash)
+                 (comp (access-location tuple)
+                       location))
+        (if (null p-cell)
+            (setf (access-content bucket)
+                  (cdr cell))
+            (setf (cdr p-cell) (cdr cell)))
+        (return-from cl-ds:shrink-bucket!
+          (values bucket
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t
+                   (access-value tuple))
+                  t)))
+      (finally
+       (return (values bucket
+                       cl-ds.common:empty-eager-modification-operation-status
+                       nil))))))

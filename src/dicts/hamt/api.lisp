@@ -394,7 +394,8 @@ Methods. Those will just call non generic functions.
                                                         :hash hash
                                                         :value value)))))))
         (setf (access-root container) result)
-        (incf (the fixnum (access-size container)))
+        (unless (cl-ds:found status)
+          (incf (the fixnum (access-size container))))
         (values container
                 status)))))
 

@@ -103,3 +103,7 @@
 
 (defgeneric grow-bucket! (operation container bucket location
                           &key &allow-other-keys))
+
+
+(defgeneric shrink-bucket! (operation container bucket location
+                            &key &allow-other-keys))

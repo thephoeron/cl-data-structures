@@ -23,15 +23,15 @@
    #:erase-function
    #:found
    #:functional
+   #:functional-add-function
+   #:functional-erase-function
+   #:functional-insert-function
+   #:functional-update-function
    #:functionalp
    #:fundamental-container
    #:fundamental-modification-operation-status
    #:grow-bucket
    #:grow-bucket!
-   #:functional-insert-function
-   #:functional-update-function
-   #:functional-add-function
-   #:functional-erase-function
    #:grow-function
    #:initialization-error
    #:initialization-out-of-bounds
@@ -52,6 +52,7 @@
    #:read-class
    #:read-value
    #:shrink-bucket
+   #:shrink-bucket!
    #:shrink-function
    #:size
    #:textual-error
