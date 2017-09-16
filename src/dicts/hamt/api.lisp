@@ -90,57 +90,11 @@
   (access-size container))
 
 
-(-> mutable-hamt-dictionary-erase! (mutable-hamt-dictionary t)
-    (values mutable-hamt-dictionary
-            cl-ds:fundamental-modification-operation-status))
-(defun mutable-hamt-dictionary-erase! (container location)
-  (declare (optimize (speed 3)))
-  "Implementation of ERASE!"
-  (with-hash-tree-functions (container)
-    (let ((old-value nil)
-          (hash (hash-fn location)))
-      (flet ((location-test (loc location)
-               (and (eql hash (hash.location.value-hash loc))
-                    (equal-fn location (hash.location.value-location loc)))))
-        (let ((new-root
-                (with-destructive-erase-hamt node container (hash-fn location)
-                  :on-leaf
-                  (multiple-value-bind (next found value)
-                      (try-remove location
-                                  (access-conflict node)
-                                  :test #'location-test)
-                    (if found
-                        (progn
-                          (setf old-value
-                                (hash.location.value-value value))
-                          (when next
-                            (setf (access-conflict node) next)
-                            node))
-                        (return-from mutable-hamt-dictionary-erase!
-                          (values
-                           container
-                           cl-ds.common:empty-eager-modification-operation-status))))
-                  :on-nil
-                  (return-from mutable-hamt-dictionary-erase!
-                    (values
-                     container
-                     cl-ds.common:empty-eager-modification-operation-status)))))
-          (decf (access-size container))
-          (setf (access-root container) new-root)
-          (values container
-                  (cl-ds.common:make-eager-modification-operation-status
-                   t old-value)))))))
-
-
 #|
 
 Methods. Those will just call non generic functions.
 
 |#
-
-
-(defmethod cl-ds:erase! ((container mutable-hamt-dictionary) location)
-  (mutable-hamt-dictionary-erase! container location))
 
 
 (defmethod cl-ds:size ((container hamt-dictionary))
@@ -340,6 +294,41 @@ Methods. Those will just call non generic functions.
             (decf (the non-negative-fixnum (access-size container))))
           (values container
                   status))))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
+                                        (container mutable-hamt-dictionary)
+                                        location &key)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0)))
+  (with-hash-tree-functions (container)
+    (let* ((modification-status nil)
+           (hash (hash-fn location))
+           (new-root
+             (with-destructive-erase-hamt node container hash
+               :on-leaf
+               (multiple-value-bind (bucket status changed)
+                   (cl-ds:shrink-bucket! operation
+                                         container
+                                         node
+                                         location
+                                         :hash hash)
+                 (unless changed
+                   (return-from cl-ds:position-modification
+                     (values container status)))
+                 (setf modification-status status)
+                 bucket)
+               :on-nil
+               (return-from cl-ds:position-modification
+                 (values
+                  container
+                  cl-ds.common:empty-eager-modification-operation-status)))))
+      (decf (access-size container))
+      (setf (access-root container) new-root)
+      (values container
+              modification-status))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)

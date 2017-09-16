@@ -34,7 +34,10 @@
   (:method ((container fundamental-container) location)
     (position-modification #'erase container location)))
 
-(defgeneric erase! (container location))
+(defgeneric erase! (container location)
+  (:generic-function-class erase!-function)
+  (:method ((container fundamental-container) location)
+    (position-modification #'erase! container location)))
 
 (defgeneric size (container))
 

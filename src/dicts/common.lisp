@@ -262,6 +262,11 @@
                                  (container hashing-dictionary)
                                  (bucket bucket)
                                  location &key hash)
+  (declare (optimize (speed 3)
+                     (safety 0)
+                     (debug 0)
+                     (space 0))
+           (type fixnum hash))
   (fbind ((comp (read-equal-fn container)))
     (iterate
       (for cell on (access-content bucket))
@@ -275,7 +280,7 @@
                   (cdr cell))
             (setf (cdr p-cell) (cdr cell)))
         (return-from cl-ds:shrink-bucket!
-          (values bucket
+          (values (and (access-content bucket) bucket)
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    (access-value tuple))
