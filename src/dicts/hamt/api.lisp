@@ -418,28 +418,28 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:become-mutable ((container functional-hamt-dictionary))
   (make 'mutable-hamt-dictionary
-        :hash-fn (read-hash-fn container)
+        :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
         :max-depth (read-max-depth container)
-        :equal-fn (read-equal-fn container)
+        :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
 
 (defmethod cl-ds:become-functional ((container functional-hamt-dictionary))
   (make 'functional-hamt-dictionary
-        :hash-fn (read-hash-fn container)
+        :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
         :max-depth (read-max-depth container)
-        :equal-fn (read-equal-fn container)
+        :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
 
 (defmethod cl-ds:become-transactional ((container hamt-dictionary))
   (make 'transactional-hamt-dictionary
-        :hash-fn (read-hash-fn container)
+        :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
         :max-depth (read-max-depth container)
-        :equal-fn (read-equal-fn container)
+        :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
 
@@ -450,10 +450,10 @@ Methods. Those will just call non generic functions.
                   root
                   (access-root-was-modified container))))
     (make 'transactional-hamt-dictionary
-          :hash-fn (read-hash-fn container)
+          :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :max-depth (read-max-depth container)
-          :equal-fn (read-equal-fn container)
+          :equal-fn (cl-ds.dicts:read-equal-fn container)
           :root-was-modified (access-root-was-modified container)
           :size (access-size container))))
 
@@ -463,10 +463,10 @@ Methods. Those will just call non generic functions.
     (when (and root (hash-node-p root))
       (clear-modification-masks root))
     (make 'mutable-hamt-dictionary
-          :hash-fn (read-hash-fn container)
+          :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :max-depth (read-max-depth container)
-          :equal-fn (read-equal-fn container)
+          :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 
@@ -475,10 +475,10 @@ Methods. Those will just call non generic functions.
     (when (and root (hash-node-p root))
       (clear-modification-masks root))
     (make 'functional-hamt-dictionary
-          :hash-fn (read-hash-fn container)
+          :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :max-depth (read-max-depth container)
-          :equal-fn (read-equal-fn container)
+          :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 

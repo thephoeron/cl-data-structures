@@ -109,3 +109,5 @@
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 2)
   (finalize))
 
+
+(run-suite)
