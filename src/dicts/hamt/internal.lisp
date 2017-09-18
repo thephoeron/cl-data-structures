@@ -702,7 +702,7 @@ Copy nodes and stuff.
              (dynamic-extent result))
     (iterate
       (for item in conflict)
-      (for hash = (cl-ds.dicts:access-hash item))
+      (for hash = (cl-ds.dicts:hash-content-tuple-hash item))
       (for index = (ldb byte hash))
       (push
        item

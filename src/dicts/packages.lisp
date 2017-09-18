@@ -7,11 +7,9 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
-   #:access-content
-   #:access-content
-   #:access-hash
-   #:access-location
-   #:access-value
+   #:hash-content-tuple-hash
+   #:content-tuple-location
+   #:content-tuple-value
    #:bucket
    #:content-tuple
    #:dictionary
