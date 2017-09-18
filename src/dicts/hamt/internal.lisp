@@ -701,13 +701,12 @@ Copy nodes and stuff.
     (declare (dynamic-extent byte)
              (dynamic-extent result))
     (iterate
-      (for item in (cl-ds.dicts:access-content conflict))
+      (for item in conflict)
       (for hash = (cl-ds.dicts:access-hash item))
       (for index = (ldb byte hash))
       (push
        item
-       (cl-ds.dicts:access-content (ensure (aref result index)
-                                     (make 'cl-ds.dicts:bucket)))))
+       (aref result index)))
     (funcall cont result)))
 
 
