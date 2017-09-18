@@ -32,7 +32,7 @@ Basic types
 
 
 (deftype just-node ()
-  `(or hash-node bottom-node))
+  `(or cl-ds.dicts:bucket hash-node))
 
 
 (deftype node-path ()
@@ -279,7 +279,7 @@ Interface class.
 |#
 
 (defclass fundamental-hamt-container (cl-ds:fundamental-container)
-  ((%root :type (or hash-node bottom-node null)
+  ((%root :type (or hash-node cl-ds.dicts:bucket null)
           :accessor access-root
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
@@ -358,7 +358,7 @@ Functions with basic bit logic.
 (declaim (inline hash-node-contains-node))
 
 
-(-> hash-node-access (hash-node hash-node-index) (or hash-node bottom-node))
+(-> hash-node-access (hash-node hash-node-index) (or hash-node cl-ds.dicts:bucket))
 (defun hash-node-access (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-to-masked-index hash-node index)
@@ -512,7 +512,7 @@ Copy nodes and stuff.
   `(satisfies non-empty-hash-table-p))
 
 
-(-> rebuild-rehashed-node (fixnum fixnum bottom-node) just-node)
+(-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket) just-node)
 (-> build-rehashed-node (fixnum fixnum simple-vector) just-node)
 (defun build-rehashed-node (depth max-depth content)
   (let ((mask 0)
@@ -653,7 +653,7 @@ Copy nodes and stuff.
     node))
 
 
-(-> map-hash-tree ((-> (bottom-node) t) hash-node) hash-node)
+(-> map-hash-tree ((-> (cl-ds.dicts:bucket) t) hash-node) hash-node)
 (defun map-hash-tree (fn root)
   (iterate
     (with stack = (make-array +depth+
