@@ -14,13 +14,11 @@
    #:content-tuple
    #:dictionary
    #:find-content
-   #:grow-bucket
    #:hash-content-tuple
    #:hashing-dictionary
    #:make-bucket
    #:read-equal-fn
    #:read-hash-fn
-   #:shrink-bucket
    #:single-elementp))
 
 
@@ -31,23 +29,11 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:functional-hamt-dictionary
-   #:functional-hamt-dictionary-add
-   #:functional-hamt-dictionary-erase
-   #:functional-hamt-dictionary-insert
-   #:functional-hamt-dictionary-update
    #:hamt-dictionary
    #:hamt-dictionary-at
    #:hamt-dictionary-size
    #:make-functional-hamt-dictionary
    #:make-mutable-hamt-dictionary
    #:mutable-hamt-dictionary
-   #:mutable-hamt-dictionary-add!
-   #:mutable-hamt-dictionary-erase!
-   #:mutable-hamt-dictionary-insert!
-   #:mutable-hamt-dictionary-update!
    #:read-max-depth
-   #:transactional-hamt-dictionary
-   #:transactional-hamt-dictionary-add!
-   #:transactional-hamt-dictionary-erase!
-   #:transactional-hamt-dictionary-insert!
-   #:transactional-hamt-dictionary-update!))
+   #:transactional-hamt-dictionary))
