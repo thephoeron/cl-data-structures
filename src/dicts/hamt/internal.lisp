@@ -202,19 +202,6 @@ Tree structure of HAMT
 (declaim (inline make-hash-node))
 
 
-(defclass bottom-node () ()
-  (:documentation "Base class of the last (conflict) node. Subclasses present to dispatch relevant logic."))
-
-
-(defstruct hash.location.value
-  (hash 0 :type fixnum)
-  location
-  value)
-
-
-(declaim (inline make-hash.location.value))
-
-
 (-> same-location
     (hash.location.value hash.location.value (-> (t t) boolean))
     boolean)
@@ -226,50 +213,6 @@ Tree structure of HAMT
        (funcall equal-fn
                 (hash.location.value-location existing)
                 (hash.location.value-location new-location))))
-
-
-(defclass conflict-node (bottom-node)
-  ((%conflict :initarg :conflict
-              :accessor access-conflict
-              :initform (list)
-              :type list
-              :documentation "List of elements with conflicting hash."))
-  (:documentation "Conflict node simply holds list of elements that are conflicting."))
-
-(-> fast-access-conflict (conflict-node) list)
-(defun fast-access-conflict (node)
-  (declare (optimize (speed 3) (safety 0)))
-  (slot-value node '%conflict))
-(declaim (inline fast-access-conflict))
-
-(-> make-conflict-node (list) conflict-node)
-(defun make-conflict-node (content)
-  (assure conflict-node (make 'conflict-node :conflict content)))
-
-
-(defclass box-node (bottom-node)
-  ((%content :initarg :content
-             :reader read-content
-             :documentation "Internal value of box"))
-  (:documentation "Box node holds only one element inside."))
-
-
-(defgeneric empty-node-p (bottom-node))
-
-
-(defgeneric contains-p (bottom-node item fn))
-
-
-(defmethod contains-p ((node conflict-node) item fn)
-  (find item (access-conflict node) :test fn))
-
-
-(defmethod empty-node-p ((node box-node))
-  (slot-boundp node '%content))
-
-
-(defmethod empty-node-p ((node conflict-node))
-  (endp (access-conflict node)))
 
 
 #|

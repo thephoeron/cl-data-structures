@@ -222,39 +222,6 @@
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-size]
     @text{Functional dictionary is represented by the following class:}
 
-    @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
-    @text{Instances of this class can be used with following functions:}
-    @begin{documentation}
-    @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
-    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-add]
-    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-erase]
-    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-insert]
-    @docfun['cl-ds.dicts.hamt:functional-hamt-dictionary-update]
-    @end{documentation}
-
-    @text{Mutable dictionary is represented by the following class:}
-    @docclass['cl-ds.dicts.hamt:mutable-hamt-dictionary]
-    @text{Instances of this class can be used with following functions:}
-
-    @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
-    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-add!]
-    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-erase!]
-    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-insert!]
-    @docfun['cl-ds.dicts.hamt:mutable-hamt-dictionary-update!]
-    @end{documentation}
-
-    @text{Transactional dictionary is reprented by the following class:}
-    @docclass['cl-ds.dicts.hamt:transactional-hamt-dictionary]
-
-    @text{Instances of this class can be used with following functions:}
-    @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
-    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-add!] 
-    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-erase!] 
-    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-insert!] 
-    @docfun['cl-ds.dicts.hamt:transactional-hamt-dictionary-update!] 
-    @end{documentation}
-    @text{Note that you can use same functions as for mutable-hamt-dictionary but this may be a bad idea as there will be no guaranteens that side effects of those mutation will be isolated to the transactional instance of the container.}
-
     @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a transactional-hamt-dictionary inside lazy-box.}
 
     @end{section}
