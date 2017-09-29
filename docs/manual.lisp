@@ -61,7 +61,8 @@
 
     (progn
       @begin{section} @title{POSITION-MODIFICATION metaprotocol}
-      @text{}
+      @text{Interestingly enough, generic functions performing modification on containers are in fact just wrappers around low level position-modification function. This may seem odd, but has rather simple motivation. Consider building nested data structures (sequences of dictionaries for instance). Performing destructive modifications is simple enough, however, when we assume that both top level and bottom level structures are purely functional, this becomes very tricky. One may be tempted to create set of higher order functions that are used to implement all those operations. In essence, PERFORM-POSITION-MODIFICATION is such function, hovewer because passing multiple callbacks is rather tiresome on the long run, instead it dispatches it's logic on the function itself.}
+      @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all.}
       @end{section})
 
     @begin{section} @title{Trait classes}
