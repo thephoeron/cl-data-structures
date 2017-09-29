@@ -277,9 +277,14 @@
  :description
  "Utility macro. &body is executed in the lexical scope of transactional instance. After last operation, new instance is returned.")
 
-;; (set-documentation
-;;  '(setf at) <mechanics> <generic> *documentation*
-;;  :description "Destructively insert/replace element in the CONTAINER at LOCATION with NEW-VALUE.")
+(set-documentation
+ '(setf at) <mechanics> <generic> *documentation*
+ :description "Destructively insert/replace element in the CONTAINER at LOCATION with NEW-VALUE."
+ :arguments-and-values
+ '((new-value "Value that shall be put in the container.")
+   (container "Container that shall be modified.")
+   (location "Location where container shall be modified."))
+ :returns "NEW-VALUE as first value, modification-status object as second value.")
 
 (set-documentation
  'mod-bind <mechanics> <macro> *documentation*
