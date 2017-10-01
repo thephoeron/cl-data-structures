@@ -284,7 +284,8 @@
  '((new-value "Value that shall be put in the container.")
    (container "Container that shall be modified.")
    (location "Location where container shall be modified."))
- :returns "NEW-VALUE as first value, modification-status object as second value.")
+ :returns '('new-value
+            "modification-status object as second value."))
 
 (set-documentation
  'mod-bind <mechanics> <macro> *documentation*

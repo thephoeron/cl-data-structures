@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.documentation)
 (cl-lore.api.syntax:syntax
  cl-lore.extensions.documentation.protocol
- cl-lore.extensions.documentation.api)
+ cl-lore.extensions.documentation.api
+ cl-lore.extensions.sequence-graphs.api)
 
 (defparameter *index* cl-data-structures:*documentation*)
 (def-chunks *cl-data-structures*)
@@ -60,14 +61,32 @@
     @end{section}
 
     (progn
-      @begin{section} @title{POSITION-MODIFICATION metaprotocol}
-      @text{Interestingly enough, generic functions performing modification on containers are in fact just wrappers around low level position-modification function. This may seem odd, but has rather simple motivation. Consider building nested data structures (sequences of dictionaries for instance). Performing destructive modifications is simple enough, however, when we assume that both top level and bottom level structures are purely functional, this becomes very tricky. One may be tempted to create set of higher order functions that are used to implement all those operations. In essence, PERFORM-POSITION-MODIFICATION is such function, hovewer because passing multiple callbacks is rather tiresome on the long run, instead it dispatches it's logic on the function itself.}
-      @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all.}
+      @begin{section} @title{Trait classes}
+      @text{Class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like FUNCTIONAL. Those classes are used as a way to attach set of informations about containers contract. In case of functional containers, that would be: not allowing any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer, may write code that dispatches logic according to behavior of the container. This manual contains description of each such trait, and container class documentation contains information about inherited classes.}
       @end{section})
 
-    @begin{section} @title{Trait classes}
+    (progn
+      @begin{section} @title{POSITION-MODIFICATION metaprotocol}
+      @text{Interestingly enough, generic functions performing modification on containers are in fact just wrappers around low level position-modification function. This may seem odd, but has rather simple motivation. Consider building nested data structures (sequences of dictionaries for instance). Performing destructive modifications is simple enough, however, when we assume that both top level and bottom level structures are purely functional, this becomes very tricky. One may be tempted to create set of higher order functions that are used to implement all those operations. In essence, PERFORM-POSITION-MODIFICATION is such function, hovewer because passing multiple callbacks is rather tiresome on the long run, instead it dispatches it's logic on the function itself. In addition to the above, this approach reduces code duplication when implementing additional, convinience functions (like UPDATE-IF).}
 
-    @end{section}
+      (sequence-graph
+       '("User" "API function" "POSITION-MODIFICATION")
+       (seq
+        :block
+        '(:axis-name "User")
+        (seq
+         :sync
+         '(:axis-name "API function" :name "User modifies instance")
+         (seq
+          :block
+          '(:axis-name "API function")
+          (seq
+           :sync
+           '(:axis-name "POSITION-MODIFICATION" :name "Implementation of CL-DATA-STRUCTURES")
+           (seq :block '(:axis-name "POSITION-MODIFICATION")))))))
+
+      @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are in fact implementations with rather complex class inheritance!}
+      @end{section})
 
     @begin{section} @title{Modification Status}
 
