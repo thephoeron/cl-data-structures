@@ -85,7 +85,8 @@
            '(:axis-name "POSITION-MODIFICATION" :name "Implementation of CL-DATA-STRUCTURES")
            (seq :block '(:axis-name "POSITION-MODIFICATION")))))))
 
-      @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are in fact implementations with rather complex class inheritance!}
+      @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are implementations with rather complex class inheritance!}
+      @text{Because understanding how this protocol works is usefull when implementing generic and reusable algorithms, it is beneficial to explain it here, even it is not required for simple use cases.}
       @end{section})
 
     @begin{section} @title{Modification Status}
