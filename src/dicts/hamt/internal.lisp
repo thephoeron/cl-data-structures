@@ -195,8 +195,11 @@ Tree structure of HAMT
 (defstruct hash-node
   (leaf-mask 0 :type hash-mask)
   (node-mask 0 :type hash-mask)
-  (modification-mask 0 :type hash-mask)
   (content #() :type simple-array))
+
+
+(defstruct (transactional-hash-node (:include hash-node))
+  (modification-mask 0 :type hash-mask))
 
 
 (declaim (inline make-hash-node))
@@ -273,27 +276,21 @@ Functions with basic bit logic.
 (defun hash-node-contains (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-whole-mask hash-node)
-       (ldb (byte 1 index))
-       zerop
-       not))
+       (ldb-test (byte 1 index))))
 
 
 (-> hash-node-contains-leaf (hash-node hash-node-index) boolean)
 (defun hash-node-contains-leaf (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-leaf-mask hash-node)
-       (ldb (byte 1 index))
-       zerop
-       not))
+       (ldb-test (byte 1 index))))
 
 
 (-> hash-node-contains-node (hash-node hash-node-index) boolean)
 (defun hash-node-contains-node (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
   (~>> (hash-node-node-mask hash-node)
-       (ldb (byte 1 index))
-       zerop
-       not))
+       (ldb-test (byte 1 index))))
 
 
 (declaim (inline hash-node-contains))
@@ -368,16 +365,21 @@ Copy nodes and stuff.
 (declaim (inline copy-node))
 (defun copy-node (node &key leaf-mask node-mask content modification-mask)
   (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
-  (make-hash-node
-   :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
-   :node-mask (or node-mask (hash-node-node-mask node))
-   :content (or content (hash-node-content node))
-   :modification-mask (or modification-mask (hash-node-modification-mask node))))
+  (if (transactional-hash-node-p node)
+      (make-hash-node
+       :leaf-mask (or leaf-mask (hash-node-leaf-mask node))
+       :node-mask (or node-mask (hash-node-node-mask node))
+       :content (or content (hash-node-content node)))
+      (make-transactional-hash-node
+       :leaf-mask (or leaf-mask (transactional-hash-node-leaf-mask node))
+       :node-mask (or node-mask (transactional-hash-node-node-mask node))
+       :content (or content (transactional-hash-node-content node))
+       :modification-mask (or modification-mask (transactional-hash-node-modification-mask node)))))
 
 
-(-> hash-node-replace-in-the-copy (hash-node t hash-node-index) hash-node)
+(-> hash-node-replace-in-the-copy (hash-node t hash-node-index &key (:transactional boolean)) hash-node)
 (declaim (inline hash-node-replace-in-the-copy))
-(defun hash-node-replace-in-the-copy (hash-node item index)
+(defun hash-node-replace-in-the-copy (hash-node item index &key (transactional nil))
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
@@ -395,15 +397,18 @@ Copy nodes and stuff.
     (setf (aref content
                 (logcount (ldb (byte index 0) (logior leaf-mask node-mask))))
           item)
-    (copy-node hash-node
-               :leaf-mask leaf-mask
-               :node-mask node-mask
-               :content content)))
+    (if transactional
+        (make-transactional-hash-node :leaf-mask leaf-mask
+                                      :node-mask node-mask
+                                      :content content)
+        (make-hash-node :leaf-mask leaf-mask
+                        :node-mask node-mask
+                        :content content))))
 
 
-(-> hash-node-insert-into-copy (hash-node t hash-node-index) hash-node)
+(-> hash-node-insert-into-copy (hash-node t hash-node-index &key (:transactional boolean)) hash-node)
 (declaim (inline hash-node-insert-into-copy))
-(defun hash-node-insert-into-copy (hash-node content index)
+(defun hash-node-insert-into-copy (hash-node content index &key (transactional nil))
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
@@ -438,10 +443,13 @@ Copy nodes and stuff.
         (if (hash-node-p content)
             (setf (ldb (byte 1 index) node-mask) 1)
             (setf (ldb (byte 1 index) leaf-mask) 1))
-        (copy-node hash-node
-                   :node-mask node-mask
-                   :leaf-mask leaf-mask
-                   :content new-array)))))
+        (if transactional
+            (make-transactional-hash-node :node-mask node-mask
+                                          :leaf-mask leaf-mask
+                                          :content new-array)
+            (make-hash-node :node-mask node-mask
+                            :leaf-mask leaf-mask
+                            :content new-array))))))
 
 
 (declaim (inline non-empty-hash-table-p))
@@ -456,8 +464,8 @@ Copy nodes and stuff.
 
 
 (-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket) just-node)
-(-> build-rehashed-node (fixnum fixnum simple-vector) just-node)
-(defun build-rehashed-node (depth max-depth content)
+(-> build-rehashed-node (fixnum fixnum simple-vector &key (:transactional boolean)) just-node)
+(defun build-rehashed-node (depth max-depth content &key (transactional nil))
   (let ((mask 0)
         (node-mask 0)
         (leaf-mask 0)
@@ -481,9 +489,13 @@ Copy nodes and stuff.
           (if (hash-node-p (array i))
               (setf (ldb (byte 1 index) node-mask) 1)
               (setf (ldb (byte 1 index) leaf-mask) 1))))
-      (make-hash-node :leaf-mask leaf-mask
-                      :node-mask node-mask
-                      :content array))))
+      (if transactional
+          (make-transactional-hash-node :leaf-mask leaf-mask
+                                        :node-mask node-mask
+                                        :content array)
+          (make-hash-node :leaf-mask leaf-mask
+                          :node-mask node-mask
+                          :content array)))))
 
 
 (let ((max-mask (iterate
@@ -493,14 +505,15 @@ Copy nodes and stuff.
                        then (dpb 1 (byte 1 i) result))
                   (finally (return result)))))
   (defun mark-everything-as-modified (node)
-    (setf (hash-node-modification-mask node)
+    (setf (transactional-hash-node-modification-mask node)
           max-mask)
     node))
 
 
 (defun transactional-rebuild-rehashed-node (depth max-depth conflict)
   (flet ((cont (array)
-           (let ((result (build-rehashed-node (1+ depth) max-depth array)))
+           (let ((result (build-rehashed-node (1+ depth) max-depth array
+                                              :transactional t)))
              (mark-everything-as-modified result))))
     (declare (dynamic-extent #'cont))
     (if (or (>= depth max-depth) (cl-ds.dicts:single-elementp conflict))
@@ -509,7 +522,7 @@ Copy nodes and stuff.
                 #'cont))))
 
 
-(defun rebuild-rehashed-node (depth max-depth conflict)
+(defun rebuild-rehashed-node (depth max-depth conflict &key (transactional nil))
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -574,19 +587,23 @@ Copy nodes and stuff.
   node)
 
 
-(-> hash-node-remove-from-the-copy (hash-node fixnum) hash-node)
+(-> hash-node-remove-from-the-copy (hash-node fixnum &key (:transactional boolean)) hash-node)
 (-> hash-node-remove! (hash-node fixnum) hash-node)
 (flet ((new-array (node index)
          (copy-without (hash-node-content node)
                        (1- (logcount (ldb (byte (1+ index) 0)
                                           (hash-node-whole-mask node)))))))
 
-  (defun hash-node-remove-from-the-copy (node index)
+  (defun hash-node-remove-from-the-copy (node index &key (transactional nil))
     "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
-    (copy-node node
-               :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
-               :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
-               :content (new-array node index)))
+    (if transactional
+        (make-transactional-hash-node :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
+                                      :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
+                                      :content (new-array node index))
+        (make-hash-node :leaf-mask (dpb 0 (byte 1 index) (hash-node-leaf-mask node))
+                        :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
+                        :content (new-array node index))))
+
 
   (defun hash-node-remove! (node index)
     (setf (hash-node-content node)
@@ -691,15 +708,13 @@ Copy nodes and stuff.
 (-> hash-node-content-modified (hash-node hash-node-index) boolean)
 (defun hash-node-content-modified (node index)
   (~>> node
-      hash-node-modification-mask
-      (ldb (byte 1 index))
-      zerop
-      not))
+       transactional-hash-node-modification-mask
+       (ldb-test (byte 1 index))))
 
 
-(-> set-modified (hash-node hash-node-index) hash-node)
+(-> set-modified (transactional-hash-node hash-node-index) hash-node)
 (defun set-modified (node index)
-  (setf (ldb (byte 1 index) (hash-node-modification-mask node)) 1)
+  (setf (ldb (byte 1 index) (transactional-hash-node-modification-mask node)) 1)
   node)
 
 
@@ -707,9 +722,13 @@ Copy nodes and stuff.
     (boolean hash-node just-node hash-node-index) hash-node)
 (defun hash-node-transactional-replace (must-copy node content index)
   (let ((result (if must-copy
-                    (hash-node-replace-in-the-copy node content index)
+                    (hash-node-replace-in-the-copy node content index :transactional t)
                     (hash-node-replace! node content index))))
-    (set-modified result index)
+    (when (transactional-hash-node-p result)
+      (if (transactional-hash-node-p node)
+          (setf (transactional-hash-node-modification-mask result)
+                (dpb 1 (byte 1 index) (transactional-hash-node-modification-mask node)))
+          (set-modified result index)))
     result))
 
 
@@ -718,9 +737,13 @@ Copy nodes and stuff.
     hash-node)
 (defun hash-node-transactional-insert (must-copy node content index)
   (let ((result (if must-copy
-                    (hash-node-insert-into-copy node content index)
+                    (hash-node-insert-into-copy node content index :transactional t)
                     (hash-node-insert! node content index))))
-    (set-modified result index)
+    (when (transactional-hash-node-p result)
+      (if (transactional-hash-node-p node)
+          (setf (transactional-hash-node-modification-mask result)
+                (dpb 1 (byte 1 index) (transactional-hash-node-modification-mask node)))
+          (set-modified result index)))
     result))
 
 
@@ -730,8 +753,12 @@ Copy nodes and stuff.
 (defun hash-node-transactional-remove (must-copy node index)
   (let ((result (if must-copy
                     (hash-node-remove! node index)
-                    (hash-node-remove-from-the-copy node index))))
-    (set-modified result index)
+                    (hash-node-remove-from-the-copy node index :transactional t))))
+    (when (transactional-hash-node-p result)
+      (if (transactional-hash-node-p node)
+          (setf (transactional-hash-node-modification-mask result)
+                (dpb 1 (byte 1 index) (transactional-hash-node-modification-mask node)))
+          (set-modified result index)))
     result))
 
 
@@ -756,10 +783,11 @@ Copy nodes and stuff.
       (for index = (indexes i))
       (for parent = (and (not (zerop i))
                          (path (1- i))))
-      (for must-copy = (if parent
-                           (hash-node-content-modified parent
-                                                       (indexes (1- i)))
-                           (not root-already-copied)))
+      (for must-copy = (if (null parent)
+                           (not root-already-copied)
+                           (or (~> parent transactional-hash-node-p not)
+                               (hash-node-content-modified parent
+                                                           (indexes (1- i))))))
       (for ac initially (if (or (hash-node-p conflict)
                                 (null conflict))
                             ;;if we didn't find element or element was found but depth was already maximal,
@@ -794,28 +822,33 @@ Copy nodes and stuff.
   node)
 
 
-(-> hash-node-deep-copy (hash-node) hash-node)
+(-> hash-node-deep-copy (hash-node) (values hash-node (or null hash-mask)))
 (declaim (inline hash-node-deep-copy))
 (defun hash-node-deep-copy (node)
-  (copy-node node
-             :content (copy-array (hash-node-content node))))
+  (if (transactional-hash-node-p node)
+      (values (make-hash-node :leaf-mask (transactional-hash-node-leaf-mask node)
+                              :node-mask (transactional-hash-node-node-mask node)
+                              :content (copy-array (transactional-hash-node-content node)))
+              (transactional-hash-node-modification-mask node))
+      (values node nil)))
 
 
 (-> isolate-transactional-instance (hash-node boolean) hash-node)
 (declaim (notinline isolate-transactional-instance))
 (defun isolate-transactional-instance (parent parent-was-modified)
-  (let ((parent (if parent-was-modified
-                    (hash-node-deep-copy parent)
-                    parent)))
+  (multiple-value-bind (parent mask) (if parent-was-modified
+                                         (hash-node-deep-copy parent)
+                                         (values parent nil))
     (with-vectors ((content (hash-node-content parent)))
-      (iterate
-        (for i from 0 below +maximum-children-count+)
-        (for was-modified = (and (hash-node-contains-node parent i)
-                                 (hash-node-content-modified parent i)))
-        (when was-modified
-          (let ((masked-index (hash-node-to-masked-index parent i)))
-            (setf (content masked-index)
-                  (isolate-transactional-instance (content masked-index)
-                                                  t))))))
+      (unless (null mask)
+        (iterate
+          (for i from 0 below +maximum-children-count+)
+          (for was-modified = (and (hash-node-contains-node parent i)
+                                   (not (zerop (ldb (byte 1 i) mask)))))
+          (when was-modified
+            (let ((masked-index (hash-node-to-masked-index parent i)))
+              (setf (content masked-index)
+                    (isolate-transactional-instance (content masked-index)
+                                                    t)))))))
     parent))
 
