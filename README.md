@@ -1,2 +1,2 @@
 # cl-data-structures
-Docs [are elsewhere](https://github.com/sirherrbatka/cl-data-structures.git).
+Docs [are elsewhere](https://sirherrbatka.github.io).
