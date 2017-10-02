@@ -298,7 +298,7 @@
    (value "Symbol, this macro will construct symbol-macrolet that will expand to call (value status)"))
 
  :description
- "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on containers. All of those operations will return secondary object representing operation status.")
+ "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on containers. All of those operations will return secondary object representing operation status that shall be bound in lexical environment and. Next, symbol-macrolets will be established, that inline found and value function calls on operation status (like with-accessors).")
 
 
 (set-documentation
@@ -363,4 +363,9 @@
 
 (set-documentation
  'not-implemented <mechanics> <class> *documentation*
- :description "Error signaled when not implemented functionality is accessed..")
+ :description "Error signaled when not implemented functionality is accessed.")
+
+
+(set-documentation
+ 'out-of-bounds <mechanics> <class> *documentation*
+ :description "Error signaled when some value is out of expected bounds.")

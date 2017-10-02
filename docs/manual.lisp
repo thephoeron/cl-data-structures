@@ -61,11 +61,6 @@
     @end{section}
 
     (progn
-      @begin{section} @title{Trait classes}
-      @text{Class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like FUNCTIONAL. Those classes are used as a way to attach set of informations about containers contract. In case of functional containers, that would be: not allowing any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer, may write code that dispatches logic according to behavior of the container. This manual contains description of each such trait, and container class documentation contains information about inherited classes.}
-      @end{section})
-
-    (progn
       @begin{section} @title{POSITION-MODIFICATION metaprotocol}
       @text{Interestingly enough, generic functions performing modification on containers are in fact just wrappers around low level position-modification function. This may seem odd, but has rather simple motivation. Consider building nested data structures (sequences of dictionaries for instance). Performing destructive modifications is simple enough, however, when we assume that both top level and bottom level structures are purely functional, this becomes very tricky. One may be tempted to create set of higher order functions that are used to implement all those operations. In essence, PERFORM-POSITION-MODIFICATION is such function, hovewer because passing multiple callbacks is rather tiresome on the long run, instead it dispatches it's logic on the function itself. In addition to the above, this approach reduces code duplication when implementing additional, convinience functions (like UPDATE-IF).}
 
@@ -87,11 +82,22 @@
 
       @text{This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are implementations with rather complex class inheritance!}
       @text{Because understanding how this protocol works is usefull when implementing generic and reusable algorithms, it is beneficial to explain it here, even it is not required for simple use cases.}
+      (progn
+        @begin{section} @title{How does it work?}
+        @text{Function that is supposed to modify data structure calls POSITION-MODIFICATION, passing itself as argument. POSITION-MODIFICATION is generic function with multiple implementations dispatched on the class of the passed function. For instance, INSERT is of class INSERT-FUNCTION which inherits GROW-FUNCTION, while ERASE is of class ERASE-FUNCTION which in turns inherits SHRINK-FUNCTION. Therefore, typically container implements POSITION-MODIFICATION generic function for GROW-FUNCTION and SHRINK-FUNCTION. Next, it is assumed that passed function fullfills particular contract. For instance (to stay within established boundries) INSERT-FUNCTION should be applicable with methods GROW-BUCKET and MAKE-BUCKET while ERASE-FUNCTION needs to know how to SHRINK-BUCKET when used with dictionaries. List of required functions is provided for every container, as well as description of function itself in the API reference section.}
+        @text{In summary, generic functions like ADD can be considered high level. Direct classes of those functions can be considered medium level, while SHRINK-FUNCTION and GROW-FUNCTION are lowest level of the system. Adding new high level and medium level objects is encouraged and allowed, hovewer low level functionality should be considered to be primitives.}
+        @end{section})
       @end{section})
 
     @begin{section} @title{Modification Status}
-
+    @text{Common Lisp standard says that GETHASH function returns two values: first being value itself (or NIL if value was not found in the hashtable), while second is boolean that is true if value was found. This is reasonable approach that is also taken by AT function. However, (SETF GETHASH) returns just one value. This is problematic, because information about previous value is lost. To counter this problem, modification functions return MODIFICATION-STATUS object as a second value. This object grants access to this information using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in strict way is not ideal. To simplify using this object, MOD-BIND macro is introduced (syntatic sugar used to mimic MULTIPLE-VALUE-BIND syntax).}
     @end{section}
+
+    (progn
+      @begin{section} @title{Trait classes}
+      @text{Class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like FUNCTIONAL. Those classes are used as a way to attach set of informations about containers contract. In case of functional containers, that would be: not allowing any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer, may write code that dispatches logic according to behavior of the container. This manual contains description of each such trait, and container class documentation contains information about inherited classes.}
+      @text{Some of trait classes, are used to represents variants.}
+      @end{section})
 
     @begin{section}
     @title{Variants}
@@ -187,6 +193,13 @@
 
     @end{section}
 
+    @begin{section} @title{Macros}
+    @begin{documentation}
+    @pack{CL-DATA-STRUCTURES}
+    @docmacro['cl-ds:mod-bind]
+    @end{documentation}
+    @end{section}
+
     @begin{section}
     @title{Classes}
     @begin{documentation}
@@ -243,7 +256,8 @@
 
     @begin{section}
     @title{HAMT}
-    @text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). This is not surprising since HAMT is both simple and efficient data structure, and perhaps ideal functional hashing-tree. Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copying on write whole path. Since HAMT contains transactional implementation, lazy functional implementation is also present.}
+    @text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copying on write whole path. Since HAMT contains transactional implementation, lazy functional implementation is also present.}
+    @text{CL-DATA-STRUCTURES implementation of this data structure is unusual, because presence of transactional implementation. Transactional in this sense means that destructive changes are isolated to the single instance of container (think: delayed copy). Thanks to this it is possible to implement fancy stuff like diff generation from changes applied during transformation in efficient way (usefull for creating eventual consistent systems).}
     @text{Dictionary implementation of HAMT is present in the system as a class.}
     @docclass['cl-ds.dicts.hamt:hamt-dictionary]
     @text{As you can see, it inherits DICTIONARY trait class as well as lower level FUNDAMENTAL-HAMT-CONTAINER class. All instances of this class can be used with following functions:}
@@ -251,7 +265,7 @@
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-size]
     @text{Functional dictionary is represented by the following class:}
 
-    @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a transactional-hamt-dictionary inside lazy-box.}
+    @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a TRANSACTIONAL-HAMT-DICTIONARY inside LAZY-BOX.}
 
     @end{section}
 
