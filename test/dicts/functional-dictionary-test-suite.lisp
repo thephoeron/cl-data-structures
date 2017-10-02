@@ -103,7 +103,7 @@
 
 (defun run-suite ()
   (plan 26)
-  (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 2)
+  (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 100)
   (finalize))
 
 (run-suite)

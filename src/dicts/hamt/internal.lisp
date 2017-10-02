@@ -42,6 +42,9 @@ Basic types
 (deftype index-path ()
   `(simple-array fixnum (,+depth+)))
 
+
+(deftype bottom-node () 'cl-ds.dicts:bucket)
+
 #|
 
 Macros
@@ -79,9 +82,9 @@ Macros
                      (declare (type bottom-node ,node))
                      (return-from ,!block
                        ,on-leaf))))
-             ,on-every
              (when (or ,!leaf (null ,node))
-               (return-from ,!block ,node))))))))
+               (return-from ,!block ,node))
+             ,on-every))))))
 
 
 (defmacro with-hash-tree-functions ((container &key (cases nil)) &body body)
@@ -135,9 +138,9 @@ Macros
                                     (aref ,!indexes ,!count) ,!index)
                               (incf ,!depth))
              :on-nil (let ((next ,on-nil))
-                       (,operation ,!indexes ,!path ,!depth next))
+                       (,operation ,!indexes ,!path (1- ,!depth) next))
              :on-leaf (let ((next ,on-leaf))
-                        (,operation ,!indexes ,!path ,!depth next)))))))
+                        (,operation ,!indexes ,!path (1- ,!depth) next)))))))
 
 
 (defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
@@ -150,14 +153,13 @@ Macros
                          (type maybe-node conflict))
                 (with-vectors (,!path ,!indexes)
                   (iterate
-                    (for i from (- ,!depth 1) downto 0) ;reverse order (starting from deepest node)
+                    (for i from ,!depth downto 0) ;reverse order (starting from deepest node)
                     (for node = (,!path i))
                     (for index = (,!indexes i))
                     (for ac initially conflict
-                         ;;rehash actually returns cl:hash-table, build-rehashed-node transforms it into another hash-node, depth is increased by 1 this way
                          then (if ac
                                   (progn (hash-node-replace! node ac index)
-                                         (finish))
+                                         (leave (aref ,!path 0)))
                                   (if (eql 1 (hash-node-size node))
                                       ac
                                       (hash-node-remove! node index))))
@@ -606,6 +608,10 @@ Copy nodes and stuff.
 
 
   (defun hash-node-remove! (node index)
+    (declare (optimize (debug 0)
+                       (speed 3)
+                       (space 0)
+                       (compilation-time 0)))
     (setf (hash-node-content node)
           (new-array node index))
     (set-in-leaf-mask node index 0)
@@ -649,7 +655,7 @@ Copy nodes and stuff.
 
 
 (defun rehash (conflict level cont)
-  (declare (type cl-ds.dicts:bucket conflict)
+  (declare (type list conflict)
            (optimize (speed 3)
                      (safety 0)
                      (debug 0)

@@ -59,7 +59,8 @@
            (cl-ds:mod-bind (v a) (add! dict word word)
              (is a t)
              (is (size dict) old-size)
-             (is v dict))))
+             (is v dict)))
+         (ok (cl-ds:at dict word)))
        (diag "Testing add")
        (iterate
          (for s from ,limit)
@@ -69,7 +70,8 @@
          (let ((old-size (size dict)))
            (cl-ds:mod-bind (v a) (add! dict word word)
              (is a nil)
-             (is (size dict) (1+ old-size)))))
+             (is (size dict) (1+ old-size))))
+         (ok (cl-ds:at dict word)))
        (iterate
          (for s from ,limit)
          (repeat ,limit)
@@ -78,7 +80,13 @@
          (let ((old-size (size dict)))
            (cl-ds:mod-bind (v a) (add! dict word word)
              (is a t)
-             (is (size dict) old-size))))
+             (is (size dict) old-size)))
+         (ok (cl-ds:at dict word)))
+       (diag "Testing content")
+       (iterate
+         (for s from 1 below ,limit)
+         (for word in-vector *all-words*)
+         (ok (cl-ds:at dict word)))
        (diag "Testing erase")
        (iterate
          (for s from 1 below ,limit)
@@ -106,7 +114,7 @@
 
 (defun run-suite ()
   (plan 28)
-  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 2)
+  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 100)
   (finalize))
 
 

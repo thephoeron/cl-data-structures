@@ -85,7 +85,7 @@
       (setf (cdr last-cell) (cdr sublist))
       (finish))
     (finally (return (values (if preserve-order
-                                 (nreverse result)
+                                 (reverse result)
                                  result)
                              removed
                              value)))))

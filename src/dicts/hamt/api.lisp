@@ -69,19 +69,14 @@
     (let* ((hash (hash-fn location))
            (root (access-root container)))
       (declare (type fixnum hash))
-      (flet ((location-test (loc location)
-               (and (eql hash (hash.location.value-hash loc))
-                    (equal-fn location
-                              (hash.location.value-location loc)))))
-        (declare (dynamic-extent (function location-test)))
-        (hash-do
-            (node index)
-            (root hash)
-            :on-leaf (cl-ds.dicts:find-content container
-                                               node
-                                               location
-                                               :hash hash)
-            :on-nil (values nil nil))))))
+      (hash-do
+          (node index)
+          (root hash)
+          :on-leaf (cl-ds.dicts:find-content container
+                                             node
+                                             location
+                                             :hash hash)
+          :on-nil (values nil nil)))))
 
 
 (-> hamt-dictionary-size (hamt-dictionary) non-negative-fixnum)

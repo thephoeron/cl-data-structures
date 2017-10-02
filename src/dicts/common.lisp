@@ -68,7 +68,7 @@
     (flet ((location-test (node location)
              (and (eql hash (hash-content-tuple-hash node))
                   (funcall equal-fn location
-                           (content-tuple-location node)))))
+                           (hash-content-tuple-location node)))))
       (declare (dynamic-extent (function location-test)))
       (multiple-value-bind (list removed value)
           (try-remove location
@@ -254,19 +254,18 @@
     (iterate
       (for cell on bucket)
       (for p-cell previous cell)
-      (for tuple = (car cell))
+      (for tuple = (first cell))
       (when (and (eql (hash-content-tuple-hash tuple) hash)
-                 (comp (content-tuple-location tuple)
+                 (comp (hash-content-tuple-location tuple)
                        location))
         (if (null p-cell)
-            (setf bucket
-                  (cdr cell))
+            (setf bucket (rest cell))
             (setf (cdr p-cell) (cdr cell)))
         (return-from cl-ds:shrink-bucket!
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   (content-tuple-value tuple))
+                   (hash-content-tuple-value tuple))
                   t)))
       (finally
        (return (values bucket
