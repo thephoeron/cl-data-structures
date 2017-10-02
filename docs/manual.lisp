@@ -267,6 +267,17 @@
 
     @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a TRANSACTIONAL-HAMT-DICTIONARY inside LAZY-BOX.}
 
+    (progn
+      @begin{section} @title{POSITION-MODIFICATION contracts}
+      @text{Additional key passed to all functions is :hash.}
+      @text{SHRINK-BUCKET function must be defined in terms all functional shrink-functions and buckets.}
+      @text{GROW-BUCKET function must be defined in terms all functional grow-functions and buckets.}
+      @text{SHRINK-BUCKET! function must be defined in terms all mutable shrink-functions and buckets.}
+      @text{GROW-BUCKET! function must be defined in terms all mutable grow-functions and buckets.}
+      @text{MAKE-BUCKET function must be defined in terms of all grow-functions.}
+      @text{Bucket must be usable with cl-ds.dicts:find-content.}
+      @end{section})
+
     @end{section}
 
     @end{section}))
