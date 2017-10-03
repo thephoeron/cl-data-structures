@@ -125,6 +125,46 @@
     @title{API Reference}
     @text{This section contains reference of all functions, classes and macros provided by this library to the user.}
 
+    @begin{section} @title{Meta level}
+    @text{Following classes and functions are used to define actual user API. See POSITION-MODIFICATION section for further explanations.}
+
+    (progn
+      @begin{section} @title{Generic Functions}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:make-bucket]
+      @docgeneric['cl-ds:grow-bucket]
+      @docgeneric['cl-ds:shrink-bucket]
+      @docgeneric['cl-ds:grow-bucket!]
+      @docgeneric['cl-ds:shrink-bucket!]
+      @end{documentation}
+      @end{section})
+
+    (progn
+      @begin{section} @title{Classes}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docclass['cl-ds:functional-function]
+      @docclass['cl-ds:destructive-function]
+      @docclass['cl-ds:shrink-function]
+      @docclass['cl-ds:grow-function]
+      @docclass['cl-ds:insert-function]
+      @docclass['cl-ds:update-function]
+      @docclass['cl-ds:add-function]
+      @docclass['cl-ds:erase-function]
+      @docclass['cl-ds:functional-insert-function]
+      @docclass['cl-ds:functional-update-function]
+      @docclass['cl-ds:functional-add-function]
+      @docclass['cl-ds:functional-erase-function]
+      @docclass['cl-ds:insert!-function]
+      @docclass['cl-ds:update!-function]
+      @docclass['cl-ds:add!-function]
+      @docclass['cl-ds:erase!-function]
+      @end{documentation}
+      @end{section})
+
+    @end{section}
+
     @begin{section}
     @title{Common API}
     @text{Following is the most abstract API of cl-data-structures library.}
@@ -239,7 +279,10 @@
     @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.}
     @begin{section}
     @title{API}
-    @text{To obtain value under key use function AT.}
+    @text{To obtain value under key use following functions:}
+    @begin{list}
+    @item{AT}
+    @end{list}
     @text{To change mapping use following purely functional functions:}
     @begin{list}
     @item{INSERT}
@@ -275,7 +318,7 @@
       @text{SHRINK-BUCKET! function must be defined in terms all mutable shrink-functions and buckets.}
       @text{GROW-BUCKET! function must be defined in terms all mutable grow-functions and buckets.}
       @text{MAKE-BUCKET function must be defined in terms of all grow-functions.}
-      @text{Bucket must be usable with cl-ds.dicts:find-content.}
+      @text{Bucket must be list of HASH-CONTENT-TUPLEs (requirement for rehashing right now).}
       @end{section})
 
     @end{section}

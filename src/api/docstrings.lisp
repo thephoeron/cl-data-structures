@@ -369,3 +369,126 @@
 (set-documentation
  'out-of-bounds <mechanics> <class> *documentation*
  :description "Error signaled when some value is out of expected bounds.")
+
+
+(set-documentation
+ 'grow-bucket <mechanics> <generic> cl-ds:*documentation*
+ :description "Generic, low level function used to grow all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
+ :returns '("Bucket."
+            "Instance of modification-operation-status."
+            "Boolean. T if element was added into container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
+ :notes "This function is not allowed to perform any side effects. See grow-bucket! for function that is allowed to do so.")
+
+
+(set-documentation
+ 'shrink-bucket <mechanics> <generic> cl-ds:*documentation*
+ :description "Generic, low level function used to shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
+ :returns '("Bucket. May also return nil to indicate empty bucket."
+            "Instance of modification-operation-status."
+            "Boolean. T if element was added into container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
+ :notes "This function is not allowed to perform any side effects. See shrink-bucket! for function that is allowed to do so.")
+
+
+(set-documentation
+ 'make-bucket <mechanics> <generic> cl-ds:*documentation*
+ :description "Generic, low level function used to create all sorts of buckets (like those in dictionaries). Buckets are modified by grow-bucket and shrink-bucket functions."
+ :returns "New bucket. Precise type of bucket is not relevant to this level of abstraction and usually is defined in context of specific container."
+ :notes "This function is not allowed to perform any side effects.")
+
+
+(set-documentation
+ 'grow-bucket! <mechanics> <generic> cl-ds:*documentation*
+ :description "Generic, low level function used to destructivly grow all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
+ :returns '("New or passed bucket."
+            "Instance of position modification status."
+            "Boolean. T if returned bucket contains new elements, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
+ :side-effects "Can modify bucket.")
+
+
+(set-documentation
+ 'shrink-bucket! <mechanics> <generic> cl-ds:*documentation*
+ :description "Generic, low level function used to destructivly shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
+ :returns '("New or passed bucket. May return nil as empty bucket."
+            "Instance of position modification status."
+            "Boolean. T if returned bucket contains new elements, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
+ :side-effects "Can modify bucket.")
+
+
+(set-documentation
+ 'functional-function <mechanics> <class> cl-ds:*documentation*
+ :description "Function that inherits this class is not allowed to perform any side effects.")
+
+
+(set-documentation
+ 'destructive-function <mechanics> <class> cl-ds:*documentation*
+ :description "Function that inherits this class is expected to perform side effects.")
+
+
+(set-documentation
+ 'grow-function <mechanics> <class> cl-ds:*documentation*
+ :description "Function will attempt to add new element to container.")
+
+
+(set-documentation
+ 'shrink-function <mechanics> <class> cl-ds:*documentation*
+ :description "Function will attempt to remove element from container.")
+
+
+(set-documentation
+ 'insert-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of INSERT and (SETF AT).")
+
+
+(set-documentation
+ 'update-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of UPDATE and UPDATE!.")
+
+
+(set-documentation
+ 'add-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ADD and ADD!.")
+
+
+(set-documentation
+ 'erase-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE and ERASE!.")
+
+
+(set-documentation
+ 'functional-insert-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of INSERT.")
+
+
+(set-documentation
+ 'functional-update-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of UPDATE.")
+
+
+(set-documentation
+ 'functional-add-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ADD.")
+
+
+(set-documentation
+ 'functional-erase-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE.")
+
+
+(set-documentation
+ 'insert!-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of INSERT.")
+
+
+(set-documentation
+ 'update!-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of UPDATE.")
+
+
+(set-documentation
+ 'add!-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ADD.")
+
+
+(set-documentation
+ 'erase!-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE.")
