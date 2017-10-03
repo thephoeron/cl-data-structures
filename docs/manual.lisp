@@ -303,6 +303,8 @@
     @text{CL-DATA-STRUCTURES implementation of this data structure is unusual, because presence of transactional implementation. Transactional in this sense means that destructive changes are isolated to the single instance of container (think: delayed copy). Thanks to this it is possible to implement fancy stuff like diff generation from changes applied during transformation in efficient way (usefull for creating eventual consistent systems).}
     @text{Dictionary implementation of HAMT is present in the system as a class.}
     @docclass['cl-ds.dicts.hamt:hamt-dictionary]
+    @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
+    @docclass['cl-ds.dicts.hamt:mutable-hamt-dictionary]
     @text{As you can see, it inherits DICTIONARY trait class as well as lower level FUNDAMENTAL-HAMT-CONTAINER class. All instances of this class can be used with following functions:}
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-at]
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-size]
