@@ -313,6 +313,15 @@
     @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a TRANSACTIONAL-HAMT-DICTIONARY inside LAZY-BOX.}
 
     (progn
+      @begin{section} @title{Constructing}
+      @text{To construct HAMT dictionary, use following functions.}
+      @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+      @docfun['cl-ds.dicts.hamt:make-functional-hamt-dictionary]
+      @docfun['cl-ds.dicts.hamt:make-mutable-hamt-dictionary]
+      @end{documentation}
+      @end{section})
+
+    (progn
       @begin{section} @title{POSITION-MODIFICATION contracts}
       @text{Additional key passed to all functions is :hash.}
       @text{SHRINK-BUCKET function must be defined in terms all functional shrink-functions and buckets.}
