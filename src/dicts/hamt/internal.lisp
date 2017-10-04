@@ -518,7 +518,7 @@ Copy nodes and stuff.
                                               :transactional t)))
              (mark-everything-as-modified result))))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-elementp conflict))
+    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
         conflict
         (rehash conflict depth
                 #'cont))))
@@ -534,7 +534,7 @@ Copy nodes and stuff.
   (flet ((cont (array)
            (build-rehashed-node (1+ depth) max-depth array)))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-elementp conflict))
+    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
         conflict
         (rehash conflict depth
                 #'cont))))

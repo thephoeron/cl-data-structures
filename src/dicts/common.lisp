@@ -11,9 +11,10 @@
 (deftype bucket () 'list)
 
 
-(defgeneric single-elementp (bucket)
+(defgeneric single-element-p (bucket)
   (:method ((bucket list))
-    (endp (rest bucket))))
+    (and (not (null bucket))
+         (endp (rest bucket)))))
 
 
 (defgeneric find-content (container bucket location &key &allow-other-keys))

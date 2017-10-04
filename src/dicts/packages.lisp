@@ -19,7 +19,7 @@
    #:make-bucket
    #:read-equal-fn
    #:read-hash-fn
-   #:single-elementp))
+   #:single-element-p))
 
 
 (defpackage :cl-data-structures.dicts.hamt
