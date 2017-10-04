@@ -276,13 +276,13 @@
 
     (progn
       @begin{section} @title{POSITION-MODIFICATION contracts}
-      @text{Additional key passed to all functions is :hash.}
-      @text{SHRINK-BUCKET function must be defined in terms all functional shrink-functions and buckets.}
-      @text{GROW-BUCKET function must be defined in terms all functional grow-functions and buckets.}
-      @text{SHRINK-BUCKET! function must be defined in terms all mutable shrink-functions and buckets.}
-      @text{GROW-BUCKET! function must be defined in terms all mutable grow-functions and buckets.}
-      @text{MAKE-BUCKET function must be defined in terms of all grow-functions.}
-      @text{Bucket must be usable with cl-ds.dicts:find-content.}
+      @text{Since HAMT is hashing container, many of the functions accept additional hash key argument with fixnum produced by the hashing function.}
+      @text{SHRINK-BUCKET function must be defined in terms all functional shrink-functions and buckets. Will accept :hash.}
+      @text{GROW-BUCKET function must be defined in terms all functional grow-functions and buckets. Will accept :hash.}
+      @text{SHRINK-BUCKET! function must be defined in terms all mutable shrink-functions and buckets. Will accept :hash.}
+      @text{GROW-BUCKET! function must be defined in terms all mutable grow-functions and buckets. Will accept :hash.}
+      @text{MAKE-BUCKET function must be defined in terms of all grow-functions and will return list of hash-content-tuple as bucket. Will accept :hash}
+      @text{Bucket must be usable with cl-ds.dicts:find-content. FIND-CONTENT function will accept hash as key argument.}
       @end{section})
 
     @end{section}
