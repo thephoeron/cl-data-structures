@@ -17,6 +17,7 @@
    #:become-mutable
    #:become-transactional
    #:destructive-function
+   #:destructive-function
    #:erase
    #:erase!
    #:erase!-function
@@ -25,6 +26,7 @@
    #:functional
    #:functional-add-function
    #:functional-erase-function
+   #:functional-function
    #:functional-insert-function
    #:functional-update-function
    #:functionalp

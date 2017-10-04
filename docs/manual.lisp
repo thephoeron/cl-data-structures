@@ -126,6 +126,46 @@
     @title{API Reference}
     @text{This section contains reference of all functions, classes and macros provided by this library to the user.}
 
+    @begin{section} @title{Meta level}
+    @text{Following classes and functions are used to define actual user API. See POSITION-MODIFICATION section for further explanations.}
+
+    (progn
+      @begin{section} @title{Generic Functions}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docgeneric['cl-ds:make-bucket]
+      @docgeneric['cl-ds:grow-bucket]
+      @docgeneric['cl-ds:shrink-bucket]
+      @docgeneric['cl-ds:grow-bucket!]
+      @docgeneric['cl-ds:shrink-bucket!]
+      @end{documentation}
+      @end{section})
+
+    (progn
+      @begin{section} @title{Classes}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docclass['cl-ds:functional-function]
+      @docclass['cl-ds:destructive-function]
+      @docclass['cl-ds:shrink-function]
+      @docclass['cl-ds:grow-function]
+      @docclass['cl-ds:insert-function]
+      @docclass['cl-ds:update-function]
+      @docclass['cl-ds:add-function]
+      @docclass['cl-ds:erase-function]
+      @docclass['cl-ds:functional-insert-function]
+      @docclass['cl-ds:functional-update-function]
+      @docclass['cl-ds:functional-add-function]
+      @docclass['cl-ds:functional-erase-function]
+      @docclass['cl-ds:insert!-function]
+      @docclass['cl-ds:update!-function]
+      @docclass['cl-ds:add!-function]
+      @docclass['cl-ds:erase!-function]
+      @end{documentation}
+      @end{section})
+
+    @end{section}
+
     @begin{section}
     @title{Common API}
     @text{Following is the most abstract API of cl-data-structures library.}
@@ -240,7 +280,10 @@
     @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.}
     @begin{section}
     @title{API}
-    @text{To obtain value under key use function AT.}
+    @text{To obtain value under key use following functions:}
+    @begin{list}
+    @item{AT}
+    @end{list}
     @text{To change mapping use following purely functional functions:}
     @begin{list}
     @item{INSERT}
@@ -267,12 +310,23 @@
     @text{CL-DATA-STRUCTURES implementation of this data structure is unusual, because presence of transactional implementation. Transactional in this sense means that destructive changes are isolated to the single instance of container (think: delayed copy). Thanks to this it is possible to implement fancy stuff like diff generation from changes applied during transformation in efficient way (usefull for creating eventual consistent systems).}
     @text{Dictionary implementation of HAMT is present in the system as a class.}
     @docclass['cl-ds.dicts.hamt:hamt-dictionary]
+    @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
+    @docclass['cl-ds.dicts.hamt:mutable-hamt-dictionary]
     @text{As you can see, it inherits DICTIONARY trait class as well as lower level FUNDAMENTAL-HAMT-CONTAINER class. All instances of this class can be used with following functions:}
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-at]
     @docfun['cl-ds.dicts.hamt:hamt-dictionary-size]
     @text{Functional dictionary is represented by the following class:}
 
     @text{There is no lazy-hamt-dictionary class, because lazy hamt dictionary is nothing more then a TRANSACTIONAL-HAMT-DICTIONARY inside LAZY-BOX.}
+
+    (progn
+      @begin{section} @title{Constructing}
+      @text{To construct HAMT dictionary, use following functions.}
+      @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+      @docfun['cl-ds.dicts.hamt:make-functional-hamt-dictionary]
+      @docfun['cl-ds.dicts.hamt:make-mutable-hamt-dictionary]
+      @end{documentation}
+      @end{section})
 
     (progn
       @begin{section} @title{POSITION-MODIFICATION contracts}
