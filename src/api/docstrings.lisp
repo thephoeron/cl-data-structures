@@ -104,7 +104,11 @@
  :syntax "size container => count"
  :description "How many elements CONTAINER holds currently?"
  :arguments-and-values '(("container" "instance that will be checked."))
- :returns "number of elements in the container.")
+ :returns "number of elements in the container."
+ :examples '("(let ((container (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+               (prove:is (cl-ds:size container) 0)
+               (setf (cl-ds:at container 'a) 1)
+               (prove:is (cl-ds:size container) 1))"))
 
 
 (set-documentation
