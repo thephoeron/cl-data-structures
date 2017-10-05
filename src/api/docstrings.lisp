@@ -70,7 +70,13 @@
  :arguments-and-values
  '(("container" "TODO")
    ("location" "designates place in returned instance that will be changed")
-   ("new-value" "Value that will be inserted into returned instance")))
+   ("new-value" "Value that will be inserted into returned instance"))
+
+ :examples
+ '("(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+          (next-table (cl-ds:insert table 'a 5)))
+     (prove:is (cl-ds:at next-table 'a) 5)
+     (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql)))"))
 
 
 (set-documentation
