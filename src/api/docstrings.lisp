@@ -16,14 +16,14 @@
  :description
  "Obtain element stored at LOCATION in the CONTAINER."
 
- :examples '((let ((table (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
-               (multiple-value-bind (value found) (cl-ds:at table 'a)
-                 (prove:is value nil)
-                 (prove:is found nil))
-               (setf (cl-ds:at table 'a) 1)
-               (multiple-value-bind (value found) (cl-ds:at table 'a)
-                 (prove:is value 1)
-                 (prove:is found t)))))
+ :examples '("(let ((table (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+                (multiple-value-bind (value found) (cl-ds:at table 'a)
+                  (prove:is value nil)
+                  (prove:is found nil))
+                (setf (cl-ds:at table 'a) 1)
+                (multiple-value-bind (value found) (cl-ds:at table 'a)
+                  (prove:is value 1)
+                  (prove:is found t))))"))
 
 
 (set-documentation
