@@ -69,4 +69,4 @@
 
 
 (in-package #:cl-ds)
-(defparameter *documentation* (docstample:make-accumulator))
+(docstample:define-accumulated-docs *documentation*)

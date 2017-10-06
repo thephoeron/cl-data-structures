@@ -351,5 +351,3 @@
       @include{cl-ds intro}
       @include{cl-ds API}
       @include{dicts})))
-
-(cl-lore.protocol.output::save-output #P"/home/shka/lore/" (build-document))
