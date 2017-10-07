@@ -35,8 +35,7 @@
 
     (progn
       @begin{section} @title{Docstrings and docstample}
-      @text{Majority of docstrings are constructed and set outside function definitions, in separate file. This has been done in such way to not clutter code with information that is easy to obtain by any SLIME user. Furtheremore, this allows to build doctsrings with code itself. This makes way easier to ensure common, uniform style of docstrings. It perform various operations on docstrings. To handle this, separate project called docstample was created. Hopefully, this tool can be augmented in the future to handle tasks such as automatic validation of examples (by compiling, and executing those, just like unit tests), but for now, it can be used to aggregate it's input to make document generation easier.}
-      @text{In fact, function descriptions in this manual have been generate with the help of docstample. This eliminated need for parsing any sort of markup that may be embedded in the docstring otherwise.}
+      @text{Majority of docstrings are constructed and set outside function definitions, in separate file. This has been done in such way to not clutter code with information that is easy to obtain by any SLIME user. Furtheremore, this allows to build doctsrings with code itself. This makes way easier to ensure common, uniform style of docstrings. It perform various operations on docstrings. To handle this, separate project called docstample was created. Hopefully, this tool can be augmented in the future to handle tasks such as automatic validation of examples. This is in fact what is done in this project. Examples are written as unit tests, so they can be checked if they actually work (so users are not getting angry, hopefully). Also, building docstrings from structured input eliminates need for parsing (languages other than lisp iteslf) to build nicely formatted output which is nice.}
       @end{section})
 
     @end{section}
