@@ -1,5 +1,5 @@
 (defpackage :cl-data-structures.documentation
-  (:use #:cl))
+  (:use #:cl #:cl-lore))
 
 
 (in-package #:cl-data-structures.documentation)
@@ -13,12 +13,15 @@
 
 (cl-lore.api.syntax:define-save-output-function
     build-docs
-    (cl-lore.mechanics:<mechanics-html-output-generator>
+
+    ((<documentation-names>)
+     cl-lore.mechanics:<mechanics-html-output-generator>
      *cl-data-structures*
      :output-options (:css cl-lore.mechanics:*mechanics-html-style*))
+
     ("manual.lisp")
-    (with-names (<documentation-names>)
-      @title{CL-DATA-STRUCTURES}
-      @include{cl-ds intro}
-      @include{cl-ds API}
-      @include{dicts}))
+
+  @title{CL-DATA-STRUCTURES}
+  @include{cl-ds intro}
+  @include{cl-ds API}
+  @include{dicts})
