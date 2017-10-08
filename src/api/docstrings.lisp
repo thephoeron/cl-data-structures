@@ -266,6 +266,15 @@
  :syntax '("mutablep mutable-container => t"
            "mutablep functional-container => nil")
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
+
+ :examples '("(progn (prove:diag \"Running example for mutablep.\")
+                    (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+                      (prove:ok (cl-ds:mutablep mutable))
+                      (prove:ok (not (cl-ds:functionalp mutable))))
+                    (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
+                      (prove:ok (not (cl-ds:mutablep functional)))
+                      (prove:ok (cl-ds:functionalp functional))))")
+
  :returns "T if CONTAINER exposes mutable API and NIL if not.")
 
 
@@ -274,6 +283,13 @@
  :syntax '("(functionalp mutable-container) -> nil"
            "(functionalp functional-container) -> t")
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
+ :examples '("(progn (prove:diag \"Running example for functionalp.\")
+                    (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+                      (prove:ok (cl-ds:mutablep mutable))
+                      (prove:ok (not (cl-ds:functionalp mutable))))
+                    (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
+                      (prove:ok (not (cl-ds:mutablep functional)))
+                      (prove:ok (cl-ds:functionalp functional))))")
  :returns "T if CONTAINER exposes functional API and NIL if not.")
 
 
@@ -281,6 +297,10 @@
  'transactionalp <mechanics> <generic> *documentation*
  :syntax "transactionalp container => boolean"
  :arguments-and-values '(("container" "Any subclass of fundamental-container"))
+ :examples '("(progn (prove:diag \"Running example for transactionalp.\")
+                    (let ((container (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq))))
+                      (prove:ok (cl-ds:mutablep container))
+                      (prove:ok (cl-ds:transactionalp container))))")
  :returns "T if CONTAINER is transactional and NIL if it is not.")
 
 
