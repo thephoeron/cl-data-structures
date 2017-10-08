@@ -259,13 +259,13 @@
 
     @begin{documentation}
     @pack{CL-DATA-STRUCTURES}
-    @docclass['cl-ds:textual-error]
-    @docclass['cl-ds:invalid-argument]
-    @docclass['cl-ds:initialization-error]
-    @docclass['cl-ds:out-of-bounds]
-    @docclass['cl-ds:argument-out-of-bounds]
-    @docclass['cl-ds:initialization-out-of-bounds]
-    @docclass['cl-ds:not-implemented]
+    @docerror['cl-ds:textual-error]
+    @docerror['cl-ds:invalid-argument]
+    @docerror['cl-ds:initialization-error]
+    @docerror['cl-ds:out-of-bounds]
+    @docerror['cl-ds:argument-out-of-bounds]
+    @docerror['cl-ds:initialization-out-of-bounds]
+    @docerror['cl-ds:not-implemented]
     @end{documentation}
     @end{section}
 

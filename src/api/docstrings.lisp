@@ -17,6 +17,7 @@
  "Obtain element stored at LOCATION in the CONTAINER."
 
  :examples '("(let ((table (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+                (prove:diag \"Testing example for AT function.\")
                 (multiple-value-bind (value found) (cl-ds:at table 'a)
                   (prove:is value nil)
                   (prove:is found nil))
@@ -33,6 +34,27 @@
  '(("CONTAINER" "Instance that we want to modify.")
    ("LOCATION" "Place where NEW-VALUE shall be added.")
    ("NEW-VALUE" "Value that we intend to add into returned instance."))
+
+ :examples '("(let ((table (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
+               (prove:diag \"Testing example for add function.\")
+               (multiple-value-bind (value found) (cl-ds:at table 'a)
+                 (prove:is value nil)
+                 (prove:is found nil))
+               (let ((next-table (cl-ds:add table 'a 1)))
+                 (multiple-value-bind (value found) (cl-ds:at table 'a)
+                   (prove:is value nil)
+                   (prove:is found nil))
+                 (multiple-value-bind (value found) (cl-ds:at next-table 'a)
+                   (prove:is value 1)
+                   (prove:is found t))
+                 (cl-ds:mod-bind (next-next-table found value)
+                                 (cl-ds:add next-table 'a 2)
+                   (prove:ok found)
+                   (prove:is value 1)
+                   (prove:is next-next-table next-table)
+                   (multiple-value-bind (value found) (cl-ds:at next-next-table 'a)
+                     (prove:ok found)
+                     (prove:is value 1)))))")
 
  :returns '("Instance of the same type as CONTAINER. If add took place it shall contain NEW-VALUE at LOCATION."
             "Modification status object.")
@@ -351,42 +373,37 @@
 
 
 (set-documentation
- 'textual-error <mechanics> <class> *documentation*
+ 'textual-error <mechanics> <error> *documentation*
  :description "Error with human readable text description.")
 
 
 (set-documentation
- 'invalid-argument <mechanics> <class> *documentation*
+ 'invalid-argument <mechanics> <error> *documentation*
  :description "Error signaled if for some reason passed argument is invalid.")
 
 
 (set-documentation
- 'initialization-error <mechanics> <class> *documentation*
+ 'initialization-error <mechanics> <error> *documentation*
  :description "Error signaled when container can't be initialized.")
 
 
 (set-documentation
- 'initialization-error <mechanics> <class> *documentation*
- :description "Error signaled when variable exceeds allowed bounds.")
-
-
-(set-documentation
- 'argument-out-of-bounds <mechanics> <class> *documentation*
+ 'argument-out-of-bounds <mechanics> <error> *documentation*
  :description "Error signaled when passed argument exceeds allowed bounds")
 
 
 (set-documentation
- 'initialization-out-of-bounds <mechanics> <class> *documentation*
+ 'initialization-out-of-bounds <mechanics> <error> *documentation*
  :description "Error signaled when container can't be initialized with value because value exceeds bounds.")
 
 
 (set-documentation
- 'not-implemented <mechanics> <class> *documentation*
+ 'not-implemented <mechanics> <error> *documentation*
  :description "Error signaled when not implemented functionality is accessed.")
 
 
 (set-documentation
- 'out-of-bounds <mechanics> <class> *documentation*
+ 'out-of-bounds <mechanics> <error> *documentation*
  :description "Error signaled when some value is out of expected bounds.")
 
 
