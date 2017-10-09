@@ -345,7 +345,7 @@
  '((new-value "Value that shall be put in the container.")
    (container "Container that shall be modified.")
    (location "Location where container shall be modified."))
- :returns '('new-value
+ :returns '("NEW-VALUE"
             "modification-status object as second value."))
 
 (set-documentation
