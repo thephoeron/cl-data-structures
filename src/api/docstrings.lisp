@@ -441,7 +441,7 @@
  :description "Generic, low level function used to shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
  :returns '("Bucket. May also return nil to indicate empty bucket."
             "Instance of modification-operation-status."
-            "Boolean. T if element was added into container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
+            "Boolean. T if element was removed from container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
  :notes "This function is not allowed to perform any side effects. See shrink-bucket! for function that is allowed to do so.")
 
 
@@ -466,7 +466,7 @@
  :description "Generic, low level function used to destructivly shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
  :returns '("New or passed bucket. May return nil as empty bucket."
             "Instance of position modification status."
-            "Boolean. T if returned bucket contains new elements, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
+            "Boolean. T if elements were removed from BUCKET, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
  :side-effects "Can modify bucket.")
 
 
