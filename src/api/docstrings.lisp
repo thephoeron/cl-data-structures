@@ -124,8 +124,8 @@
        (prove:is (cl-ds:at next-table 'a) 5)))")
 
  :arguments-and-values
- '(("CONTAINER" "TODO")
-   ("LOCATION" "designates place in returned instance that will be changed.")))
+ '(("CONTAINER" "Container that shall be modified.")
+   ("LOCATION" "Designates place in returned instance that will be changed.")))
 
 
 (set-documentation
