@@ -111,6 +111,18 @@
  '("Instance of the same type as CONTAINER, without value at LOCATION"
    "Modification status object.")
 
+ :examples
+ '("(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+           (next-table (cl-ds:insert table 'a 5)))
+     (prove:diag \"Running example for ERASE\")
+     (prove:is (cl-ds:at next-table 'a) 5)
+     (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
+     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase next-table 'a)
+       (prove:ok found)
+       (prove:is value 5)
+       (prove:is (cl-ds:at erased-table 'a) nil)
+       (prove:is (cl-ds:at next-table 'a) 5)))")
+
  :arguments-and-values
  '(("CONTAINER" "TODO")
    ("LOCATION" "designates place in returned instance that will be changed.")))
