@@ -73,7 +73,7 @@
                '(:axis-name "POSITION-MODIFICATION" :name "Implementation of CL-DATA-STRUCTURES")
                (seq :block '(:axis-name "POSITION-MODIFICATION")))))))
 
-          [:text This is made possible by the fact that Generic Functions in Common Lisp are in fact objects with their own classes. By creating custom classes, Common Lisp programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are implementations with rather complex class inheritance!]
+          [:text This is made possible by the fact that Generic Functions in ,(lisp) are in fact objects with their own classes. By creating custom classes, ,(lisp) programmer may actually assign behavior as method of function (as peculiar as it may sound). This essentially means that, INSERT function object satisfies protocol that allows to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without need of additional object at all. In fact, some of the functions in are implementations with rather complex class inheritance!]
           [:text Because understanding how this protocol works is usefull when implementing generic and reusable algorithms, it is beneficial to explain it here, even it is not required for simple use cases.]
 
           (level [section]
@@ -83,7 +83,7 @@
           @end{section}
 
           @begin{section} @title{Modification Status}
-          @text{Common Lisp standard says that GETHASH function returns two values: first being value itself (or NIL if value was not found in the hashtable), while second is boolean that is true if value was found. This is reasonable approach that is also taken by AT function. However, (SETF GETHASH) returns just one value. This is problematic, because information about previous value is lost. To counter this problem, modification functions return MODIFICATION-STATUS object as a second value. This object grants access to this information using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in strict way is not ideal. To simplify using this object, MOD-BIND macro is introduced (syntatic sugar used to mimic MULTIPLE-VALUE-BIND syntax).}
+          [:text ,(lisp) standard says that GETHASH function returns two values: first being value itself (or NIL if value was not found in the hashtable), while second is boolean that is true if value was found. This is reasonable approach that is also taken by AT function. However, (SETF GETHASH) returns just one value. This is problematic, because information about previous value is lost. To counter this problem, modification functions return MODIFICATION-STATUS object as a second value. This object grants access to this information using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in strict way is not ideal. To simplify using this object, MOD-BIND macro is introduced (syntatic sugar used to mimic MULTIPLE-VALUE-BIND syntax).]
           @end{section}
 
           (level [section]
@@ -244,7 +244,7 @@
   (chunk *cl-data-structures*
     @begin{section} @label{dicts}
     @title{Dictionary structures}
-    @text{Dictionaries map values to unique keys. Common Lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.}
+    [:text Dictionaries map values to unique keys. ,(lisp) standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.]
     @begin{section}
     @title{API}
     @text{To obtain value under key use following functions:}
