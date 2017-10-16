@@ -198,14 +198,14 @@
 
     @end{section}
 
-    @begin{section} @title{Macros}
+    (level [section]
+    @title{Macros}
     @begin{documentation}
     @pack{CL-DATA-STRUCTURES}
     @docmacro['cl-ds:mod-bind]
-    @end{documentation}
-    @end{section}
+    @end{documentation})
 
-    @begin{section}
+    (level [section]
     @title{Classes}
     @begin{documentation}
     @pack{CL-DATA-STRUCTURES}
@@ -215,10 +215,9 @@
     @docclass['cl-ds:mutable]
     @docclass['cl-ds:transactional]
     @docclass['cl-ds:lazy]
-    @end{documentation}
-    @end{section}
+    @end{documentation})
 
-    @begin{section}
+    (level [section]
     @title{Conditions}
     @text{Cl-data-structures tries to signal only the well structured errors that are possible to interpret. In order to achieve this, the hierarchy of condition classes is introduced. Below there is documentation explaining it.}
 
@@ -231,8 +230,7 @@
     @docerror['cl-ds:argument-out-of-bounds]
     @docerror['cl-ds:initialization-out-of-bounds]
     @docerror['cl-ds:not-implemented]
-    @end{documentation}
-    @end{section}
+    @end{documentation})
 
     @end{section}
 
