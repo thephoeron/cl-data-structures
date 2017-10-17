@@ -4,12 +4,6 @@
  cl-lore.extensions.documentation.api
  cl-lore.extensions.sequence-graphs.api)
 
-(defparameter *index* cl-data-structures:*documentation*)
-(def-chunks *cl-data-structures*)
-
-
-(defun lisp () "Common Lisp")
-
 
 (with-names (cl-lore.extensions.documentation.api:<documentation-names>)
   (chunk *cl-data-structures*
@@ -29,75 +23,42 @@
 
       (level [section]
         @title{Conventions}
-        [:text Data structure types are not hidden under generic interface name (like "std::unordered_map") but instead are directly exposed to the user. Users are encouraged to read the implementation details section of this manual to decide what data structure implementation works best for the specific use case. Destructive (in the sense of capable of mutating data passed as an argument) functions follow scheme style of adding '!' as a suffix (so we have GF ADD! that is the destructive version of ADD). There are exceptions to this rule, namely SETF functions. According to above, there should be a generic function called INSERT!, but alas, that's not the case. Instead, there is the (SETF AT) API function that does the thing one would expect from INSERT!. In addition to this difference, SETF functions are expected to return value of modified place, and not the container itself. Therefore, that's what (SETF AT) does to maintain style cohesive with ,(lisp).]
+        [:text Data structure types are not hidden under generic interface name (like "std::unordered_map") but instead are directly exposed to the user. Users are encouraged to read the implementation details section of this manual to decide what data structure implementation works best for the specific use case. Destructive (in the sense of capable of mutating data passed as an argument) functions follow scheme style of adding '!' as a suffix (so we have GF ADD! that is the destructive version of ADD). There are exceptions to this rule, namely SETF functions. According to above, there should be a generic function called INSERT!, but alas, that's not the case. Instead, there is the (SETF AT) API function that does the thing one would expect from INSERT!. In addition to this difference, SETF functions are expected to return value of modified place, and not the container itself. Therefore, that's what (SETF AT) does to maintain style cohesive with ,(lisp).])
+
+      (level [section]
+        @title{Key concepts}
+
+        [:text Inspection of the CL-DATA-STRUCTURE source code may reveal a few interesting patterns. Listed below in their own sections.]
 
         (level [section]
-          @title{Docstrings and docstample}
-          [:text Majority of docstrings are constructed and set outside function definitions, in a separate file. This has been done in such way to not clutter the code with information that is easy to obtain by any SLIME user. Furthermore this allows to build doctsrings with the code itself. This makes easier to ensure common, uniform style of docstrings. It may also perform various operations on docstrings. To handle this, a separate project called docstample was created. Hopefully, this tool can be augmented in the future to handle tasks such as automatic validation of examples. This is in fact what is done in this project. Examples are written as unit tests, so they can be checked if they actually work (so users are not getting angry, hopefully). Also, building docstrings from structured input eliminates need for parsing (a language other than lisp itself) to build a nicely formatted output (which is nice).])
-
-        (level [section]
-          @title{Key concepts}
-
-          [:text Inspection of the CL-DATA-STRUCTURE source code may reveal a few interesting patterns. Listed below in their own sections.]
-
-          @begin{section}
           @title{Signaling errors}
           [:text The Cl-data-structures approach to signaling errors can be summarized with two points:]
 
           @begin{list}
           @item{Signal error, only if without a doubt, error has occurred.}
           @item{Signal only well structured and documented errors.}
-          @end{list}
+          @end{list})
 
-          [:text To fulfill those requirements, library defines it's own hierarchy of conditions, with each error signaled only in a very specific scenario. For instance, there is the INITIALIZATION-OUT-OF-BOUNDS error, that will be signaled only if the user attempts to initialize the class with a value that exceeds accepted bounds, as described in a relevant reference. Such error also usually points to documentation that describes why this error was signaled and provides information on what argument triggered signaling error, and what are an accepted bounds. This is done such way primarily to make both learning and debugging as easy as possible. In addition, it also makes automatic handling of errors actually possible. The user of this library is encouraged to take a look at the error hierarchies, as laid out in this manual API reference section.]
-          [:text It is also important to point out, that CL-DATA-STRUCTURES attempts to explicitly document every possible error that can be raised by every function. If an unexpected error occurs, it may and should be considered bug of manual itself, and treated as such (namely: ,[:emph reported and fixed]).])
+        [:text To fulfill those requirements, library defines it's own hierarchy of conditions, with each error signaled only in a very specific scenario. For instance, there is the INITIALIZATION-OUT-OF-BOUNDS error, that will be signaled only if the user attempts to initialize the class with a value that exceeds accepted bounds, as described in a relevant reference. Such error also usually points to documentation that describes why this error was signaled and provides information on what argument triggered signaling error, and what are an accepted bounds. This is done such way primarily to make both learning and debugging as easy as possible. In addition, it also makes automatic handling of errors actually possible. The user of this library is encouraged to take a look at the error hierarchies, as laid out in this manual API reference section.]
+        [:text It is also important to point out, that CL-DATA-STRUCTURES attempts to explicitly document every possible error that can be raised by every function. If an unexpected error occurs, it may and should be considered bug of manual itself, and treated as such (namely: ,[:emph reported and fixed]).]
 
         (level [section]
-          @title{POSITION-MODIFICATION metaprotocol}
-          [:text Interestingly enough, generic functions performing modification on containers are in fact just wrappers around a low level position-modification function. This may seem odd, but has rather simple motivation. Consider building a nested data structures (sequence of dictionaries for instance). Performing destructive modifications is simple enough, however, when we assume that both top level and bottom level structures are purely functional, this becomes very tricky. One may be tempted to create a set of higher order functions that can be combined with each other to handle such structures. This way, the function combinations mimics structure combinations. In essence, the PERFORM-POSITION-MODIFICATION does exactly that. Because passing multiple callbacks is rather tiresome on the long run, instead, it dispatches its logic on the class of the function itself. In addition to the above, this approach reduces code duplication when implementing additional, convenience functions (like UPDATE-IF).]
+          @title{Modification Status}
+          [:text ,(lisp) standard says that GETHASH function returns two values: the first being value itself (or NIL if the key was not found in the hashtable), while the second is a boolean that is T if the key was found. This is reasonable approach also taken by the AT function. However, (SETF GETHASH) returns just one value. This is problematic because information about previous value is lost. To counter this problem, all modification functions return a MODIFICATION-STATUS object as a second value. This object grants access to information on container state (if previous value was found if a container has been changed) using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in a strict way is not ideal (think about lazy evaluation). To simplify using this object, the MOD-BIND macro is introduced (syntactic sugar that mimics MULTIPLE-VALUE-BIND syntax).])
 
-          (sequence-graph
-           '("User" "API function" "POSITION-MODIFICATION")
-           (seq
-            :block
-            '(:axis-name "User")
-            (seq
-             :sync
-             '(:axis-name "API function" :name "User modifies instance")
-             (seq
-              :block
-              '(:axis-name "API function")
-              (seq
-               :sync
-               '(:axis-name "POSITION-MODIFICATION" :name "Implementation of CL-DATA-STRUCTURES")
-               (seq :block '(:axis-name "POSITION-MODIFICATION")))))))
+        (level [section]
+          @title{Trait classes}
+          [:text The class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like the FUNCTIONAL. Those classes are used as a way to attach a set of information about the container contract. In case of functional containers, that would be: do not allow any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer may write code that dispatches logic according to the behavior of the container. This manual contains a description of each trait, and container class documentation contains information about inherited classes.]
+          [:text Some of the trait classes are used to represents variants.])
 
-          [:text This is made possible by the fact that Generic Functions in ,(lisp) are in fact objects of their own classes. By creating custom classes, ,(lisp) programmer may actually assign behavior as a method of function (as peculiar as it may sound). This essentially means that the INSERT function object satisfies protocol that allows the programmer to query it about itself (for example: is it modification or query?), explains how to handle existing key (see ADD and UPDATE for instance) and so one, without a need of additional object at all. In fact, some of the functions are implementations with rather complex class inheritance!]
-          [:text Because understanding how these protocol works is useful when implementing generic and reusable algorithms, it is beneficial to explain it here, even it is not required for simple use cases.]
-
-          (level [section]
-            @title{How does it work?}
-            @text{A function that is supposed to modify data structure calls the POSITION-MODIFICATION, passing itself as an argument. POSITION-MODIFICATION is a generic function with multiple implementations dispatched on the class of the passed function. For instance, INSERT is of class INSERT-FUNCTION which inherits the GROW-FUNCTION, while ERASE is of class ERASE-FUNCTION which in turns inherits the SHRINK-FUNCTION. Therefore, typically container implements POSITION-MODIFICATION generic function for GROW-FUNCTION and SHRINK-FUNCTION. Next, it is assumed that passed function fulfills a particular contract. For instance (to stay within the established boundaries) INSERT-FUNCTION should be applicable with methods GROW-BUCKET and MAKE-BUCKET while ERASE-FUNCTION needs to know how to SHRINK-BUCKET when used with dictionaries. A list of required functions is provided for every container, along with a description of the function itself in the API reference section.}
-            @text{In a summary, generic functions like ADD can be considered high level. Direct classes of those functions can be considered medium level, while SHRINK-FUNCTION and GROW-FUNCTION are the lowest levels of the system. Adding new high level and medium level objects is encouraged and allowed, however, low-level functionality should be considered to be primitives.})
-          @end{section}
-
-          @begin{section} @title{Modification Status}
-          [:text ,(lisp) standard says that GETHASH function returns two values: the first being value itself (or NIL if the key was not found in the hashtable), while the second is a boolean that is T if the key was found. This is reasonable approach also taken by the AT function. However, (SETF GETHASH) returns just one value. This is problematic because information about previous value is lost. To counter this problem, all modification functions return a MODIFICATION-STATUS object as a second value. This object grants access to information on container state (if previous value was found if a container has been changed) using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in a strict way is not ideal (think about lazy evaluation). To simplify using this object, the MOD-BIND macro is introduced (syntactic sugar that mimics MULTIPLE-VALUE-BIND syntax).]
-          @end{section}
-
-          (level [section]
-            @title{Trait classes}
-            [:text The class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like the FUNCTIONAL. Those classes are used as a way to attach a set of information about the container contract. In case of functional containers, that would be: do not allow any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer may write code that dispatches logic according to the behavior of the container. This manual contains a description of each trait, and container class documentation contains information about inherited classes.]
-            [:text Some of the trait classes are used to represents variants.])
-
-          (level [section]
-            @title{Variants}
-            [:text Most of the cl-data-structures containers are available in few variants. The purpose of those is to aid the programmer in avoiding errors that may occur when mixing functional and destructive operations, while still providing access to both. To understand the motivation behind this decision, consider other possible approaches that could be taken instead.]
-            [:text You can just allow arbitrary changes happening on any level. This usually gives you the best raw performance, but at the high cost: a state that you are mutating can be shared in an arbitrary way. If execution of your code is interrupted, changes made in the container are preserved, even if they represent incoherent or invalid data. You need to clean it up yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called ,[:emph mutable] in this library.]
-            [:text ,[:emph Functional] containers do not suffer from the same problems. Every operation that would change the existing state in a mutable container will instead return new container, with changes visible only there. This, however, has another limitation: copying is costly. Although copying the whole structure is usually not required, we still need to copy at least parts of it.]
-            [:text ,[:emph Transactional] containers represent a compromise between those two opposite approaches. Transactional containers implement mutable API in a distinct way: instead of performing destructive operations in an arbitrary way, we are trying to isolate changes so they will be visible only in the instance that we passed into the method. This allows us to achieve a compromise between safety, simplicity, and speed.]
-            [:text All containers with transactional variant available can be also used as functional, lazy containers. Those containers reduce consing that troubles functional containers by grouping all modification operations and performing hidden, destructive modification of transactional containers in the last possible moment. Since all those fancy functional data structures are just trees with the copy on write semantics it improves performance a little bit.]
-            [:text A container can be converted between ,[:emph functional], ,[:emph transactional] and ,[:emph mutable] variant using become methods. However, not every container is available in all three variants. It is also important to remember that become methods have a limited set of guarantees. For instance: BECOME-TRANSACTIONAL guaranties that changes in the returned instance won't leak outside of that instance, but not that destructive changes in the original instance can't leak into it. Same applies for the BECOME-FUNCTIONAL method. Be careful and keep this in mind.])))))
+        (level [section]
+          @title{Variants}
+          [:text Most of the cl-data-structures containers are available in few variants. The purpose of those is to aid the programmer in avoiding errors that may occur when mixing functional and destructive operations, while still providing access to both. To understand the motivation behind this decision, consider other possible approaches that could be taken instead.]
+          [:text You can just allow arbitrary changes happening on any level. This usually gives you the best raw performance, but at the high cost: a state that you are mutating can be shared in an arbitrary way. If execution of your code is interrupted, changes made in the container are preserved, even if they represent incoherent or invalid data. You need to clean it up yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called ,[:emph mutable] in this library.]
+          [:text ,[:emph Functional] containers do not suffer from the same problems. Every operation that would change the existing state in a mutable container will instead return new container, with changes visible only there. This, however, has another limitation: copying is costly. Although copying the whole structure is usually not required, we still need to copy at least parts of it.]
+          [:text ,[:emph Transactional] containers represent a compromise between those two opposite approaches. Transactional containers implement mutable API in a distinct way: instead of performing destructive operations in an arbitrary way, we are trying to isolate changes so they will be visible only in the instance that we passed into the method. This allows us to achieve a compromise between safety, simplicity, and speed.]
+          [:text All containers with transactional variant available can be also used as functional, lazy containers. Those containers reduce consing that troubles functional containers by grouping all modification operations and performing hidden, destructive modification of transactional containers in the last possible moment. Since all those fancy functional data structures are just trees with the copy on write semantics it improves performance a little bit.]
+          [:text A container can be converted between ,[:emph functional], ,[:emph transactional] and ,[:emph mutable] variant using become methods. However, not every container is available in all three variants. It is also important to remember that become methods have a limited set of guarantees. For instance: BECOME-TRANSACTIONAL guaranties that changes in the returned instance won't leak outside of that instance, but not that destructive changes in the original instance can't leak into it. Same applies for the BECOME-FUNCTIONAL method. Be careful and keep this in mind.]))))
 
   (chunk *cl-data-structures*
     @begin{section} @label{cl-ds API}
@@ -199,38 +160,38 @@
     @end{section}
 
     (level [section]
-    @title{Macros}
-    @begin{documentation}
-    @pack{CL-DATA-STRUCTURES}
-    @docmacro['cl-ds:mod-bind]
-    @end{documentation})
+      @title{Macros}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docmacro['cl-ds:mod-bind]
+      @end{documentation})
 
     (level [section]
-    @title{Classes}
-    @begin{documentation}
-    @pack{CL-DATA-STRUCTURES}
-    @docclass['cl-ds:fundamental-container]
-    @docclass['cl-ds:fundamental-modification-operation-status]
-    @docclass['cl-ds:functional]
-    @docclass['cl-ds:mutable]
-    @docclass['cl-ds:transactional]
-    @docclass['cl-ds:lazy]
-    @end{documentation})
+      @title{Classes}
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docclass['cl-ds:fundamental-container]
+      @docclass['cl-ds:fundamental-modification-operation-status]
+      @docclass['cl-ds:functional]
+      @docclass['cl-ds:mutable]
+      @docclass['cl-ds:transactional]
+      @docclass['cl-ds:lazy]
+      @end{documentation})
 
     (level [section]
-    @title{Conditions}
-    @text{Cl-data-structures tries to signal only the well structured errors that are possible to interpret. In order to achieve this, the hierarchy of condition classes is introduced. Below there is documentation explaining it.}
+      @title{Conditions}
+      @text{Cl-data-structures tries to signal only the well structured errors that are possible to interpret. In order to achieve this, the hierarchy of condition classes is introduced. Below there is documentation explaining it.}
 
-    @begin{documentation}
-    @pack{CL-DATA-STRUCTURES}
-    @docerror['cl-ds:textual-error]
-    @docerror['cl-ds:invalid-argument]
-    @docerror['cl-ds:initialization-error]
-    @docerror['cl-ds:out-of-bounds]
-    @docerror['cl-ds:argument-out-of-bounds]
-    @docerror['cl-ds:initialization-out-of-bounds]
-    @docerror['cl-ds:not-implemented]
-    @end{documentation})
+      @begin{documentation}
+      @pack{CL-DATA-STRUCTURES}
+      @docerror['cl-ds:textual-error]
+      @docerror['cl-ds:invalid-argument]
+      @docerror['cl-ds:initialization-error]
+      @docerror['cl-ds:out-of-bounds]
+      @docerror['cl-ds:argument-out-of-bounds]
+      @docerror['cl-ds:initialization-out-of-bounds]
+      @docerror['cl-ds:not-implemented]
+      @end{documentation})
 
     @end{section}
 
