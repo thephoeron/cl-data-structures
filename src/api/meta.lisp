@@ -107,3 +107,9 @@
 
 (defgeneric shrink-bucket! (operation container bucket location
                             &key &allow-other-keys))
+
+
+(defgeneric position-modification (operation
+                                   container
+                                   location
+                                   &key &allow-other-keys))
