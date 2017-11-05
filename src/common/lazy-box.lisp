@@ -105,6 +105,10 @@
   (add-operation container #'cl-ds:erase! location))
 
 
+(defmethod cl-ds:erase-if ((container lazy-box-container) location condition)
+  (add-operation container #'cl-ds:erase-if! location condition))
+
+
 (defmethod cl-ds:size ((container lazy-box-container))
   (force-version container)
   (cl-ds:size (access-content container)))
