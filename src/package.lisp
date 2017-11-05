@@ -16,6 +16,7 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:destructive-counterpart
    #:destructive-function
    #:destructive-function
    #:erase
@@ -29,6 +30,7 @@
    #:found
    #:functional
    #:functional-add-function
+   #:functional-counterpart
    #:functional-erase-function
    #:functional-erase-if-function
    #:functional-function

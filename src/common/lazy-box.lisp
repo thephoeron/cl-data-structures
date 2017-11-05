@@ -69,44 +69,29 @@
   instance)
 
 
-(defun add-operation (container t-operation &rest args)
+(defmethod cl-ds:position-modification (operation (container lazy-box-container) location &rest args &key &allow-other-keys)
   (nest
    (with-accessors ((operations access-operations)
                     (content access-content))
        container)
-   (let ((lazy-status (make 'lazy-modification-operation-status))))
+   (let ((lazy-status (make 'lazy-modification-operation-status))
+         (t-operation (cl-ds:destructive-counterpart operation))))
    (flet ((wrapper (instance)
-            (let ((eager-status (nth-value 1 (apply t-operation instance args))))
-              (unless (slot-boundp lazy-status '%eager-status)
-                (setf (access-eager-status lazy-status) eager-status))
-              nil))))
+            (unless (slot-boundp lazy-status '%eager-status)
+              (let ((eager-status
+                      (nth-value 1
+                                 (apply #'cl-ds:position-modification
+                                        t-operation
+                                        instance
+                                        args))))
+                (setf (access-eager-status lazy-status) eager-status)
+                nil)))))
    (let* ((next-instance (make 'lazy-box-container
                                :content content
                                :operations (add-change operations #'wrapper))))
      (write-lazy-instance next-instance lazy-status)
      (values next-instance
              lazy-status))))
-
-
-(defmethod cl-ds:add ((container lazy-box-container) location new-value)
-  (add-operation container #'cl-ds:add! location new-value))
-
-
-(defmethod cl-ds:insert ((container lazy-box-container) location new-value)
-  (add-operation container (lambda (instance)
-                             (setf (cl-ds:at instance location) new-value))))
-
-
-(defmethod cl-ds:update ((container lazy-box-container) location new-value)
-  (add-operation container #'cl-ds:update! location new-value))
-
-
-(defmethod cl-ds:erase ((container lazy-box-container) location)
-  (add-operation container #'cl-ds:erase! location))
-
-
-(defmethod cl-ds:erase-if ((container lazy-box-container) location condition)
-  (add-operation container #'cl-ds:erase-if! location condition))
 
 
 (defmethod cl-ds:size ((container lazy-box-container))

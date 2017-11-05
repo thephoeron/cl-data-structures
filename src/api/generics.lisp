@@ -87,6 +87,26 @@
 (defmethod alexandria:emptyp ((container fundamental-container))
   (zerop (size container)))
 
+
 (defgeneric value (status))
 
+
 (defgeneric found (status))
+
+
+(defgeneric functional-counterpart (operation)
+  (:method ((operation functional-function)) operation)
+  (:method ((operation erase!-function)) #'erase)
+  (:method ((operation erase-if!-function)) #'erase-if)
+  (:method ((operation add!-function)) #'add)
+  (:method ((operation insert!-function)) #'insert)
+  (:method ((operation update!-function)) #'update))
+
+
+(defgeneric destructive-counterpart (operation)
+  (:method ((operation destructive-function)) operation)
+  (:method ((operation functional-erase-function)) #'erase!)
+  (:method ((operation functional-erase-if-function)) #'erase-if!)
+  (:method ((operation functional-add-function)) #'add!)
+  (:method ((operation functional-insert-function)) #'(setf at))
+  (:method ((operation functional-update-function)) #'update!))

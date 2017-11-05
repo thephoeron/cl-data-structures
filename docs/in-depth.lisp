@@ -75,4 +75,9 @@
            @docclass['cl-ds:add!-function]
            @docclass['cl-ds:erase!-function]
            @docclass['cl-ds:erase-if!-function]
-      ))))))
+      )))
+      (level [section]
+        [:title Lazy evaluation]
+        [:text This system offers the lazy-evaluated containers. Lazy evaluation is useful primarly because eager functional data structures may have somewhat sluggish performance if multiple, full copy-on-write operations have to be performed when inserting or erasing large number of records from the container. Lazy evaluation allows to hide destructive operations behind functional interface, and therefore help to counter this issue. Effectivness of this technique varies greatly, and depends on both internal structure of the container, as well it's current content. However, what remains constant is approach used in implementation of lazy evaluation in this library.]
+        [:text As already established in the Overview section, this library contains transactional variants of some of the data structures. Because transactional data structures form a wall isolating destructive changes, they can be used for the internal parts of the lazy evaluation style optimalization. Now, the other part of the recipe is to build functional interface around transactional instance. This essentially requires us to use to proxy objects that will fully adapt mutable interface into functional interface. Because of symetric design of the containers API, each destructive function has also functional counterpart. This makes the task fairly easy.]
+      ))))
