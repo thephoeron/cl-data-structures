@@ -91,14 +91,17 @@
       @docclass['cl-ds:update-function]
       @docclass['cl-ds:add-function]
       @docclass['cl-ds:erase-function]
+      @docclass['cl-ds:erase-if-function]
       @docclass['cl-ds:functional-insert-function]
       @docclass['cl-ds:functional-update-function]
       @docclass['cl-ds:functional-add-function]
       @docclass['cl-ds:functional-erase-function]
+      @docclass['cl-ds:functional-erase-if-function]
       @docclass['cl-ds:insert!-function]
       @docclass['cl-ds:update!-function]
       @docclass['cl-ds:add!-function]
       @docclass['cl-ds:erase!-function]
+      @docclass['cl-ds:erase-if!-function]
       @end{documentation})
 
     @end{section}
@@ -133,6 +136,7 @@
       @docgeneric['cl-ds:add]
       @docgeneric['cl-ds:update]
       @docgeneric['cl-ds:erase]
+      @docgeneric['cl-ds:erase-if]
       @end{documentation})
 
     (level [section]
@@ -144,6 +148,7 @@
       @docgeneric['cl-ds:add!]
       @docgeneric['cl-ds:update!]
       @docgeneric['cl-ds:erase!]
+      @docgeneric['cl-ds:erase-if!]
       @end{documentation})
 
     (level [section]

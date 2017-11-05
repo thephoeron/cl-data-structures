@@ -103,7 +103,7 @@
 
 (set-documentation
  'erase <mechanics> <generic> *documentation*
- :syntax "erase container location new-value => new-instance status"
+ :syntax "erase container location => new-instance status"
  :description
  "Functional API: non-destructively remove element at LOCATION from the CONTAINER."
 
@@ -129,9 +129,75 @@
 
 
 (set-documentation
+ 'erase-if <mechanics> <generic> *documentation*
+ :syntax "erase-if container location condition => new-instance status"
+ :description
+ "Functional API: non-destructively remove element at LOCATION from the CONTAINER, only when CONDITION function returns true. CONDITION will be called with location that matches according to comparsion function, and with value."
+
+ :returns
+ '("Instance of the same type as CONTAINER, without value at LOCATION"
+   "Modification status object.")
+
+ :examples
+ '("(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+           (next-table (cl-ds:insert (cl-ds:insert table 'a 5) 'b 6)))
+     (prove:diag \"Running example for ERASE-IF\")
+     (prove:is (cl-ds:at next-table 'a) 5)
+     (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
+     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'a (lambda (location value) (declare (ignore location)) (evenp value)))
+       (prove:ok (null found))
+       (prove:is value nil)
+       (prove:is (cl-ds:at erased-table 'a) 5)
+       (prove:is (cl-ds:at next-table 'a) 5))
+    (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
+       (prove:ok found)
+       (prove:is value 6)
+       (prove:is (cl-ds:at erased-table 'b) nil)
+       (prove:is (cl-ds:at next-table 'b) 6)))")
+
+ :arguments-and-values
+ '(("CONTAINER" "Container that shall be modified.")
+   ("LOCATION" "Designates place in returned instance that will be changed.")
+   ("CONDITION" "Function of two arguments, should return boolean.")))
+
+
+(set-documentation
+ 'erase-if! <mechanics> <generic> *documentation*
+ :syntax "erase-if! container location condition => same-instance status"
+ :description
+ "Functional API: destructively remove element at LOCATION from the CONTAINER, only when CONDITION function returns true. CONDITION will be called with location that matches according to comparsion function, and with value."
+
+ :returns
+ '("CONTAINER"
+   "Modification status object.")
+
+ :examples
+ '("(let* ((table (cl-ds.dicts.hamt::make-mutable-hamt-dictionary #'sxhash #'eq)))
+     (setf (cl-ds:at table 'a) 5
+           (cl-ds:at table 'b) 6)
+     (prove:diag \"Running example for ERASE-IF!\")
+     (prove:is (cl-ds:at table 'a) 5)
+     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'a (lambda (location value) (declare (ignore location)) (evenp value)))
+       (prove:ok (null found))
+       (prove:is value nil)
+       (prove:is erased-table table)
+       (prove:is (cl-ds:at erased-table 'a) 5))
+    (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
+       (prove:ok found)
+       (prove:is value 6)
+       (prove:is erased-table table)
+       (prove:is (cl-ds:at erased-table 'b) nil)))")
+
+ :arguments-and-values
+ '(("CONTAINER" "Container that shall be modified.")
+   ("LOCATION" "Designates place in returned instance that will be changed.")
+   ("CONDITION" "Function of two arguments, should return boolean.")))
+
+
+(set-documentation
  'erase! <mechanics> <generic> *documentation*
  :description "Mutable API: destructively remove element at LOCATION from the CONTAINER."
- :syntax "erase! container location new-value => same-instance status"
+ :syntax "erase! container location => same-instance status"
  :returns '("CONTAINER" "Modification status object")
  :arguments-and-values
  '(("container" "Instance that is intended to be destructivly modified.")
