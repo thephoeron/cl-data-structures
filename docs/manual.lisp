@@ -65,47 +65,6 @@
     @title{API Reference}
     @text{This section contains reference of all the functions, classes and macros provided by this library to the user.}
 
-    @begin{section} @title{Meta level}
-    @text{Following classes and functions are used to define the actual user API. See the POSITION-MODIFICATION section for further explanations.}
-
-    (level [section]
-      @title{Generic Functions}
-      @begin{documentation}
-      @pack{CL-DATA-STRUCTURES}
-      @docgeneric['cl-ds:make-bucket]
-      @docgeneric['cl-ds:grow-bucket]
-      @docgeneric['cl-ds:shrink-bucket]
-      @docgeneric['cl-ds:grow-bucket!]
-      @docgeneric['cl-ds:shrink-bucket!]
-      @end{documentation})
-
-    (level [section]
-      @title{Classes}
-      @begin{documentation}
-      @pack{CL-DATA-STRUCTURES}
-      @docclass['cl-ds:functional-function]
-      @docclass['cl-ds:destructive-function]
-      @docclass['cl-ds:shrink-function]
-      @docclass['cl-ds:grow-function]
-      @docclass['cl-ds:insert-function]
-      @docclass['cl-ds:update-function]
-      @docclass['cl-ds:add-function]
-      @docclass['cl-ds:erase-function]
-      @docclass['cl-ds:erase-if-function]
-      @docclass['cl-ds:functional-insert-function]
-      @docclass['cl-ds:functional-update-function]
-      @docclass['cl-ds:functional-add-function]
-      @docclass['cl-ds:functional-erase-function]
-      @docclass['cl-ds:functional-erase-if-function]
-      @docclass['cl-ds:insert!-function]
-      @docclass['cl-ds:update!-function]
-      @docclass['cl-ds:add!-function]
-      @docclass['cl-ds:erase!-function]
-      @docclass['cl-ds:erase-if!-function]
-      @end{documentation})
-
-    @end{section}
-
     @begin{section}
     @title{Common API}
     @text{Following is the most abstract API of cl-data-structures library.}
