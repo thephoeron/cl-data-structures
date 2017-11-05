@@ -138,9 +138,9 @@ Macros
                                     (aref ,!indexes ,!count) ,!index)
                               (incf ,!depth))
              :on-nil (let ((next ,on-nil))
-                       (,operation ,!indexes ,!path (1- ,!depth) next))
+                       (,operation ,!indexes ,!path ,!depth next))
              :on-leaf (let ((next ,on-leaf))
-                        (,operation ,!indexes ,!path (1- ,!depth) next)))))))
+                        (,operation ,!indexes ,!path ,!depth next)))))))
 
 
 (defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
@@ -153,7 +153,7 @@ Macros
                          (type maybe-node conflict))
                 (with-vectors (,!path ,!indexes)
                   (iterate
-                    (for i from ,!depth downto 0) ;reverse order (starting from deepest node)
+                    (for i from (1- ,!depth) downto 0) ;reverse order (starting from deepest node)
                     (for node = (,!path i))
                     (for index = (,!indexes i))
                     (for ac initially conflict
@@ -536,7 +536,8 @@ Copy nodes and stuff.
     (declare (dynamic-extent #'cont))
     (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
         conflict
-        (rehash conflict depth
+        (rehash conflict
+                depth
                 #'cont))))
 
 

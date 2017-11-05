@@ -22,10 +22,15 @@
    #:erase!
    #:erase!-function
    #:erase-function
+   #:erase-if
+   #:erase-if!
+   #:erase-if!-function
+   #:erase-if-function
    #:found
    #:functional
    #:functional-add-function
    #:functional-erase-function
+   #:functional-erase-if-function
    #:functional-function
    #:functional-insert-function
    #:functional-update-function

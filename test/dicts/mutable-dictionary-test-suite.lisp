@@ -98,6 +98,32 @@
              (is (size dict) (1- old-size))
              (is v dict)
              (is (at v word) nil))))
+       (iterate
+         (for s from 1 below ,limit)
+         (for word in-vector *all-words*)
+         (setf (at dict word) word))
+       (diag "Testing erase-if")
+       (iterate
+         (for s from 1 below ,limit)
+         (for word in-vector *all-words*)
+         (cl-ds:mod-bind (v r o) (erase-if! dict word (lambda (key value)
+                                                        (is key word :test #'string=)
+                                                        (is value word :test #'string=)
+                                                        nil))
+           (ok (null r))
+           (is o nil)))
+       (iterate
+         (for s from 1 below ,limit)
+         (for word in-vector *all-words*)
+         (for old-size = (size dict))
+         (cl-ds:mod-bind (v r o) (erase-if! dict word (lambda (key value)
+                                                        (is key word :test #'string=)
+                                                        (is value word :test #'string=)
+                                                        t))
+           (ok r)
+           (is o word :test #'string=)
+           (is (1+ (size dict)) old-size)
+           (is (at dict word) nil)))
        dict)))
 
 
@@ -113,9 +139,7 @@
 
 
 (defun run-suite ()
-  (plan 28)
-  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 100)
-  (finalize))
+  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 100))
 
 
 (run-suite)

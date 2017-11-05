@@ -33,6 +33,10 @@
   ())
 
 
+(defclass erase-if-function (shrink-function)
+  ())
+
+
 (defclass functional-insert-function (closer-mop:standard-generic-function
                                       functional-function
                                       insert-function)
@@ -61,6 +65,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass functional-erase-if-function (closer-mop:standard-generic-function
+                                        functional-function
+                                        erase-if-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defclass insert!-function (closer-mop:standard-generic-function
                             destructive-function
                             insert-function)
@@ -82,6 +93,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass erase-if!-function (closer-mop:standard-generic-function
+                              destructive-function
+                              erase-if-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defclass erase!-function (closer-mop:standard-generic-function
                            destructive-function
                            erase-function)
@@ -90,26 +108,32 @@
 
 
 (defgeneric grow-bucket (operation container bucket location
+                         &rest all
                          &key &allow-other-keys))
 
 
 (defgeneric shrink-bucket (operation container bucket location
+                           &rest all
                            &key &allow-other-keys))
 
 
 (defgeneric make-bucket (operation container location
+                         &rest all
                          &key &allow-other-keys))
 
 
 (defgeneric grow-bucket! (operation container bucket location
+                          &rest all
                           &key &allow-other-keys))
 
 
 (defgeneric shrink-bucket! (operation container bucket location
+                            &rest all
                             &key &allow-other-keys))
 
 
 (defgeneric position-modification (operation
                                    container
                                    location
+                                   &rest all
                                    &key &allow-other-keys))

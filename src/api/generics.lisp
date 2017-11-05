@@ -34,6 +34,16 @@
   (:method ((container fundamental-container) location)
     (position-modification #'erase container location)))
 
+(defgeneric erase-if (container location condition-fn)
+  (:generic-function-class functional-erase-if-function)
+  (:method ((container fundamental-container) location condition-fn)
+    (position-modification #'erase-if container location :condition-fn condition-fn)))
+
+(defgeneric erase-if! (container location condition-fn)
+  (:generic-function-class erase-if!-function)
+  (:method ((container fundamental-container) location condition-fn)
+    (position-modification #'erase-if! container location :condition-fn condition-fn)))
+
 (defgeneric erase! (container location)
   (:generic-function-class erase!-function)
   (:method ((container fundamental-container) location)

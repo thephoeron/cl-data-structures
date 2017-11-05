@@ -21,6 +21,7 @@
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
                                      (-> (t t) boolean)
+                                     &rest all
                                      &key (:max-depth positive-fixnum))
     functional-hamt-dictionary)
 (defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
@@ -42,6 +43,7 @@
 
 (-> make-mutable-hamt-dictionary ((-> (t) fixnum)
                                   (-> (t t) boolean)
+                                  &rest all
                                   &key (:max-depth positive-fixnum))
     mutable-hamt-dictionary)
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
@@ -102,7 +104,7 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container functional-hamt-dictionary)
-                                        location &key value)
+                                        location &rest all &key value)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -152,7 +154,7 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container transactional-hamt-dictionary)
-                                        location &key value)
+                                        location &rest all &key value)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -207,7 +209,9 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
                                         (container functional-hamt-dictionary)
-                                        location &key)
+                                        location
+                                        &rest all
+                                        &key)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -217,11 +221,13 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:shrink-bucket operation
-                                        container
-                                        bucket
-                                        location
-                                        :hash hash)
+                   (apply #'cl-ds:shrink-bucket
+                          operation
+                          container
+                          bucket
+                          location
+                          :hash hash
+                          all)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
@@ -248,7 +254,9 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
                                         (container transactional-hamt-dictionary)
-                                        location &key)
+                                        location
+                                        &rest all
+                                        &key)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -293,7 +301,9 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
                                         (container mutable-hamt-dictionary)
-                                        location &key)
+                                        location
+                                        &rest all
+                                        &key)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -305,11 +315,13 @@ Methods. Those will just call non generic functions.
              (with-destructive-erase-hamt node container hash
                :on-leaf
                (multiple-value-bind (bucket status changed)
-                   (cl-ds:shrink-bucket! operation
-                                         container
-                                         node
-                                         location
-                                         :hash hash)
+                   (apply #'cl-ds:shrink-bucket!
+                          operation
+                          container
+                          node
+                          location
+                          :hash hash
+                          all)
                  (unless changed
                    (return-from cl-ds:position-modification
                      (values container status)))
@@ -328,7 +340,9 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container mutable-hamt-dictionary)
-                                        location &key value)
+                                        location
+                                        &rest all
+                                        &key value)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
