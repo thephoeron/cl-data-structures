@@ -69,29 +69,30 @@
   instance)
 
 
-(defmethod cl-ds:position-modification (operation (container lazy-box-container) location &rest args &key &allow-other-keys)
-  (nest
-   (with-accessors ((operations access-operations)
-                    (content access-content))
-       container)
-   (let ((lazy-status (make 'lazy-modification-operation-status))
-         (t-operation (cl-ds:destructive-counterpart operation))))
-   (flet ((wrapper (instance)
-            (unless (slot-boundp lazy-status '%eager-status)
-              (let ((eager-status
-                      (nth-value 1
-                                 (apply #'cl-ds:position-modification
-                                        t-operation
-                                        instance
-                                        args))))
-                (setf (access-eager-status lazy-status) eager-status)
-                nil)))))
-   (let* ((next-instance (make 'lazy-box-container
-                               :content content
-                               :operations (add-change operations #'wrapper))))
-     (write-lazy-instance next-instance lazy-status)
-     (values next-instance
-             lazy-status))))
+(flet ((enclose-wrapper (t-operation location lazy-status &rest args)
+         (lambda (instance)
+           (let ((eager-status
+                   (nth-value 1
+                              (apply #'cl-ds:position-modification
+                                     t-operation
+                                     instance
+                                     location
+                                     args))))
+             (setf (access-eager-status lazy-status) eager-status)))))
+  (defmethod cl-ds:position-modification (operation (container lazy-box-container) location &rest args &key &allow-other-keys)
+    (with-accessors ((operations access-operations) (content access-content)) container
+      (let* ((lazy-status (make 'lazy-modification-operation-status))
+             (t-operation (cl-ds:destructive-counterpart operation))
+             (next-instance (make 'lazy-box-container
+                                  :content content
+                                  :operations (add-change operations
+                                                          (enclose-wrapper t-operation
+                                                                           location
+                                                                           lazy-status
+                                                                           args)))))
+        (write-lazy-instance next-instance lazy-status)
+        (values next-instance
+                lazy-status)))))
 
 
 (defmethod cl-ds:size ((container lazy-box-container))
