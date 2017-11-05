@@ -79,7 +79,9 @@
                                      location
                                      args))))
              (setf (access-eager-status lazy-status) eager-status)))))
-  (defmethod cl-ds:position-modification (operation (container lazy-box-container) location &rest args &key &allow-other-keys)
+  (defmethod cl-ds:position-modification (operation (container lazy-box-container)
+                                          location &rest args
+                                          &key &allow-other-keys)
     (with-accessors ((operations access-operations) (content access-content)) container
       (let* ((lazy-status (make 'lazy-modification-operation-status))
              (t-operation (cl-ds:destructive-counterpart operation))
