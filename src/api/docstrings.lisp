@@ -2,6 +2,18 @@
 
 
 (set-documentation
+ 'position-modification <mechanics> <generic> *documentation*
+ :syntax "position-modification operation container location more-args => container status"
+ :arguments-and-values '(("OPERATION" "Instance of API function.")
+                         ("CONTAINER" "Instance of container class")
+                         ("LOCATION" "Where modification is supposed to happen?"))
+ :returns '("Container (new or the same instance)"
+            "Modification status")
+ :description "Low level function used as de facto implementation point of all API modification functions (INSERT, ADD, UPDATE)."
+ :notes "Implementations of this generic function are multimethods dispatched by the class of the OPERATION and CONTAINER.")
+
+
+(set-documentation
  'at <mechanics> <generic> *documentation*
  :syntax '("for dictionary containers: at dictionary key => value found"
            "for everything else: at sequence location => value")

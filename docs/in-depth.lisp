@@ -44,6 +44,7 @@
       [:title Generic Functions]
       (level [documentation]
              [:pack CL-DATA-STRUCTURES]
+             @docgeneric['cl-ds:position-modification]
              @docgeneric['cl-ds:make-bucket]
              @docgeneric['cl-ds:grow-bucket]
              @docgeneric['cl-ds:shrink-bucket]

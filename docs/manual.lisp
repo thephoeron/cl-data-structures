@@ -67,10 +67,10 @@
 
     @begin{section}
     @title{Common API}
-    @text{Following is the most abstract API of cl-data-structures library.}
 
     @begin{section}
     @title{Generic Functions}
+    [:text The following set contains generic functions that can be used to query or manipulate containers. Not all containers can be manipulated with entieriety of those functions. However, applicable functions are defined in the category of container, and thus, this manual lists functions applicable for instances of containers in each category.]
 
     (level [section]
       @title{Query Functions}
