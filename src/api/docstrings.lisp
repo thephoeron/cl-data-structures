@@ -589,6 +589,11 @@
 
 
 (set-documentation
+ 'erase-if-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE-IF and ERASE-IF!.")
+
+
+(set-documentation
  'functional-insert-function <mechanics> <class> cl-ds:*documentation*
  :description "Class of INSERT.")
 
@@ -626,3 +631,13 @@
 (set-documentation
  'erase!-function <mechanics> <class> cl-ds:*documentation*
  :description "Class of ERASE.")
+
+
+(set-documentation
+ 'erase-if!-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE-IF!.")
+
+
+(set-documentation
+ 'erase-if-function <mechanics> <class> cl-ds:*documentation*
+ :description "Class of ERASE-IF.")

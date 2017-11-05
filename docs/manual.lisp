@@ -217,12 +217,16 @@
       @item{INSERT}
       @item{ADD}
       @item{UPDATE}
+      @item{ERASE}
+      @item{ERASE-IF}
       @end{list}
       @text{To change mapping in destructive way, use following functions:}
       @begin{list}
       @item{(SETF AT)}
       @item{ADD!}
       @item{UPDATE!}
+      @item{ERASE!}
+      @item{ERASE-IF!}
       @end{list}
       @text{This package adds set of another trait classes, specific to dictionaries.}
       @docclass['cl-ds.dicts:dictionary]
