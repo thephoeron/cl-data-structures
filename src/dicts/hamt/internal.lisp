@@ -541,7 +541,7 @@ Copy nodes and stuff.
 
 (-> hash-node-insert! (hash-node t hash-node-index) hash-node)
 (defun hash-node-insert! (node content index)
-  (assert (zerop (ldb (byte 1 index) (hash-node-whole-mask node))))
+  (assert (not (ldb-test (byte 1 index) (hash-node-whole-mask node))))
   (let* ((next-size (~> node
                         hash-node-content
                         (array-dimension 0)
@@ -627,8 +627,7 @@ Copy nodes and stuff.
                    (iterate
                      (for i from 0 below +maximum-children-count+)
                      (with index = 0)
-                     (unless (~> (ldb (byte 1 i) mask)
-                                 zerop)
+                     (when (ldb-test (byte 1 i) mask)
                        (vector-push-extend (aref content index)
                                            stack)
                        (incf index)))))
@@ -845,7 +844,7 @@ Copy nodes and stuff.
           (with j = 0)
           (for i from 0 below +maximum-children-count+)
           (for was-modified = (and (hash-node-contains-node parent i)
-                                   (not (zerop (ldb (byte 1 i) mask)))))
+                                   (ldb-test (byte 1 i) mask)))
           (when was-modified
             (setf (content j)
                   (isolate-transactional-instance (content j)
