@@ -110,25 +110,29 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location))
-          (changed nil))
+    (let ((changed nil)
+          (hash (hash-fn location)))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:grow-bucket operation
-                                      container
-                                      bucket
-                                      location
-                                      :value value
-                                      :hash hash)
+                   (apply #'cl-ds:grow-bucket
+                          operation
+                          container
+                          bucket
+                          location
+                          :hash hash
+                          :value value
+                          all)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds:make-bucket operation
-                                      container
-                                      location
-                                      :value value
-                                      :hash hash)
+                   (apply #'cl-ds:make-bucket
+                          operation
+                          container
+                          location
+                          :hash hash
+                          :value value
+                          all)
                  (setf changed c)
                  (values a b c))))
         (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
@@ -164,21 +168,25 @@ Methods. Those will just call non generic functions.
           (changed nil))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:grow-bucket operation
-                                      container
-                                      bucket
-                                      location
-                                      :value value
-                                      :hash hash)
+                   (apply #'cl-ds:grow-bucket
+                          operation
+                          container
+                          bucket
+                          location
+                          :hash hash
+                          :value value
+                          all)
                  (setf changed c)
                  (values a b c)))
              (make-bucket ()
                (multiple-value-bind (a b c)
-                   (cl-ds:make-bucket operation
-                                      container
-                                      location
-                                      :value value
-                                      :hash hash)
+                   (apply #'cl-ds:make-bucket
+                          operation
+                          container
+                          location
+                          :hash hash
+                          :value value
+                          all)
                  (setf changed c)
                  (values a b c)))
              (copy-on-write (indexes path depth max-depth conflict)
@@ -264,12 +272,15 @@ Methods. Those will just call non generic functions.
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
           (changed nil))
+      (declare (dynamic-extent hash changed))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
-                   (cl-ds:shrink-bucket operation
-                                        container
-                                        bucket
-                                        location :hash hash)
+                   (apply #'cl-ds:shrink-bucket
+                          operation
+                          container
+                          bucket
+                          location :hash hash
+                          all)
                  (setf changed c)
                  (values a b c)))
              (just-return ()
@@ -293,7 +304,8 @@ Methods. Those will just call non generic functions.
                              #'just-return
                              #'copy-on-write)
           (when changed
-            (setf (access-root container) new-root)
+            (setf (access-root container) new-root
+                  (access-root-was-modified container) t)
             (decf (the non-negative-fixnum (access-size container))))
           (values container
                   status))))))

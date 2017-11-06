@@ -97,12 +97,12 @@
                                 &key hash condition-fn)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
-             (and (eql hash (hash-content-tuple-hash node))
-                  (funcall equal-fn location
-                           (hash-content-tuple-location node))
-                  (let ((result (funcall condition-fn
-                                         (hash-content-tuple-location node)
-                                         (hash-content-tuple-value node))))
+             (when (and (eql hash (hash-content-tuple-hash node))
+                        (funcall equal-fn location
+                                 (hash-content-tuple-location node)))
+               (let ((result (funcall condition-fn
+                                      (hash-content-tuple-location node)
+                                      (hash-content-tuple-value node))))
                     (unless result
                       (return-from cl-ds:shrink-bucket
                         (values
@@ -144,7 +144,7 @@
       t))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:functional-add-function)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:add-function)
                               (container hashing-dictionary)
                               (bucket list)
                               location
@@ -160,7 +160,7 @@
       (not ^replaced)))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:functional-update-function)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:update-function)
                               (container hashing-dictionary)
                               (bucket list)
                               location
@@ -177,7 +177,7 @@
       ^replaced))
 
 
-(defmethod cl-ds:make-bucket ((operation cl-ds:functional-update-function)
+(defmethod cl-ds:make-bucket ((operation cl-ds:update-function)
                               (container hashing-dictionary)
                               location
                               &rest all
@@ -228,7 +228,7 @@
                              (comp (content-tuple-location tuple)
                                    location)))))))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert!-function)
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert-function)
                                  (container hashing-dictionary)
                                  (bucket list)
                                  location
@@ -251,7 +251,7 @@
                    t old-value))
               t)))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:update!-function)
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:update-function)
                                  (container hashing-dictionary)
                                  (bucket list)
                                  location
@@ -271,7 +271,7 @@
                      t old-value)
                     t)))))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:add!-function)
+  (defmethod cl-ds:grow-bucket! ((operation cl-ds:add-function)
                                  (container hashing-dictionary)
                                  (bucket list)
                                  location
@@ -296,7 +296,7 @@
                   nil)))))
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase!-function)
+(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-function)
                                  (container hashing-dictionary)
                                  (bucket list)
                                  location
@@ -330,7 +330,7 @@
                        nil))))))
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-if!-function)
+(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-if-function)
                                  (container hashing-dictionary)
                                  (bucket list)
                                  location

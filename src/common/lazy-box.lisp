@@ -64,12 +64,12 @@
     (let ((transactional-instance (cl-ds:become-transactional
                                    content)))
       (execute-changes operations transactional-instance)
-      (setf operations nil)
-      (setf content transactional-instance)))
+      (setf operations nil
+            content transactional-instance)))
   instance)
 
 
-(flet ((enclose-wrapper (t-operation location lazy-status &rest args)
+(flet ((enclose-wrapper (t-operation location lazy-status args)
          (lambda (instance)
            (let ((eager-status
                    (nth-value 1
@@ -78,7 +78,14 @@
                                      instance
                                      location
                                      args))))
-             (setf (access-eager-status lazy-status) eager-status)))))
+             (if (slot-boundp lazy-status '%eager-status)
+               (let ((status (access-eager-status lazy-status)))
+                 (assert (eq (read-found eager-status)
+                             (read-found status)))
+                 (assert (eq (read-value eager-status)
+                             (read-value status))))
+               (setf (access-eager-status lazy-status) eager-status))
+             eager-status))))
   (defmethod cl-ds:position-modification (operation (container lazy-box-container)
                                           location &rest args
                                           &key &allow-other-keys)
@@ -86,7 +93,7 @@
       (let* ((lazy-status (make 'lazy-modification-operation-status))
              (t-operation (cl-ds:destructive-counterpart operation))
              (next-instance (make 'lazy-box-container
-                                  :content content
+                                  :content (cl-ds:become-transactional content)
                                   :operations (add-change operations
                                                           (enclose-wrapper t-operation
                                                                            location

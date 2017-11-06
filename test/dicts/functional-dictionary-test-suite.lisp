@@ -129,6 +129,10 @@
 
 
 (defun run-suite ()
-  (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 100))
+  (diag "Testing functional implementation.")
+  (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 100)
+  (diag "Testing lazy implementation.")
+  (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=))
+                     100))
 
 (run-suite)

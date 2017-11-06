@@ -101,20 +101,15 @@ Macros
                      (eq ,!test #'string=)
                      (eq ,!test #'eq)))
                `(progn))
-          (flet ((compare-fn (a b)
-                   (the boolean (same-location a b ,!test)))
-                 (equal-fn (a b)
+          (flet ((equal-fn (a b)
                    (funcall ,!test a b))
                  (hash-fn (x)
                    (funcall ,!hash x)))
-            (declare (ignorable (function compare-fn)
-                                (function hash-fn)
+            (declare (ignorable (function hash-fn)
                                 (function equal-fn))
-                     (inline compare-fn
-                             hash-fn
+                     (inline hash-fn
                              equal-fn)
-                     (dynamic-extent (function compare-fn)
-                                     (function hash-fn)
+                     (dynamic-extent (function hash-fn)
                                      (function equal-fn)))
             ,@body))))))
 
@@ -205,19 +200,6 @@ Tree structure of HAMT
 
 
 (declaim (inline make-hash-node))
-
-
-(-> same-location
-    (hash.location.value hash.location.value (-> (t t) boolean))
-    boolean)
-(declaim (inline same-location))
-(defun same-location (existing new-location equal-fn)
-  (declare (optimize (speed 3)))
-  (and (eql (hash.location.value-hash existing)
-            (hash.location.value-hash new-location))
-       (funcall equal-fn
-                (hash.location.value-location existing)
-                (hash.location.value-location new-location))))
 
 
 #|
@@ -465,7 +447,7 @@ Copy nodes and stuff.
   `(satisfies non-empty-hash-table-p))
 
 
-(-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket) just-node)
+(-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket &key (:transactional boolean)) just-node)
 (-> build-rehashed-node (fixnum fixnum simple-vector &key (:transactional boolean)) just-node)
 (defun build-rehashed-node (depth max-depth content &key (transactional nil))
   (let ((mask 0)
@@ -487,7 +469,8 @@ Copy nodes and stuff.
           (setf (array i)
                 (rebuild-rehashed-node depth
                                        max-depth
-                                       conflict))
+                                       conflict
+                                       :transactional transactional))
           (if (hash-node-p (array i))
               (setf (ldb (byte 1 index) node-mask) 1)
               (setf (ldb (byte 1 index) leaf-mask) 1))))
@@ -532,7 +515,13 @@ Copy nodes and stuff.
                      (compilation-speed 0))
            (type fixnum depth max-depth))
   (flet ((cont (array)
-           (build-rehashed-node (1+ depth) max-depth array)))
+           (let ((result (build-rehashed-node (1+ depth)
+                                              max-depth
+                                              array
+                                              :transactional transactional)))
+             (when transactional
+               (mark-everything-as-modified result))
+             result)))
     (declare (dynamic-extent #'cont))
     (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
         conflict
@@ -759,8 +748,8 @@ Copy nodes and stuff.
     hash-node)
 (defun hash-node-transactional-remove (must-copy node index)
   (let ((result (if must-copy
-                    (hash-node-remove! node index)
-                    (hash-node-remove-from-the-copy node index :transactional t))))
+                    (hash-node-remove-from-the-copy node index :transactional t)
+                    (hash-node-remove! node index))))
     (when (transactional-hash-node-p result)
       (if (transactional-hash-node-p node)
           (setf (transactional-hash-node-modification-mask result)
@@ -790,11 +779,12 @@ Copy nodes and stuff.
       (for index = (indexes i))
       (for parent = (and (not (zerop i))
                          (path (1- i))))
-      (for must-copy = (if (null parent)
-                           (not root-already-copied)
-                           (or (~> parent transactional-hash-node-p not)
-                               (hash-node-content-modified parent
-                                                           (indexes (1- i))))))
+      (for must-copy =
+           (if (null parent)
+               (not root-already-copied) ;special case for root
+               (or (~> parent transactional-hash-node-p not) ;not in the transactional node
+                   (hash-node-content-modified parent ;in transactional node, but this child was not modified
+                                               (indexes (1- i))))))
       (for ac initially (if (or (hash-node-p conflict)
                                 (null conflict))
                             ;;if we didn't find element or element was found but depth was already maximal,
@@ -837,7 +827,10 @@ Copy nodes and stuff.
                               :node-mask (transactional-hash-node-node-mask node)
                               :content (copy-array (transactional-hash-node-content node)))
               (transactional-hash-node-modification-mask node))
-      (values node nil)))
+      (values (make-hash-node :leaf-mask (hash-node-leaf-mask node)
+                              :node-mask (hash-node-node-mask node)
+                              :content (copy-array (hash-node-content node)))
+              nil)))
 
 
 (-> isolate-transactional-instance (hash-node boolean) hash-node)
@@ -849,13 +842,14 @@ Copy nodes and stuff.
     (with-vectors ((content (hash-node-content parent)))
       (unless (null mask)
         (iterate
+          (with j = 0)
           (for i from 0 below +maximum-children-count+)
           (for was-modified = (and (hash-node-contains-node parent i)
                                    (not (zerop (ldb (byte 1 i) mask)))))
           (when was-modified
-            (let ((masked-index (hash-node-to-masked-index parent i)))
-              (setf (content masked-index)
-                    (isolate-transactional-instance (content masked-index)
-                                                    t)))))))
+            (setf (content j)
+                  (isolate-transactional-instance (content j)
+                                                  t))
+            (incf j)))))
     parent))
 
