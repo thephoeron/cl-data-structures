@@ -14,6 +14,24 @@
 
 
 (set-documentation
+ 'functional-counterpart <mechanics> <generic> cl-ds:*documentation*
+ :syntax "functional-counterpart operation => functional-operation"
+ :arguments-and-values '(("OPERATION" "Instance of the modification API function."))
+ :description "Low level function that returns an instance of the functional api modification function that serves the same purpose as the OPERATION. Will, for instance, return #'UPDATE when OPERATION is #'UPDATE! Will return original the OPERATION if OPERATION is already part of the functional API."
+ :returns "The instance of api function."
+ :notes "This function is low level, and therefore should be rarely (if ever) used by the user of this library.")
+
+
+(set-documentation
+ 'destructive-counterpart <mechanics> <generic> cl-ds:*documentation*
+ :syntax "destructive-counterpart operation => destructive-operation"
+ :arguments-and-values '(("OPERATION" "Instance of the modification API function."))
+ :description "Low level function that returns an instance of the destrutive api modification function that serves the same purpose as the OPERATION. Will, for instance, return #'UPDATE! when OPERATION is #'UPDATE Will return original the OPERATION if OPERATION is already part of the functional API."
+ :returns "The instance of api function."
+ :notes "This function is low level, and therefore should be rarely (if ever) used by the user of this library.")
+
+
+(set-documentation
  'at <mechanics> <generic> *documentation*
  :syntax '("for dictionary containers: at dictionary key => value found"
            "for everything else: at sequence location => value")
@@ -653,3 +671,4 @@
 (set-documentation
  'erase-if-function <mechanics> <class> cl-ds:*documentation*
  :description "Class of ERASE-IF.")
+

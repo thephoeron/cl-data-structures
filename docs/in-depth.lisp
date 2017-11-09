@@ -50,6 +50,8 @@
              @docgeneric['cl-ds:shrink-bucket]
              @docgeneric['cl-ds:grow-bucket!]
              @docgeneric['cl-ds:shrink-bucket!]
+             @docgeneric['cl-ds:functional-counterpart]
+             @docgeneric['cl-ds:destructive-counterpart]
       ))
 
     (level [section]
@@ -80,4 +82,5 @@
         [:title Lazy evaluation]
         [:text This system offers the lazy-evaluated containers. Lazy evaluation is useful primarly because eager functional data structures may have somewhat sluggish performance if multiple, full copy-on-write operations have to be performed when inserting or erasing large number of records from the container. Lazy evaluation allows to hide destructive operations behind functional interface, and therefore help to counter this issue. Effectivness of this technique varies greatly, and depends on both internal structure of the container, as well it's current content. However, what remains constant is approach used in implementation of lazy evaluation in this library.]
         [:text As already established in the Overview section, this library contains transactional variants of some of the data structures. Because transactional data structures form a wall isolating destructive changes, they can be used for the internal parts of the lazy evaluation style optimalization. Now, the other part of the recipe is to build functional interface around transactional instance. This essentially requires us to use to proxy objects that will fully adapt mutable interface into functional interface. Because of symetric design of the containers API, each destructive function has also functional counterpart. This makes the task fairly easy.]
+        [:text To translate functional API function calls into mutable calls, new class called LAZY-BOX-CONTAINER is introduced. LAZY-BOX-CONTAINER is holding the transactional instance of container alongside the CHANGES instance. All functional variants of API functions applicable to the internal instance, are applicable to the LAZY-BOX-CONTAINER instance as well and return values consinstent with the documentation. This is done by either manually implementing methods to work on LAZY-BOX-CONTAINER (this is the case for all query functions) or by intercepting internal low level mechanisms of position modification metaprotocol (the case for all modification functions). In other words, the LAZY-BOX-CONTAINER is (according to the design patterns terminology) a proxy. By implementing this interface, it is became possible to capture and enclose all modification calls in closures that can be executed later. That's exactly what POSITION-MODIFICATION method for LAZY-BOX-CONTAINER is doing. Now, the question arise: when it is required to call accumulated closures?]
       ))))

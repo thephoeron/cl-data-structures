@@ -87,12 +87,9 @@
 (defmethod alexandria:emptyp ((container fundamental-container))
   (zerop (size container)))
 
-
 (defgeneric value (status))
 
-
 (defgeneric found (status))
-
 
 (defgeneric functional-counterpart (operation)
   (:method ((operation functional-function)) operation)
@@ -101,7 +98,6 @@
   (:method ((operation add!-function)) #'add)
   (:method ((operation insert!-function)) #'insert)
   (:method ((operation update!-function)) #'update))
-
 
 (defgeneric destructive-counterpart (operation)
   (:method ((operation destructive-function)) operation)

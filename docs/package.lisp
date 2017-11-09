@@ -6,7 +6,6 @@
 
 
 (cl-lore.api.syntax:syntax
- cl-lore.extensions.documentation.protocol
  cl-lore.extensions.documentation.api
  cl-lore.extensions.sequence-graphs.api)
 
