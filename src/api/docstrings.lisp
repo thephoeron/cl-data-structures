@@ -9,8 +9,8 @@
                          ("LOCATION" "Where modification is supposed to happen?"))
  :returns '("Container (new or the same instance)"
             "Modification status")
- :description "Low level function used as de facto implementation point of all API modification functions (INSERT, ADD, UPDATE)."
- :notes "Implementations of this generic function are multimethods dispatched by the class of the OPERATION and CONTAINER.")
+ :description "A low level function used as de facto implementation point of all API modification functions (INSERT, ADD, UPDATE)."
+ :notes "Implementations of this generic function are multimethods dispatched on the class of the OPERATION and on the CONTAINER.")
 
 
 (set-documentation
@@ -89,7 +89,9 @@
  :returns '("Instance of the same type as CONTAINER. If add took place it shall contain NEW-VALUE at LOCATION."
             "Modification status object.")
 
- :description "Functional API: attempts to non-destructively add NEW-VALUE into CONTAINER at LOCATION. Will not replace value at LOCATION if it was already occupied.")
+ :description "Functional API: attempts to non-destructively add NEW-VALUE into CONTAINER at LOCATION. Will not replace value at LOCATION if it was already occupied."
+
+ :notes "This is functional counterpart to the ADD! function.")
 
 
 (set-documentation
@@ -99,30 +101,34 @@
    ("LOCATION" "Place in the CONTAINER that we intend to change")
    ("NEW-VALUE" "Value that we intend to add into CONTAINER"))
 
- :description "Destructively add NEW-VALUE into CONTAINER at LOCATION. Will not replace value at LOCATION if it was already occupied."
+ :description "Destructively add the NEW-VALUE into the CONTAINER at the LOCATION. Will not replace a value at LOCATION if it was already occupied."
 
  :returns '("CONTAINER"
             "Modification status object")
 
  :syntax "add! container location new-value => same-container status"
 
- :side-effects "If item was not found in the CONTAINER, destructivly transform CONTAINER.")
+ :side-effects "If item was not found in the CONTAINER, destructivly transform CONTAINER."
+
+ :notes "This is the destructive counterpart to the ADD function.")
 
 
 (set-documentation
  'insert <mechanics> <generic> *documentation*
  :syntax "insert container location new-value => new-instance status"
  :description
- "Functional API: non-destructively insert NEW-VALUE into CONTAINER at LOCATION. Will replace element value at LOCATION if it was already occupied."
+ "Functional API: non-destructively insert the NEW-VALUE into the CONTAINER at the LOCATION. Will replace a value at the LOCATION if it was already occupied."
 
  :returns
  '("Instance of the same type as CONTAINER, with NEW-VALUE at LOCATION"
    "Modification status object.")
 
  :arguments-and-values
- '(("container" "TODO")
-   ("location" "designates place in returned instance that will be changed")
+ '(("container" "Instance of container.")
+   ("location" "Designates place in returned instance that will be changed")
    ("new-value" "Value that will be inserted into returned instance"))
+
+ :notes "This is the functional counterpart to the (SETF AT) function."
 
  :examples
  '("(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
@@ -135,11 +141,13 @@
  'erase <mechanics> <generic> *documentation*
  :syntax "erase container location => new-instance status"
  :description
- "Functional API: non-destructively remove element at LOCATION from the CONTAINER."
+ "Functional API: non-destructively remove a element at the LOCATION from the CONTAINER."
 
  :returns
  '("Instance of the same type as CONTAINER, without value at LOCATION"
    "Modification status object.")
+
+ :notes "This is the functional counterpart to the ERASE! function."
 
  :examples
  '("(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
@@ -162,7 +170,7 @@
  'erase-if <mechanics> <generic> *documentation*
  :syntax "erase-if container location condition => new-instance status"
  :description
- "Functional API: non-destructively remove element at LOCATION from the CONTAINER, only when CONDITION function returns true. CONDITION will be called with location that matches according to comparsion function, and with value."
+ "Functional API: non-destructively remove element at LOCATION from the CONTAINER, only when CONDITION function returns true. CONDITION will be called with location that matches according to comparsion function used to construct container, and with a value."
 
  :returns
  '("Instance of the same type as CONTAINER, without value at LOCATION"
@@ -188,7 +196,9 @@
  :arguments-and-values
  '(("CONTAINER" "Container that shall be modified.")
    ("LOCATION" "Designates place in returned instance that will be changed.")
-   ("CONDITION" "Function of two arguments, should return boolean.")))
+   ("CONDITION" "Function of two arguments, should return boolean."))
+
+ :notes "This is the functional counterpart to the ERASE-IF! function.")
 
 
 (set-documentation
@@ -221,26 +231,29 @@
  :arguments-and-values
  '(("CONTAINER" "Container that shall be modified.")
    ("LOCATION" "Designates place in returned instance that will be changed.")
-   ("CONDITION" "Function of two arguments, should return boolean.")))
+   ("CONDITION" "Function of two arguments, should return boolean."))
+
+ :notes "This is the destructive counterpart to the ERASE-IF function.")
 
 
 (set-documentation
  'erase! <mechanics> <generic> *documentation*
- :description "Mutable API: destructively remove element at LOCATION from the CONTAINER."
+ :description "Mutable API: destructively remove a element at the LOCATION from the CONTAINER."
  :syntax "erase! container location => same-instance status"
  :returns '("CONTAINER" "Modification status object")
  :arguments-and-values
  '(("container" "Instance that is intended to be destructivly modified.")
    ("location" "Location in the container that we want to modify by removing value."))
- :side-effects "If erase took place, destructivly transform CONTAINER.")
+ :side-effects "If erase took place, destructivly transform CONTAINER."
+ :notes "This is the destrucive counterpart to the ERASE function.")
 
 
 (set-documentation
  'size <mechanics> <generic> *documentation*
  :syntax "size container => count"
- :description "How many elements CONTAINER holds currently?"
+ :description "How many elements the CONTAINER holds currently?"
  :arguments-and-values '(("container" "instance that will be checked."))
- :returns "number of elements in the container."
+ :returns "The number of elements in the container."
  :examples '("(let ((container (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
                (prove:is (cl-ds:size container) 0)
                (setf (cl-ds:at container 'a) 1)
@@ -250,7 +263,7 @@
 (set-documentation
  'update <mechanics> <generic> *documentation*
  :description
- "Functional API: if there is value at LOCATION in the CONTAINER, return new instance with NEW-VALUE at LOCATION."
+ "Functional API: if there is value at LOCATION in the CONTAINER return new instance with NEW-VALUE at LOCATION."
 
  :syntax
  "update container location new-value => new-instance status"
@@ -260,14 +273,16 @@
    "Modification status object")
 
  :arguments-and-values
- '(("container" "Container that shall be transformed.")
-   ("location" "Location in the container that we want to transform.")))
+ '(("container" "The instance that shall be transformed.")
+   ("location" "The location in the container that we want to transform."))
+
+ :notes "This is the functional counterpart to the UPDATE! function.")
 
 
 (set-documentation
  'update! <mechanics> <generic> *documentation*
  :description
- "Mutable API: If LOCATION is taken in the CONTAINER, destructivly update it with NEW-VALUE"
+ "Mutable API: If the LOCATION is taken in the CONTAINER, destructivly update it with the NEW-VALUE"
 
  :syntax
  "(update! container location new-value) -> same-container status"
@@ -278,8 +293,9 @@
 
  :arguments-and-values
  '(("container" "Container that shall be modified.")
-   ("location" "Location in the container that we want to transform.")))
+   ("location" "Location in the container that we want to transform."))
 
+ :notes "This is the destructive counterpart to the UPDATE function.")
 
 (set-documentation
  'become-functional <mechanics> <generic> *documentation*
@@ -290,7 +306,7 @@
  "become-functional container => functional-container"
 
  :returns
- "instance implementing functional API. Content of returned instance is identical to the content of input CONTAINER."
+ "A instance implementing functional API. Content of returned instance is identical to the content of input CONTAINER."
 
  :arguments-and-values
  '(("container" "Container that we want to transform into functional container."))
@@ -300,19 +316,19 @@
    "Not all containers implement this function.")
 
  :side-effects
- "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
+ "May vary, depending on type of the CONTAINER. Also, some (or all) parts of a internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into a returned instance.")
 
 
 (set-documentation
  'become-mutable <mechanics> <generic> *documentation*
  :description
- "Transforms CONTAINER into mutable variant."
+ "Transforms the CONTAINER into a mutable variant."
 
  :syntax
  "become-mutable container => mutable-container"
 
  :returns
- "instance implementing mutable API. Content of returned instance is identical to the content of input CONTAINER."
+ "A instance implementing mutable API. Content of the returned instance is identical to the content of the input CONTAINER."
 
  :arguments-and-values
  '(("container" "Container that we want to transform into mutable container."))
@@ -322,7 +338,7 @@
    "Not all containers implement this function.")
 
  :side-effects
- "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
+ "May vary, depending on type of the CONTAINER. Also, some (or all) parts of a internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into the returned instance.")
 
 
 (set-documentation
@@ -344,7 +360,7 @@
    "Not all containers implement this function.")
 
  :side-effects
- "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
+ "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into the returned instance.")
 
 
 (set-documentation
@@ -366,7 +382,7 @@
    "All containers that implement become-transactional, also implement become-lazy")
 
  :side-effects
- "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both CONTAINER and returned instance. Side effects from mutable CONTAINER may leak into returned instance.")
+ "May vary, depending on type of the CONTAINER. Also, some (or all) parts of internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into the returned instance.")
 
 
 (set-documentation
@@ -454,7 +470,8 @@
    (container "Container that shall be modified.")
    (location "Location where container shall be modified."))
  :returns '("NEW-VALUE"
-            "modification-status object as second value."))
+            "modification-status object as second value.")
+ :notes "This is the destructive counterpart to the INSERT function.")
 
 (set-documentation
  'mod-bind <mechanics> <macro> *documentation*
@@ -671,4 +688,3 @@
 (set-documentation
  'erase-if-function <mechanics> <class> cl-ds:*documentation*
  :description "Class of ERASE-IF.")
-
