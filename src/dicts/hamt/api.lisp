@@ -381,8 +381,6 @@ Methods. Those will just call non generic functions.
                    :on-every (setf prev-node node prev-index index)
                    :on-nil (if prev-node
                                  (progn
-                                   (assert (not (hash-node-contains-leaf
-                                                 prev-node prev-index)))
                                    (hash-node-insert!
                                     prev-node
                                     (rebuild-rehashed-node
@@ -404,8 +402,6 @@ Methods. Those will just call non generic functions.
                                                      :value value)))
                    :on-leaf (if prev-node
                                   (progn
-                                    (assert (hash-node-contains-leaf
-                                             prev-node prev-index))
                                     (hash-node-replace!
                                      prev-node
                                      (rebuild-rehashed-node
