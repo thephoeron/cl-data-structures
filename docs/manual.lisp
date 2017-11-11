@@ -12,7 +12,7 @@
       [:text Cl-data-structures is a portable collection of data structures for ,(lisp). The design goals of this library are following:]
 
       (level [list]
-        @item{Uniform -- Data structures that are used for specific task should have a common interface. The user should just know how to use dictionary, and not some specific implementation of it.}
+        @item{Uniform -- Data structures that are used for a specific task should have a common interface. The user should just know how to use dictionary, and not some specific implementation of it.}
         @item{Complete -- This package intends to be the definitive ,(lisp) data structures collection, containing both functional and mutable structures, for every use case possible.}
         @item{Universal -- There should be no limitations on when this library is useful.}
         @item{Stable -- The API should be backward compatible. Breaking existing software is not acceptable.})
