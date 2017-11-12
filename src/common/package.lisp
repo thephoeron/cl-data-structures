@@ -6,12 +6,12 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common)
   (:export
+   #:access-content
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
-   #:make-eager-modification-operation-status
-   #:lazy-box-container
-   #:read-found
    #:force-version
-   #:access-content
+   #:lazy-box-container
+   #:make-eager-modification-operation-status
+   #:read-found
    #:read-value))
 

@@ -5,10 +5,9 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-   #:*documentation*
-   #:add
    #:add!
    #:add!-function
+   #:add
    #:add-function
    #:argument-out-of-bounds
    #:at
@@ -56,6 +55,10 @@
    #:not-implemented
    #:out-of-bounds
    #:position-modification
+   #:put
+   #:put!
+   #:put!-function
+   #:put-function
    #:read-arguments
    #:read-bounds
    #:read-class
@@ -72,7 +75,8 @@
    #:update!
    #:update!-function
    #:update-function
-   #:value))
+   #:value
+   #:*documentation*))
 
 
 (in-package #:cl-ds)

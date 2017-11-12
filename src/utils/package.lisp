@@ -16,10 +16,10 @@
    #:each-in-matrix
    #:erase-from-vector
    #:extendable-vector
+   #:import-all-package-symbols
    #:insert-or-replace
    #:lazy-let
    #:make-distance-matrix
-   #:import-all-package-symbols
    #:merge-ordered-vectors
    #:ordered-p
    #:pop-last

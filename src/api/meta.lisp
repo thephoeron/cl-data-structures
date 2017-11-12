@@ -37,6 +37,10 @@
   ())
 
 
+(defclass put-function (grow-function)
+  ())
+
+
 (defclass functional-insert-function (closer-mop:standard-generic-function
                                       functional-function
                                       insert-function)
@@ -72,6 +76,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass functional-put-function (closer-mop:standard-generic-function
+                                   functional-function
+                                   put-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defclass insert!-function (closer-mop:standard-generic-function
                             destructive-function
                             insert-function)
@@ -103,6 +114,13 @@
 (defclass erase!-function (closer-mop:standard-generic-function
                            destructive-function
                            erase-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass put!-function (closer-mop:standard-generic-function
+                         destructive-function
+                         put-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 

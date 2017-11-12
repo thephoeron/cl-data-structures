@@ -9,6 +9,9 @@
 (defgeneric add (container location new-value)
   (:generic-function-class functional-add-function))
 
+(defgeneric put (container item)
+  (:generic-function-class functional-put-function))
+
 (defgeneric add! (container location new-value)
   (:generic-function-class add!-function))
 
@@ -26,6 +29,9 @@
 
 (defgeneric erase! (container location)
   (:generic-function-class erase!-function))
+
+(defgeneric put! (container item)
+  (:generic-function-class put!-function))
 
 (defgeneric size (container))
 

@@ -7,25 +7,25 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
-   #:hash-content-tuple-hash
-   #:content-tuple-location
-   #:content-tuple-value
    #:bucket
    #:content-tuple
+   #:content-tuple-location
+   #:content-tuple-value
    #:dictionary
-   #:functional-dictionary
-   #:mutable-dictionary
-   #:transactional-dictionary
    #:find-content
-   #:hash-content-tuple
-   #:hashing-dictionary
+   #:functional-dictionary
    #:functional-hashing-dictionary
-   #:mutable-hashing-dictionary
-   #:transactional-hashing-dictionary
+   #:hash-content-tuple
+   #:hash-content-tuple-hash
+   #:hashing-dictionary
    #:make-bucket
+   #:mutable-dictionary
+   #:mutable-hashing-dictionary
    #:read-equal-fn
    #:read-hash-fn
-   #:single-element-p))
+   #:single-element-p
+   #:transactional-dictionary
+   #:transactional-hashing-dictionary))
 
 
 (defpackage :cl-data-structures.dicts.hamt
