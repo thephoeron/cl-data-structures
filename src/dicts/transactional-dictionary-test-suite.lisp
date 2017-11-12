@@ -5,8 +5,6 @@
   (:export :run-stress-test :run-suite))
 (in-package :transactional-dictionary-test-suite)
 
-(setf prove:*enable-colors* nil)
-
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
   (defun read-all-words ()
     (let ((result (vect)))
@@ -210,10 +208,10 @@
 
 
 (defun run-suite ()
-  (plan 2913)
   (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 2)
-  (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100)
-  (finalize))
+  (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100))
 
 
+(plan 2913)
 (run-suite)
+(finalize)

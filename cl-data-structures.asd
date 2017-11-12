@@ -10,7 +10,8 @@
   :depends-on ( :iterate :alexandria
                 :serapeum :prove
                 :docstample :more-conditions
-                :closer-mop)
+                :closer-mop :lparallel)
+  :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
   :components ((:file "package")
@@ -21,7 +22,9 @@
                              (:file "ordered-algorithms")
                              (:file "lists")
                              (:file "trivial")
-                             (:file "modification-algorithms")))
+                             (:file "modification-algorithms")
+                             (:file "distances")
+                             (:test-file "distances-tests")))
                (:module "api"
                 :components ((:file "meta")
                              (:file "fundamental-classes")
@@ -43,4 +46,9 @@
                              (:module "hamt"
                               :components ((:file "internal")
                                            (:file "api")
-                                           (:file "docstrings")))))))
+                                           (:file "docstrings")
+                                           (:test-file "transactions-tests")
+                                           (:test-file "lazy-tests")))
+                             (:test-file "functional-dictionary-test-suite")
+                             (:test-file "mutable-dictionary-test-suite")
+                             (:test-file "transactional-dictionary-test-suite")))))

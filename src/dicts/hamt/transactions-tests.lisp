@@ -6,9 +6,6 @@
    :run-suite))
 (in-package :transactional-hamt-dictionary-tests)
 
-(setf prove:*enable-colors* nil)
-
-
 (plan 56)
 (diag "Testing isolation of insert")
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql)))

@@ -177,3 +177,12 @@
       `(,(cadr fn) ,@args)
       `(funcall ,fn ,@args)))
 
+
+(defmacro import-all-package-symbols (from-package to-package)
+  "Macro. Will import all internal symbols from package to package. For tests."
+  (let ((from-package (find-package from-package))
+        (to-package (find-package to-package)))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (do-symbols (symbol ,from-package)
+         (when (nth-value 1 (find-symbol (string-upcase symbol) ,from-package))
+           (import symbol ,to-package))))))

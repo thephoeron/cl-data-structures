@@ -6,31 +6,29 @@
    :run-suite))
 (in-package :lazy-hamt-dictionary-tests)
 
-(setf prove:*enable-colors* nil)
-
-
+(plan 794)
 (diag "Testing lazy HAMT")
 (let ((dict (become-lazy (make-mutable-hamt-dictionary #'identity #'eql))))
   (diag "testing insert into empty")
   (iterate
     (for i below 64)
     (for next = (insert dict i i)))
-  (ok (cl-ds:emptyp dict))
+  (is (cl-ds:size dict) 0)
   (iterate
     (for i below 64)
     (for next = (insert dict i i))
     (is (at next i) i))
-  (ok (cl-ds:emptyp dict))
+  (is (cl-ds:size dict) 0)
 
   (iterate
     (for i below 256)
     (for next = (insert dict i i)))
-  (ok (cl-ds:emptyp dict))
+  (is (cl-ds:size dict) 0)
   (iterate
     (for i below 256)
     (for next = (insert dict i i))
     (is (at next i) i))
-  (ok (cl-ds:emptyp dict)))
+  (is (cl-ds:size dict) 0))
 
 (let ((mutable (make-mutable-hamt-dictionary #'identity #'eql))
       (dict nil))
@@ -39,18 +37,15 @@
     (setf (at mutable i) 'correct))
   (setf dict (become-lazy mutable))
   (diag "Testing insert into not empty")
-
   (iterate
     (for i below 64)
     (for next = (insert dict i i)))
-  (ok (null (cl-ds:emptyp mutable)))
   (is (size mutable) 8)
 
   (iterate
     (for i below 64)
     (for next = (insert dict i i))
     (is (at next i) i))
-  (ok (null (cl-ds:emptyp mutable)))
   (is (size dict) 8)
   (iterate
     (for i below 8)
@@ -59,13 +54,11 @@
   (iterate
     (for i below 256)
     (for next = (insert dict i i)))
-  (ok (null (cl-ds:emptyp mutable)))
   (is (size dict) 8)
   (iterate
     (for i below 256)
     (for next = (insert dict i i))
     (is (at next i) i))
-  (ok (null (cl-ds:emptyp mutable)))
   (is (size mutable) 8)
   (iterate
     (for i below 8)
@@ -76,7 +69,6 @@
       (dict2 nil))
   (setf dict (become-lazy mutable))
   (diag "Testing many instances into not empty")
-
   (iterate
     (for i below 64)
     (for next = (insert dict i 'correct))
@@ -107,3 +99,5 @@
     (for i below 64)
     (for next = (update dict i 'next))
     (setf dict next)))
+
+(finalize)

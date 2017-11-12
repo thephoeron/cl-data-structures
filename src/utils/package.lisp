@@ -11,10 +11,15 @@
    #:cond+
    #:cond-compare
    #:copy-without
+   #:distance
+   #:distance-matrix
+   #:each-in-matrix
    #:erase-from-vector
    #:extendable-vector
    #:insert-or-replace
    #:lazy-let
+   #:make-distance-matrix
+   #:import-all-package-symbols
    #:merge-ordered-vectors
    #:ordered-p
    #:pop-last

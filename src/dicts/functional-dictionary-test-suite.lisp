@@ -4,10 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in)
   (:export :run-stress-test
    :run-suite))
-   
 (in-package :functional-dictionary-test-suite)
-
-(setf prove:*enable-colors* nil)
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
   (defun read-all-words ()
@@ -118,16 +115,6 @@
              (is (size dict) (size v))
              (is word (at v word) :test #'string=)))))))
 
-
-(let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))
-  (defun run-stress-test (limit)
-    (with-open-file (str path :direction :output :if-exists :supersede)
-      (let ((prove:*test-result-output* str))
-        (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
-        (diag "Running functional HAMT tests:")
-        (time (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) limit))))))
-
-
 (defun run-suite ()
   (diag "Testing functional implementation.")
   (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) 100)
@@ -135,4 +122,6 @@
   (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=))
                      100))
 
+(plan 6348)
 (run-suite)
+(finalize)

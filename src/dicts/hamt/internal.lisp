@@ -69,7 +69,7 @@ Macros
               (values ,node ,count))
            (declare (type fixnum ,hash ,!pos ,index ,count)
                     (dynamic-extent ,!pos ,index ,count))
-           (let ((,!leaf (and ,!leaf (not (hash-node-p ,node)))))
+           (let ((,!leaf (and ,node (not (hash-node-p ,node)))))
              ,(when on-nil
                 `(when (null ,node)
                    (return-from ,!block
@@ -236,7 +236,7 @@ Functions with basic bit logic.
 
 (-> hash-node-to-masked-index (hash-node (hash-node-index)) hash-node-index)
 (defun hash-node-to-masked-index (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (~>> hash-node
        hash-node-whole-mask
        (ldb (byte index 0))
@@ -248,14 +248,14 @@ Functions with basic bit logic.
 
 (-> hash-node-contains (hash-node hash-node-index) boolean)
 (defun hash-node-contains (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (~>> (hash-node-whole-mask hash-node)
        (ldb-test (byte 1 index))))
 
 
 (-> hash-node-contains-node (hash-node hash-node-index) boolean)
 (defun hash-node-contains-node (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (~>> (hash-node-node-mask hash-node)
        (ldb-test (byte 1 index))))
 
@@ -267,7 +267,7 @@ Functions with basic bit logic.
 
 (-> hash-node-access (hash-node hash-node-index) (or hash-node cl-ds.dicts:bucket))
 (defun hash-node-access (hash-node index)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (~>> (hash-node-to-masked-index hash-node index)
        (aref (hash-node-content hash-node))))
 
@@ -278,7 +278,7 @@ Functions with basic bit logic.
 
 (-> hash-node-size (hash-node) hash-node-size)
 (defun hash-node-size (node)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (logcount (hash-node-whole-mask node)))
 
 #|
@@ -295,7 +295,6 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
-                     (compilation-speed 0)
                      (space 0))
            (type fixnum hash))
   (let ((status nil))
@@ -330,7 +329,7 @@ Copy nodes and stuff.
     hash-node)
 (declaim (inline copy-node))
 (defun copy-node (node &key node-mask content modification-mask)
-  (declare (optimize (speed 3) (debug 0) (safety 0) (compilation-speed 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (if (transactional-hash-node-p node)
       (make-hash-node
        :node-mask (or node-mask (hash-node-node-mask node))
@@ -347,7 +346,6 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
-                     (compilation-speed 0)
                      (space 0)))
   (let* ((content (copy-array (hash-node-content hash-node)))
          (node-mask (hash-node-node-mask hash-node)))
@@ -370,7 +368,6 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
-                     (compilation-speed 0)
                      (space 0)))
   (let ((position (hash-node-to-masked-index hash-node index)))
     (with-vectors
@@ -475,8 +472,7 @@ Copy nodes and stuff.
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
-                     (space 3)
-                     (compilation-speed 0))
+                     (space 3))
            (type fixnum depth max-depth))
   (flet ((cont (array)
            (let ((result (build-rehashed-node (1+ depth)
@@ -552,8 +548,7 @@ Copy nodes and stuff.
   (defun hash-node-remove! (node index)
     (declare (optimize (debug 0)
                        (speed 3)
-                       (space 0)
-                       (compilation-time 0)))
+                       (space 0)))
     (setf (hash-node-content node)
           (new-array node index))
     (set-in-node-mask node index 0)
@@ -765,7 +760,7 @@ Copy nodes and stuff.
     (when (and (hash-node-content-modified node i)
                (hash-node-contains-node node i))
       (clear-modification-masks (hash-node-access node i))))
-  (setf (hash-node-modification-mask node) 0)
+  (setf (transactional-hash-node-modification-mask node) 0)
   node)
 
 
