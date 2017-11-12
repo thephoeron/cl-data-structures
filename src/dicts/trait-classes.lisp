@@ -12,6 +12,10 @@
   ())
 
 
+(defclass lazy-dictionary (cl-ds:lazy functional-dictionary)
+  ())
+
+
 (defclass mutable-dictionary (dictionary cl-ds:mutable)
   ())
 
@@ -36,4 +40,8 @@
 
 
 (defclass transactional-hashing-dictionary (hashing-dictionary transactional-dictionary)
+  ())
+
+
+(defclass lazy-hashing-dictionary (hashing-dictionary lazy-dictionary)
   ())

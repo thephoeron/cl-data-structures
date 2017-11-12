@@ -18,6 +18,8 @@
    #:hash-content-tuple
    #:hash-content-tuple-hash
    #:hashing-dictionary
+   #:lazy-dictionary
+   #:lazy-hashing-dictionary
    #:make-bucket
    #:mutable-dictionary
    #:mutable-hashing-dictionary

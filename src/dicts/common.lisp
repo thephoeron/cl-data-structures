@@ -373,7 +373,7 @@
                        nil))))))
 
 
-(defclass lazy-box-dictionary (cl-ds.common:lazy-box-container functional-dictionary)
+(defclass lazy-box-dictionary (cl-ds.common:lazy-box-container lazy-dictionary)
   ())
 
 

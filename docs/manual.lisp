@@ -186,9 +186,17 @@
       @item{ERASE!}
       @item{ERASE-IF!}
       @end{list}
-      @text{This package adds set of another trait classes, specific to dictionaries.}
+      @text{This package adds another set of trait classes, specific to dictionaries.}
       @docclass['cl-ds.dicts:dictionary]
       @docclass['cl-ds.dicts:hashing-dictionary]
+      @docclass['cl-ds.dicts:functional-dictionary]
+      @docclass['cl-ds.dicts:mutable-dictionary]
+      @docclass['cl-ds.dicts:transactional-dictionary]
+      @docclass['cl-ds.dicts:lazy-dictionary]
+      @docclass['cl-ds.dicts:functional-hashing-dictionary]
+      @docclass['cl-ds.dicts:mutable-hashing-dictionary]
+      @docclass['cl-ds.dicts:transactional-hashing-dictionary]
+      @docclass['cl-ds.dicts:lazy-hashing-dictionary]
       @text{In addition to this, on this level, few additional functions are defined.}
       @docgeneric['cl-ds.dicts:find-content]
       @docgeneric['cl-ds.dicts:single-element-p])
