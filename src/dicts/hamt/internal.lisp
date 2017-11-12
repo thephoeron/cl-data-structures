@@ -198,7 +198,8 @@ Interface class.
 
 |#
 
-(defclass fundamental-hamt-container (cl-ds:fundamental-container)
+
+(defclass hamt-dictionary ()
   ((%root :type (or hash-node cl-ds.dicts:bucket null)
           :accessor access-root
           :initarg :root
@@ -211,13 +212,7 @@ Interface class.
           :initform 0
           :type non-negative-fixnum
           :accessor access-size
-          :documentation "How many elements are in there?"))
-  (:documentation "Base class of other containers. Acts as any container for bunch of closures (those vary depending on the concrete container) and root of the tree."))
-
-
-(defclass hamt-dictionary (fundamental-hamt-container
-                           cl-ds.dicts:hashing-dictionary)
-  ())
+          :documentation "How many elements are in there?")))
 
 
 #|
