@@ -13,9 +13,15 @@
    #:bucket
    #:content-tuple
    #:dictionary
+   #:functional-dictionary
+   #:mutable-dictionary
+   #:transactional-dictionary
    #:find-content
    #:hash-content-tuple
    #:hashing-dictionary
+   #:functional-hashing-dictionary
+   #:mutable-hashing-dictionary
+   #:transactional-hashing-dictionary
    #:make-bucket
    #:read-equal-fn
    #:read-hash-fn

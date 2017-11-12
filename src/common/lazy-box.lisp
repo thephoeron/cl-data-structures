@@ -92,7 +92,7 @@
     (with-accessors ((operations access-operations) (content access-content)) container
       (let* ((lazy-status (make 'lazy-modification-operation-status))
              (t-operation (cl-ds:destructive-counterpart operation))
-             (next-instance (make 'lazy-box-container
+             (next-instance (make (type-of container)
                                   :content (cl-ds:become-transactional content)
                                   :operations (add-change operations
                                                           (enclose-wrapper t-operation
@@ -107,11 +107,6 @@
 (defmethod cl-ds:size ((container lazy-box-container))
   (force-version container)
   (cl-ds:size (access-content container)))
-
-
-(defmethod cl-ds:at ((container lazy-box-container) location)
-  (force-version container)
-  (cl-ds:at (access-content container) location))
 
 
 (defmethod cl-ds:become-transactional ((container lazy-box-container))
@@ -139,8 +134,3 @@
 
   (defmethod cl-ds:value ((status lazy-modification-operation-status))
     (cl-ds:value (force-status status))))
-
-
-(defmethod cl-ds:become-lazy ((container cl-ds:fundamental-container))
-  (make 'lazy-box-container
-        :content (cl-ds:become-transactional container)))

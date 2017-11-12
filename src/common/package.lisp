@@ -9,6 +9,9 @@
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
    #:make-eager-modification-operation-status
+   #:lazy-box-container
    #:read-found
+   #:force-version
+   #:access-content
    #:read-value))
 

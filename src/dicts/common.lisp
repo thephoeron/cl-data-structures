@@ -372,3 +372,16 @@
                        cl-ds.common:empty-eager-modification-operation-status
                        nil))))))
 
+
+(defclass lazy-box-dictionary (cl-ds.common:lazy-box-container functional-dictionary)
+  ())
+
+
+(defmethod cl-ds:at ((container lazy-box-dictionary) location)
+  (cl-ds.common:force-version container)
+  (cl-ds:at (cl-ds.common:access-content container) location))
+
+
+(defmethod cl-ds:become-lazy ((container cl-ds.dicts:dictionary))
+  (make 'lazy-box-dictionary
+        :content (cl-ds:become-transactional container)))

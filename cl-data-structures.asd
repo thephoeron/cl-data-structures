@@ -42,6 +42,7 @@
                 :components ((:file "packages")
                              (:file "trait-classes")
                              (:file "common")
+                             (:file "api")
                              (:file "docstrings")
                              (:module "hamt"
                               :components ((:file "internal")

@@ -2,17 +2,17 @@
 
 
 (defclass functional-hamt-dictionary (hamt-dictionary
-                                      cl-ds:functional)
+                                      cl-ds.dicts:functional-hashing-dictionary)
   ())
 
 
 (defclass mutable-hamt-dictionary (hamt-dictionary
-                                   cl-ds:mutable)
+                                   cl-ds.dicts:mutable-hashing-dictionary)
   ())
 
 
 (defclass transactional-hamt-dictionary (hamt-dictionary
-                                         cl-ds:transactional)
+                                         cl-ds.dicts:transactional-hashing-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
                        :accessor access-root-was-modified
