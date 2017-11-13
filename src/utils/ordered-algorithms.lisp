@@ -59,3 +59,21 @@
                                  0))
         (swapop index.vector index)))
     result))
+
+
+(declaim (inline lower-bound))
+(-> lower-bound (vector t (-> (t t) boolean)) index)
+(defun lower-bound (vector element comparsion)
+  (declare (optimize (speed 3)))
+  (let ((length (length vector)))
+    (iterate
+      (with end = length)
+      (with start = 0)
+      (for current = (truncate (/ (+ end start) 2)))
+      (until (eql end start))
+      (if (funcall comparsion
+                   (aref vector current)
+                   element)
+          (setf start (1+ current))
+          (setf end current))
+      (finally (return current)))))

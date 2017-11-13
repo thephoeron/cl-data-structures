@@ -10,7 +10,7 @@
                  (logior a b))
               'single-float)))
 
-(prove:plan 25)
+(prove:plan 26)
 
 (iterate
   (for i from 0 below 5)
@@ -33,6 +33,8 @@
         (is (cl-ds.utils:distance matrix i j)
             (jaccard-metric (data i)
                             (data j))
-            :test #'=)))))
+            :test #'=)))
+    (setf (cl-ds.utils:distance matrix 1 2) 5.0)
+    (is (cl-ds.utils:distance matrix 1 2) 5.0)))
 
 (prove:finalize)

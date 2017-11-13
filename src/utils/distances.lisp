@@ -65,7 +65,7 @@
     (let ((size (slot-value matrix '%size)))
       (declare (type index size))
       (cond
-        ((or (>= from size) (>= to size))
+        ((or (>= from size) (>= to size))aref
          (error "No such position in the matrix."))
         ((eql from to)
          0.0)

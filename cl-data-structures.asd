@@ -25,7 +25,9 @@
                              (:file "trivial")
                              (:file "modification-algorithms")
                              (:file "distances")
-                             (:test-file "distances-tests")))
+                             (:file "lazy-shuffle")
+                             (:test-file "distances-tests")
+                             (:test-file "ordered-algorithms-tests")))
                (:module "api"
                 :components ((:file "meta")
                              (:file "fundamental-classes")

@@ -1,0 +1,17 @@
+(in-package #:cl-data-structures.utils)
+
+
+(defun lazy-shuffle (from to)
+  (let ((table (make-hash-table))
+        (index from))
+    (lambda ()
+      (cond ((eql (- to 2) index)
+             (gethash (finc index) table))
+            ((< to index)
+             (let ((next-random (random-in-range index to)))
+               (ensure (gethash index table) index)
+               (ensure (gethash next-random table) next-random)
+               (rotatef (gethash index table)
+                        (gethash next-random table))
+               (gethash (finc index) table)))
+            (t nil)))))

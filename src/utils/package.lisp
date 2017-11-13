@@ -30,4 +30,6 @@
    #:try-find-cell
    #:try-remove
    #:read-size
+   #:lazy-shuffle
+   #:lower-bound
    #:with-vectors))
