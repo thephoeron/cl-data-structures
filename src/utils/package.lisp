@@ -29,4 +29,5 @@
    #:try-find
    #:try-find-cell
    #:try-remove
+   #:read-size
    #:with-vectors))
