@@ -5,7 +5,7 @@
   ((%size :type fixnum
           :reader read-size
           :initarg :size)
-   (%content :type (simple-array single-float)
+   (%content :type simple-array
              :reader read-content
              :initarg :content)))
 
@@ -22,14 +22,24 @@
                 column)))
 
 
-(-> make-distance-matrix (vector (-> (t t) single-float)) distance-matrix)
-(defun make-distance-matrix (sequence function)
+(defun make-distance-matrix (type size)
+  (let ((result (make-array (1+ (index-in-content-of-distance-matrix size
+                                                                     (1- size)
+                                                                     (1- size)))
+                            :element-type type)))
+    (assure distance-matrix
+      (make 'distance-matrix
+            :size size
+            :content result))))
+
+
+(-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) single-float)) distance-matrix)
+(defun make-distance-matrix-from-vector (type sequence function)
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                       (1- size)
                                                                       (1- size)))
-                             :element-type 'single-float
-                             :initial-element 0.0)))
+                             :element-type type)))
     (labels ((fill-matrix (column)
                (iterate
                  (with first = (aref sequence column))
@@ -39,12 +49,9 @@
                                                                          column
                                                                          row))
                        (funcall function first second)))))
-      (~>>
-       (iterate
-         (for i from 0 below size)
-         (let ((i i))
-           (collect (lparallel:future (fill-matrix i)) at start)))
-       (map nil #'lparallel:force))
+      (iterate
+        (for i from 0 below size)
+        (fill-matrix i))
       (assure distance-matrix
            (make 'distance-matrix
                  :size (length sequence)
@@ -65,10 +72,31 @@
         (t (let ((content (slot-value matrix '%content))
                  (from (min from to))
                  (to (max from to)))
-             (declare (type (simple-array single-float) content))
+             (declare (type simple-array content))
              (aref content (index-in-content-of-distance-matrix size
                                                                 from
                                                                 to))))))))
+
+
+(defgeneric (setf distance) (value matrix from to)
+  (:method (value (matrix distance-matrix) from to)
+    (declare (type index from to)
+             (optimize (speed 3)))
+    (let ((size (slot-value matrix '%size)))
+      (declare (type index size))
+      (cond ((or (>= from size) (>= to size))
+             (error "No such position in the matrix!"))
+            ((eql from to)
+             (error "Can't set dinstance to self"))
+            (t (let ((content (slot-value matrix '%content))
+                     (from (min from to))
+                     (to (max from to)))
+                 (declare (type simple-array content))
+                 (setf
+                  (aref content (index-in-content-of-distance-matrix size
+                                                                     from
+                                                                     to))
+                  value)))))))
 
 
 (defgeneric each-in-matrix (matrix fn)

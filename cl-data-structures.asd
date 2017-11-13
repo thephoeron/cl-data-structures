@@ -9,6 +9,7 @@
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate :alexandria
                 :serapeum :prove
+                :prove-asdf
                 :docstample :more-conditions
                 :closer-mop :lparallel)
   :defsystem-depends-on (:prove-asdf)
