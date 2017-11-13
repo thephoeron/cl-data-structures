@@ -7,7 +7,7 @@
     (lambda ()
       (cond ((eql (- to 2) index)
              (gethash (finc index) table))
-            ((< to index)
+            ((< index to)
              (let ((next-random (random-in-range index to)))
                (ensure (gethash index table) index)
                (ensure (gethash next-random table) next-random)
