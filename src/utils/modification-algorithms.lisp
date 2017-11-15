@@ -67,6 +67,7 @@
     next-array))
 
 
+(declaim (inline swapop))
 (-> swapop (extendable-vector index) vector)
 (defun swapop (vector index)
   "Swaps element under INDEX with last element of VECTOR. Pops last element and returns VECTOR.
@@ -83,3 +84,18 @@
              (aref vector index))
     (decf (fill-pointer vector)))
   vector)
+
+
+(declaim (inline swap-if))
+(defun swap-if (vector test &key (key #'identity) (start 0))
+  (iterate
+    (with end = (length vector))
+    (with result = 0)
+    (for i from (1- end) downto start)
+    (for removal = (funcall test (funcall key (aref vector i))))
+    (when removal
+      (incf result)
+      (rotatef (aref vector i)
+               (aref vector (decf end))))
+    (finally (return result))))
+

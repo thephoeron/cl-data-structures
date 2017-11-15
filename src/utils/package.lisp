@@ -33,4 +33,5 @@
    #:read-size
    #:lazy-shuffle
    #:lower-bound
+   #:swap-if
    #:with-vectors))
