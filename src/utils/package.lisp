@@ -21,6 +21,7 @@
    #:lazy-let
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
+   #:parallel-make-distance-matrix-from-vector
    #:merge-ordered-vectors
    #:ordered-p
    #:pop-last
