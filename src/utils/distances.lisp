@@ -78,29 +78,23 @@
                     (collect i into forward at start)
                     (collect i into backward)
                     (finally (return (map '(vector list) #'list backward forward))))))
-    (with-type-dispatch ((vector single-float)
-                         (vector double-float)
-                         (vector fixnum)
-                         (vector non-negative-fixnum)
-                         (vector number)
-                         (vector t)) result
-      (lparallel:pmap
-       nil
-       (lambda (index)
-         (fbind ((dist-function (funcall function-context function)))
+    (lparallel:pmap
+     nil
+     (lambda (index)
+       (fbind ((dist-function (funcall function-context function)))
+         (iterate
+           (for i in index)
+           (for x = (aref sequence i))
            (iterate
-             (for i in index)
-             (for x = (aref sequence i))
-             (iterate
-               (for j from (1+ i) below size)
-               (for y = (aref sequence j))
-               (setf (aref result (index-in-content-of-distance-matrix size i j))
-                     (dist-function x y))))))
-       indexes)
-      (assure distance-matrix
-        (make 'distance-matrix
-              :size size
-              :content result)))))
+             (for j from (1+ i) below size)
+             (for y = (aref sequence j))
+             (setf (aref result (index-in-content-of-distance-matrix size i j))
+                   (dist-function x y))))))
+     indexes)
+    (assure distance-matrix
+      (make 'distance-matrix
+            :size size
+            :content result))))
 
 
 (-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) single-float)) distance-matrix)
