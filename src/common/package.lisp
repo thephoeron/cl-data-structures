@@ -10,6 +10,7 @@
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
    #:force-version
+   #:single-element-p
    #:lazy-box-container
    #:make-eager-modification-operation-status
    #:read-found

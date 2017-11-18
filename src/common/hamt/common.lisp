@@ -100,7 +100,7 @@ Macros
                 (declare (type index-path ,!indexes)
                          (type node-path ,!path)
                          (type fixnum ,!depth))
-                (with-vectors (,!path ,!indexes)
+                (cl-ds.utils:with-vectors (,!path ,!indexes)
                   (iterate
                     (for i from (1- ,!depth) downto 0) ;reverse order (starting from deepest node)
                     (for node = (,!path i))
@@ -319,7 +319,7 @@ Copy nodes and stuff.
                      (safety 0)
                      (space 0)))
   (let ((position (hash-node-to-masked-index hash-node index)))
-    (with-vectors
+    (cl-ds.utils:with-vectors
         ((current-array (hash-node-content hash-node))
          (new-array (make-array (1+ (array-dimension current-array 0)))))
       (assert (~> (array-dimension new-array 0)
@@ -351,7 +351,7 @@ Copy nodes and stuff.
                             :content new-array))))))
 
 
-(-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket &key (:transactional boolean)) just-node)
+(-> rebuild-rehashed-node (fixnum fixnum t &key (:transactional boolean)) just-node)
 (-> build-rehashed-node (fixnum fixnum simple-vector &key (:transactional boolean)) just-node)
 (defun build-rehashed-node (depth max-depth content &key (transactional nil))
   (let ((mask 0)
@@ -363,7 +363,7 @@ Copy nodes and stuff.
       (when elt
         (incf size)
         (setf (ldb (byte 1 index) mask) 1)))
-    (with-vectors ((array (make-array size)))
+    (cl-ds.utils:with-vectors ((array (make-array size)))
       (iterate
         (for conflict in-vector content)
         (for index from 0)
@@ -400,7 +400,7 @@ Copy nodes and stuff.
                                               :transactional t)))
              (mark-everything-as-modified result))))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
+    (if (or (>= depth max-depth) (cl-ds.common:single-element-p conflict))
         conflict
         (rehash conflict depth
                 #'cont))))
@@ -421,7 +421,7 @@ Copy nodes and stuff.
                (mark-everything-as-modified result))
              result)))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
+    (if (or (>= depth max-depth) (cl-ds.common:single-element-p conflict))
         conflict
         (rehash conflict
                 depth
@@ -447,7 +447,7 @@ Copy nodes and stuff.
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
                             logcount)))
-    (with-vectors ((n (make-array next-size)) (s (hash-node-content node)))
+    (cl-ds.utils:with-vectors ((n (make-array next-size)) (s (hash-node-content node)))
       (iterate
         (for i from 0 below next-size)
         (cond-compare (i masked-index)
@@ -461,7 +461,7 @@ Copy nodes and stuff.
 
 (defun hash-node-replace! (node content index)
   (assert (not (zerop (ldb (byte 1 index) (hash-node-whole-mask node)))))
-  (with-vectors ((a (hash-node-content node)))
+  (cl-ds.utils:with-vectors ((a (hash-node-content node)))
     (setf (a (hash-node-to-masked-index node index))
           content))
   node)
@@ -507,7 +507,7 @@ Copy nodes and stuff.
              (dynamic-extent result))
     (iterate
       (for item in conflict)
-      (for hash = (cl-ds.dicts:hash-content-tuple-hash item))
+      (for hash = (cl-ds:hash-content-hash item))
       (for index = (ldb byte hash))
       (push
        item
@@ -524,7 +524,7 @@ Copy nodes and stuff.
                      (safety 0)
                      (debug 0)
                      (space 0)))
-  (with-vectors (path indexes)
+  (cl-ds.utils:with-vectors (path indexes)
     (when (and (not (zerop depth)) (eq conflict (path (- depth 1))))
       (return-from copy-on-write (path 0)))
     (iterate
@@ -619,7 +619,7 @@ Copy nodes and stuff.
                      (safety 0)
                      (debug 0)
                      (space 0)))
-  (with-vectors (path indexes)
+  (cl-ds.utils:with-vectors (path indexes)
     (iterate
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
       (for node = (path i))
@@ -684,7 +684,7 @@ Copy nodes and stuff.
   (multiple-value-bind (parent mask) (if parent-was-modified
                                          (hash-node-deep-copy parent)
                                          (values parent nil))
-    (with-vectors ((content (hash-node-content parent)))
+    (cl-ds.utils:with-vectors ((content (hash-node-content parent)))
       (unless (null mask)
         (iterate
           (with j = 0)
