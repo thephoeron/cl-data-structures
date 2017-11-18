@@ -24,16 +24,16 @@
                          (bucket list) location &rest all &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
-             (and (eql (hash-content-tuple-hash a) hash)
+             (and (eql (cl-ds.common:hash-dict-content-value a) hash)
                   (funcall equal-fn
-                           (content-tuple-location a)
+                           (cl-ds.common:hash-content-location a)
                            b))))
       (declare (dynamic-extent (function compare-fn)))
       (multiple-value-bind (r f) (try-find
                                   location
                                   bucket
                                   :test #'compare-fn)
-        (values (and f (content-tuple-value r))
+        (values (and f (cl-ds.common:hash-dict-content-value r))
                 f)))))
 
 
@@ -43,10 +43,10 @@
     (once-only (container bucket location hash value)
       `(let ((,!equal-fn (read-equal-fn ,container)))
          (flet ((,!compare-fn (a b)
-                  (and (eql (hash-content-tuple-hash a) (hash-content-tuple-hash b))
+                  (and (eql (cl-ds.common:hash-dict-content-value a) (cl-ds.common:hash-dict-content-value b))
                        (funcall ,!equal-fn
-                                (content-tuple-location a)
-                                (content-tuple-location b)))))
+                                (cl-ds.common:hash-content-location a)
+                                (cl-ds.common:hash-content-location b)))))
            (declare (dynamic-extent (function ,!compare-fn)))
            (multiple-value-bind (^next-list ^replaced ^old-value)
                (insert-or-replace ,bucket
@@ -68,9 +68,9 @@
                                 &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
-             (and (eql hash (hash-content-tuple-hash node))
+             (and (eql hash (cl-ds.common:hash-dict-content-value node))
                   (funcall equal-fn location
-                           (hash-content-tuple-location node)))))
+                           (cl-ds.common:hash-content-location node)))))
       (declare (dynamic-extent (function location-test)))
       (multiple-value-bind (list removed value)
           (try-remove location
@@ -81,7 +81,7 @@
              list
              (cl-ds.common:make-eager-modification-operation-status
               t
-              (content-tuple-value value))
+              (cl-ds.common:hash-dict-content-value value))
              t)
             (values
              bucket
@@ -97,12 +97,12 @@
                                 &key hash condition-fn)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
-             (when (and (eql hash (hash-content-tuple-hash node))
+             (when (and (eql hash (cl-ds.common:hash-dict-content-value node))
                         (funcall equal-fn location
-                                 (hash-content-tuple-location node)))
+                                 (cl-ds.common:hash-content-location node)))
                (let ((result (funcall condition-fn
-                                      (hash-content-tuple-location node)
-                                      (hash-content-tuple-value node))))
+                                      (cl-ds.common:hash-content-location node)
+                                      (cl-ds.common:hash-dict-content-value node))))
                     (unless result
                       (return-from cl-ds:shrink-bucket
                         (values
@@ -120,7 +120,7 @@
              list
              (cl-ds.common:make-eager-modification-operation-status
               t
-              (content-tuple-value value))
+              (cl-ds.common:hash-dict-content-value value))
              t)
             (values
              bucket
@@ -140,7 +140,7 @@
       ^next-list
       (cl-ds.common:make-eager-modification-operation-status
        ^replaced
-       (and ^replaced (content-tuple-value ^old-value)))
+       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value)))
       t))
 
 
@@ -156,7 +156,7 @@
       (if ^replaced bucket ^next-list)
       (cl-ds.common:make-eager-modification-operation-status
        ^replaced
-       (and ^replaced (content-tuple-value ^old-value)))
+       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value)))
       (not ^replaced)))
 
 
@@ -172,7 +172,7 @@
       (if ^replaced ^next-list bucket)
       (if ^replaced
           (cl-ds.common:make-eager-modification-operation-status
-           ^replaced (content-tuple-value ^old-value))
+           ^replaced (cl-ds.common:hash-dict-content-value ^old-value))
           cl-ds.common:empty-eager-modification-operation-status)
       ^replaced))
 
@@ -193,10 +193,10 @@
                               location
                               &rest all
                               &key hash value)
-  (values (list (make-hash-content-tuple
-                      :location location
-                      :value value
-                      :hash hash))
+  (values (list (cl-ds.common:make-hash-dict-content
+                 :location location
+                 :value value
+                 :hash hash))
           cl-ds.common:empty-eager-modification-operation-status
           t))
 
@@ -206,10 +206,10 @@
                               location
                               &rest all
                               &key hash value)
-  (values (list (make-hash-content-tuple
-                      :location location
-                      :value value
-                      :hash hash))
+  (values (list (cl-ds.common:make-hash-dict-content
+                 :location location
+                 :value value
+                 :hash hash))
           cl-ds.common:empty-eager-modification-operation-status
           t))
 
@@ -223,9 +223,9 @@
              (for tuple in bucket)
              (finding
               tuple
-              such-that (and (eql (hash-content-tuple-hash tuple)
+              such-that (and (eql (cl-ds.common:hash-content-hash tuple)
                                   hash)
-                             (comp (content-tuple-location tuple)
+                             (comp (cl-ds.common:hash-content-location tuple)
                                    location)))))))
 
   (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert-function)
@@ -235,15 +235,15 @@
                                  &rest all
                                  &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
-           (old-value (and tuple (content-tuple-value tuple))))
+           (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
           (push (make-hash-content-tuple
                       :location location
                       :value value
                       :hash hash)
                 bucket)
-          (setf (hash-content-tuple-hash tuple) hash
-                (content-tuple-value tuple) value))
+          (setf (cl-ds.common:hash-content-hash tuple) hash
+                (cl-ds.common:hash-dict-content-value tuple) value))
       (values bucket
               (if (null tuple)
                   cl-ds.common:empty-eager-modification-operation-status
@@ -258,14 +258,14 @@
                                  &rest all
                                  &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
-           (old-value (and tuple (content-tuple-value tuple))))
+           (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
           (values bucket
                   cl-ds.common:empty-eager-modification-operation-status
                   nil)
           (progn
-            (setf (hash-content-tuple-hash tuple) hash
-                  (content-tuple-value tuple) value)
+            (setf (cl-ds.common:hash-dict-content-value tuple) hash
+                  (cl-ds.common:hash-dict-content-value tuple) value)
             (values bucket
                     (cl-ds.common:make-eager-modification-operation-status
                      t old-value)
@@ -278,7 +278,7 @@
                                  &rest all
                                  &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
-           (old-value (and tuple (content-tuple-value tuple))))
+           (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
           (progn
             (push (make-hash-content-tuple
@@ -312,8 +312,8 @@
       (for cell on bucket)
       (for p-cell previous cell)
       (for tuple = (first cell))
-      (when (and (eql (hash-content-tuple-hash tuple) hash)
-                 (comp (hash-content-tuple-location tuple)
+      (when (and (eql (cl-ds.common:hash-dict-content-value tuple) hash)
+                 (comp (cl-ds.common:hash-content-location tuple)
                        location))
         (if (null p-cell)
             (setf bucket (rest cell))
@@ -322,7 +322,7 @@
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   (hash-content-tuple-value tuple))
+                   (cl-ds.common:hash-dict-content-value tuple))
                   t)))
       (finally
        (return (values bucket
@@ -349,13 +349,13 @@
       (for cell on bucket)
       (for p-cell previous cell)
       (for tuple = (first cell))
-      (when (and (eql (hash-content-tuple-hash tuple) hash)
-                 (comp (hash-content-tuple-location tuple)
+      (when (and (eql (cl-ds.common:hash-dict-content-value tuple) hash)
+                 (comp (cl-ds.common:hash-content-location tuple)
                        location))
-        (setf result (hash-content-tuple-value tuple))
+        (setf result (cl-ds.common:hash-dict-content-value tuple))
         (if  (funcall condition-fn
-                      (hash-content-tuple-location tuple)
-                      (hash-content-tuple-value tuple))
+                      (cl-ds.common:hash-content-location tuple)
+                      (cl-ds.common:hash-dict-content-value tuple))
              (progn
                (if (null p-cell)
                    (setf bucket (rest cell))
@@ -364,7 +364,7 @@
                        (values bucket
                                (cl-ds.common:make-eager-modification-operation-status
                                 t
-                                (hash-content-tuple-value tuple))
+                                (cl-ds.common:hash-dict-content-value tuple))
                                t)))
              (finish)))
       (finally

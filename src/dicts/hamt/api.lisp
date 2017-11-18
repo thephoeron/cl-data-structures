@@ -1,17 +1,17 @@
 (in-package #:cl-ds.dicts.hamt)
 
 
-(defclass functional-hamt-dictionary (hamt-dictionary
+(defclass functional-hamt-dictionary (cl-ds.common.hamt:hamt-container
                                       cl-ds.dicts:functional-hashing-dictionary)
   ())
 
 
-(defclass mutable-hamt-dictionary (hamt-dictionary
+(defclass mutable-hamt-dictionary (cl-ds.common.hamt:hamt-container
                                    cl-ds.dicts:mutable-hashing-dictionary)
   ())
 
 
-(defclass transactional-hamt-dictionary (hamt-dictionary
+(defclass transactional-hamt-dictionary (cl-ds.common.hamt:hamt-container
                                          cl-ds.dicts:transactional-hashing-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
@@ -498,6 +498,3 @@ Methods. Those will just call non generic functions.
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
-
-(defmethod alexandria:emptyp ((container hamt-dictionary))
-  (null (access-root container)))
