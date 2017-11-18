@@ -60,4 +60,3 @@
 
 (define-condition not-implemented (error)
   ())
-

@@ -8,3 +8,6 @@
 (defclass fundamental-modification-operation-status ()
   ())
 
+
+(defclass fundamental-range ()
+  ())
