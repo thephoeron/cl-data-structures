@@ -41,7 +41,10 @@
                 :components ((:file "package")
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
-                             (:file "lazy-box")))
+                             (:file "lazy-box")
+                             (:module "hamt"
+                              :components ((:file "package")
+                                           (:file "common")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
