@@ -50,6 +50,11 @@
    #:lazy
    #:make-bucket
    #:near
+   #:hash-content
+   #:hash-dict-content
+   #:hash-content-hash
+   #:hash-content-location
+   #:hash-dict-content-value
    #:mod-bind
    #:mutable
    #:mutablep

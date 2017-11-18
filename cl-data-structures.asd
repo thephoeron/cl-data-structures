@@ -42,6 +42,7 @@
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
                              (:file "lazy-box")
+                             (:file "buckets")
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))))
