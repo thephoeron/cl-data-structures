@@ -49,6 +49,7 @@
    #:invalid-argument
    #:lazy
    #:make-bucket
+   #:near
    #:mod-bind
    #:mutable
    #:mutablep

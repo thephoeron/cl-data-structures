@@ -12,6 +12,8 @@
 (defgeneric put (container item)
   (:generic-function-class functional-put-function))
 
+(defgeneric near (container item maximal-distance))
+
 (defgeneric add! (container location new-value)
   (:generic-function-class add!-function))
 
