@@ -87,3 +87,17 @@
   (:method ((operation functional-add-function)) #'add!)
   (:method ((operation functional-insert-function)) #'(setf at))
   (:method ((operation functional-update-function)) #'update!))
+
+#|
+
+Range releated functions.
+
+|#
+
+(defgeneric consume-front (range))
+
+(defgeneric consume-count (range))
+
+(defgeneric chain (first-range &rest other-ranges))
+
+(defgeneric drop-front (range count))
