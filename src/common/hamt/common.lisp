@@ -692,3 +692,31 @@ Copy nodes and stuff.
             (incf j)))))
     parent))
 
+
+(defstruct hamt-range-stack-cell
+  (start 0 :type non-negative-fixnum)
+  (end 0 :type non-negative-fixnum)
+  node)
+
+
+(defun new-cell (node)
+  (make-hamt-range-stack-cell :start 0
+                              :end (1- (hash-node-size node))
+                              :node node))
+
+
+(defun forward-cell (cell)
+  (cond
+    ((hamt-range-stack-cell-p cell)
+     (values
+      (aref (~> cell hamt-range-stack-cell-node hash-node-content
+                (aref (hamt-range-stack-cell-start cell))))
+      (unless (eql (hamt-range-stack-cell-start cell) (hamt-range-stack-cell-end cell))
+        (make-hamt-range-stack-cell
+         :start (1- (hamt-range-stack-cell-start cell))
+         :end (hamt-range-stack-cell-end cell)
+         :node (hamt-range-stack-cell-node cell)))))
+    ((listp cell)
+     (values
+      (first cell)
+      (rest cell)))))
