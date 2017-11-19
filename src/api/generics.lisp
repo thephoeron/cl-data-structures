@@ -96,10 +96,18 @@ Range releated functions.
 
 (defgeneric consume-front (range))
 
+(defgeneric peek-front (range))
+
+(defgeneric consume-back (range))
+
+(defgeneric peek-back (range))
+
 (defgeneric consume-some (range count))
 
 (defgeneric chain (first-range &rest other-ranges))
 
 (defgeneric drop-front (range count))
+
+(defgeneric drop-back (range count))
 
 (defgeneric morep (range))

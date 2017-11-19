@@ -43,6 +43,7 @@
                              (:file "eager-modification-operation-status")
                              (:file "lazy-box")
                              (:file "content-tuple")
+                             (:file "ranges")
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))))
