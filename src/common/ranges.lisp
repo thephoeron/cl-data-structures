@@ -5,8 +5,12 @@
   ((%stack :type list
            :accessor access-stack
            :initform nil)
-   (%obtain-value  :type (-> ((-> () t) (-> (t) t)) t)
-                   :reader read-obtain-value)))
+   (%obtain-value :type (-> ((-> () t) (-> (t) t)) (values t boolean))
+                  :initarg :obtain-value
+                  :reader read-obtain-value)
+   (%obtain-value-reverse :type (–> ((-> () t) (-> (t) t)) (values t boolean))
+                          :initarg :obtain-value-reverse
+                          :reader read-obtain-value-reverse)))
 
 
 (defmethod cl-ds:morep ((range whole-tree-range))
@@ -41,4 +45,22 @@
     (multiple-value-bind (new-stack result found)
         (read-implementation stack obtain-value)
       (setf stack new-stack)
+      (values result found))))
+
+
+(defmethod cl-ds:consume-back ((range whole-tree-range))
+  (with-accessors ((stack access-stack)
+                   (obtain-value read-obtain-value-reverse)) range
+    (multiple-value-bind (new-stack result found)
+        (read-implementation stack obtain-value)
+      (setf stack new-stack)
+      (values result found))))
+
+
+(defmethod cl-ds:peek-back ((range whole-tree-range))
+  (with-accessors ((stack access-stack)
+                   (obtain-value read-obtain-value-reverse)) range
+    (multiple-value-bind (new-stack result found)
+        (read-implementation stack obtain-value)
+      (declare (ignore new-stack))
       (values result found))))

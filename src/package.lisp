@@ -16,10 +16,12 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:consume-back
    #:consume-front
    #:destructive-counterpart
    #:destructive-function
    #:destructive-function
+   #:drop-front
    #:erase
    #:erase!
    #:erase!-function
@@ -63,6 +65,7 @@
    #:near
    #:not-implemented
    #:out-of-bounds
+   #:peek-back
    #:peek-front
    #:position-modification
    #:put
