@@ -7,6 +7,8 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
+   #:abstract-dictionary
+   #:abstract-hashing-dictionary
    #:bucket
    #:content-tuple
    #:content-tuple-location
