@@ -1,17 +1,48 @@
 (in-package #:cl-ds.dicts.hamt)
 
 
-(defclass functional-hamt-dictionary (cl-ds.common.hamt:hamt-container
+(defclass hamt-dictionary (cl-ds.common.hamt:hamt-container)
+  ())
+
+
+(defclass functional-hamt-dictionary (hamt-dictionary
                                       cl-ds.dicts:functional-hashing-dictionary)
   ())
 
 
-(defclass mutable-hamt-dictionary (cl-ds.common.hamt:hamt-container
+(defclass mutable-hamt-dictionary (hamt-dictionary
                                    cl-ds.dicts:mutable-hashing-dictionary)
   ())
 
 
-(defclass transactional-hamt-dictionary (cl-ds.common.hamt:hamt-container
+(defmacro with-hash-tree-functions ((container &key (cases nil)) &body body)
+  "Simple macro adding local functions (all forwards to the container closures)."
+  (once-only (container)
+    (with-gensyms (!test !hash)
+      `(let ((,!test (cl-ds.dicts:read-equal-fn ,container))
+             (,!hash (cl-ds.dicts:read-hash-fn ,container)))
+         (nest
+          ,(if cases
+               `(cl-ds.utils:cases
+                    ((eq ,!test #'eql)
+                     (eq ,!test #'equal)
+                     (eq ,!test #'string=)
+                     (eq ,!test #'eq)))
+               `(progn))
+          (flet ((equal-fn (a b)
+                   (funcall ,!test a b))
+                 (hash-fn (x)
+                   (funcall ,!hash x)))
+            (declare (ignorable (function hash-fn)
+                                (function equal-fn))
+                     (inline hash-fn
+                             equal-fn)
+                     (dynamic-extent (function hash-fn)
+                                     (function equal-fn)))
+            ,@body))))))
+
+
+(defclass transactional-hamt-dictionary (hamt-dictionary
                                          cl-ds.dicts:transactional-hashing-dictionary)
   ((%root-was-modified :type boolean
                        :initform nil
@@ -20,47 +51,25 @@
 
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
-                                     (-> (t t) boolean)
-                                     &rest all
-                                     &key (:max-depth positive-fixnum))
+                                     (-> (t t) boolean))
     functional-hamt-dictionary)
-(defun make-functional-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
+(defun make-functional-hamt-dictionary (hash-fn equal-fn)
   (declare (optimize (safety 3)))
-  (unless (< 0 max-depth (1+ +depth+))
-    (error
-     'cl-ds:initialization-out-of-bounds
-     :argument :max-depth
-     :value max-depth
-     :bounds (list 0 (1+ +depth+))
-     :class 'functional-hamt-dictionary
-     :references '((:make-functional-hamt-dictionary "MAX-DEPTH"))))
   (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
                                            :hash-fn hash-fn
                                            :root nil
-                                           :max-depth max-depth
                                            :equal-fn equal-fn)))
 
 
 (-> make-mutable-hamt-dictionary ((-> (t) fixnum)
-                                  (-> (t t) boolean)
-                                  &rest all
-                                  &key (:max-depth positive-fixnum))
+                                  (-> (t t) boolean))
     mutable-hamt-dictionary)
-(defun make-mutable-hamt-dictionary (hash-fn equal-fn &key (max-depth +depth+))
+(defun make-mutable-hamt-dictionary (hash-fn equal-fn)
   (declare (optimize (safety 3)))
-  (unless (< 0 max-depth (1+ +depth+))
-    (error
-     'cl-ds:initialization-out-of-bounds
-     :argument :max-depth
-     :value max-depth
-     :bounds (list 0 (1+ +depth+))
-     :class 'mutable-hamt-dictionary
-     :references '((:make-mutable-hamt-dictionary "MAX-DEPTH"))))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
                                         :equal-fn equal-fn
                                         :hash-fn hash-fn
-                                        :root nil
-                                        :max-depth max-depth)))
+                                        :root nil)))
 
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
@@ -148,7 +157,6 @@ Methods. Those will just call non generic functions.
                        :hash-fn (cl-ds.dicts:read-hash-fn container)
                        :equal-fn (cl-ds.dicts:read-equal-fn container)
                        :root new-root
-                       :max-depth (read-max-depth container)
                        :size (if (cl-ds:found status)
                                  (the non-negative-fixnum (access-size container))
                                  (1+ (the non-negative-fixnum (access-size container)))))
@@ -189,12 +197,10 @@ Methods. Those will just call non generic functions.
                           all)
                  (setf changed c)
                  (values a b c)))
-             (copy-on-write (indexes path depth max-depth conflict)
-               (transactional-copy-on-write
-                indexes
+             (copy-on-write (indexes path depth conflict)
+               (transactional-copy-on-write indexes
                 path
                 depth
-                max-depth
                 conflict
                 (the boolean (access-root-was-modified container)))))
         (declare (dynamic-extent (function make-bucket)
@@ -254,7 +260,6 @@ Methods. Those will just call non generic functions.
                             :hash-fn (cl-ds.dicts:read-hash-fn container)
                             :equal-fn (cl-ds.dicts:read-equal-fn container)
                             :root new-root
-                            :max-depth (read-max-depth container)
                             :size (1- (the non-negative-fixnum (access-size container))))
                       container)
                   status))))))
@@ -287,11 +292,10 @@ Methods. Those will just call non generic functions.
                (return-from cl-ds:position-modification
                  (values container
                          cl-ds.common:empty-eager-modification-operation-status)))
-             (copy-on-write (indexes path depth max-depth conflict)
+             (copy-on-write (indexes path depth conflict)
                (transactional-copy-on-write indexes
                                             path
                                             depth
-                                            max-depth
                                             conflict
                                             (access-root-was-modified container))))
         (declare (dynamic-extent (function just-return)
@@ -385,7 +389,6 @@ Methods. Those will just call non generic functions.
                                     prev-node
                                     (rebuild-rehashed-node
                                      c
-                                     (read-max-depth container)
                                      (handle-bucket
                                       (cl-ds:make-bucket operation
                                                          container
@@ -406,7 +409,6 @@ Methods. Those will just call non generic functions.
                                      prev-node
                                      (rebuild-rehashed-node
                                       c
-                                      (read-max-depth container)
                                       (handle-bucket
                                        (cl-ds:grow-bucket! operation
                                                            container
@@ -418,7 +420,6 @@ Methods. Those will just call non generic functions.
                                     root)
                                   (rebuild-rehashed-node
                                    c
-                                   (read-max-depth container)
                                    (handle-bucket
                                     (cl-ds:grow-bucket! operation
                                                         container
@@ -437,7 +438,6 @@ Methods. Those will just call non generic functions.
   (make 'mutable-hamt-dictionary
         :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
-        :max-depth (read-max-depth container)
         :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
@@ -446,7 +446,6 @@ Methods. Those will just call non generic functions.
   (make 'functional-hamt-dictionary
         :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
-        :max-depth (read-max-depth container)
         :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
@@ -455,7 +454,6 @@ Methods. Those will just call non generic functions.
   (make 'transactional-hamt-dictionary
         :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
-        :max-depth (read-max-depth container)
         :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
@@ -469,7 +467,6 @@ Methods. Those will just call non generic functions.
     (make 'transactional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :max-depth (read-max-depth container)
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :root-was-modified (access-root-was-modified container)
           :size (access-size container))))
@@ -482,7 +479,6 @@ Methods. Those will just call non generic functions.
     (make 'mutable-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :max-depth (read-max-depth container)
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
@@ -494,7 +490,6 @@ Methods. Those will just call non generic functions.
     (make 'functional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :max-depth (read-max-depth container)
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 

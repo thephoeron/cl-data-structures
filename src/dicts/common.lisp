@@ -1,13 +1,6 @@
 (in-package #:cl-ds.dicts)
 
 
-(defstruct content-tuple location value)
-
-
-(defstruct (hash-content-tuple (:include content-tuple))
-  (hash 0 :type fixnum))
-
-
 (deftype bucket () 'list)
 
 
@@ -24,7 +17,7 @@
                          (bucket list) location &rest all &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((compare-fn (a b)
-             (and (eql (cl-ds.common:hash-dict-content-value a) hash)
+             (and (eql (cl-ds.common:hash-content-hash a) hash)
                   (funcall equal-fn
                            (cl-ds.common:hash-content-location a)
                            b))))
@@ -43,14 +36,15 @@
     (once-only (container bucket location hash value)
       `(let ((,!equal-fn (read-equal-fn ,container)))
          (flet ((,!compare-fn (a b)
-                  (and (eql (cl-ds.common:hash-dict-content-value a) (cl-ds.common:hash-dict-content-value b))
+                  (and (eql (cl-ds.common:hash-content-hash a)
+                            (cl-ds.common:hash-content-hash b))
                        (funcall ,!equal-fn
                                 (cl-ds.common:hash-content-location a)
                                 (cl-ds.common:hash-content-location b)))))
            (declare (dynamic-extent (function ,!compare-fn)))
            (multiple-value-bind (^next-list ^replaced ^old-value)
                (insert-or-replace ,bucket
-                                  (make-hash-content-tuple
+                                  (cl-ds.common:make-hash-dict-content 
                                    :hash ,hash
                                    :location ,location
                                    :value ,value)
@@ -68,7 +62,7 @@
                                 &key hash)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
-             (and (eql hash (cl-ds.common:hash-dict-content-value node))
+             (and (eql hash (cl-ds.common:hash-content-hash node))
                   (funcall equal-fn location
                            (cl-ds.common:hash-content-location node)))))
       (declare (dynamic-extent (function location-test)))
@@ -97,7 +91,7 @@
                                 &key hash condition-fn)
   (let ((equal-fn (read-equal-fn container)))
     (flet ((location-test (node location)
-             (when (and (eql hash (cl-ds.common:hash-dict-content-value node))
+             (when (and (eql hash (cl-ds.common:hash-content-hash node))
                         (funcall equal-fn location
                                  (cl-ds.common:hash-content-location node)))
                (let ((result (funcall condition-fn
@@ -237,7 +231,7 @@
     (let* ((tuple (locate-tuple container bucket hash location))
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
-          (push (make-hash-content-tuple
+          (push (cl-ds.common:make-hash-dict-content
                       :location location
                       :value value
                       :hash hash)
@@ -281,7 +275,7 @@
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
           (progn
-            (push (make-hash-content-tuple
+            (push (cl-ds.common:make-hash-dict-content
                         :location location
                         :value value
                         :hash hash)
@@ -312,7 +306,7 @@
       (for cell on bucket)
       (for p-cell previous cell)
       (for tuple = (first cell))
-      (when (and (eql (cl-ds.common:hash-dict-content-value tuple) hash)
+      (when (and (eql (cl-ds.common:hash-content-hash tuple) hash)
                  (comp (cl-ds.common:hash-content-location tuple)
                        location))
         (if (null p-cell)
@@ -349,7 +343,7 @@
       (for cell on bucket)
       (for p-cell previous cell)
       (for tuple = (first cell))
-      (when (and (eql (cl-ds.common:hash-dict-content-value tuple) hash)
+      (when (and (eql (cl-ds.common:hash-content-hash tuple) hash)
                  (comp (cl-ds.common:hash-content-location tuple)
                        location))
         (setf result (cl-ds.common:hash-dict-content-value tuple))

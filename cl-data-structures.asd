@@ -53,8 +53,7 @@
                              (:file "api")
                              (:file "docstrings")
                              (:module "hamt"
-                              :components ((:file "internal")
-                                           (:file "api")
+                              :components ((:file "api")
                                            (:file "docstrings")
                                            (:test-file "transactions-tests")
                                            (:test-file "lazy-tests")))

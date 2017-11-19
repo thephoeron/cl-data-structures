@@ -6,34 +6,45 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.hamt)
   (:export
+   #:+depth+
+   #:+hash-level+
+   #:+maximum-children-count+
+   #:access-root
+   #:access-size
+   #:build-node
+   #:build-rehashed-node
+   #:clear-modification-masks
+   #:copy-node
+   #:copy-on-write
+   #:go-down-on-path
    #:hamt-container
-   #:hash-node-whole-mask
-   #:hash-node-to-masked-index
+   #:hash-do
+   #:hash-node-access
    #:hash-node-contains
    #:hash-node-contains-node
-   #:hash-node-access
-   #:hash-node-size
-   #:go-down-on-path
-   #:copy-node
-   #:hash-node-replace-in-the-copy
-   #:hash-node-insert-into-copy
-   #:build-rehashed-node
-   #:rebuild-rehashed-node
-   #:mark-everything-as-modified
-   #:transactional-rebuild-rehashed-node
-   #:build-node
-   #:hash-node-insert!
-   #:hash-node-replace!
-   #:hash-node-remove-from-the-copy
-   #:hash-node-remove!
-   #:rehash
-   #:copy-on-write
    #:hash-node-content-modified
-   #:set-modified
-   #:hash-node-transactional-replace
+   #:hash-node-deep-copy
+   #:hash-node-insert!
+   #:hash-node-insert-into-copy
+   #:hash-node-remove!
+   #:hash-node-remove-from-the-copy
+   #:hash-node-replace!
+   #:hash-node-replace-in-the-copy
+   #:hash-node-size
+   #:hash-node-to-masked-index
    #:hash-node-transactional-insert
    #:hash-node-transactional-remove
+   #:hash-node-transactional-replace
+   #:hash-node-whole-mask
+   #:isolate-transactional-instance
+   #:mark-everything-as-modified
+   #:hash-node-p
+   #:read-max-depth
+   #:rebuild-rehashed-node
+   #:rehash
+   #:set-modified
    #:transactional-copy-on-write
-   #:clear-modification-masks
-   #:hash-node-deep-copy
-   #:isolate-transactional-instance))
+   #:transactional-rebuild-rehashed-node
+   #:with-destructive-erase-hamt
+   #:with-hamt-path
+   #:with-hash-tree-functions))
