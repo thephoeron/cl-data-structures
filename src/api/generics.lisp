@@ -96,7 +96,7 @@ Range releated functions.
 
 (defgeneric consume-front (range))
 
-(defgeneric consume-count (range))
+(defgeneric consume-some (range count))
 
 (defgeneric chain (first-range &rest other-ranges))
 
