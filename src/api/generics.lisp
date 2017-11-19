@@ -101,3 +101,5 @@ Range releated functions.
 (defgeneric chain (first-range &rest other-ranges))
 
 (defgeneric drop-front (range count))
+
+(defgeneric morep (range))
