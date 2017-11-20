@@ -10,6 +10,17 @@
              :initarg :content)))
 
 
+(defgeneric mutate-matrix (destination fn m1 m2)
+  (:method ((destination distance-matrix) fn (m1 distance-matrix) (m2 distance-matrix))
+    (let ((dest (read-content destination))
+          (s1 (read-content m1))
+          (s2 (read-content m2)))
+      (unless (= (read-size destination) (read-size m1) (read-size m2))
+        (error "Sizes don't mach!"))
+      (lparallel:pmap-into dest fn s1 s2)
+      destination)))
+
+
 (defun index-in-content-of-distance-matrix (size row column)
   (declare (type index row column)
            (type positive-fixnum size)
@@ -33,8 +44,8 @@
             :content result))))
 
 
-(-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) number)) distance-matrix)
-(defun make-distance-matrix-from-vector (type sequence function)
+(-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) number) &key (:key (-> (t) t))) distance-matrix)
+(defun make-distance-matrix-from-vector (type sequence function &key (key #'identity))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                       (1- size)
@@ -48,7 +59,7 @@
                  (setf (aref result (index-in-content-of-distance-matrix size
                                                                          column
                                                                          row))
-                       (funcall function first second)))))
+                       (funcall function (funcall key first) (funcall key second))))))
       (declare (inline fill-matrix))
       (iterate
         (for i from 0 below size)
@@ -59,8 +70,8 @@
               :content result)))))
 
 
-(-> parallel-make-distance-matrix-from-vector ((or list symbol) vector function &optional (-> (t) t)) distance-matrix)
-(defun parallel-make-distance-matrix-from-vector (type sequence function &optional (function-context #'identity))
+(-> parallel-make-distance-matrix-from-vector ((or list symbol) vector function &optional (-> (t) t) &key (:key (-> (t) t))) distance-matrix)
+(defun parallel-make-distance-matrix-from-vector (type sequence function &optional (function-context #'identity) &key (key #'identity))
   (declare (optimize (speed 3)))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
@@ -83,7 +94,7 @@
              (for j from (1+ i) below size)
              (for y = (aref sequence j))
              (setf (aref result (index-in-content-of-distance-matrix size i j))
-                   (dist-function x y))))))
+                   (dist-function (funcall key x) (funcall key y)))))))
      indexes)
     (assure distance-matrix
       (make 'distance-matrix

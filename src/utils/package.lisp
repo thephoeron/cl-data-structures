@@ -23,6 +23,7 @@
    #:make-distance-matrix-from-vector
    #:parallel-make-distance-matrix-from-vector
    #:merge-ordered-vectors
+   #:mutate-matrix
    #:ordered-p
    #:pop-last
    #:swapop
