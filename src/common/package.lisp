@@ -10,8 +10,14 @@
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
    #:force-version
+   #:single-element-p
    #:lazy-box-container
    #:make-eager-modification-operation-status
+   #:make-hash-dict-content
+   #:hash-dict-content-value
+   #:hash-content-location
+   #:hash-content-hash
+   #:make-hash-content
    #:read-found
    #:read-value))
 

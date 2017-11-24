@@ -5,9 +5,10 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
+   #:*documentation*
+   #:add
    #:add!
    #:add!-function
-   #:add
    #:add-function
    #:argument-out-of-bounds
    #:at
@@ -15,9 +16,12 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:consume-back
+   #:consume-front
    #:destructive-counterpart
    #:destructive-function
    #:destructive-function
+   #:drop-front
    #:erase
    #:erase!
    #:erase!-function
@@ -41,6 +45,11 @@
    #:grow-bucket
    #:grow-bucket!
    #:grow-function
+   #:hash-content
+   #:hash-content-hash
+   #:hash-content-location
+   #:hash-dict-content
+   #:hash-dict-content-value
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
@@ -50,10 +59,14 @@
    #:lazy
    #:make-bucket
    #:mod-bind
+   #:morep
    #:mutable
    #:mutablep
+   #:near
    #:not-implemented
    #:out-of-bounds
+   #:peek-back
+   #:peek-front
    #:position-modification
    #:put
    #:put!
@@ -75,9 +88,7 @@
    #:update!
    #:update!-function
    #:update-function
-   #:value
-   #:*documentation*))
-
+   #:value))
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)

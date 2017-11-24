@@ -12,6 +12,8 @@
 (defgeneric put (container item)
   (:generic-function-class functional-put-function))
 
+(defgeneric near (container item maximal-distance))
+
 (defgeneric add! (container location new-value)
   (:generic-function-class add!-function))
 
@@ -85,3 +87,27 @@
   (:method ((operation functional-add-function)) #'add!)
   (:method ((operation functional-insert-function)) #'(setf at))
   (:method ((operation functional-update-function)) #'update!))
+
+#|
+
+Range releated functions.
+
+|#
+
+(defgeneric consume-front (range))
+
+(defgeneric peek-front (range))
+
+(defgeneric consume-back (range))
+
+(defgeneric peek-back (range))
+
+(defgeneric consume-some (range count))
+
+(defgeneric chain (first-range &rest other-ranges))
+
+(defgeneric drop-front (range count))
+
+(defgeneric drop-back (range count))
+
+(defgeneric morep (range))

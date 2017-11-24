@@ -1,11 +1,22 @@
 (in-package #:cl-ds.dicts)
 
 
-(defclass dictionary (cl-ds:fundamental-container)
+(defclass abstract-dictionary ()
   ((%equal-fn
     :type (-> (t t) boolean)
     :initarg :equal-fn
     :reader read-equal-fn)))
+
+
+(defclass abstract-hashing-dictionary (abstract-dictionary)
+  ((%hash-fn
+    :type (-> (t) fixnum)
+    :initarg :hash-fn
+    :reader read-hash-fn)))
+
+
+(defclass dictionary (cl-ds:fundamental-container)
+  ())
 
 
 (defclass functional-dictionary (dictionary cl-ds:functional)
@@ -25,10 +36,7 @@
 
 
 (defclass hashing-dictionary (dictionary)
-  ((%hash-fn
-    :type (-> (t) fixnum)
-    :initarg :hash-fn
-    :reader read-hash-fn)))
+  ())
 
 
 (defclass mutable-hashing-dictionary (hashing-dictionary mutable-dictionary)

@@ -7,6 +7,8 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
+   #:abstract-dictionary
+   #:abstract-hashing-dictionary
    #:bucket
    #:content-tuple
    #:content-tuple-location
@@ -32,7 +34,7 @@
 
 (defpackage :cl-data-structures.dicts.hamt
   (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
-        #:docstample #:docstample.mechanics)
+        #:docstample #:docstample.mechanics #:cl-data-structures.common.hamt)
   (:nicknames #:cl-ds.dicts.hamt)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export

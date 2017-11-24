@@ -1,4 +1,4 @@
-(in-package #:cl-ds.dicts.hamt)
+(in-package #:cl-data-structures.common.hamt)
 
 #|
 
@@ -9,14 +9,6 @@ Basic types
 (define-constant +hash-level+ 5)
 (define-constant +maximum-children-count+ (ash 1 +hash-level+))
 (define-constant +depth+ (floor (/ 64 +hash-level+)))
-
-
-(deftype maybe-node ()
-  `(or null hash-node cl-ds.dicts:bucket))
-
-
-(deftype node-position ()
-  `(values maybe-node fixnum))
 
 
 (deftype hash-node-index ()
@@ -31,19 +23,12 @@ Basic types
   `(unsigned-byte ,+maximum-children-count+))
 
 
-(deftype just-node ()
-  `(or cl-ds.dicts:bucket hash-node))
-
-
 (deftype node-path ()
   `(simple-vector ,+depth+))
 
 
 (deftype index-path ()
   `(simple-array fixnum (,+depth+)))
-
-
-(deftype bottom-node () 'cl-ds.dicts:bucket)
 
 #|
 
@@ -52,21 +37,19 @@ Macros
 |#
 
 (defmacro hash-do ((node index &optional (count (gensym)))
-                   (root hash &optional (max-depth 10))
+                   (root hash)
                    &key on-leaf on-nil on-every)
   "Macro used for writing code going down into hash tree."
   (with-gensyms (!pos !block !leaf)
-    (once-only (hash root max-depth)
+    (once-only (hash root)
       `(block ,!block
-         (assert (<= ,max-depth +depth+))
          (do ((,!pos ,+hash-level+ (the fixnum (+ ,!pos ,+hash-level+)))
               (,index (ldb (byte ,+hash-level+ 0) ,hash)
                       (ldb (byte ,+hash-level+ ,!pos) ,hash))
               (,count 0 (1+ ,count))
               (,node ,root (and (hash-node-contains ,node ,index)
                                 (hash-node-access ,node ,index))))
-             ((= ,count ,max-depth)
-              (values ,node ,count))
+             (nil nil)
            (declare (type fixnum ,hash ,!pos ,index ,count)
                     (dynamic-extent ,!pos ,index ,count))
            (let ((,!leaf (and ,node (not (hash-node-p ,node)))))
@@ -76,64 +59,33 @@ Macros
                      ,on-nil)))
              ,(when on-leaf
                 `(when ,!leaf
-                   (let ((,node ,node))
-                     (declare (type bottom-node ,node))
-                     (return-from ,!block
-                       ,on-leaf))))
+                   (return-from ,!block
+                     ,on-leaf)))
              (when (or ,!leaf (null ,node))
                (return-from ,!block ,node))
-             ,on-every))))))
+             ,on-every
+             (when (eql ,count ,+depth+)
+               (values ,node ,count))))))))
 
 
-(defmacro with-hash-tree-functions ((container &key (cases nil)) &body body)
-  "Simple macro adding local functions (all forwards to the container closures)."
-  (once-only (container)
-    (with-gensyms (!test !hash)
-      `(let ((,!test (cl-ds.dicts:read-equal-fn ,container))
-             (,!hash (cl-ds.dicts:read-hash-fn ,container)))
-         (nest
-          ,(if cases
-               `(cl-ds.utils:cases
-                    ((eq ,!test #'eql)
-                     (eq ,!test #'equal)
-                     (eq ,!test #'string=)
-                     (eq ,!test #'eq)))
-               `(progn))
-          (flet ((equal-fn (a b)
-                   (funcall ,!test a b))
-                 (hash-fn (x)
-                   (funcall ,!hash x)))
-            (declare (ignorable (function hash-fn)
-                                (function equal-fn))
-                     (inline hash-fn
-                             equal-fn)
-                     (dynamic-extent (function hash-fn)
-                                     (function equal-fn)))
-            ,@body))))))
-
-
-(defmacro with-hamt-path (node container hash &key on-leaf on-nil operation)
-  (with-gensyms (!count !path !indexes !depth !max-depth !root !index)
-    (once-only (container)
-      `(let* ((,!max-depth (read-max-depth ,container))
-              (,!path (make-array +depth+))
-              (,!indexes (make-array +depth+ :element-type 'fixnum))
-              (,!depth 0)
-              (,!root (access-root ,container)))
-         (declare (type fixnum ,!depth)
-                  (type index-path ,!indexes)
-                  (type node-path ,!path)
-                  (dynamic-extent ,!path ,!indexes ,!depth))
-         (hash-do
-             (,node ,!index ,!count)
-             (,!root ,hash ,!max-depth)
-             :on-every (progn (setf (aref ,!path ,!count) ,node
-                                    (aref ,!indexes ,!count) ,!index)
-                              (incf ,!depth))
-             :on-nil (let ((next ,on-nil))
-                       (,operation ,!indexes ,!path ,!depth next))
-             :on-leaf (let ((next ,on-leaf))
-                        (,operation ,!indexes ,!path ,!depth next)))))))
+(defmacro with-hamt-path (node hash root &key on-leaf on-nil operation)
+  (with-gensyms (!count !path !indexes !depth !root !index)
+    `(let* ((,!path (make-array ,+depth+))
+            (,!indexes (make-array ,+depth+ :element-type 'fixnum))
+            (,!root ,root))
+       (declare (type fixnum ,!depth)
+                (type index-path ,!indexes)
+                (type node-path ,!path)
+                (dynamic-extent ,!path ,!indexes))
+       (hash-do
+           (,node ,!index ,!count)
+           (,!root ,hash)
+           :on-every (setf (aref ,!path ,!count) ,node
+                           (aref ,!indexes ,!count) ,!index)
+           :on-nil (let ((next ,on-nil))
+                     (,operation ,!indexes ,!path ,!count next))
+           :on-leaf (let ((next ,on-leaf))
+                      (,operation ,!indexes ,!path ,!count next))))))
 
 
 (defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
@@ -142,25 +94,26 @@ Macros
       `(flet ((,!rewrite (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
                 (declare (type index-path ,!indexes)
                          (type node-path ,!path)
-                         (type fixnum ,!depth)
-                         (type maybe-node conflict))
-                (with-vectors (,!path ,!indexes)
+                         (type fixnum ,!depth))
+                (cl-ds.utils:with-vectors (,!path ,!indexes)
                   (iterate
                     (for i from (1- ,!depth) downto 0) ;reverse order (starting from deepest node)
-                    (for node = (,!path i))
+                    (for ,node = (,!path i))
                     (for index = (,!indexes i))
-                    (for ac initially conflict
+                    (for ac
+                         initially conflict
                          then (if ac
-                                  (progn (hash-node-replace! node ac index)
+                                  (progn (hash-node-replace! ,node ac index)
                                          (leave (aref ,!path 0)))
-                                  (if (eql 1 (hash-node-size node))
+                                  (if (eql 1 (hash-node-size ,node))
                                       ac
-                                      (hash-node-remove! node index))))
+                                      (hash-node-remove! ,node index))))
                     (finally (return ac))))))
          (declare (dynamic-extent (function ,!rewrite))
                   (inline ,!rewrite))
          (with-hamt-path ,node
-           ,container ,hash
+           ,hash
+           (access-root ,container)
            :on-leaf ,on-leaf
            :on-nil ,on-nil
            :operation ,!rewrite)))))
@@ -199,15 +152,10 @@ Interface class.
 |#
 
 
-(defclass hamt-dictionary ()
-  ((%root :type (or hash-node cl-ds.dicts:bucket null)
-          :accessor access-root
+(defclass hamt-container ()
+  ((%root :accessor access-root
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
-   (%max-depth :initarg :max-depth
-               :type non-negative-fixnum
-               :reader read-max-depth
-               :documentation "Maximal depth of tree.")
    (%size :initarg :size
           :initform 0
           :type non-negative-fixnum
@@ -260,7 +208,7 @@ Functions with basic bit logic.
 (declaim (inline hash-node-contains-node))
 
 
-(-> hash-node-access (hash-node hash-node-index) (or hash-node cl-ds.dicts:bucket))
+(-> hash-node-access (hash-node hash-node-index) t)
 (defun hash-node-access (hash-node index)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (~>> (hash-node-to-masked-index hash-node index)
@@ -283,24 +231,25 @@ Copy nodes and stuff.
 |#
 
 
-(-> go-down-on-path (fundamental-hamt-container fixnum function function function)
-    (values fundamental-hamt-container cl-ds.common:eager-modification-operation-status))
+(-> go-down-on-path (hamt-container fixnum function function function)
+    (values t cl-ds.common:eager-modification-operation-status))
 (defun go-down-on-path
     (container hash on-leaf on-nil after)
-  (declare (optimize (speed 3)
-                     (debug 0)
-                     (safety 0)
+  (declare (optimize (speed 0)
+                     (debug 3)
+                     (safety 3)
                      (space 0))
            (type fixnum hash))
   (let ((status nil))
     (flet ((after (indexes path depth next)
-             (the maybe-node
-                  (funcall after
-                           indexes path
-                           depth (read-max-depth container)
-                           next))))
+             (funcall after
+                      indexes
+                      path
+                      depth
+                      next)))
       (values (block loop-block
-                (with-hamt-path node container hash
+                (with-hamt-path node hash
+                  (access-root container)
                   :operation after
                   :on-leaf (multiple-value-bind (b s c)
                                (funcall on-leaf node)
@@ -365,7 +314,7 @@ Copy nodes and stuff.
                      (safety 0)
                      (space 0)))
   (let ((position (hash-node-to-masked-index hash-node index)))
-    (with-vectors
+    (cl-ds.utils:with-vectors
         ((current-array (hash-node-content hash-node))
          (new-array (make-array (1+ (array-dimension current-array 0)))))
       (assert (~> (array-dimension new-array 0)
@@ -397,20 +346,9 @@ Copy nodes and stuff.
                             :content new-array))))))
 
 
-(declaim (inline non-empty-hash-table-p))
-(defun non-empty-hash-table-p (table)
-  (declare (optimize (speed 3)))
-  (and (typep table 'hash-table)
-       (not (zerop (hash-table-count table)))))
-
-
-(deftype non-empty-hash-table ()
-  `(satisfies non-empty-hash-table-p))
-
-
-(-> rebuild-rehashed-node (fixnum fixnum cl-ds.dicts:bucket &key (:transactional boolean)) just-node)
-(-> build-rehashed-node (fixnum fixnum simple-vector &key (:transactional boolean)) just-node)
-(defun build-rehashed-node (depth max-depth content &key (transactional nil))
+(-> rebuild-rehashed-node (fixnum t &key (:transactional boolean)) t)
+(-> build-rehashed-node (fixnum simple-vector &key (:transactional boolean)) t)
+(defun build-rehashed-node (depth content &key (transactional nil))
   (let ((mask 0)
         (node-mask 0)
         (size 0))
@@ -420,7 +358,7 @@ Copy nodes and stuff.
       (when elt
         (incf size)
         (setf (ldb (byte 1 index) mask) 1)))
-    (with-vectors ((array (make-array size)))
+    (cl-ds.utils:with-vectors ((array (make-array size)))
       (iterate
         (for conflict in-vector content)
         (for index from 0)
@@ -428,7 +366,6 @@ Copy nodes and stuff.
           (for i = (logcount (ldb (byte index 0) mask)))
           (setf (array i)
                 (rebuild-rehashed-node depth
-                                       max-depth
                                        conflict
                                        :transactional transactional)
                 (ldb (byte 1 index) node-mask) 1)))
@@ -451,41 +388,41 @@ Copy nodes and stuff.
     node))
 
 
-(defun transactional-rebuild-rehashed-node (depth max-depth conflict)
+(defun transactional-rebuild-rehashed-node (depth conflict)
+  (declare (optimize (speed 3)))
   (flet ((cont (array)
-           (let ((result (build-rehashed-node (1+ depth) max-depth array
+           (let ((result (build-rehashed-node (1+ depth) array
                                               :transactional t)))
              (mark-everything-as-modified result))))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
+    (if (or (>= depth +depth+) (cl-ds.common:single-element-p conflict))
         conflict
         (rehash conflict depth
                 #'cont))))
 
 
-(defun rebuild-rehashed-node (depth max-depth conflict &key (transactional nil))
+(defun rebuild-rehashed-node (depth conflict &key (transactional nil))
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
-                     (space 3))
-           (type fixnum depth max-depth))
+                     (space 0))
+           (type fixnum depth))
   (flet ((cont (array)
            (let ((result (build-rehashed-node (1+ depth)
-                                              max-depth
                                               array
                                               :transactional transactional)))
              (when transactional
                (mark-everything-as-modified result))
              result)))
     (declare (dynamic-extent #'cont))
-    (if (or (>= depth max-depth) (cl-ds.dicts:single-element-p conflict))
+    (if (or (>= depth +depth+) (cl-ds.common:single-element-p conflict))
         conflict
         (rehash conflict
                 depth
                 #'cont))))
 
 
-(-> build-node (hash-node-index just-node) hash-node)
+(-> build-node (hash-node-index t) hash-node)
 (defun build-node (index content)
   (make-hash-node :node-mask (ash 1 index)
                   :content (make-array 1 :initial-element content)))
@@ -504,13 +441,13 @@ Copy nodes and stuff.
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
                             logcount)))
-    (with-vectors ((n (make-array next-size)) (s (hash-node-content node)))
+    (cl-ds.utils:with-vectors ((n (make-array next-size)) (s (hash-node-content node)))
       (iterate
         (for i from 0 below next-size)
-        (cond-compare (i masked-index)
-                      (setf (n i) (s i))
-                      (setf (n i) content)
-                      (setf (n i) (s (1- i)))))
+        (cl-ds.utils:cond-compare (i masked-index)
+                                  (setf (n i) (s i))
+                                  (setf (n i) content)
+                                  (setf (n i) (s (1- i)))))
       (setf (hash-node-content node) n)
       (set-in-node-mask node index 1)
       node)))
@@ -518,7 +455,7 @@ Copy nodes and stuff.
 
 (defun hash-node-replace! (node content index)
   (assert (not (zerop (ldb (byte 1 index) (hash-node-whole-mask node)))))
-  (with-vectors ((a (hash-node-content node)))
+  (cl-ds.utils:with-vectors ((a (hash-node-content node)))
     (setf (a (hash-node-to-masked-index node index))
           content))
   node)
@@ -527,9 +464,9 @@ Copy nodes and stuff.
 (-> hash-node-remove-from-the-copy (hash-node fixnum &key (:transactional boolean)) hash-node)
 (-> hash-node-remove! (hash-node fixnum) hash-node)
 (flet ((new-array (node index)
-         (copy-without (hash-node-content node)
-                       (1- (logcount (ldb (byte (1+ index) 0)
-                                          (hash-node-whole-mask node)))))))
+         (cl-ds.utils:copy-without (hash-node-content node)
+                                   (1- (logcount (ldb (byte (1+ index) 0)
+                                                      (hash-node-whole-mask node)))))))
 
   (defun hash-node-remove-from-the-copy (node index &key (transactional nil))
     "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
@@ -550,40 +487,6 @@ Copy nodes and stuff.
     node))
 
 
-(-> map-hash-tree ((-> (cl-ds.dicts:bucket) t) hash-node) hash-node)
-(defun map-hash-tree (fn root)
-  (iterate
-    (with stack = (make-array +depth+
-                              :element-type 'maybe-node
-                              :adjustable t
-                              :fill-pointer 1
-                              :initial-element root))
-    (for current = (pop-last stack))
-    (while current)
-    (for (node . hash-path) = current)
-    (etypecase node
-      (bottom-node (funcall fn node))
-      (hash-node (with-accessors ((mask hash-node-whole-mask)
-                                  (content hash-node-content)) node
-                   (iterate
-                     (for i from 0 below +maximum-children-count+)
-                     (with index = 0)
-                     (when (ldb-test (byte 1 i) mask)
-                       (vector-push-extend (aref content index)
-                                           stack)
-                       (incf index)))))
-      (t (assert (null node)))))
-  root)
-
-
-(-> contains-part-of-hash (fixnum fixnum non-negative-fixnum) boolean)
-(defun contains-part-of-hash (hash partial-hash depth)
-  (~>> hash
-       (logxor partial-hash)
-       (ldb (byte depth 0))
-       zerop))
-
-
 (defun rehash (conflict level cont)
   (declare (type list conflict)
            (optimize (speed 3)
@@ -598,7 +501,7 @@ Copy nodes and stuff.
              (dynamic-extent result))
     (iterate
       (for item in conflict)
-      (for hash = (cl-ds.dicts:hash-content-tuple-hash item))
+      (for hash = (cl-ds.common:hash-content-hash item))
       (for index = (ldb byte hash))
       (push
        item
@@ -606,17 +509,16 @@ Copy nodes and stuff.
     (funcall cont result)))
 
 
-(-> copy-on-write ((vector fixnum) vector fixnum fixnum maybe-node) maybe-node)
-(defun copy-on-write (indexes path depth max-depth conflict)
+(-> copy-on-write ((vector fixnum) vector fixnum t) t)
+(defun copy-on-write (indexes path depth conflict)
   (declare (type index-path indexes)
            (type node-path path)
            (type fixnum depth)
-           (type maybe-node conflict)
            (optimize (speed 3)
                      (safety 0)
                      (debug 0)
                      (space 0)))
-  (with-vectors (path indexes)
+  (cl-ds.utils:with-vectors (path indexes)
     (when (and (not (zerop depth)) (eq conflict (path (- depth 1))))
       (return-from copy-on-write (path 0)))
     (iterate
@@ -629,7 +531,6 @@ Copy nodes and stuff.
                             ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                             conflict
                             (rebuild-rehashed-node depth
-                                                   max-depth
                                                    conflict))
            then (if ac
                     (if (hash-node-contains node index)
@@ -655,7 +556,7 @@ Copy nodes and stuff.
 
 
 (-> hash-node-transactional-replace
-    (boolean hash-node just-node hash-node-index) hash-node)
+    (boolean hash-node t hash-node-index) hash-node)
 (defun hash-node-transactional-replace (must-copy node content index)
   (let ((result (if must-copy
                     (hash-node-replace-in-the-copy node content index :transactional t)
@@ -669,7 +570,7 @@ Copy nodes and stuff.
 
 
 (-> hash-node-transactional-insert
-    (boolean hash-node just-node hash-node-index)
+    (boolean hash-node t hash-node-index)
     hash-node)
 (defun hash-node-transactional-insert (must-copy node content index)
   (let ((result (if must-copy
@@ -699,20 +600,21 @@ Copy nodes and stuff.
 
 
 (-> transactional-copy-on-write
-    ((vector fixnum) vector fixnum fixnum maybe-node boolean)
-    maybe-node)
-(defun transactional-copy-on-write (indexes path
-                                    depth max-depth
-                                    conflict root-already-copied)
+    ((vector fixnum) vector fixnum t boolean)
+    t)
+(defun transactional-copy-on-write (indexes
+                                    path
+                                    depth
+                                    conflict
+                                    root-already-copied)
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
            (type fixnum depth)
-           (type maybe-node conflict)
            (optimize (speed 3)
                      (safety 0)
                      (debug 0)
                      (space 0)))
-  (with-vectors (path indexes)
+  (cl-ds.utils:with-vectors (path indexes)
     (iterate
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
       (for node = (path i))
@@ -731,7 +633,6 @@ Copy nodes and stuff.
                             ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                             conflict
                             (transactional-rebuild-rehashed-node depth
-                                                                 max-depth
                                                                  conflict))
            then (if ac
                     (if (hash-node-contains node index)
@@ -777,7 +678,7 @@ Copy nodes and stuff.
   (multiple-value-bind (parent mask) (if parent-was-modified
                                          (hash-node-deep-copy parent)
                                          (values parent nil))
-    (with-vectors ((content (hash-node-content parent)))
+    (cl-ds.utils:with-vectors ((content (hash-node-content parent)))
       (unless (null mask)
         (iterate
           (with j = 0)
@@ -791,3 +692,36 @@ Copy nodes and stuff.
             (incf j)))))
     parent))
 
+
+(defstruct hamt-range-stack-cell
+  (start 0 :type non-negative-fixnum)
+  (end 0 :type non-negative-fixnum)
+  node)
+
+
+(defun new-cell (node)
+  (cond
+    ((listp node) node)
+    ((hash-node-p node) (make-hamt-range-stack-cell
+                         :start 0
+                         :end (1- (hash-node-size node))
+                         :node node))
+    (t (error "Logic Error!"))))
+
+
+(defun forward-cell (cell)
+  (cond
+    ((hamt-range-stack-cell-p cell)
+     (values
+      (new-cell (aref (~> cell hamt-range-stack-cell-node hash-node-content
+                          (aref (hamt-range-stack-cell-start cell)))))
+      (unless (eql (hamt-range-stack-cell-start cell) (hamt-range-stack-cell-end cell))
+        (make-hamt-range-stack-cell
+         :start (1+ (hamt-range-stack-cell-start cell))
+         :end (hamt-range-stack-cell-end cell)
+         :node (hamt-range-stack-cell-node cell)))))
+    ((listp cell)
+     (values
+      (first cell)
+      (rest cell)))
+    (t (error "Logic Error!"))))

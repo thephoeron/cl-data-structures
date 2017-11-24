@@ -41,7 +41,12 @@
                 :components ((:file "package")
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
-                             (:file "lazy-box")))
+                             (:file "lazy-box")
+                             (:file "content-tuple")
+                             (:file "ranges")
+                             (:module "hamt"
+                              :components ((:file "package")
+                                           (:file "common")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
@@ -49,8 +54,7 @@
                              (:file "api")
                              (:file "docstrings")
                              (:module "hamt"
-                              :components ((:file "internal")
-                                           (:file "api")
+                              :components ((:file "api")
                                            (:file "docstrings")
                                            (:test-file "transactions-tests")
                                            (:test-file "lazy-tests")))
