@@ -12,7 +12,7 @@
 
       (level [list]
         @item{Uniform -- Data structures that are used for a specific task should have a common interface. The user should just know how to use a dictionary, and not some specific implementation of it.}
-        @item{Complete -- This package intends to be the definitive ,(lisp) data structures collection, containing both functional and mutable structures, for every use case possible.}
+        @item{Complete -- This package intends to be the definitive Common Lisp data structures collection, containing both functional and mutable structures, for every use case possible.}
         @item{Universal -- There should be no limitations on when this library is useful.}
         @item{Stable -- The API should be backward compatible. Breaking existing software is not acceptable.})
 
