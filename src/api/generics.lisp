@@ -111,3 +111,18 @@ Range releated functions.
 (defgeneric drop-back (range count))
 
 (defgeneric morep (range))
+
+(defgeneric whole-range (container))
+
+#|
+
+Algorithms
+
+|#
+
+(defgeneric on-each (function range &key (key #'identity))
+  (:generic-function-class layer-function))
+
+
+(defgeneric change-each! (function range &key (key #'identity))
+  (:generic-function-class transformation!-function))

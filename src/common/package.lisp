@@ -13,6 +13,7 @@
    #:single-element-p
    #:lazy-box-container
    #:make-eager-modification-operation-status
+   #:forward-tree-range
    #:make-hash-dict-content
    #:hash-dict-content-value
    #:hash-content-location

@@ -154,4 +154,29 @@
                                    container
                                    location
                                    &rest all
-                                   &key &allow-other-keys)) 
+                                   &key &allow-other-keys))
+
+
+(defclass range-function (closer-mop:standard-generic-function)
+  ())
+
+
+(defclass layer-function (range-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass transformation!-function (range-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass aggregation-function (range-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric apply-range-function (range state function))
+
+
+(defgeneric make-state (function &key &allow-other-keys))

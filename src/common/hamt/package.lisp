@@ -16,6 +16,7 @@
    #:clear-modification-masks
    #:copy-node
    #:copy-on-write
+   #:get-range-key-function
    #:go-down-on-path
    #:hamt-container
    #:hash-do
@@ -26,6 +27,7 @@
    #:hash-node-deep-copy
    #:hash-node-insert!
    #:hash-node-insert-into-copy
+   #:hash-node-p
    #:hash-node-remove!
    #:hash-node-remove-from-the-copy
    #:hash-node-replace!
@@ -38,7 +40,7 @@
    #:hash-node-whole-mask
    #:isolate-transactional-instance
    #:mark-everything-as-modified
-   #:hash-node-p
+   #:obtain-value
    #:read-max-depth
    #:rebuild-rehashed-node
    #:rehash

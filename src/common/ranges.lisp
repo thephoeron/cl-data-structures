@@ -1,16 +1,17 @@
 (in-package #:cl-data-structures.common)
 
 
-(defclass forward-tree-range ()
+(defclass forward-tree-range (cl-ds:fundamental-forward-range)
   ((%forward-stack :type list
                    :accessor access-forward-stack
+                   :initarg :forward-stack
                    :initform nil)
    (%obtain-value :type (-> ((-> () t) (-> (t) t)) (values t boolean))
                   :initarg :obtain-value
                   :reader read-obtain-value)
-   (%obtain-value-reverse :type (–> ((-> () t) (-> (t) t)) (values t boolean))
-                          :initarg :obtain-value-reverse
-                          :reader read-obtain-value-reverse)))
+   (%key :type (-> (t) t)
+         :initarg :key
+         :reader read-key)))
 
 
 (defmethod cl-ds:morep ((range forward-tree-range))
@@ -35,20 +36,22 @@
 
 (defmethod cl-ds:peek-front ((range forward-tree-range))
   (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)) range
+                   (obtain-value read-obtain-value)
+                   (key read-key)) range
     (multiple-value-bind (new-stack result found)
         (read-implementation stack obtain-value)
       (declare (ignore new-stack))
-      (values result found))))
+      (values (when found (funcall key result)) found))))
 
 
 (defmethod cl-ds:consume-front ((range forward-tree-range))
   (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)) range
+                   (obtain-value read-obtain-value)
+                   (key read-key)) range
     (multiple-value-bind (new-stack result found)
         (read-implementation stack obtain-value)
       (setf stack new-stack)
-      (values result found))))
+      (values (when found (funcall key result)) found))))
 
 
 ;; (defmethod cl-ds:consume-back ((range forward-tree-range))

@@ -701,7 +701,7 @@ Copy nodes and stuff.
 
 (defun new-cell (node)
   (cond
-    ((listp node) node)
+    ((consp node) node)
     ((hash-node-p node) (make-hamt-range-stack-cell
                          :start 0
                          :end (1- (hash-node-size node))
@@ -713,8 +713,8 @@ Copy nodes and stuff.
   (cond
     ((hamt-range-stack-cell-p cell)
      (values
-      (new-cell (aref (~> cell hamt-range-stack-cell-node hash-node-content
-                          (aref (hamt-range-stack-cell-start cell)))))
+      (new-cell (~> cell hamt-range-stack-cell-node hash-node-content
+                    (aref (hamt-range-stack-cell-start cell))))
       (unless (eql (hamt-range-stack-cell-start cell) (hamt-range-stack-cell-end cell))
         (make-hamt-range-stack-cell
          :start (1+ (hamt-range-stack-cell-start cell))
@@ -725,3 +725,26 @@ Copy nodes and stuff.
       (first cell)
       (rest cell)))
     (t (error "Logic Error!"))))
+
+
+(defun obtain-value (pull push)
+  (declare (optimize (debug 3)))
+  (iterate
+    (for old-cell = (funcall pull))
+    (for (values new-cell modified-cell) = (forward-cell old-cell))
+    (unless (null modified-cell) ;push if anything
+      (funcall push modified-cell))
+    (if (listp old-cell)
+        (return-from obtain-value (values new-cell t))
+        (unless (null new-cell)
+          (funcall push new-cell)))))
+
+
+(defgeneric get-range-key-function (container))
+
+
+(defmethod cl-ds:whole-range ((container hamt-container))
+  (make 'cl-ds.common:forward-tree-range
+        :obtain-value #'obtain-value
+        :key (get-range-key-function container)
+        :forward-stack (list (new-cell (access-root container)))))

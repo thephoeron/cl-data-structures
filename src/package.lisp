@@ -5,8 +5,7 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-   #:*documentation*
-   #:add
+    #:add
    #:add!
    #:add!-function
    #:add-function
@@ -40,8 +39,13 @@
    #:functional-insert-function
    #:functional-update-function
    #:functionalp
+   #:fundamental-assignable-forward-range
+   #:fundamental-assignable-range
    #:fundamental-container
+   #:fundamental-forward-range
+   #:fundamental-forward-range
    #:fundamental-modification-operation-status
+   #:fundamental-range
    #:grow-bucket
    #:grow-bucket!
    #:grow-function
@@ -88,7 +92,10 @@
    #:update!
    #:update!-function
    #:update-function
-   #:value))
+   #:value
+   #:whole-range
+   #:*documentation*))
+
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)

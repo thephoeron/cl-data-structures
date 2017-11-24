@@ -10,15 +10,10 @@
    #:abstract-dictionary
    #:abstract-hashing-dictionary
    #:bucket
-   #:content-tuple
-   #:content-tuple-location
-   #:content-tuple-value
    #:dictionary
    #:find-content
    #:functional-dictionary
    #:functional-hashing-dictionary
-   #:hash-content-tuple
-   #:hash-content-tuple-hash
    #:hashing-dictionary
    #:lazy-dictionary
    #:lazy-hashing-dictionary

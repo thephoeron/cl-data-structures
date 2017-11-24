@@ -496,3 +496,9 @@ Methods. Those will just call non generic functions.
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
+
+(flet ((fn (x)
+         (list* (cl-ds.common:hash-content-location x)
+                (cl-ds.common:hash-dict-content-value x))))
+  (defmethod get-range-key-function ((container hamt-dictionary))
+    #'fn))
