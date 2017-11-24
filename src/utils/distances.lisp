@@ -70,8 +70,8 @@
               :content result)))))
 
 
-(-> parallel-make-distance-matrix-from-vector ((or list symbol) vector function &optional (-> (t) t) &key (:key (-> (t) t))) distance-matrix)
-(defun parallel-make-distance-matrix-from-vector (type sequence function &optional (function-context #'identity) &key (key #'identity))
+(-> parallel-make-distance-matrix-from-vector ((or list symbol) function vector &key (:key (-> (t) t)) (:function-context (-> (t) t))) distance-matrix)
+(defun parallel-make-distance-matrix-from-vector (type function sequence &key (key #'identity) (function-context #'identity))
   (declare (optimize (speed 3)))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
