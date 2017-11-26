@@ -5,7 +5,8 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-    #:add
+   #:add
+   #:*documentation*
    #:add!
    #:add!-function
    #:add-function
@@ -20,6 +21,7 @@
    #:destructive-counterpart
    #:destructive-function
    #:destructive-function
+   #:drop-back
    #:drop-front
    #:erase
    #:erase!
@@ -93,8 +95,7 @@
    #:update!-function
    #:update-function
    #:value
-   #:whole-range
-   #:*documentation*))
+   #:whole-range))
 
 
 (in-package #:cl-ds)

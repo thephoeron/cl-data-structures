@@ -41,6 +41,7 @@
                 :components ((:file "package")
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
+                             (:file "lazy-range")
                              (:file "lazy-box")
                              (:file "content-tuple")
                              (:file "ranges")
