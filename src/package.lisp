@@ -34,6 +34,8 @@
    #:found
    #:functional
    #:functional-add-function
+   #:fundamental-random-access-range
+   #:fundamental-bidirectional-range
    #:functional-counterpart
    #:functional-erase-function
    #:functional-erase-if-function
