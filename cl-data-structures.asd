@@ -41,8 +41,8 @@
                 :components ((:file "package")
                              (:file "modification-operation-status")
                              (:file "eager-modification-operation-status")
-                             (:file "lazy-range")
                              (:file "lazy-box")
+                             (:file "lazy-range")
                              (:file "content-tuple")
                              (:file "ranges")
                              (:module "hamt"

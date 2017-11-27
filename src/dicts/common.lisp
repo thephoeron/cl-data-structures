@@ -379,3 +379,9 @@
 (defmethod cl-ds:become-lazy ((container cl-ds.dicts:dictionary))
   (make 'lazy-box-dictionary
         :content (cl-ds:become-transactional container)))
+
+
+(defmethod cl-ds:whole-range ((container lazy-box-dictionary))
+  (cl-ds.common:make-lazy-range cl-ds.common:forward-lazy-range
+                                container
+                                (cl-ds:whole-range container)))

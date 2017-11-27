@@ -18,6 +18,12 @@
       (setf %range (funcall %range)))))
 
 
+(defmacro make-lazy-range (class container range)
+  `(make-instance ',class
+                  :container ,container
+                  :range (lambda () ,range)))
+
+
 (defmethod cl-ds:consume-front :before ((range lazy-range))
    (force-lazy-range range))
 

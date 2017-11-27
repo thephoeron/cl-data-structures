@@ -10,15 +10,18 @@
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
    #:force-version
-   #:single-element-p
-   #:lazy-box-container
-   #:make-eager-modification-operation-status
+   #:forward-lazy-range
    #:forward-tree-range
-   #:make-hash-dict-content
-   #:hash-dict-content-value
-   #:hash-content-location
    #:hash-content-hash
+   #:hash-content-location
+   #:hash-dict-content-value
+   #:lazy-bidirectional-range
+   #:lazy-box-container
+   #:lazy-random-access-range
+   #:make-eager-modification-operation-status
    #:make-hash-content
+   #:make-hash-dict-content
+   #:make-lazy-range
    #:read-found
-   #:read-value))
-
+   #:read-value
+   #:single-element-p))
