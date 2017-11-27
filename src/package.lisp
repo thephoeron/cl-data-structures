@@ -10,6 +10,7 @@
    #:add!
    #:add!-function
    #:add-function
+   #:apply-layer
    #:argument-out-of-bounds
    #:at
    #:become-functional

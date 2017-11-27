@@ -157,6 +157,9 @@
                                    &key &allow-other-keys))
 
 
+(defgeneric apply-layer (range function &rest all &key &allow-other-keys))
+
+
 (defclass range-function (closer-mop:standard-generic-function)
   ())
 
@@ -176,7 +179,14 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric apply-range-function (range state function))
+(defgeneric apply-range-function (range function
+                                  &rest all
+                                  &key &allow-other-keys)
+  (:method ((range cl-ds:fundamental-range)
+            (function layer-function)
+            &rest all &key &allow-other-keys)
+    (let ((clone (cl-ds:clone range)))
+      (apply #'apply-layer clone function all))))
 
 
 (defgeneric make-state (function &key &allow-other-keys))
