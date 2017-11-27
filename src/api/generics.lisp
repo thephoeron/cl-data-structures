@@ -65,9 +65,6 @@
   (:method ((container transactional)) t)
   (:method ((container fundamental-container)) nil))
 
-(defmethod alexandria:emptyp ((container fundamental-container))
-  (zerop (size container)))
-
 (defgeneric value (status))
 
 (defgeneric found (status))
@@ -112,6 +109,8 @@ Range releated functions.
 
 (defgeneric morep (range))
 
+(defgeneric clone (range))
+
 (defgeneric whole-range (container))
 
 #|
@@ -121,7 +120,7 @@ Algorithms
 |#
 
 (defgeneric on-each (function range)
-  (:generic-function-class layer-function))
+  (:generic-function-class on-each-function))
 
 (defgeneric change-each! (function range)
   (:generic-function-class transformation!-function))

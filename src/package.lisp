@@ -5,8 +5,8 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics)
   (:nicknames #:cl-ds)
   (:export
-   #:add
    #:*documentation*
+   #:add
    #:add!
    #:add!-function
    #:add-function
@@ -16,6 +16,7 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:clone
    #:consume-back
    #:consume-front
    #:destructive-counterpart
@@ -34,8 +35,6 @@
    #:found
    #:functional
    #:functional-add-function
-   #:fundamental-random-access-range
-   #:fundamental-bidirectional-range
    #:functional-counterpart
    #:functional-erase-function
    #:functional-erase-if-function
@@ -45,10 +44,12 @@
    #:functionalp
    #:fundamental-assignable-forward-range
    #:fundamental-assignable-range
+   #:fundamental-bidirectional-range
    #:fundamental-container
    #:fundamental-forward-range
    #:fundamental-forward-range
    #:fundamental-modification-operation-status
+   #:fundamental-random-access-range
    #:fundamental-range
    #:grow-bucket
    #:grow-bucket!

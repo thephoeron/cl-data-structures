@@ -54,6 +54,13 @@
       (values (when found (funcall key result)) found))))
 
 
+(defmethod cl-ds:clone ((range forward-tree-range))
+  (make 'forward-tree-range
+        :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
+        :obtain-value (read-obtain-value range)
+        :key (read-key range)))
+
+
 ;; (defmethod cl-ds:consume-back ((range forward-tree-range))
 ;;   (with-accessors ((stack access-backward-stack)
 ;;                    (obtain-value read-obtain-value-reverse)) range

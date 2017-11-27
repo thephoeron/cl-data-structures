@@ -699,6 +699,13 @@ Copy nodes and stuff.
   node)
 
 
+(defmethod cl-ds:clone ((cell hamt-range-stack-cell))
+  (make 'hamt-range-stack-cell
+        :start (hamt-range-stack-cell-start cell)
+        :end (hamt-range-stack-cell-end cell)
+        :node (hamt-range-stack-cell-node cell)))
+
+
 (defun new-cell (node)
   (cond
     ((consp node) node)
