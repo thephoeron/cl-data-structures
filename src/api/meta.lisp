@@ -189,10 +189,11 @@
       (apply #'apply-layer clone function all))))
 
 
-(defgeneric make-state (function &key &allow-other-keys))
-
-
 (defclass on-each-function (layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
+
+(defclass group-by-function (layer-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))

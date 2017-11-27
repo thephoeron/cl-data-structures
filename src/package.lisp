@@ -52,6 +52,7 @@
    #:fundamental-modification-operation-status
    #:fundamental-random-access-range
    #:fundamental-range
+   #:group-by-function
    #:grow-bucket
    #:grow-bucket!
    #:grow-function
@@ -100,7 +101,6 @@
    #:update-function
    #:value
    #:whole-range))
-
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)
