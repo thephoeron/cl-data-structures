@@ -123,6 +123,5 @@ Algorithms
 (defgeneric on-each (function range)
   (:generic-function-class layer-function))
 
-
 (defgeneric change-each! (function range)
   (:generic-function-class transformation!-function))

@@ -44,8 +44,8 @@
             :content result))))
 
 
-(-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) number) &key (:key (-> (t) t))) distance-matrix)
-(defun make-distance-matrix-from-vector (type sequence function &key (key #'identity))
+(-> make-distance-matrix-from-vector ((or list symbol) (-> (t t) number) vector &key (:key (-> (t) t))) distance-matrix)
+(defun make-distance-matrix-from-vector (type function sequence &key (key #'identity))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                       (1- size)
