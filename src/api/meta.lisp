@@ -188,12 +188,3 @@
     (let ((clone (cl-ds:clone range)))
       (apply #'apply-layer clone function all))))
 
-
-(defclass on-each-function (layer-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defclass group-by-function (layer-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))

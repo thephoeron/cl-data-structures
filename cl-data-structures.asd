@@ -34,6 +34,7 @@
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
+                             (:file "range-algorithms")
                              (:file "conditions")
                              (:file "macros")
                              (:file "docstrings")))
