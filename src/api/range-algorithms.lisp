@@ -11,7 +11,7 @@
                         &key &allow-other-keys)
   (:method ((range fundamental-range)
             class &rest all &key &allow-other-keys)
-    (apply #'make-instance class all)))
+    (apply #'make-instance class :original-range range all)))
 
 
 (defclass on-each-function (layer-function)
@@ -55,16 +55,13 @@
     (check-type function (or symbol function))
     (call-next-method))
   (:method ((range fundamental-forward-range) function)
-    (make-proxy 'forward-proxy-box-range
-                :original-range range
+    (make-proxy range 'forward-proxy-box-range
                 :function function))
   (:method ((range fundamental-bidirectional-range) function)
-    (make-proxy 'bidirectional-proxy-box-range
-                :original-range range
+    (make-proxy range 'bidirectional-proxy-box-range
                 :function function))
   (:method ((range fundamental-random-access-range) function)
-    (make-proxy 'random-access-proxy-box-range
-                :original-range range
+    (make-proxy range 'random-access-proxy-box-range
                 :function function)))
 
 
