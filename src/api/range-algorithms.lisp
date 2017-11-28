@@ -1,6 +1,11 @@
 (in-package #:cl-data-structures)
 
 
+(defclass proxy-range ()
+  ((%original-range :initarg :original-range
+                    :reader read-original-range)))
+
+
 (defclass on-each-function (layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
@@ -17,10 +22,9 @@
     (apply-range-function range #'on-each :function function)))
 
 
-(defclass forward-proxy-box-range (fundamental-forward-range)
-  ((%original-range :initarg :original-range
-                    :reader read-original-range)
-   (%function :initarg :function
+(defclass forward-proxy-box-range (fundamental-forward-range
+                                   proxy-range)
+  ((%function :initarg :function
               :reader read-function)))
 
 
