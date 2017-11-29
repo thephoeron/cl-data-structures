@@ -6,7 +6,19 @@
                     :reader read-original-range)))
 
 
-(defclass group-by-proxy (proxy-range)
+(defclass forward-proxy-range (proxy-range fundamental-forward-range)
+  ())
+
+
+(defclass bidirectional-proxy-range (proxy-range fundamental-bidirectional-range)
+  ())
+
+
+(defclass random-access-proxy-range (proxy-range fundamental-random-access-range)
+  ())
+
+
+(defclass group-by-proxy ()
   ((%groups :initarg :groups
             :type hash-table
             :reader read-groups)
@@ -20,15 +32,15 @@
         (slot-value instance '%key) key))
 
 
-(defclass forward-group-by-proxy (group-by-proxy)
+(defclass forward-group-by-proxy (forward-proxy-range group-by-proxy)
   ())
 
 
-(defclass bidirectional-group-by-proxy (group-by-proxy)
+(defclass bidirectional-group-by-proxy (bidirectional-proxy-range group-by-proxy)
   ())
 
 
-(defclass random-access-group-by-proxy (group-by-proxy)
+(defclass random-access-group-by-proxy (random-access-proxy-range group-by-proxy)
   ())
 
 
