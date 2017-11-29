@@ -179,6 +179,15 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defgeneric make-state (aggregation-function))
+
+
+(defgeneric aggregate (function state element))
+
+
+(defgeneric state-result (function state))
+
+
 (defgeneric apply-range-function (range function
                                   &rest all
                                   &key &allow-other-keys)
@@ -188,3 +197,15 @@
     (let ((clone (cl-ds:clone range)))
       (apply #'apply-layer clone function all))))
 
+
+(defgeneric apply-aggregation-function (range function
+                                        &rest all &key &allow-other-keys)
+  (:method ((range cl-ds:fundamental-range)
+            (function aggregation-function)
+            &rest all &key &allow-other-keys)
+    (let ((clone (cl-ds:clone range))
+          (state (apply #'make-state function all)))
+      (iterate
+        (while (morep clone))
+        (aggregate function state (consume-front clone)))
+      (state-result function state))))
