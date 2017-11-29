@@ -27,6 +27,12 @@
          :reader read-key)))
 
 
+(defmethod clone ((range group-by-proxy))
+  (make-instance (type-of range)
+                 :original-range (clone (read-original-range range))
+                 :groups (copy-hash-table (read-groups range))))
+
+
 (defmethod initialize-instance :before ((instance group-by-proxy) &key test key &allow-other-keys)
   (setf (slot-value instance '%groups) (make-hash-table :test test)
         (slot-value instance '%key) key))
@@ -82,30 +88,28 @@
   (:method ((range fundamental-range) &key (test 'eql) (key #'identity))
     (apply-range-function range #'group-by :test test :key key)))
 
-(defclass forward-proxy-box-range (fundamental-forward-range
-                                   proxy-range)
+
+(defclass proxy-box-range ()
   ((%function :initarg :function
               :reader read-function)))
+
+
+(defclass forward-proxy-box-range (forward-proxy-range proxy-box-range)
+  ())
+
+
+(defclass bidirectional-proxy-box-range (bidirectional-proxy-range proxy-box-range)
+  ())
+
+
+(defclass random-access-proxy-box-range (random-access-proxy-range proxy-box-range)
+  ())
 
 
 (defmethod clone ((range forward-proxy-box-range))
   (make-instance (type-of range)
                  :original-range (clone (read-original-range range))
                  :function (read-function range)))
-
-
-(defmethod clone ((range group-by-proxy))
-  (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
-                 :groups (copy-hash-table (read-groups range))))
-
-
-(defclass bidirectional-proxy-box-range (forward-proxy-box-range)
-  ())
-
-
-(defclass random-access-proxy-box-range (bidirectional-proxy-box-range)
-  ())
 
 
 (defclass hash-table-range (fundamental-random-access-range)
@@ -127,6 +131,30 @@
         :begin (access-begin range)
         :end (access-end range)
         :hash-table (read-hash-table range)))
+
+
+(defmethod consume-front ((range forward-proxy-range))
+  (consume-front (read-original-range range)))
+
+
+(defmethod consume-back ((range bidirectional-proxy-range))
+  (consume-back (read-original-range range)))
+
+
+(defmethod peek-front ((range forward-proxy-range))
+  (peek-front (read-original-range range)))
+
+
+(defmethod peek-back ((range bidirectional-proxy-range))
+  (peek-back (read-original-range)))
+
+
+(defmethod at ((range random-access-proxy-range) location)
+  (at (read-original-range range) location))
+
+
+(defmethod morep ((range forward-proxy-range))
+  (morep (read-original-range range)))
 
 
 (defmethod consume-front ((range hash-table-range))
@@ -172,6 +200,11 @@
            (list* key
                   (gethash key ht))
            t)))))
+
+
+(defmethod morep ((range hash-table-range))
+  (with-slots ((begin %begin) (end %end)) range
+    (not (eql begin end))))
 
 
 (defmethod at ((range hash-table-range) location)
