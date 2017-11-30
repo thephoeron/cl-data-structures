@@ -111,4 +111,4 @@ Range releated functions.
 
 (defgeneric clone (range))
 
-(defgeneric whole-range (container))
+(defgeneric whole-range (container)) 
