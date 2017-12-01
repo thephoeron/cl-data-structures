@@ -169,8 +169,8 @@
                   value)))))))
 
 
-(defgeneric each-in-matrix (matrix fn)
-  (:method ((matrix distance-matrix) fn)
+(defgeneric each-in-matrix (fn matrix)
+  (:method (fn (matrix distance-matrix))
     (declare (type (-> (index index single-float) t) fn))
     (with-vectors ((content (slot-value matrix '%content)))
       (iterate
