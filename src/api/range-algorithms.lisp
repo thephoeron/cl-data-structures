@@ -58,13 +58,13 @@
     (apply #'make-instance class :original-range range all))
   (:method ((range group-by-proxy)
             class &rest all &key &allow-other-keys)
-    (let ((original-range (read-original-range range))
-          (original-groups (read-groups range)))
+    (let ((original-range (read-original-range range))))
+    -groups (read-groups range)
       (apply #'make-instance
              (type-of range)
              :original-range (apply #'make-proxy original-range class all)
              :groups (copy-hash-table original-groups)
-             :key (read-key range)))))
+             :key (read-key range))))
 
 
 (defclass on-each-function (layer-function)
@@ -155,6 +155,26 @@
 
 (defmethod morep ((range forward-proxy-range))
   (morep (read-original-range range)))
+
+
+(defmethod consume-front ((range forward-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod consume-back ((range bidirectional-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod peek-front ((range forward-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod peek-back ((range bidirectional-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod at ((range random-access-proxy-box-range) location)
+  (funcall (read-function range) (call-next-method)))
 
 
 (defmethod consume-front ((range hash-table-range))
