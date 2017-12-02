@@ -22,7 +22,6 @@
   (once-only (limit)
     `(let ((dict ,init-form))
        (is (size dict) 0)
-       (ok (emptyp dict))
        (diag "Testing insert")
        (iterate
          (for s from 1 below ,limit)

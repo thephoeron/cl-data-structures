@@ -429,13 +429,6 @@
 
 
 (set-documentation
- 'emptyp <mechanics> <generic> *documentation*
- :syntax "emptyp container => boolean"
- :arguments-and-values '(("container" "Any subclass of fundamental-container"))
- :returns "T if CONTAINER is empty and NIL if it is not.")
-
-
-(set-documentation
  'value <mechanics> <generic> *documentation*
  :syntax "value status => value"
  :arguments-and-values '((status "instance of modification status class."))

@@ -77,6 +77,11 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass accumulate-function (aggregation-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defgeneric on-each (function range)
   (:generic-function-class on-each-function)
   (:method (function (range fundamental-range))
@@ -87,6 +92,14 @@
   (:generic-function-class group-by-function)
   (:method ((range fundamental-range) &key (test 'eql) (key #'identity))
     (apply-range-function range #'group-by :test test :key key)))
+
+
+(defgeneric accumulate (function range &key key initial-value)
+  (:generic-function-class accumulate-function)
+  (:method (function (range fundamental-range) &key (key #'identity) (initial-value nil))
+    (apply-aggregation-function range #'accumulate
+                                :key key
+                                :initial-value initial-value)))
 
 
 (defclass proxy-box-range ()
