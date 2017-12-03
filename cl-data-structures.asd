@@ -35,7 +35,13 @@
                              (:file "trait-classes")
                              (:file "generics")
                              (:file "conditions")
-                             (:file "range-algorithms")
+                             (:module "basic-range-algorithms"
+                              :components ((:file "meta")
+                                           (:file "common")
+                                           (:file "on-each")
+                                           (:file "change-each!")
+                                           (:file "accumulate")
+                                           (:file "group-by")))
                              (:file "macros")
                              (:file "docstrings")))
                (:module "common"
