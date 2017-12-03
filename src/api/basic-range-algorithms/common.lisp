@@ -26,13 +26,13 @@
     (apply #'make-instance class :original-range range all))
   (:method ((range group-by-proxy)
             class &rest all &key &allow-other-keys)
-    (let ((original-range (read-original-range range))))
-    -groups (read-groups range)
-    (apply #'make-instance
-           (type-of range)
-           :original-range (apply #'make-proxy original-range class all)
-           :groups (copy-hash-table original-groups)
-           :key (read-key range))))
+    (let ((original-range (read-original-range range))
+          (original-groups (read-groups range)))
+      (apply #'make-instance
+             (type-of range)
+             :original-range (apply #'make-proxy original-range class all)
+             :groups (copy-hash-table original-groups)
+             :key (read-key range)))))
 
 
 (defclass hash-table-range (fundamental-random-access-range)
