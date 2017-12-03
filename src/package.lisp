@@ -8,6 +8,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:*documentation*
+   #:accumulate
    #:add
    #:add!
    #:add!-function

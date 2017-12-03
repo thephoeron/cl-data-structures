@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 5)
+(plan 6)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -33,5 +33,9 @@
                (prove:is result
                          '((5 . 1) (5 . 1) (5 . 1) (5 . 1))
                          :test #'equal)
-               (prove:ok (cl-ds:morep range))))))
+               (prove:ok (cl-ds:morep range)))))
+  (let ((sum (~> dict
+                 cl-ds:whole-range
+                 (cl-ds:accumulate #'+ _ :key #'cdr))))
+    (is sum 10)))
 (finalize)

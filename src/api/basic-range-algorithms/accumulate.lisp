@@ -11,7 +11,7 @@
   (:method (function (range fundamental-range) &key (key #'identity) (initial-value nil))
     (apply-aggregation-function range #'accumulate
                                 :key key
-                                :initial-value initial-value
+                                :value initial-value
                                 :fn function)))
 
 
@@ -26,7 +26,7 @@
 
 (defmethod state-result ((function accumulate-function)
                          (state accumulation-state))
-  (read-value state))
+  (access-value state))
 
 
 (defmethod make-state ((function accumulate-function)
@@ -34,17 +34,24 @@
                        &key
                          (initial-value nil value-present)
                          fn
+                         key
                        &allow-other-keys)
-  (apply #'make-instance 'accumulation-state all))
+  (declare (ignore all))
+  (if value-present
+      (make 'accumulation-state :fn fn
+                                :key key
+                                :value initial-value)
+      (make 'accumulation-state :fn fn
+                                :key key)))
 
 
 (defmethod aggregate ((function accumulate-function)
                       (state accumulation-state)
                       element)
   (with-slots ((value %value) (fn %fn) (key %key)) state
-    (if (slot-boundp state '%value)
-        (setf value (funcall key element))
-        (setf value
+    (setf value
+          (if (slot-boundp state '%value)
               (funcall fn
                        value
-                       (funcall key element))))))
+                       (funcall key element))
+              (funcall key element)))))
