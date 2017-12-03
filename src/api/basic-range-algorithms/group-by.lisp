@@ -15,6 +15,7 @@
                  :original-range (clone (read-original-range range))
                  :groups (copy-hash-table (read-groups range))))
 
+
 (defmethod initialize-instance :before ((instance group-by-proxy) &key test key &allow-other-keys)
   (setf (slot-value instance '%groups) (make-hash-table :test test)
         (slot-value instance '%key) key))

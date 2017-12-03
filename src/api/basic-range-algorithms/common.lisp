@@ -152,7 +152,16 @@
 
 (defmethod at ((range hash-table-range) location)
   (with-slots ((ht %hash-table)) range
-    (gethash location ht)))
+    (let ((test (hash-table-test ht))
+          (begin (access-begin range))
+          (end (access-end range))
+          (keys (read-keys range)))
+      (if (iterate
+            (for i from begin below end)
+            (for l = (aref keys i))
+            (finding t such-that (funcall test l location)))
+          (gethash location ht)
+          (values nil nil)))))
 
 
 (defun make-hash-table-range (hash-table)
