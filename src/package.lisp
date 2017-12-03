@@ -9,10 +9,12 @@
   (:export
    #:*documentation*
    #:accumulate
+   #:accumulation-function
    #:add
    #:add!
    #:add!-function
    #:add-function
+   #:aggregate
    #:apply-layer
    #:argument-out-of-bounds
    #:at
@@ -55,6 +57,7 @@
    #:fundamental-modification-operation-status
    #:fundamental-random-access-range
    #:fundamental-range
+   #:group-by
    #:group-by-function
    #:grow-bucket
    #:grow-bucket!
@@ -72,6 +75,7 @@
    #:invalid-argument
    #:lazy
    #:make-bucket
+   #:make-state
    #:mod-bind
    #:morep
    #:mutable

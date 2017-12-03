@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures)
 
 
-(defclass group-by-proxy ()
+(defclass group-by-proxy (proxy-range)
   ((%groups :initarg :groups
             :type hash-table
             :reader read-groups)
@@ -10,10 +10,23 @@
          :reader read-key)))
 
 
+(defclass forward-group-by-proxy (group-by-proxy fundamental-forward-range)
+  ())
+
+
+(defclass bidirectional-group-by-proxy (forward-group-by-proxy fundamental-bidirectional-range)
+  ())
+
+
+(defclass random-access-group-by-proxy (bidirectional-group-by-proxy fundamental-random-access-range)
+  ())
+
+
 (defmethod clone ((range group-by-proxy))
   (make-instance (type-of range)
                  :original-range (clone (read-original-range range))
-                 :groups (copy-hash-table (read-groups range))))
+                 :groups (copy-hash-table (read-groups range))
+                 :key (read-key range)))
 
 
 (defmethod initialize-instance :before ((instance group-by-proxy) &key test key &allow-other-keys)
@@ -35,6 +48,7 @@
 (defmethod apply-aggregation-function ((range group-by-proxy)
                                        (function aggregation-function)
                                        &rest all &key &allow-other-keys)
+  (declare (optimize (debug 3)))
   (let ((clone (clone (read-original-range range)))
         (groups (copy-hash-table (read-groups range)))
         (key (read-key range)))
@@ -53,6 +67,17 @@
                  (setf (gethash key result-table) (state-result function state)))
                groups)
       (make-hash-table-range result-table))))
+
+
+(defmethod make-proxy ((range group-by-proxy)
+                       class &rest all &key &allow-other-keys)
+  (let ((original-range (read-original-range range))
+        (original-groups (read-groups range)))
+    (apply #'make-instance
+           (type-of range)
+           :original-range (apply #'make-proxy original-range class all)
+           :groups (copy-hash-table original-groups)
+           :key (read-key range))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
