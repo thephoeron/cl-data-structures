@@ -71,26 +71,6 @@
   (morep (read-original-range range)))
 
 
-(defmethod consume-front ((range forward-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
-
-
-(defmethod consume-back ((range bidirectional-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
-
-
-(defmethod peek-front ((range forward-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
-
-
-(defmethod peek-back ((range bidirectional-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
-
-
-(defmethod at ((range random-access-proxy-box-range) location)
-  (funcall (read-function range) (call-next-method)))
-
-
 (defmethod consume-front ((range hash-table-range))
   (with-slots ((begin %begin) (end %end) (ht %hash-table) (keys %keys)) range
     (if (eql begin end)

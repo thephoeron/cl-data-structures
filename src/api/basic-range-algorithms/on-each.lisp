@@ -55,3 +55,23 @@
                         &rest all &key function)
   (declare (ignore all))
   (on-each-proxy-range-from-range range function))
+
+(defmethod consume-front ((range forward-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod consume-back ((range bidirectional-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod peek-front ((range forward-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod peek-back ((range bidirectional-proxy-box-range))
+  (funcall (read-function range) (call-next-method)))
+
+
+(defmethod at ((range random-access-proxy-box-range) location)
+  (funcall (read-function range) (call-next-method)))
+
