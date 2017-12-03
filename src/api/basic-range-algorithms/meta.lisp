@@ -23,7 +23,9 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric make-state (aggregation-function))
+(defgeneric make-state (aggregation-function
+                        &rest all
+                        &key &allow-other-keys))
 
 
 (defgeneric aggregate (function state element))
@@ -41,7 +43,19 @@
                                         &rest all &key &allow-other-keys))
 
 
+(defmethod apply-range-function ((range cl-ds:fundamental-range)
+                                 (function layer-function)
+                                 &rest all &key &allow-other-keys)
+  (let ((clone (cl-ds:clone range)))
+    (apply #'apply-layer clone function all)))
 
-(defclass accumulate-function (aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
+
+(defmethod apply-aggregation-function ((range cl-ds:fundamental-range)
+                                       (function aggregation-function)
+                                       &rest all &key &allow-other-keys)
+  (let ((clone (cl-ds:clone range))
+        (state (apply #'make-state function all)))
+    (iterate
+      (while (morep clone))
+      (aggregate function state (consume-front clone)))
+    (state-result function state)))
