@@ -66,7 +66,11 @@
 
 
 (defmethod consume-back ((range bidirectional-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
+  (with-slots ((cache %backward-cache)) range
+    (if (slot-boundp range '%forward-cache)
+        (progn (call-next-method) cache)
+        (funcall (read-function range)
+                 (call-next-method)))))
 
 
 (defmethod peek-front ((range forward-proxy-box-range))
