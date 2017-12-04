@@ -18,11 +18,11 @@
 
 
 (defclass forward-proxy-box-range (forward-proxy-range proxy-box-range)
-  ())
+  ((%forward-cache :accessor access-forward-cache)))
 
 
 (defclass bidirectional-proxy-box-range (bidirectional-proxy-range proxy-box-range)
-  ())
+  ((%backward-cache :accessor access-backward-cache)))
 
 
 (defclass random-access-proxy-box-range (random-access-proxy-range proxy-box-range)
@@ -56,8 +56,13 @@
   (declare (ignore all))
   (on-each-proxy-range-from-range range function))
 
+
 (defmethod consume-front ((range forward-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
+  (with-slots ((cache %forward-cache)) range
+    (if (slot-boundp range '%forward-cache)
+        (progn (call-next-method) cache)
+        (funcall (read-function range)
+                 (call-next-method)))))
 
 
 (defmethod consume-back ((range bidirectional-proxy-box-range))
@@ -65,11 +70,19 @@
 
 
 (defmethod peek-front ((range forward-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
+  (with-slots ((cache %forward-cache)) range
+    (if (slot-boundp range '%forward-cache)
+        cache
+        (setf cache (funcall (read-function range)
+                             (call-next-method))))))
 
 
 (defmethod peek-back ((range bidirectional-proxy-box-range))
-  (funcall (read-function range) (call-next-method)))
+  (with-slots ((cache %backward-cache)) range
+    (if (slot-boundp range '%backward-cache)
+        cache
+        (setf cache (funcall (read-function range)
+                             (call-next-method))))))
 
 
 (defmethod at ((range random-access-proxy-box-range) location)
