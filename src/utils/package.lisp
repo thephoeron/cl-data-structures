@@ -25,6 +25,7 @@
    #:merge-ordered-vectors
    #:mutate-matrix
    #:ordered-p
+   #:on-ordered-intersection
    #:pop-last
    #:swapop
    #:todo

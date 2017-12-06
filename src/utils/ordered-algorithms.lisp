@@ -77,3 +77,39 @@
           (setf start (1+ current))
           (setf end current))
       (finally (return current)))))
+
+
+(defun on-ordered-intersection (function first-order second-order first-data second-data &key (on-missing #'identity))
+  (iterate
+    (with a = 0)
+    (with b = 0)
+    (while (< a (length first-order)))
+    (while (< b (length second-order)))
+    (for av = (aref first-order a))
+    (for bv = (aref second-order b))
+    (cond ((eql av bv)
+           (progn
+             (funcall function
+                      (aref first-data a)
+                      (aref second-data b))
+             (incf a)
+             (incf b)))
+          ((< av bv)
+           (progn
+             (funcall on-missing
+                      (aref first-data a))
+             (incf a)))
+          ((< bv av)
+           (progn
+             (funcall on-missing
+                      (aref second-data b))
+             (incf b))))
+    (finally
+     (iterate
+       (for i from a below (length first-order))
+       (funcall on-missing
+                (aref first-data i)))
+     (iterate
+       (for i from b below (length second-order))
+       (funcall on-missing
+                (aref second-data i))))))
