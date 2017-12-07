@@ -79,37 +79,36 @@
       (finally (return current)))))
 
 
-(defun on-ordered-intersection (function first-order second-order first-data second-data &key (on-missing #'identity))
-  (iterate
-    (with a = 0)
-    (with b = 0)
-    (while (< a (length first-order)))
-    (while (< b (length second-order)))
-    (for av = (aref first-order a))
-    (for bv = (aref second-order b))
-    (cond ((eql av bv)
-           (progn
-             (funcall function
-                      (aref first-data a)
-                      (aref second-data b))
-             (incf a)
-             (incf b)))
-          ((< av bv)
-           (progn
-             (funcall on-missing
-                      (aref first-data a))
-             (incf a)))
-          ((< bv av)
-           (progn
-             (funcall on-missing
-                      (aref second-data b))
-             (incf b))))
-    (finally
-     (iterate
-       (for i from a below (length first-order))
-       (funcall on-missing
-                (aref first-data i)))
-     (iterate
-       (for i from b below (length second-order))
-       (funcall on-missing
-                (aref second-data i))))))
+(defun on-ordered-intersection (function first-order second-order
+                                &key
+                                  (on-first-missing #'identity)
+                                  (on-second-missing #'identity)
+                                  (key #'identity))
+  (with-vectors (first-order second-order)
+    (iterate
+      (with a = 0)
+      (with b = 0)
+      (while (< a (length first-order)))
+      (while (< b (length second-order)))
+      (for av = (funcall key (first-order a)))
+      (for bv = (funcall key (second-order b)))
+      (cond ((eql av bv)
+             (progn
+               (funcall function a b)
+               (incf a)
+               (incf b)))
+            ((< av bv)
+             (progn
+               (funcall on-first-missing a)
+               (incf a)))
+            ((< bv av)
+             (progn
+               (funcall on-second-missing b)
+               (incf b))))
+      (finally
+       (iterate
+         (for i from a below (length first-order))
+         (funcall on-first-missing i))
+       (iterate
+         (for i from b below (length second-order))
+         (funcall on-second-missing i))))))
