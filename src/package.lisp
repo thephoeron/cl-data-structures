@@ -25,6 +25,7 @@
    #:clone
    #:consume-back
    #:consume-front
+   #:delay
    #:delayed
    #:destructive-counterpart
    #:destructive-function
@@ -77,6 +78,7 @@
    #:insert!-function
    #:insert-function
    #:invalid-argument
+   #:key-value-range
    #:lazy
    #:make-bucket
    #:make-state

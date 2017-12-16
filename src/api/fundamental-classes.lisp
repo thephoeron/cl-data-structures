@@ -42,3 +42,7 @@
 (defclass fundamental-assignable-random-access-range (fundamental-random-access-range
                                                       fundamental-assiganable-range)
   ())
+
+
+(defclass key-value-range ()
+  ())

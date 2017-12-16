@@ -7,6 +7,10 @@
    %value))
 
 
+(defun delay (callback)
+  (make 'delayed :callback callback))
+
+
 (defgeneric force (obj)
   (:method ((obj delayed))
     (if (slot-boundp obj '%value)

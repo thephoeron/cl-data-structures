@@ -17,15 +17,27 @@
               :reader read-function)))
 
 
-(defclass forward-proxy-box-range (forward-proxy-range proxy-box-range)
+(defclass forward-proxy-box-range (forward-proxy-range
+                                   proxy-box-range)
   ((%forward-cache :accessor access-forward-cache)))
 
 
-(defclass bidirectional-proxy-box-range (bidirectional-proxy-range proxy-box-range)
+(defclass bidirectional-proxy-box-range (bidirectional-proxy-range
+                                         proxy-box-range)
   ((%backward-cache :accessor access-backward-cache)))
 
 
-(defclass random-access-proxy-box-range (random-access-proxy-range proxy-box-range)
+(defclass random-access-proxy-box-range (random-access-proxy-range
+                                         bidirectional-proxy-box-range)
+  ((%at-cache :reader read-at-cache
+              :initarg :at-cache)))
+
+
+(defclass single-random-access-proxy-box-range (random-access-proxy-box-range)
+  ())
+
+
+(defclass key-value-random-access-proxy-box-range (random-access-proxy-box-range)
   ())
 
 
@@ -47,7 +59,10 @@
                 :function function))
   (:method ((range fundamental-random-access-range) function)
     (make-proxy range 'random-access-proxy-box-range
-                :function function)))
+                :function function
+                :at-cache (~> range
+                              empty-clone-of-inner-container
+                              become-mutable)))))
 
 
 (defmethod apply-layer ((range fundamental-range)
@@ -90,5 +105,13 @@
 
 
 (defmethod at ((range random-access-proxy-box-range) location)
-  (funcall (read-function range) (call-next-method)))
-
+  (let ((cache (slot-value range '%at-cache)))
+    (mod-bind (container found value)
+              (add cache
+                   location
+                   (delay (lambda ()
+                            (~> range
+                                read-original-range
+                                (at location)
+                                (funcall (read-function range) _)))))
+      value)))
