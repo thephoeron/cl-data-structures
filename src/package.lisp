@@ -7,6 +7,7 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
+   #:*documentation*
    #:accumulate
    #:accumulation-function
    #:add
@@ -30,6 +31,7 @@
    #:drop-back
    #:drop-front
    #:empty-clone
+   #:empty-clone-of-inner-container
    #:erase
    #:erase!
    #:erase!-function
@@ -107,8 +109,7 @@
    #:update!-function
    #:update-function
    #:value
-   #:whole-range
-   #:*documentation*))
+   #:whole-range))
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)

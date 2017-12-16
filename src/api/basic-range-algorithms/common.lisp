@@ -6,6 +6,10 @@
                     :reader read-original-range)))
 
 
+(defmethod cl-ds:empty-clone-of-inner-container ((range proxy-range))
+  (cl-ds:empty-clone-of-inner-container (read-original-range range)))
+
+
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
   ())
 
@@ -37,6 +41,15 @@
    (%end :initarg :end
          :type fixnum
          :accessor access-end)))
+
+
+(defmethod cl-ds:empty-clone-of-inner-container ((range hash-table-range))
+  (let ((original-table (read-hash-table range)))
+    (make-hash-table
+     :test (hash-table-test original-table)
+     :hash-function (hash-table-function original-table)
+     :rehash-size (hash-table-rehash-size original-table)
+     :rehash-threshold (hash-table-rehash-threshold original-table))))
 
 
 (defmethod clone ((range hash-table-range))

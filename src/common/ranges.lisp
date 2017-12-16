@@ -11,7 +11,10 @@
                   :reader read-obtain-value)
    (%key :type (-> (t) t)
          :initarg :key
-         :reader read-key)))
+         :reader read-key)
+   (%container :type cl-ds:fundamental-container
+               :initarg :container
+               :reader read-container)))
 
 
 (defmethod cl-ds:morep ((range forward-tree-range))
@@ -59,6 +62,10 @@
         :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
         :obtain-value (read-obtain-value range)
         :key (read-key range)))
+
+
+(defmethod cl-ds:empty-clone-of-inner-container ((range forward-tree-range))
+  (cl-ds:empty-clone (read-container range)))
 
 
 ;; (defmethod cl-ds:consume-back ((range forward-tree-range))

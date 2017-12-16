@@ -754,5 +754,6 @@ Copy nodes and stuff.
   (make 'cl-ds.common:forward-tree-range
         :obtain-value #'obtain-value
         :key (get-range-key-function container)
-        :forward-stack (list (new-cell (access-root container)))))
+        :forward-stack (list (new-cell (access-root container)))
+        :container container))
 
