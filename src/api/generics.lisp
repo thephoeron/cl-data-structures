@@ -85,6 +85,8 @@
   (:method ((operation functional-insert-function)) #'(setf at))
   (:method ((operation functional-update-function)) #'update!))
 
+(defgeneric empty-clone (container))
+
 #|
 
 Range releated functions.

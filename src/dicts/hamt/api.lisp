@@ -1,19 +1,25 @@
 (in-package #:cl-ds.dicts.hamt)
 
 
-(defclass hamt-dictionary (cl-ds.common.hamt:hamt-container)
+(defclass hamt-dictionary (cl-ds.common.hamt:hamt-container
+                           cl-ds.dicts:abstract-hashing-dictionary)
   ())
 
 
-(defclass functional-hamt-dictionary (hamt-dictionary
-                                      cl-ds.dicts:functional-hashing-dictionary
-                                      cl-ds.dicts:abstract-hashing-dictionary)
+(defmethod cl-ds:empty-clone ((container hamt-dictionary))
+  (make (type-of container)
+        :root nil
+        :size 0
+        :hash-fn (cl-ds.dicts:read-hash-fn container)))
+
+
+(defclass functional-hamt-dictionary (cl-ds.dicts:functional-hashing-dictionary
+                                      hamt-dictionary)
   ())
 
 
-(defclass mutable-hamt-dictionary (hamt-dictionary
-                                   cl-ds.dicts:mutable-hashing-dictionary
-                                   cl-ds.dicts:abstract-hashing-dictionary)
+(defclass mutable-hamt-dictionary (cl-ds.dicts:mutable-hashing-dictionary
+                                   hamt-dictionary)
   ())
 
 

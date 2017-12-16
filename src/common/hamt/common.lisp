@@ -755,3 +755,4 @@ Copy nodes and stuff.
         :obtain-value #'obtain-value
         :key (get-range-key-function container)
         :forward-stack (list (new-cell (access-root container)))))
+
