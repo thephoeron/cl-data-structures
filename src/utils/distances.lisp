@@ -70,8 +70,18 @@
               :content result)))))
 
 
-(-> parallel-make-distance-matrix-from-vector ((or list symbol) function vector &key (:key (-> (t) t)) (:function-context (-> (t) t))) distance-matrix)
-(defun parallel-make-distance-matrix-from-vector (type function sequence &key (key #'identity) (function-context #'identity))
+(-> parallel-make-distance-matrix-from-vector ((or list symbol)
+                                               function
+                                               vector
+                                               &key
+                                               (:key (-> (t) t))
+                                               (:key-context (-> (t) t))
+                                               (:function-context (-> (t) t))) distance-matrix)
+(defun parallel-make-distance-matrix-from-vector (type function sequence
+                                                  &key
+                                                    (key #'identity)
+                                                    (key-context #'identity)
+                                                    (function-context #'identity))
   (declare (optimize (speed 3)))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
@@ -86,7 +96,8 @@
     (lparallel:pmap
      nil
      (lambda (index)
-       (fbind ((dist-function (funcall function-context function)))
+       (fbind ((dist-function (funcall function-context function))
+               (key-function (funcall key-context key)))
          (iterate
            (for i in index)
            (for x = (aref sequence i))
@@ -94,7 +105,7 @@
              (for j from (1+ i) below size)
              (for y = (aref sequence j))
              (setf (aref result (index-in-content-of-distance-matrix size i j))
-                   (dist-function (funcall key x) (funcall key y)))))))
+                   (dist-function (key-function x) (key-function y)))))))
      indexes)
     (assure distance-matrix
       (make 'distance-matrix
