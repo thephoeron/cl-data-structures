@@ -32,7 +32,7 @@
 
 (defmacro bucket-growing-macro ((container bucket location hash value)
                                 result status changed)
-  (with-gensyms (!equal-fn !compare-fn)
+  (with-gensyms (!bucket !equal-fn !compare-fn)
     (once-only (container bucket location hash value)
       `(let ((,!equal-fn (read-equal-fn ,container)))
          (flet ((,!compare-fn (a b)
@@ -42,17 +42,20 @@
                                 (cl-ds.common:hash-content-location a)
                                 (cl-ds.common:hash-content-location b)))))
            (declare (dynamic-extent (function ,!compare-fn)))
-           (multiple-value-bind (^next-list ^replaced ^old-value)
-               (insert-or-replace ,bucket
-                                  (cl-ds.common:make-hash-dict-content
-                                   :hash ,hash
-                                   :location ,location
-                                   :value ,value)
-                                  :test (function ,!compare-fn)
-                                  :value-key #'cl-ds:force)
-             (values ,result
-                     ,status
-                     ,changed)))))))
+           (let ((,!bucket (cl-ds.common:make-hash-dict-content
+                            :hash ,hash
+                            :location ,location
+                            :value ,value)))
+             (multiple-value-bind (^next-list ^replaced ^old-value)
+                 (insert-or-replace ,bucket
+                                    ,!bucket
+                                    :test (function ,!compare-fn))
+               (when ,changed
+                 (setf (cl-ds.common:hash-dict-content-value ,!bucket)
+                       (cl-ds:force (cl-ds.common:hash-dict-content-value ,!bucket))))
+               (values ,result
+                       ,status
+                       ,changed))))))))
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-function)
