@@ -25,6 +25,7 @@
    #:clone
    #:consume-back
    #:consume-front
+   #:delayed
    #:destructive-counterpart
    #:destructive-function
    #:destructive-function
@@ -40,6 +41,7 @@
    #:erase-if!
    #:erase-if!-function
    #:erase-if-function
+   #:force
    #:found
    #:functional
    #:functional-add-function

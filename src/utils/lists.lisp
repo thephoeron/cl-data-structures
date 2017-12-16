@@ -5,6 +5,7 @@
                             (:test (-> (t t) boolean))
                             (:list-key (-> (t) t))
                             (:item-key (-> (t) t))
+                            (:value-key (-> (t) t))
                             (:preserve-order boolean))
     (values list boolean t))
 (declaim (inline insert-or-replace))
@@ -12,6 +13,7 @@
                                          (test #'eql)
                                          (list-key #'identity)
                                          (item-key #'identity)
+                                         (value-key #'identity)
                                          (preserve-order nil))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   "Insert element into set if it is not already here.
@@ -31,7 +33,7 @@
     (for elt = (car sublist))
     (if (funcall test (funcall list-key elt) (funcall item-key element))
         (progn
-          (push element result)
+          (push (funcall value-key element) result)
           (setf replaced t
                 value elt))
         (push elt result))
@@ -46,7 +48,8 @@
                                           result)))
                                (if replaced
                                    r
-                                   (cons element r)))
+                                   (cons (funcall value-key element)
+                                         r)))
                              replaced
                              value)))))
 

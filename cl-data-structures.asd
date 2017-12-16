@@ -42,6 +42,7 @@
                                            (:file "change-each!")
                                            (:file "accumulate")
                                            (:file "group-by")))
+                             (:file "aux")
                              (:file "macros")
                              (:file "docstrings")))
                (:module "common"

@@ -44,11 +44,12 @@
            (declare (dynamic-extent (function ,!compare-fn)))
            (multiple-value-bind (^next-list ^replaced ^old-value)
                (insert-or-replace ,bucket
-                                  (cl-ds.common:make-hash-dict-content 
+                                  (cl-ds.common:make-hash-dict-content
                                    :hash ,hash
                                    :location ,location
                                    :value ,value)
-                                  :test (function ,!compare-fn))
+                                  :test (function ,!compare-fn)
+                                  :value-key #'cl-ds:force)
              (values ,result
                      ,status
                      ,changed)))))))
@@ -189,7 +190,7 @@
                               &key hash value)
   (values (list (cl-ds.common:make-hash-dict-content
                  :location location
-                 :value value
+                 :value (cl-ds:force value)
                  :hash hash))
           cl-ds.common:empty-eager-modification-operation-status
           t))
@@ -202,7 +203,7 @@
                               &key hash value)
   (values (list (cl-ds.common:make-hash-dict-content
                  :location location
-                 :value value
+                 :value (cl-ds:force value)
                  :hash hash))
           cl-ds.common:empty-eager-modification-operation-status
           t))
@@ -233,11 +234,11 @@
       (if (null tuple)
           (push (cl-ds.common:make-hash-dict-content
                       :location location
-                      :value value
+                      :value (cl-ds:force value)
                       :hash hash)
                 bucket)
           (setf (cl-ds.common:hash-content-hash tuple) hash
-                (cl-ds.common:hash-dict-content-value tuple) value))
+                (cl-ds.common:hash-dict-content-value tuple) (cl-ds:force value)))
       (values bucket
               (if (null tuple)
                   cl-ds.common:empty-eager-modification-operation-status
@@ -259,7 +260,7 @@
                   nil)
           (progn
             (setf (cl-ds.common:hash-dict-content-value tuple) hash
-                  (cl-ds.common:hash-dict-content-value tuple) value)
+                  (cl-ds.common:hash-dict-content-value tuple) (cl-ds:force value))
             (values bucket
                     (cl-ds.common:make-eager-modification-operation-status
                      t old-value)
@@ -277,7 +278,7 @@
           (progn
             (push (cl-ds.common:make-hash-dict-content
                         :location location
-                        :value value
+                        :value (cl-ds:force value)
                         :hash hash)
                   bucket)
             (values bucket
