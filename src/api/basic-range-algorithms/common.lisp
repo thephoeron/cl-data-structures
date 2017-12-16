@@ -30,7 +30,8 @@
     (apply #'make-instance class :original-range range all)))
 
 
-(defclass hash-table-range (fundamental-random-access-range)
+(defclass hash-table-range (fundamental-random-access-range
+                            key-value-range)
   ((%hash-table :initarg :hash-table
                 :reader read-hash-table)
    (%keys :initarg :keys

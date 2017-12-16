@@ -115,3 +115,9 @@
                                 (at location)
                                 (funcall (read-function range) _)))))
       value)))
+
+
+(defmethod peek-front ((range key-value-random-access-proxy-box-range)))
+(defmethod peek-back ((range key-value-random-access-proxy-box-range)))
+(defmethod consume-front ((range key-value-random-access-proxy-box-range)))
+(defmethod consume-back ((range key-value-random-access-proxy-box-range)))
