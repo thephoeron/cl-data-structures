@@ -7,8 +7,8 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:*documentation*
    #:*traverse-callback*
+   #:*documentation*
    #:accumulate
    #:accumulation-function
    #:add
@@ -43,6 +43,7 @@
    #:erase-if!
    #:erase-if!-function
    #:erase-if-function
+   #:expression
    #:force
    #:found
    #:functional
@@ -106,6 +107,7 @@
    #:shrink-bucket!
    #:shrink-function
    #:size
+   #:special-traverse
    #:textual-error
    #:transaction
    #:transactional
@@ -118,7 +120,8 @@
    #:update!-function
    #:update-function
    #:value
-   #:whole-range))
+   #:whole-range
+   #:xpr))
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)
