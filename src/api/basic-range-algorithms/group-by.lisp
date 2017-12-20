@@ -49,18 +49,15 @@
                                        (function aggregation-function)
                                        &rest all &key &allow-other-keys)
   (declare (optimize (debug 3)))
-  (let ((clone (clone (read-original-range range)))
-        (groups (copy-hash-table (read-groups range)))
+  (let ((groups (copy-hash-table (read-groups range)))
         (key (read-key range)))
-    (iterate
-      (while (morep clone))
-      (for elt = (consume-front clone))
-      (for k = (funcall key elt))
-      (aggregate
-       function
-       (ensure (gethash k groups)
-         (apply #'make-state function all))
-       elt))
+    (cl-ds:traverse (lambda (x)
+                      (let ((k (funcall key x)))
+                        (aggregate function
+                                   (ensure (gethash k groups)
+                                     (apply #'make-state function all))
+                                   x)))
+                    range)
     (let ((result-table (copy-hash-table (read-groups range)
                                          :size (hash-table-size groups))))
       (maphash (lambda (key state)

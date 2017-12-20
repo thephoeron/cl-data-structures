@@ -8,7 +8,8 @@
 
 (defgeneric accumulate (function range &key key initial-value)
   (:generic-function-class accumulate-function)
-  (:method (function range &key (key #'identity) (initial-value nil))
+  (:method (function (range traversable)
+            &key (key #'identity) (initial-value nil))
     (apply-aggregation-function range #'accumulate
                                 :key key
                                 :value initial-value

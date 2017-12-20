@@ -37,6 +37,20 @@
           (values stack result t)))))
 
 
+(defmethod cl-ds:traverse (function (range forward-tree-range))
+  (let* ((clone (cl-ds:clone range))
+         (stack (access-forward-stack clone))
+         (obtain-value (read-obtain-value clone))
+         (key (read-key clone)))
+    (iterate
+      (until (null stack))
+      (multiple-value-bind (new-stack value)
+          (read-implementation stack obtain-value)
+        (setf stack new-stack)
+        (funcall function (funcall key value))))
+    range))
+
+
 (defmethod cl-ds:peek-front ((range forward-tree-range))
   (with-accessors ((stack access-forward-stack)
                    (obtain-value read-obtain-value)

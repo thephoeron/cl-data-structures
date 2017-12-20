@@ -50,12 +50,13 @@
     (apply #'apply-layer clone function all)))
 
 
-(defmethod apply-aggregation-function ((range cl-ds:fundamental-range)
+(defmethod apply-aggregation-function ((range cl-ds:traversable)
                                        (function aggregation-function)
                                        &rest all &key &allow-other-keys)
-  (let ((clone (cl-ds:clone range))
-        (state (apply #'make-state function all)))
-    (iterate
-      (while (morep clone))
-      (aggregate function state (consume-front clone)))
+  (let ((state (apply #'make-state function all)))
+    (cl-ds:traverse (lambda (x)
+                      (aggregate function
+                                 state
+                                 x))
+                    range)
     (state-result function state)))

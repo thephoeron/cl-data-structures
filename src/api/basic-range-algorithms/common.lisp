@@ -10,6 +10,10 @@
   (cl-ds:empty-clone-of-inner-container (read-original-range range)))
 
 
+(defmethod cl-ds:traverse (function (range proxy-range))
+  (cl-ds:traverse function (read-original-range range)))
+
+
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
   ())
 
@@ -42,6 +46,15 @@
    (%end :initarg :end
          :type fixnum
          :accessor access-end)))
+
+
+(defmethod cl-ds:traverse (function (range hash-table-range))
+  (let ((keys (read-keys range))
+        (table (read-hash-table range)))
+    (iterate
+      (for i from (access-begin range) below (access-end range))
+      (for key = (aref keys i))
+      (funcall function (list* key (gethash key table))))))
 
 
 (defmethod cl-ds:empty-clone-of-inner-container ((range hash-table-range))

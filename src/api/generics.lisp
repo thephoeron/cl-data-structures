@@ -87,9 +87,13 @@
 
 (defgeneric empty-clone (container))
 
-(defgeneric traverse (object)
-  (:method ((object sequence))
-    (map nil #'send object)))
+(defgeneric traverse (function object)
+  (:method (function (object sequence))
+    (map nil function object)))
+
+(defgeneric special-traverse (object)
+  (:method (object)
+    (traverse *traverse-callback* object)))
 
 #|
 
