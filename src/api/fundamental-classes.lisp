@@ -5,6 +5,10 @@
   ())
 
 
+(defclass scannable ()
+  ())
+
+
 (defclass fundamental-modification-operation-status ()
   ())
 

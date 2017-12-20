@@ -8,6 +8,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:*documentation*
+   #:*scan-callback*
    #:accumulate
    #:accumulation-function
    #:add
@@ -100,6 +101,7 @@
    #:read-bounds
    #:read-class
    #:read-value
+   #:scannable
    #:shrink-bucket
    #:shrink-bucket!
    #:shrink-function

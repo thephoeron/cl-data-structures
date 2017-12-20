@@ -31,6 +31,7 @@
                              (:test-file "lazy-shuffle-tests")))
                (:module "api"
                 :components ((:file "meta")
+                             (:file "variables")
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
