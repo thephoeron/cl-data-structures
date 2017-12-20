@@ -27,4 +27,5 @@
               ,@body))
        (declare (dynamic-extent (function ,!callback)))
        (let ((cl-ds:*traverse-callback* (function ,!callback)))
+         (declare (special cl-ds:*traverse-callback*))
          (cl-ds:traverse cl-ds:*traverse-callback* ,traversable)))))
