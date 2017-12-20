@@ -5,7 +5,7 @@
   ())
 
 
-(defclass scannable ()
+(defclass traversable ()
   ())
 
 
@@ -13,7 +13,7 @@
   ())
 
 
-(defclass fundamental-range ()
+(defclass fundamental-range (traversable)
   ())
 
 

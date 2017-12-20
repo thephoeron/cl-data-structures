@@ -19,3 +19,12 @@
              ((transactionalp ,instance)
               ,binding)
              (t (become-mutable ,instance))))))
+
+
+(defmacro traverse-through ((scannable var) &body body)
+  (with-gensyms (!callback)
+    `(flet ((,!callback (,var)
+              ,@body))
+       (declare (dynamic-extent (function ,!callback)))
+       (let ((cl-ds:*traverse-callback* (function ,!callback)))
+         (cl-ds:traverse ,scannable)))))

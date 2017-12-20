@@ -8,7 +8,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:*documentation*
-   #:*scan-callback*
+   #:*traverse-callback*
    #:accumulate
    #:accumulation-function
    #:add
@@ -101,7 +101,7 @@
    #:read-bounds
    #:read-class
    #:read-value
-   #:scannable
+   #:send
    #:shrink-bucket
    #:shrink-bucket!
    #:shrink-function
@@ -110,6 +110,9 @@
    #:transaction
    #:transactional
    #:transactionalp
+   #:traversable
+   #:traverse
+   #:traverse-through
    #:update
    #:update!
    #:update!-function

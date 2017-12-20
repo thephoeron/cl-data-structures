@@ -87,6 +87,10 @@
 
 (defgeneric empty-clone (container))
 
+(defgeneric traverse (object)
+  (:method ((object sequence))
+    (map nil #'send object)))
+
 #|
 
 Range releated functions.

@@ -1,4 +1,4 @@
 (in-package #:cl-data-structures)
 
 
-(defvar *scan-callback*)
+(defvar *traverse-callback*)

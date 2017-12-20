@@ -32,6 +32,7 @@
                (:module "api"
                 :components ((:file "meta")
                              (:file "variables")
+                             (:file "functions")
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
