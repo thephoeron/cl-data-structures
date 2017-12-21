@@ -36,12 +36,12 @@
                (prove:ok (cl-ds:morep range)))))
   (let ((sum (~> dict
                  cl-ds:whole-range
-                 (cl-ds:accumulate #'+ _ :key #'cdr))))
+                 (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
     (is sum 10))
   (let ((divided-sum (~> dict
                          cl-ds:whole-range
-                         (cl-ds:group-by :key (compose #'evenp #'cdr))
-                         (cl-ds:accumulate #'+ _ :key #'cdr))))
+                         (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
+                         (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
     (is (cl-ds:at divided-sum nil) 4)
     (is (cl-ds:at divided-sum t) 6)))
 (finalize)

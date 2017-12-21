@@ -12,7 +12,7 @@
     `(make 'cl-ds:expression
            :body (lambda (,!fn)
                    (macrolet ((cl-ds:send (v)
-                                `(funcall ,!fn ,v)))
+                                `(funcall ,',!fn ,v)))
                      ,@body)))))
 
 

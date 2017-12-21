@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures)
+(in-package #:cl-data-structures.algorithms)
 
 
 (defclass group-by-proxy (proxy-range)

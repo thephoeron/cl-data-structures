@@ -18,4 +18,4 @@
         (setf (slot-value obj '%value)
               (funcall (read-callback obj)))))
   (:method ((obj t))
-    (slot-value obj '%value)))
+    obj))

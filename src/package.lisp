@@ -9,8 +9,6 @@
   (:export
    #:*traverse-callback*
    #:*documentation*
-   #:accumulate
-   #:accumulation-function
    #:add
    #:add!
    #:add!-function
@@ -64,8 +62,6 @@
    #:fundamental-modification-operation-status
    #:fundamental-random-access-range
    #:fundamental-range
-   #:group-by
-   #:group-by-function
    #:grow-bucket
    #:grow-bucket!
    #:grow-function
