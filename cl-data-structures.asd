@@ -26,8 +26,9 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
-                             (:file "chain.lisp")
+                             (:file "chain")
                              (:test-file "distances-tests")
+                             (:test-file "chain-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
                (:module "api"

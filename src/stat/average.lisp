@@ -7,11 +7,11 @@
 
 
 (defgeneric average (range &key key)
-  (:generic-function-class accumulate-function)
-  (:method (function (range traversable)
-            &key (key #'identity) (initial-value nil))
-    (apply-aggregation-function range #'average
-                                :key key)))
+  (:generic-function-class average-function)
+  (:method ((range cl-ds:traversable)
+            &key (key #'identity) )
+    (cl-ds.alg:apply-aggregation-function range #'average
+                                          :key key)))
 
 
 (defstruct average-state
