@@ -26,6 +26,7 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
+                             (:file "chain.lisp")
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))

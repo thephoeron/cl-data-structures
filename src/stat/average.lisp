@@ -22,8 +22,9 @@
 
 (defmethod cl-ds.alg:state-result ((function average-function)
                                    (state average-state))
-  (/ (average-state-sum state)
-     (average-state-count state)))
+  (unless (zerop (average-state-count state))
+    (/ (average-state-sum state)
+       (average-state-count state))))
 
 
 (defmethod cl-ds.alg:make-state ((function average-function)
