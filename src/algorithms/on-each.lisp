@@ -47,6 +47,11 @@
                  :function (read-function range)))
 
 
+(defmethod cl-ds:traverse (function (range forward-proxy-box-range))
+  (cl-ds:traverse (compose function (read-function range))
+                  (read-original-range range)))
+
+
 (defgeneric on-each-proxy-range-from-range (range function)
   (:method :around ((range fundamental-range) function)
     (check-type function (or symbol function))
