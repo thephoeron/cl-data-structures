@@ -38,7 +38,7 @@
                              (:file "generics")
                              (:file "conditions")
                              (:file "expression-wrapper")
-                             (:file "aux")
+                             (:file "delay")
                              (:file "macros")
                              (:file "docstrings")
                              (:test-file "expression-tests")))
@@ -50,6 +50,8 @@
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")))
+               (:module "stat"
+                :components ((:file "package")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")

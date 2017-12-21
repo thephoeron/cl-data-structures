@@ -7,8 +7,8 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:*traverse-callback*
    #:*documentation*
+   #:*traverse-callback*
    #:add
    #:add!
    #:add!-function
@@ -79,6 +79,7 @@
    #:key-value-range
    #:lazy
    #:make-bucket
+   #:make-delay
    #:make-state
    #:mod-bind
    #:morep

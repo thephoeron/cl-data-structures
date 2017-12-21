@@ -7,8 +7,12 @@
    %value))
 
 
-(defun delay (callback)
+(defun make-delay (callback)
   (make 'delayed :callback callback))
+
+
+(defmacro delay (&body body)
+  `(cl-ds:make-delay (lambda () ,@body)))
 
 
 (declaim (inline force))
