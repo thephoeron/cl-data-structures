@@ -58,6 +58,7 @@
     (make-proxy range 'bidirectional-proxy-box-range
                 :function function)))
 
+
 (defmethod apply-layer ((range fundamental-range)
                         (fn on-each-function)
                         &rest all &key function)
