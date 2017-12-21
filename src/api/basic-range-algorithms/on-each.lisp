@@ -56,14 +56,7 @@
                 :function function))
   (:method ((range fundamental-bidirectional-range) function)
     (make-proxy range 'bidirectional-proxy-box-range
-                :function function))
-  (:method ((range fundamental-random-access-range) function)
-    (make-proxy range 'random-access-proxy-box-range
-                :function function
-                :at-cache (~> range
-                              empty-clone-of-inner-container
-                              become-mutable)))))
-
+                :function function)))
 
 (defmethod apply-layer ((range fundamental-range)
                         (fn on-each-function)
@@ -73,19 +66,21 @@
 
 
 (defmethod consume-front ((range forward-proxy-box-range))
-  (with-slots ((cache %forward-cache)) range
-    (if (slot-boundp range '%forward-cache)
-        (progn (call-next-method) cache)
-        (funcall (read-function range)
-                 (call-next-method)))))
+  (prog1 (with-slots ((cache %forward-cache)) range
+           (if (slot-boundp range '%forward-cache)
+               (progn (call-next-method) cache)
+               (funcall (read-function range)
+                        (call-next-method))))
+    (slot-makunbound range '%forward-cache)))
 
 
 (defmethod consume-back ((range bidirectional-proxy-box-range))
-  (with-slots ((cache %backward-cache)) range
-    (if (slot-boundp range '%backward-cache)
-        (progn (call-next-method) cache)
-        (funcall (read-function range)
-                 (call-next-method)))))
+  (prog1 (with-slots ((cache %backward-cache)) range
+           (if (slot-boundp range '%backward-cache)
+               (progn (call-next-method) cache)
+               (funcall (read-function range)
+                        (call-next-method))))
+    (slot-makunbound range '%backward-cache)))
 
 
 (defmethod peek-front ((range forward-proxy-box-range))

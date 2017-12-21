@@ -37,9 +37,6 @@
                              (:file "trait-classes")
                              (:file "generics")
                              (:file "conditions")
-                             (:module "adapters"
-                              :components ((:file "package")
-                                           (:file "hash-table")))
                              (:module "basic-range-algorithms"
                               :components ((:file "meta")
                                            (:file "common")
@@ -62,6 +59,9 @@
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))))
+               (:module "adapters"
+                :components ((:file "package")
+                             (:file "hash-table")))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
