@@ -51,7 +51,8 @@
                              (:file "accumulate")
                              (:file "group-by")))
                (:module "stat"
-                :components ((:file "package")))
+                :components ((:file "package")
+                             (:file "average")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
