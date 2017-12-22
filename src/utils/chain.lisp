@@ -55,8 +55,7 @@ Simple and compact stack/queue
               last-count 0)))))
 
 
-(defun chain-on-each (fn queue)
-  (declare (optimize (debug 3)))
+(defun chain-queue-on-each (fn queue)
   (with-slots (first first-count last-count pointer) queue
     (iterate
       (for link

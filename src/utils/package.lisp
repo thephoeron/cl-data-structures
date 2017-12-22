@@ -8,6 +8,10 @@
   (:export
    #:bind-lambda
    #:cases
+   #:chain-queue-empty
+   #:chain-queue-on-each
+   #:chain-queue-put
+   #:chain-queue-take
    #:cond+
    #:cond-compare
    #:copy-without
@@ -19,21 +23,21 @@
    #:import-all-package-symbols
    #:insert-or-replace
    #:lazy-let
+   #:lazy-shuffle
+   #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
-   #:parallel-make-distance-matrix-from-vector
    #:merge-ordered-vectors
    #:mutate-matrix
-   #:ordered-p
    #:on-ordered-intersection
+   #:ordered-p
+   #:parallel-make-distance-matrix-from-vector
    #:pop-last
+   #:read-size
+   #:swap-if
    #:swapop
    #:todo
    #:try-find
    #:try-find-cell
    #:try-remove
-   #:read-size
-   #:lazy-shuffle
-   #:lower-bound
-   #:swap-if
    #:with-vectors))
