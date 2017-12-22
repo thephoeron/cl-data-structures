@@ -94,3 +94,16 @@ Simple and compact stack/queue
     (prog1 (chain-pop-front first)
       (when (null first)
         (setf last nil)))))
+
+
+(defun chain-on-each (fn queue)
+  (with-slots (first) queue
+    (iterate
+      (for link
+           initially first
+           then (aref link 1))
+      (until (null link))
+      (iterate
+        (for i from (1+ (aref link 0)) downto 2)
+        (funcall fn (aref link i))))
+    queue))

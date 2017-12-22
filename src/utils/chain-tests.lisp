@@ -23,6 +23,9 @@
   (chain-queue-put 15 q)
   (chain-queue-put 16 q)
   (chain-queue-put 17 q)
+  (let ((stack cl:nil))
+    (chain-on-each (lambda (x) (push x stack)) q)
+    (is stack (nreverse (iota 17 :start 1)) :test #'equal))
   (is (chain-queue-take q) 1)
   (is (chain-queue-take q) 2)
   (is (chain-queue-take q) 3)
@@ -40,6 +43,5 @@
   (is (chain-queue-take q) 15)
   (is (chain-queue-take q) 16)
   (is (chain-queue-take q) 17))
-
 
 (prove:finalize)
