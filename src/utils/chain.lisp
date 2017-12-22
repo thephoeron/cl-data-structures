@@ -8,9 +8,8 @@ Simple and compact stack/queue
 
 
 (defun make-chain-link (&optional next)
-  (let ((result (make-array (+ 2 +chain-size+))))
-    (setf (aref result 1) next
-          (aref result 0) 0)
+  (let ((result (make-array (+ 1 +chain-size+))))
+    (setf (aref result 0) next)
     result))
 
 
@@ -73,7 +72,7 @@ Simple and compact stack/queue
          ,!front))))
 
 
-(defstruct chain-queue first last)
+(defstruct chain-queue first last (last-count 0) (first-count 0))
 
 
 (defun chain-queue-empty (queue)
@@ -82,28 +81,50 @@ Simple and compact stack/queue
 
 
 (defun chain-queue-put (elt queue)
-  (with-slots (first last) queue
+  (with-slots (first last last-count first-count) queue
+    (when (null last)
+      (setf last (make-chain-link)))
+    (when (null first)
+      (setf first last
+            first-count last-count))
+    (if (eql last-count +chain-size+)
+        (let ((next (make-chain-link)))
+          (setf last-count 1
+                (aref last 0) next
+                (aref next +chain-size+) elt
+                last next))
+        (setf (aref last (1+ (- +chain-size+ (incf last-count)))) elt))
     (when (null first)
       (setf first last))
-    (chain-push-back elt last))
+    (when (eq first last)
+      (setf first-count last-count)))
   queue)
 
 
 (defun chain-queue-take (queue)
-  (with-slots (first last) queue
-    (prog1 (chain-pop-front first)
+  (with-slots (first last first-count last-count) queue
+    (prog1 (aref first first-count)
+      (decf first-count)
+      (when (eql 0 first-count)
+        (setf first (aref first 0)
+              first-count (cond ((null first) 0) ((eq first last) last-count) (t +chain-size+))))
       (when (null first)
-        (setf last nil)))))
+        (setf last nil))))))
 
 
 (defun chain-on-each (fn queue)
-  (with-slots (first) queue
+  (declare (optimize (debug 3)))
+  (with-slots (first first-count last-count) queue
     (iterate
+      (for count
+           initially first-count
+           then (if (null (aref link 0)) last-count +chain-size+))
       (for link
            initially first
-           then (aref link 1))
+           then (aref link 0))
       (until (null link))
       (iterate
-        (for i from (1+ (aref link 0)) downto 2)
+        (for i from +chain-size+ downto 1)
+        (repeat count)
         (funcall fn (aref link i))))
     queue))
