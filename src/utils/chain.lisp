@@ -120,6 +120,7 @@ Simple and compact stack/queue
                 (aref next 3) elt
                 (aref next 2) 1))
         (progn (setf (aref first (+ 3 (aref first 2))) elt)
+               (incf first-count)
                (incf (aref first 2))))
     (when (null last)
       (setf last first))
