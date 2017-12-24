@@ -78,9 +78,7 @@ Simple and compact stack/queue
 (defun double-chain-queue-put-back (elt queue)
   (with-slots (first last last-count first-count last-pointer first-pointer) queue
     (when (null last)
-      (if (null first)
-          (setf last (make-double-chain-link)
-                first last)))
+      (setf last (make-double-chain-link)))
     (when (null first)
       (setf first last
             first-pointer 0
@@ -101,6 +99,30 @@ Simple and compact stack/queue
           (incf last-count)))
     (when (null first)
       (setf first last))
+    (when (eq first last)
+      (setf first-count last-count)))
+  queue)
+
+
+(defun double-chain-queue-put-front (elt queue)
+  (with-slots (first last last-count first-count last-pointer first-pointer) queue
+    (when (null first)
+      (setf first (make-double-chain-link)))
+    (when (null last)
+      (setf last first
+            last-count first-count))
+    (if (eql first-count +double-chain-size+)
+        (let ((next (make-double-chain-link)))
+          (setf first-count 1
+                (aref first 0) next
+                (aref next 1) first
+                first next
+                (aref next 3) elt
+                (aref next 2) 1))
+        (progn (setf (aref first (+ 3 (aref first 2))) elt)
+               (incf (aref first 2))))
+    (when (null last)
+      (setf last first))
     (when (eq first last)
       (setf first-count last-count)))
   queue)

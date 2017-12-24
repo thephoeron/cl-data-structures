@@ -3,7 +3,7 @@
 (in-package :chain-test-suite)
 (cl-ds.utils:import-all-package-symbols :cl-ds.utils :chain-test-suite)
 
-(prove:plan 151)
+(prove:plan 157)
 
 (let ((q (make-chain-queue)))
   (iterate
@@ -45,6 +45,10 @@
       1)
   (is (~> q double-chain-queue-first
           (aref (+ 1 +double-chain-size+)))
-      2))
+      2)
+  (double-chain-queue-put-front 3 q)
+  (is (~> q double-chain-queue-first
+          (aref 3))
+      3))
 
 (prove:finalize)
