@@ -9,21 +9,16 @@
 (defgeneric average (range &key key)
   (:generic-function-class average-function)
   (:method ((range cl-ds:traversable)
-            &key (key #'identity) )
+            &key key)
     (cl-ds.alg:apply-aggregation-function range #'average
                                           :key key)))
 
 
-(defstruct average-state
-  (count 0 :type non-negative-integer)
-  (sum 0 :type number))
-
-
 (defmethod cl-ds.alg:state-result ((function average-function)
-                                   (state average-state))
-  (unless (zerop (average-state-count state))
-    (/ (average-state-sum state)
-       (average-state-count state))))
+                                   state)
+  (declare (type list state))
+  (unless (zerop (cdr state))
+    (/ (car state) (cdr state))))
 
 
 (defmethod cl-ds.alg:make-state ((function average-function)
@@ -31,12 +26,11 @@
                                  &key
                                  &allow-other-keys)
   (declare (ignore all))
-  (make-average-state))
+  (list* 0 0))
 
 
 (defmethod cl-ds.alg:aggregate ((function average-function)
-                                (state average-state)
+                                state
                                 element)
-  (incf (average-state-count state))
-  (incf (average-state-sum state)
-        element))
+  (incf (cdr state))
+  (incf (car state) element))

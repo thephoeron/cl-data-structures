@@ -57,6 +57,6 @@
     (cl-ds:traverse (lambda (x)
                       (aggregate function
                                  state
-                                 (funcall key x)))
+                                 (if key (funcall key x) x)))
                     range)
     (state-result function state)))
