@@ -7,11 +7,11 @@
   :license "MIT"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
-  :depends-on ( :iterate :alexandria
-                :serapeum :prove
-                :prove-asdf :docstample
+  :depends-on ( :iterate         :alexandria
+                :serapeum        :prove
+                :prove-asdf      :docstample
                 :more-conditions :closer-mop
-                :lparallel :flexichain)
+                :lparallel       :flexichain)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
