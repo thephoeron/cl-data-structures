@@ -58,12 +58,10 @@
                                      (apply #'make-state function all))
                                    (if (null key) x (funcall key x)))))
                     range)
-    (let ((result-table (copy-hash-table (read-groups range)
-                                         :size (hash-table-size groups))))
-      (maphash (lambda (key state)
-                 (setf (gethash key result-table) (state-result function state)))
-               groups)
-      (make-hash-table-range result-table))))
+    (maphash (lambda (key state)
+               (setf (gethash key groups) (state-result function state)))
+             groups)
+    (make-hash-table-range groups)))
 
 
 (defmethod make-proxy ((range group-by-proxy)
