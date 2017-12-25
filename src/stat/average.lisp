@@ -16,8 +16,7 @@
 
 (defstruct average-state
   (count 0 :type non-negative-integer)
-  (sum 0 :type number)
-  key)
+  (sum 0 :type number))
 
 
 (defmethod cl-ds.alg:state-result ((function average-function)
@@ -30,10 +29,9 @@
 (defmethod cl-ds.alg:make-state ((function average-function)
                                  &rest all
                                  &key
-                                   (key #'identity)
                                  &allow-other-keys)
   (declare (ignore all))
-  (make-average-state :key key))
+  (make-average-state))
 
 
 (defmethod cl-ds.alg:aggregate ((function average-function)
@@ -41,4 +39,4 @@
                                 element)
   (incf (average-state-count state))
   (incf (average-state-sum state)
-        (funcall (average-state-key state) element)))
+        element))

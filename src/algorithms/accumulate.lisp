@@ -20,9 +20,7 @@
   ((%value :initarg :value
            :accessor access-value)
    (%fn :initarg :fn
-        :reader read-fn)
-   (%key :initarg :key
-         :reader read-key)))
+        :reader read-fn)))
 
 
 (defmethod state-result ((function accumulate-function)
@@ -35,24 +33,21 @@
                        &key
                          (initial-value nil value-present)
                          fn
-                         key
                        &allow-other-keys)
   (declare (ignore all))
   (if value-present
       (make 'accumulation-state :fn fn
-                                :key key
                                 :value initial-value)
-      (make 'accumulation-state :fn fn
-                                :key key)))
+      (make 'accumulation-state :fn fn)))
 
 
 (defmethod aggregate ((function accumulate-function)
                       (state accumulation-state)
                       element)
-  (with-slots ((value %value) (fn %fn) (key %key)) state
+  (with-slots ((value %value) (fn %fn)) state
     (setf value
           (if (slot-boundp state '%value)
               (funcall fn
                        value
-                       (funcall key element))
-              (funcall key element)))))
+                       element)
+              element))))

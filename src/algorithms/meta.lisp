@@ -40,7 +40,7 @@
 
 
 (defgeneric apply-aggregation-function (range function
-                                        &rest all &key &allow-other-keys))
+                                        &rest all &key key &allow-other-keys))
 
 
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
@@ -52,11 +52,11 @@
 
 (defmethod apply-aggregation-function ((range cl-ds:traversable)
                                        (function aggregation-function)
-                                       &rest all &key &allow-other-keys)
+                                       &rest all &key key &allow-other-keys)
   (let ((state (apply #'make-state function all)))
     (cl-ds:traverse (lambda (x)
                       (aggregate function
                                  state
-                                 x))
+                                 (funcall key x)))
                     range)
     (state-result function state)))
