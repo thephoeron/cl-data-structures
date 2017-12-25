@@ -9,10 +9,9 @@
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate :alexandria
                 :serapeum :prove
-                :prove-asdf
-                :docstample :more-conditions
-                :closer-mop :lparallel
-                :flexichain)
+                :prove-asdf :docstample
+                :more-conditions :closer-mop
+                :lparallel :flexichain)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
