@@ -32,5 +32,6 @@
 (defmethod cl-ds.alg:aggregate ((function average-function)
                                 state
                                 element)
+  (declare (type list state))
   (incf (cdr state))
   (incf (car state) element))
