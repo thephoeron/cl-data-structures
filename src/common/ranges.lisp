@@ -45,10 +45,9 @@
 
 
 (defmethod cl-ds:traverse (function (range forward-tree-range))
-  (let* ((clone (cl-ds:clone range))
-         (stack (access-forward-stack clone))
-         (obtain-value (read-obtain-value clone))
-         (key (read-key clone)))
+  (let* ((stack (access-forward-stack range))
+         (obtain-value (read-obtain-value range))
+         (key (read-key range)))
     (iterate
       (until (null stack))
       (multiple-value-bind (new-stack value)
@@ -89,14 +88,15 @@
 
 
 (defmethod cl-ds:drop-front ((range forward-tree-range) count)
-  (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)
-                   (key read-key)) range
-    (multiple-value-bind (new-stack result found)
-        (read-implementation stack obtain-value)
-      (declare (ignore found result))
-      (setf stack new-stack)
-      range)))
+  (let ((stack (access-forward-stack range))
+        (obtain-value (read-obtain-value range)))
+    (iterate
+      (until (null stack))
+      (repeat count)
+      (setf stack (nth-value 1 (read-implementation stack
+                                                    obtain-value))))
+    (setf (access-forward-stack range) stack))
+  range)
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))
@@ -108,21 +108,3 @@
 
 (defmethod cl-ds:empty-clone-of-inner-container ((range forward-tree-range))
   (cl-ds:empty-clone (read-container range)))
-
-
-;; (defmethod cl-ds:consume-back ((range forward-tree-range))
-;;   (with-accessors ((stack access-backward-stack)
-;;                    (obtain-value read-obtain-value-reverse)) range
-;;     (multiple-value-bind (new-stack result found)
-;;         (read-implementation stack obtain-value)
-;;       (setf stack new-stack)
-;;       (values result found))))
-
-
-;; (defmethod cl-ds:peek-back ((range forward-tree-range))
-;;   (with-accessors ((stack access-backward-stack)
-;;                    (obtain-value read-obtain-value-reverse)) range
-;;     (multiple-value-bind (new-stack result found)
-;;         (read-implementation stack obtain-value)
-;;       (declare (ignore new-stack))
-;;       (values result found))))
