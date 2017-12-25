@@ -55,7 +55,8 @@
                (:module "stat"
                 :components ((:file "package")
                              (:file "average")
-                             (:file "entropy")))
+                             (:file "entropy")
+                             (:file "variance")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")

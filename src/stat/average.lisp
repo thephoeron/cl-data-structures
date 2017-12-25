@@ -17,8 +17,7 @@
 (defmethod cl-ds.alg:state-result ((function average-function)
                                    state)
   (declare (type list state))
-  (unless (zerop (cdr state))
-    (/ (car state) (cdr state))))
+  (/ (car state) (cdr state)))
 
 
 (defmethod cl-ds.alg:make-state ((function average-function)
