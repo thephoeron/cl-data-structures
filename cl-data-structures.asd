@@ -11,7 +11,8 @@
                 :serapeum :prove
                 :prove-asdf
                 :docstample :more-conditions
-                :closer-mop :lparallel)
+                :closer-mop :lparallel
+                :flexichain)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
@@ -26,9 +27,7 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
-                             (:file "chain")
                              (:test-file "distances-tests")
-                             (:test-file "chain-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
                (:module "api"
