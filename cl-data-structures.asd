@@ -48,6 +48,7 @@
                              (:file "meta")
                              (:file "common")
                              (:file "on-each")
+                             (:file "summary")
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")))

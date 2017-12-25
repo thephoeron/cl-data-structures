@@ -23,4 +23,6 @@
    #:proxy-range
    #:range-function
    #:state-result
+   #:summary
+   #:summary-function
    #:transformation!-function))

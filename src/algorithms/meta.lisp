@@ -50,7 +50,7 @@
     (apply #'apply-layer clone function all)))
 
 
-(defmethod apply-aggregation-function ((range cl-ds:traversable)
+(defmethod apply-aggregation-function (range
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
   (let ((state (apply #'make-state function all)))

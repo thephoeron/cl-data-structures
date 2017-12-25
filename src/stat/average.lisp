@@ -8,7 +8,7 @@
 
 (defgeneric average (range &key key)
   (:generic-function-class average-function)
-  (:method ((range cl-ds:traversable)
+  (:method (range
             &key key)
     (cl-ds.alg:apply-aggregation-function range #'average
                                           :key key)))
