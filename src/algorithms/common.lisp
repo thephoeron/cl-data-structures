@@ -105,8 +105,7 @@
         (let ((key (aref keys begin)))
           (incf begin)
           (values
-           (list* key
-                  (gethash key ht))
+           (list* key (gethash key ht))
            t)))))
 
 
@@ -116,8 +115,7 @@
         (values nil nil)
         (let ((key (aref keys (decf end))))
           (values
-           (list* key
-                  (gethash key ht))
+           (list* key (gethash key ht))
            t)))))
 
 

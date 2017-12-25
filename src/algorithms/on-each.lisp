@@ -14,42 +14,48 @@
 
 (defclass proxy-box-range ()
   ((%function :initarg :function
-              :reader read-function)))
+              :reader read-function)
+   (%funcall-result :initarg :funcall-result
+                    :reader read-funcall-result)))
+
+
+(defmethod initialize-instance :after ((range proxy-box-range)
+                                       &rest initargs
+                                       &key &allow-other-keys)
+  (declare (ignore initargs))
+  (when (slot-boundp range '%funcall-result)
+    (let ((cache (make-instance 'flexichain:standard-flexichain)))
+      (cl-ds:traverse (compose (curry #'flexichain:push-end
+                                      cache)
+                               (curry #'funcall
+                                      (read-function range)))
+                      (read-original-range range))
+      (setf (slot-value range '%funcall-result) cache))))
 
 
 (defclass forward-proxy-box-range (forward-proxy-range
                                    proxy-box-range)
-  ((%forward-cache :accessor access-forward-cache)))
+  ())
 
 
 (defclass bidirectional-proxy-box-range (bidirectional-proxy-range
                                          proxy-box-range)
-  ((%backward-cache :accessor access-backward-cache)))
-
-
-(defclass random-access-proxy-box-range (random-access-proxy-range
-                                         bidirectional-proxy-box-range)
-  ((%at-cache :reader read-at-cache
-              :initarg :at-cache)))
-
-
-(defclass single-random-access-proxy-box-range (random-access-proxy-box-range)
-  ())
-
-
-(defclass key-value-random-access-proxy-box-range (random-access-proxy-box-range)
   ())
 
 
 (defmethod clone ((range forward-proxy-box-range))
   (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
+                 :original-range (read-original-range range)
+                 :funcall-result (read-funcall-result range)
                  :function (read-function range)))
 
 
 (defmethod cl-ds:traverse (function (range forward-proxy-box-range))
-  (cl-ds:traverse (compose function (read-function range))
-                  (read-original-range range)))
+  (iterate
+    (with cache = (read-funcall-result range))
+    (for i from 0 below (flexichain:nb-elements cache))
+    (funcall function (flexichain:element* cache i))
+    (finally (return range))))
 
 
 (defgeneric on-each-proxy-range-from-range (range function)
@@ -72,47 +78,36 @@
 
 
 (defmethod consume-front ((range forward-proxy-box-range))
-  (prog1 (with-slots ((cache %forward-cache)) range
-           (if (slot-boundp range '%forward-cache)
-               (progn (call-next-method) cache)
-               (funcall (read-function range)
-                        (call-next-method))))
-    (slot-makunbound range '%forward-cache)))
+  (let ((cache (read-funcall-result range)))
+    (if (flexichain:flexi-empty-p cache)
+        (values nil nil)
+        (values (flexichain:pop-start cache) t))))
 
 
 (defmethod consume-back ((range bidirectional-proxy-box-range))
-  (prog1 (with-slots ((cache %backward-cache)) range
-           (if (slot-boundp range '%backward-cache)
-               (progn (call-next-method) cache)
-               (funcall (read-function range)
-                        (call-next-method))))
-    (slot-makunbound range '%backward-cache)))
+  (let ((cache (read-funcall-result range)))
+    (if (flexichain:flexi-empty-p cache)
+        (values nil nil)
+        (values (flexichain:pop-end cache) t))))
 
 
 (defmethod peek-front ((range forward-proxy-box-range))
-  (with-slots ((cache %forward-cache)) range
-    (if (slot-boundp range '%forward-cache)
-        cache
-        (setf cache (funcall (read-function range)
-                             (call-next-method))))))
+  (let ((cache (read-funcall-result range)))
+    (if (flexichain:flexi-empty-p cache)
+        (values nil nil)
+        (let ((result (flexichain:pop-start cache)))
+          (flexichain:push-start cache result)
+          (values result t)))))
 
 
 (defmethod peek-back ((range bidirectional-proxy-box-range))
-  (with-slots ((cache %backward-cache)) range
-    (if (slot-boundp range '%backward-cache)
-        cache
-        (setf cache (funcall (read-function range)
-                             (call-next-method))))))
+  (let ((cache (read-funcall-result range)))
+    (if (flexichain:flexi-empty-p cache)
+        (values nil nil)
+        (let ((result (flexichain:pop-end cache)))
+          (flexichain:push-end cache result)
+          (values result t)))))
 
 
-(defmethod at ((range random-access-proxy-box-range) location)
-  (let ((cache (slot-value range '%at-cache)))
-    (mod-bind (container found value)
-              (add cache
-                   location
-                   (delay (lambda ()
-                            (~> range
-                                read-original-range
-                                (at location)
-                                (funcall (read-function range) _)))))
-      value)))
+(defmethod cl-ds:morep ((range proxy-box-range))
+  (not (flexichain:flexi-empty-p (read-funcall-result range))))
