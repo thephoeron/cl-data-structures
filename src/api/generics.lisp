@@ -109,8 +109,6 @@ Range releated functions.
 
 (defgeneric peek-back (range))
 
-(defgeneric consume-some (range count))
-
 (defgeneric chain (first-range &rest other-ranges))
 
 (defgeneric drop-front (range count))

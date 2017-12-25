@@ -7,6 +7,7 @@
   (:nicknames #:cl-ds.common)
   (:export
    #:access-content
+   #:assignable-tree-range
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
    #:force-version

@@ -17,6 +17,13 @@
                :reader read-container)))
 
 
+(defclass assignable-tree-range (cl-ds:fundamental-assignable-forward-range
+                                 forward-tree-range)
+  ((%store-value :type (-> (t t) t)
+                 :initarg :store-value
+                 :reader read-store-value)))
+
+
 (defmethod cl-ds:morep ((range forward-tree-range))
   (~> range access-forward-stack null not))
 
@@ -69,6 +76,7 @@
         (read-implementation stack obtain-value)
       (setf stack new-stack)
       (values (when found (funcall key result)) found))))
+
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))

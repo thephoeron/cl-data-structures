@@ -117,5 +117,23 @@
           (values result t)))))
 
 
+(defmethod drop-back ((range bidirectional-proxy-box-range) count)
+  (let ((cache (read-funcall-result range)))
+    (iterate
+      (until (flexichain:flexi-empty-p cache))
+      (repeat count)
+      (flexichain:pop-end cache))
+    range))
+
+
+(defmethod drop-front ((range forward-proxy-box-range) count)
+  (let ((cache (read-funcall-result range)))
+    (iterate
+      (until (flexichain:flexi-empty-p cache))
+      (repeat count)
+      (flexichain:pop-start cache))
+    range))
+
+
 (defmethod cl-ds:morep ((range proxy-box-range))
   (not (flexichain:flexi-empty-p (read-funcall-result range))))
