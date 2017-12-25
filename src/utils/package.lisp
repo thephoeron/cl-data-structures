@@ -8,11 +8,6 @@
   (:export
    #:bind-lambda
    #:cases
-   #:chain-queue-empty
-   #:chain-queue-front
-   #:chain-queue-on-each
-   #:chain-queue-put
-   #:chain-queue-take
    #:cond+
    #:cond-compare
    #:copy-without

@@ -141,6 +141,18 @@
            t)))))
 
 
+(defmethod drop-front ((range hash-table-range) count)
+  (with-slots ((begin %begin) (end %end)) range
+    (setf begin (min end (+ begin count))))
+  range)
+
+
+(defmethod drop-back ((range hash-table-range) count)
+  (with-slots ((begin %begin) (end %end)) range
+    (setf end (max begin (- end count))))
+  range)
+
+
 (defmethod morep ((range hash-table-range))
   (with-slots ((begin %begin) (end %end)) range
     (not (eql begin end))))

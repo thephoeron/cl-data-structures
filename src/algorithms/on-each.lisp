@@ -48,7 +48,7 @@
   ())
 
 
-(defmethod clone ((range forward-proxy-box-range))
+(defmethod cl-ds:clone ((range forward-proxy-box-range))
   (make-instance (type-of range)
                  :original-range (read-original-range range)
                  :funcall-result (read-funcall-result range)
@@ -78,28 +78,28 @@
                 :key key)))
 
 
-(defmethod apply-layer ((range fundamental-range)
-                        (fn on-each-function)
-                        &rest all &key function key)
+(defmethod cl-ds:apply-layer ((range fundamental-range)
+                              (fn on-each-function)
+                              &rest all &key function key)
   (declare (ignore all))
   (on-each-proxy-range-from-range range function key))
 
 
-(defmethod consume-front ((range forward-proxy-box-range))
+(defmethod cl-ds:consume-front ((range forward-proxy-box-range))
   (let ((cache (read-funcall-result range)))
     (if (flexichain:flexi-empty-p cache)
         (values nil nil)
         (values (flexichain:pop-start cache) t))))
 
 
-(defmethod consume-back ((range bidirectional-proxy-box-range))
+(defmethod cl-ds:consume-back ((range bidirectional-proxy-box-range))
   (let ((cache (read-funcall-result range)))
     (if (flexichain:flexi-empty-p cache)
         (values nil nil)
         (values (flexichain:pop-end cache) t))))
 
 
-(defmethod peek-front ((range forward-proxy-box-range))
+(defmethod cl-ds:peek-front ((range forward-proxy-box-range))
   (let ((cache (read-funcall-result range)))
     (if (flexichain:flexi-empty-p cache)
         (values nil nil)
@@ -108,7 +108,7 @@
           (values result t)))))
 
 
-(defmethod peek-back ((range bidirectional-proxy-box-range))
+(defmethod cl-ds:peek-back ((range bidirectional-proxy-box-range))
   (let ((cache (read-funcall-result range)))
     (if (flexichain:flexi-empty-p cache)
         (values nil nil)
@@ -117,7 +117,7 @@
           (values result t)))))
 
 
-(defmethod drop-back ((range bidirectional-proxy-box-range) count)
+(defmethod cl-ds:drop-back ((range bidirectional-proxy-box-range) count)
   (let ((cache (read-funcall-result range)))
     (iterate
       (until (flexichain:flexi-empty-p cache))
@@ -126,7 +126,7 @@
     range))
 
 
-(defmethod drop-front ((range forward-proxy-box-range) count)
+(defmethod cl-ds:drop-front ((range forward-proxy-box-range) count)
   (let ((cache (read-funcall-result range)))
     (iterate
       (until (flexichain:flexi-empty-p cache))
@@ -136,4 +136,4 @@
 
 
 (defmethod cl-ds:morep ((range proxy-box-range))
-  (not (flexichain:flexi-empty-p (read-funcall-result range))))
+  (~> range read-funcall-result flexichain:flexi-empty-p not))
