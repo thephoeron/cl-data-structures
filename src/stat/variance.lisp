@@ -23,4 +23,8 @@
 
 
 (defmethod cl-ds.alg:state-result ((function variance-function) state)
-  (alexandria:variance (car state) :biased (cdr state)))
+  (let ((vector (car state))
+        (boolean (cdr state)))
+    (declare (type vector vector)
+             (type boolean boolean))
+    (alexandria:variance vector :biased boolean)))
