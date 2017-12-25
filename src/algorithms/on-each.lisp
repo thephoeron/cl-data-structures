@@ -6,29 +6,34 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric on-each (function range)
+(defgeneric on-each (function range &key key)
   (:generic-function-class on-each-function)
-  (:method (function (range fundamental-range))
-    (apply-range-function range #'on-each :function function)))
+  (:method (function (range fundamental-range) &key key)
+    (apply-range-function range #'on-each :function function :key key)))
 
 
 (defclass proxy-box-range ()
   ((%function :initarg :function
               :reader read-function)
    (%funcall-result :initarg :funcall-result
-                    :reader read-funcall-result)))
+                    :reader read-funcall-result)
+   (%key :initarg :key
+         :reader read-key)))
 
 
 (defmethod initialize-instance :after ((range proxy-box-range)
                                        &rest initargs
                                        &key &allow-other-keys)
   (declare (ignore initargs))
-  (when (slot-boundp range '%funcall-result)
-    (let ((cache (make-instance 'flexichain:standard-flexichain)))
-      (cl-ds:traverse (compose (curry #'flexichain:push-end
-                                      cache)
-                               (curry #'funcall
-                                      (read-function range)))
+  (unless (slot-boundp range '%funcall-result)
+    (let ((cache (make-instance 'flexichain:standard-flexichain))
+          (function (read-function range))
+          (key (read-key range)))
+      (cl-ds:traverse (compose (curry #'flexichain:push-end cache)
+                               (if (null key)
+                                   (curry #'funcall function)
+                                   (lambda (x)
+                                     (funcall function (funcall key x)))))
                       (read-original-range range))
       (setf (slot-value range '%funcall-result) cache))))
 
@@ -58,23 +63,26 @@
     (finally (return range))))
 
 
-(defgeneric on-each-proxy-range-from-range (range function)
-  (:method :around ((range fundamental-range) function)
+(defgeneric on-each-proxy-range-from-range (range function key)
+  (:method :around ((range fundamental-range) function key)
     (check-type function (or symbol function))
+    (check-type key (or symbol function))
     (call-next-method))
-  (:method ((range fundamental-forward-range) function)
+  (:method ((range fundamental-forward-range) function key)
     (make-proxy range 'forward-proxy-box-range
-                :function function))
-  (:method ((range fundamental-bidirectional-range) function)
+                :function function
+                :key key))
+  (:method ((range fundamental-bidirectional-range) function key)
     (make-proxy range 'bidirectional-proxy-box-range
-                :function function)))
+                :function function
+                :key key)))
 
 
 (defmethod apply-layer ((range fundamental-range)
                         (fn on-each-function)
-                        &rest all &key function)
+                        &rest all &key function key)
   (declare (ignore all))
-  (on-each-proxy-range-from-range range function))
+  (on-each-proxy-range-from-range range function key))
 
 
 (defmethod consume-front ((range forward-proxy-box-range))

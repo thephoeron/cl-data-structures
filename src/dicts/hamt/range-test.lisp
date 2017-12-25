@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 8)
+(plan 10)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -38,6 +38,16 @@
                  cl-ds:whole-range
                  (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
     (is sum 10))
+  (let ((sum (~> dict
+                 cl-ds:whole-range
+                 (cl-ds.alg:on-each (lambda (x) (* (cdr x) 2)) _)
+                 (cl-ds.alg:accumulate #'+ _))))
+    (is sum 20))
+  (let ((sum (~> dict
+                 cl-ds:whole-range
+                 (cl-ds.alg:on-each (curry #'* 2) _ :key #'cdr)
+                 (cl-ds.alg:accumulate #'+ _))))
+    (is sum 20))
   (let ((divided-sum (~> dict
                          cl-ds:whole-range
                          (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
