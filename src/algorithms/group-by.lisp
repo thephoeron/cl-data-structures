@@ -48,7 +48,6 @@
 (defmethod apply-aggregation-function ((range group-by-proxy)
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (optimize (debug 3)))
   (let ((groups (copy-hash-table (read-groups range)))
         (extract-key (read-key range)))
     (cl-ds:traverse (lambda (x)
