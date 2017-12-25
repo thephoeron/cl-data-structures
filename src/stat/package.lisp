@@ -7,4 +7,5 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.stat)
   (:export
-   #:average))
+   #:average
+   #:entropy))

@@ -54,7 +54,8 @@
                              (:file "group-by")))
                (:module "stat"
                 :components ((:file "package")
-                             (:file "average")))
+                             (:file "average")
+                             (:file "entropy")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
