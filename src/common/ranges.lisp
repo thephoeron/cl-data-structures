@@ -17,8 +17,8 @@
                :reader read-container)))
 
 
-(defclass assignable-tree-range (cl-ds:fundamental-assignable-forward-range
-                                 forward-tree-range)
+(defclass assignable-forward-tree-range (cl-ds:fundamental-assignable-forward-range
+                                         forward-tree-range)
   ((%store-value :type (-> (t t) t)
                  :initarg :store-value
                  :reader read-store-value)))
@@ -68,6 +68,16 @@
       (values (when found (funcall key result)) found))))
 
 
+(defmethod (setf cl-ds:peek-front) (new-value (range assignable-forward-tree-range))
+  (with-accessors ((stack access-forward-stack)
+                   (obtain-value read-obtain-value)
+                   (store-value read-store-value)) range
+    (multiple-value-bind (new-stack result found)
+        (read-implementation stack obtain-value)
+      (declare (ignore new-stack))
+      (values (when found (funcall store-value result new-value)) found))))
+
+
 (defmethod cl-ds:consume-front ((range forward-tree-range))
   (with-accessors ((stack access-forward-stack)
                    (obtain-value read-obtain-value)
@@ -77,6 +87,16 @@
       (setf stack new-stack)
       (values (when found (funcall key result)) found))))
 
+
+(defmethod cl-ds:drop-front ((range forward-tree-range) count)
+  (with-accessors ((stack access-forward-stack)
+                   (obtain-value read-obtain-value)
+                   (key read-key)) range
+    (multiple-value-bind (new-stack result found)
+        (read-implementation stack obtain-value)
+      (declare (ignore found result))
+      (setf stack new-stack)
+      range)))
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))

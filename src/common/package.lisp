@@ -7,6 +7,7 @@
   (:nicknames #:cl-ds.common)
   (:export
    #:access-content
+   #:assignable-forward-tree-range
    #:assignable-tree-range
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
@@ -24,5 +25,6 @@
    #:make-hash-dict-content
    #:make-lazy-range
    #:read-found
+   #:read-store-value
    #:read-value
    #:single-element-p))

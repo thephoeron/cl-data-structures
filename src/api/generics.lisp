@@ -105,9 +105,13 @@ Range releated functions.
 
 (defgeneric peek-front (range))
 
+(defgeneric (setf peek-front) (new-value range))
+
 (defgeneric consume-back (range))
 
 (defgeneric peek-back (range))
+
+(defgeneric (setf peek-back) (new-value range))
 
 (defgeneric chain (first-range &rest other-ranges))
 

@@ -40,6 +40,7 @@
    #:hash-node-whole-mask
    #:isolate-transactional-instance
    #:mark-everything-as-modified
+   #:new-cell
    #:obtain-value
    #:read-max-depth
    #:rebuild-rehashed-node

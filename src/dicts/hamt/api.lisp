@@ -508,3 +508,12 @@ Methods. Those will just call non generic functions.
                 (cl-ds.common:hash-dict-content-value x))))
   (defmethod get-range-key-function ((container hamt-dictionary))
     #'fn))
+
+
+(defmethod cl-ds:whole-range ((container mutable-hamt-dictionary))
+  (make 'cl-ds.common:assignable-forward-tree-range
+        :obtain-value #'obtain-value
+        :key (get-range-key-function container)
+        :forward-stack (list (new-cell (access-root container)))
+        :store-value (lambda (node value) (setf (cl-ds.common:hash-dict-content-value node) value))
+        :container container))
