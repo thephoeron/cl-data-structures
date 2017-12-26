@@ -14,10 +14,13 @@
    #:apply-layer
    #:apply-range-function
    #:change-each!
+   #:gather-prior-states
    #:group-by
    #:group-by-function
    #:layer-function
    #:make-state
+   #:multi-aggregation-function
+   #:multi-aggregation-stages
    #:on-each
    #:proxy-box-range
    #:proxy-range

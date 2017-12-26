@@ -61,6 +61,12 @@
                          (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
     (is (cl-ds:at divided-sum nil) 4)
     (is (cl-ds:at divided-sum t) 6))
+  (let ((divided-variance (~> dict
+                              cl-ds:whole-range
+                              (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
+                              (cl-ds.stat:variance :key #'cdr))))
+    (is (cl-ds:at divided-variance nil) 1)
+    (is (cl-ds:at divided-variance t) 1))
   (let ((range (cl-ds:whole-range dict))
         (result nil))
     (setf (cl-ds:peek-front range) 'value)
