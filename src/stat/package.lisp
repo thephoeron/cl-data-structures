@@ -5,9 +5,10 @@
   (:use #:common-lisp #:docstample #:docstample.mechanics #:serapeum
         #:cl-ds.utils #:alexandria #:iterate)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
-  (:shadow #:variance)
+  (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.stat)
   (:export
    #:average
    #:entropy
-   #:variance))
+   #:variance
+   #:standard-deviation))

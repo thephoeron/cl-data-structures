@@ -9,6 +9,7 @@
   (:export
    #:accumulate
    #:aggregate
+   #:aggregation-finished-p
    #:aggregation-function
    #:apply-aggregation-function
    #:apply-layer

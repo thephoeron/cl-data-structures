@@ -40,6 +40,11 @@
                         &key &allow-other-keys))
 
 
+(defgeneric aggregation-finished-p (aggregation-function state)
+  (:method ((function aggregation-function) state)
+    nil))
+
+
 (defgeneric aggregate (function state element))
 
 
@@ -87,11 +92,15 @@
                                        &rest all &key key &allow-other-keys)
   (declare (ignore all))
   (let ((state (apply #'make-state function (access-args range))))
-    (cl-ds:traverse (lambda (x)
-                      (aggregate function
-                                 state
-                                 (if key (funcall key x) x)))
-                    (read-original range))
+    (unless (aggregation-finished-p function state)
+      (block end
+        (cl-ds:traverse (lambda (x)
+                          (aggregate function
+                                     state
+                                     (if key (funcall key x) x))
+                          (when (aggregation-finished-p function state)
+                            (return-from end)))
+                        (read-original range))))
     (push (state-result function state) (access-args range))
     (push (access-label range) (access-args range))))
 
@@ -117,9 +126,13 @@
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
   (let ((state (apply #'make-state function all)))
-    (cl-ds:traverse (lambda (x)
-                      (aggregate function
-                                 state
-                                 (if key (funcall key x) x)))
-                    range)
+    (unless (aggregation-finished-p function state)
+      (block end
+        (cl-ds:traverse (lambda (x)
+                          (aggregate function
+                                     state
+                                     (if key (funcall key x) x))
+                          (when (aggregation-finished-p function state)
+                            (return-from end)))
+                        range)))
     (state-result function state)))
