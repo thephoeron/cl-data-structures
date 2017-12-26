@@ -14,7 +14,6 @@
    #:apply-aggregation-function
    #:apply-layer
    #:apply-range-function
-   #:change-each!
    #:gather-prior-states
    #:group-by
    #:group-by-function
