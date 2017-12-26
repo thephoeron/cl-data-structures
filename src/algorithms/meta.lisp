@@ -48,7 +48,9 @@
 (defgeneric aggregate (function state element))
 
 
-(defgeneric state-result (function state))
+(defgeneric state-result (function state)
+  (:method ((function aggregation-function) state)
+    state))
 
 
 (defmacro gather-prior-states (fn range into)

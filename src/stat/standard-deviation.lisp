@@ -31,9 +31,5 @@
   (sqrt variance))
 
 
-(defmethod cl-ds.alg:state-result ((function standard-deviation-function) state)
-  state)
-
-
 (defmethod cl-ds.alg:aggregation-finished-p ((function standard-deviation-function) state)
   t)
