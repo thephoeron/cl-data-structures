@@ -25,8 +25,8 @@
 (defmethod state-result ((function hash-join-function)
                          state)
   (with-slots (table ranges keys join-function primary-key) state
-    (let* ((result (make 'flexichain:standard-flexichain))
-           (collector (compose (curry #'flexichain:push-end result) join-function)))
+    (let* ((result (vect))
+           (collector (compose (rcurry #'vector-push-extend result) join-function)))
       (iterate
         (for range in-vector ranges)
         (for key in-vector keys)
