@@ -33,10 +33,11 @@
         (for key in-vector keys)
         (for i from 1)
         (cl-ds:traverse (lambda (x)
-                          (let ((maybe-vector (gethash (funcall key x) table)))
-                            (unless (null maybe-vector)
-                              (let ((effective-vector (aref maybe-vector i)))
-                                (vector-push-extend x effective-vector)))))
+                          (nest
+                           (let ((maybe-vector (gethash (funcall key x) table))))
+                           (unless (null maybe-vector))
+                           (let ((effective-vector (aref maybe-vector i))))
+                           (vector-push-extend x effective-vector)))
                         range))
       (maphash
        (lambda (key value)
@@ -65,13 +66,15 @@
 (defmethod aggregate ((function hash-join-function)
                       state
                       element)
-  (with-slots (table ranges keys join-function primary-key) state
-    (let ((key (funcall primary-key element)))
-      (vector-push-extend element
-                          (aref (ensure (gethash key table)
-                                  (with-vectors ((result (make-array (1+ (length ranges)))))
-                                    (iterate
-                                      (for i from 0 below (1+ (length ranges)))
-                                      (setf (result i) (vect)))
-                                    result))
-                                0)))))
+  (nest
+   (with-slots (table ranges keys join-function primary-key) state)
+   (let ((key (funcall primary-key element))))
+   (vector-push-extend
+    element
+    (aref (ensure (gethash key table)
+            (with-vectors ((result (~> ranges length 1+ make-array)))
+              (iterate
+                (for i from 0 below (~> ranges length 1+))
+                (setf (result i) (vect)))
+              result))
+          0))))
