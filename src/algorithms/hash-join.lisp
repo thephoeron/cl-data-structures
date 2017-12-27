@@ -26,7 +26,8 @@
                          state)
   (with-slots (table ranges keys join-function primary-key) state
     (let* ((result (vect))
-           (collector (compose (rcurry #'vector-push-extend result) join-function)))
+           (collector (compose (rcurry #'vector-push-extend result)
+                               join-function)))
       (iterate
         (for range in-vector ranges)
         (for key in-vector keys)
