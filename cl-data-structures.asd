@@ -20,6 +20,7 @@
                 :components ((:file "package")
                              (:file "macros")
                              (:file "types")
+                             (:file "cartesian")
                              (:file "ordered-algorithms")
                              (:file "lists")
                              (:file "trivial")
@@ -50,7 +51,8 @@
                              (:file "summary")
                              (:file "change-each!")
                              (:file "accumulate")
-                             (:file "group-by")))
+                             (:file "group-by")
+                             (:file "hash-join")))
                (:module "stat"
                 :components ((:file "package")
                              (:file "average")

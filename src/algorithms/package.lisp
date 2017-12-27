@@ -17,6 +17,7 @@
    #:gather-prior-states
    #:group-by
    #:group-by-function
+   #:hash-join
    #:layer-function
    #:make-state
    #:multi-aggregation-function

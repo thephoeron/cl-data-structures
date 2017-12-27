@@ -7,6 +7,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:bind-lambda
+   #:cartesian
    #:cases
    #:cond+
    #:cond-compare
