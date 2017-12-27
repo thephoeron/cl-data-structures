@@ -1,9 +1,9 @@
 (in-package #:cl-data-structures.utils)
 
 
-(defun cartesian (vector-of-vectors result-callback)
-  (let* ((l (length vector-of-vectors))
-         (lengths (map '(vector fixnum) #'length vector-of-vectors))
+(defun cartesian (sequence-of-sequences result-callback)
+  (let* ((l (length sequence-of-sequences))
+         (lengths (map '(vector fixnum) #'length sequence-of-sequences))
          (indexes (make-array l :element-type 'fixnum)))
     (iterate
       (for i = (iterate
@@ -12,7 +12,7 @@
                                          (aref lengths i)))))
       (for p-i previous i initially 0)
       (apply result-callback
-             (map 'list #'aref vector-of-vectors indexes))
+             (map 'list #'elt sequence-of-sequences indexes))
       (until (null i))
       (when (not (eql i p-i))
         (iterate (for j from 0 below i)
