@@ -46,4 +46,5 @@
   (bind (((:slots %construct-function %arguments) obj))
     (c2mop:set-funcallable-instance-function obj
                                              (apply %construct-function
-                                                    %arguments))))
+                                                    %arguments)))
+  obj)
