@@ -188,37 +188,48 @@
            (import symbol ,to-package))))))
 
 
+(eval-always
+  (defun build-setf-form (vars args)
+    (apply #'append
+           (iterate
+             (with p-fake-keys = (serapeum:plist-keys args))
+             (with p-fake-values = (serapeum:plist-values args))
+             (for key in p-fake-keys)
+             (for value in p-fake-values)
+             (for var = (find (symbol-name key) vars
+                              :key #'symbol-name
+                              :test #'string=))
+             (when (null var)
+               (error "No such var!"))
+             (collect (list var value))))))
+
+
 (defmacro let-generator (forms &body body)
+  "Poor man's generator (no continuations, no code-walking)."
   (with-gensyms (!end !result !self)
     (let ((final-forms nil))
       (iterate
         (for (name vars . content) in forms)
         (for vars-length = (length vars))
         (for fake-vars = (iterate (repeat vars-length) (collect (gensym))))
-        (push `(,name ,vars
+        (push `(,name (&key ,@vars)
                       (lambda ()
                         (block ,!end
                           (macrolet ((,(intern "SEND") (&body ,!result)
                                        `(return-from ,',!end
                                           (progn ,@,!result)))
-                                     (,(intern "RECUR") (,@fake-vars)
+                                     (,(intern "RECUR") (&rest args)
                                        `(progn
-                                          (setf ,@(apply #'append
-                                                         (mapcar #'list
-                                                                 ',vars
-                                                                 ,(cons 'list fake-vars))))
+                                          (setf ,@(build-setf-form ',vars args))
                                           (go ,',!self)))
-                                     (,(intern "SEND-RECUR") (,!result ,@fake-vars)
+                                     (,(intern "SEND-RECUR") (,!result &rest args)
                                        `(return-from ,',!end
                                           (prog1
                                               ,,!result
-                                            (setf ,@(apply #'append
-                                                           (mapcar #'list
-                                                                   ',vars
-                                                                   ,(cons 'list fake-vars))))))))
+                                            (setf ,@(build-setf-form ',vars args))))))
                             (tagbody
                                ,!self
                                ,@content)))))
               final-forms))
       `(flet ,final-forms
-         ,@body)))))
+         ,@body))))
