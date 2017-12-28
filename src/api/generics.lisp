@@ -126,3 +126,5 @@ Range releated functions.
 (defgeneric whole-range (container))
 
 (defgeneric empty-clone-of-inner-container (range))
+
+(defgeneric reset (expression))

@@ -31,7 +31,7 @@
                :arguments (list ,@arguments))))))
 
 
-(defmethod cl-ds:traverse (function (obj expression))
+(defmethod traverse (function (obj expression))
   (bind (((:slots %construct-function %arguments) obj)
          (fn (apply %construct-function %arguments)))
     (iterate
@@ -39,3 +39,10 @@
       (while not-finished)
       (funcall function value))
     obj))
+
+
+(defmethod reset ((obj expression))
+  (bind (((:slots %construct-function %arguments) obj))
+    (c2mop:set-funcallable-instance-function obj
+                                             (apply %construct-function
+                                                    %arguments))))

@@ -99,6 +99,7 @@
    #:read-bounds
    #:read-class
    #:read-value
+   #:reset
    #:send
    #:shrink-bucket
    #:shrink-bucket!
