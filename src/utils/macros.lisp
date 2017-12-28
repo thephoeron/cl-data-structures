@@ -217,16 +217,18 @@
                         (block ,!end
                           (macrolet ((,(intern "SEND") (&body ,!result)
                                        `(return-from ,',!end
-                                          (progn ,@,!result)))
+                                          (values (progn ,@,!result)
+                                                  t)))
                                      (,(intern "RECUR") (&rest args)
                                        `(progn
                                           (setf ,@(build-setf-form ',vars args))
                                           (go ,',!self)))
                                      (,(intern "SEND-RECUR") (,!result &rest args)
                                        `(return-from ,',!end
-                                          (prog1
-                                              ,,!result
-                                            (setf ,@(build-setf-form ',vars args))))))
+                                          (values (prog1
+                                                      ,,!result
+                                                    (setf ,@(build-setf-form ',vars args)))
+                                                  t))))
                             (tagbody
                                ,!self
                                ,@content)))))
