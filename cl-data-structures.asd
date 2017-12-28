@@ -11,7 +11,8 @@
                 :serapeum        :prove
                 :prove-asdf      :docstample
                 :more-conditions :closer-mop
-                :lparallel       :flexichain)
+                :lparallel       :flexichain
+                :metabang-bind)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
