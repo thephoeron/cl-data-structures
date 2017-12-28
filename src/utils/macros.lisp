@@ -206,32 +206,42 @@
 
 (defmacro let-generator (forms &body body)
   "Poor man's generator (no continuations, no code-walking)."
-  (with-gensyms (!end !result !self)
+  (with-gensyms (!end !result !self !finished)
     (let ((final-forms nil))
       (iterate
         (for (name vars . content) in forms)
         (for vars-length = (length vars))
         (for fake-vars = (iterate (repeat vars-length) (collect (gensym))))
         (push `(,name (&key ,@vars)
-                      (lambda ()
-                        (block ,!end
-                          (macrolet ((,(intern "SEND") (&body ,!result)
-                                       `(return-from ,',!end
-                                          (values (progn ,@,!result)
-                                                  t)))
-                                     (,(intern "RECUR") (&rest args)
-                                       `(progn
-                                          (setf ,@(build-setf-form ',vars args))
-                                          (go ,',!self)))
-                                     (,(intern "SEND-RECUR") (,!result &rest args)
-                                       `(return-from ,',!end
-                                          (values (prog1
-                                                      ,,!result
-                                                    (setf ,@(build-setf-form ',vars args)))
-                                                  t))))
-                            (tagbody
-                               ,!self
-                               ,@content)))))
+                      (let ((,!finished nil))
+                        (lambda ()
+                          (block ,!end
+                            (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
+                                         `(progn
+                                            (setf ,',!finished t)
+                                            (return-from ,',!end
+                                              (values (progn ,@,!result)
+                                                      t))))
+                                       (,(intern "FINISH") (&body ,!result)
+                                         `(progn
+                                            (setf ,',!finished t)
+                                            (return-from ,',!end
+                                              (values nil nil))))
+                                       (,(intern "RECUR") (&rest args)
+                                         `(progn
+                                            (setf ,@(build-setf-form ',vars args))
+                                            (go ,',!self)))
+                                       (,(intern "SEND-RECUR") (,!result &rest args)
+                                         `(return-from ,',!end
+                                            (values (prog1
+                                                        ,,!result
+                                                      (setf ,@(build-setf-form ',vars args)))
+                                                    t))))
+                              (tagbody
+                                 ,!self
+                                 (when ,!finished
+                                   (return-from ,!end (values nil nil)))
+                                 ,@content))))))
               final-forms))
       `(flet ,final-forms
          ,@body))))
