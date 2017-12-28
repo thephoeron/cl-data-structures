@@ -2,7 +2,7 @@
 
 
 (defpackage :cl-data-structures.common.hamt
-  (:use #:common-lisp #:iterate #:serapeum #:alexandria)
+  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.hamt)
   (:export

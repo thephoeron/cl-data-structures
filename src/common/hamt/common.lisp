@@ -757,3 +757,9 @@ Copy nodes and stuff.
         :forward-stack (list (new-cell (access-root container)))
         :container container))
 
+
+(defmethod cl-ds:reset ((obj hamt-container))
+  (bind (((:slots %root %size) obj))
+    (setf %root nil
+          %size 0)
+    obj))

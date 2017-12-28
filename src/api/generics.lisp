@@ -127,4 +127,4 @@ Range releated functions.
 
 (defgeneric empty-clone-of-inner-container (range))
 
-(defgeneric reset (expression))
+(defgeneric reset (obj))
