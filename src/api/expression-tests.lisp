@@ -1,6 +1,6 @@
 (in-package :cl-user)
 (defpackage expression-tests
-  (:use :cl :prove :serapeum :cl-ds :iterate :alexandria :cl-ds.dicts.hamt)
+  (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
   (:shadowing-import-from :iterate :collecting :summing :in)
   (:export :run-suite))
 (in-package :expression-tests)
