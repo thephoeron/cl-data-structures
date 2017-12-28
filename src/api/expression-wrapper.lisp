@@ -24,8 +24,9 @@
 (defmacro xpr (arguments &body body)
   (let ((keys (plist-keys arguments)))
     (with-gensyms (!fn)
-      `(cl-ds.utils:let-generator ((,!fn ,(mapcar (lambda (x) (intern (symbol-name x))) keys)
-                                         ,@body))
+      `(cl-ds.utils:let-generator
+           ((,!fn ,(mapcar (lambda (x) (intern (symbol-name x))) keys)
+                  ,@body))
          (make 'cl-ds:expression
                :construct-function (function ,!fn)
                :arguments (list ,@arguments))))))
