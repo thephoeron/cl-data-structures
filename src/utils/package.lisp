@@ -21,6 +21,7 @@
    #:insert-or-replace
    #:lazy-let
    #:lazy-shuffle
+   #:let-generator
    #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector

@@ -157,7 +157,7 @@
     `(cond ((< ,a ,b) ,<)
            ((> ,a ,b) ,>)
            ((= ,a ,b) ,=))))
- 
+
 
 (defmacro let-functions (bindings &body body)
   `(let ,(mapcar (lambda (s)
@@ -186,3 +186,39 @@
        (do-symbols (symbol ,from-package)
          (when (nth-value 1 (find-symbol (string-upcase symbol) ,from-package))
            (import symbol ,to-package))))))
+
+
+(defmacro let-generator (forms &body body)
+  (with-gensyms (!end !result !self)
+    (let ((final-forms nil))
+      (iterate
+        (for (name vars . content) in forms)
+        (for vars-length = (length vars))
+        (for fake-vars = (iterate (repeat vars-length) (collect (gensym))))
+        (push `(,name ,vars
+                      (lambda ()
+                        (block ,!end
+                          (macrolet ((,(intern "SEND") (&body ,!result)
+                                       `(return-from ,',!end
+                                          (progn ,@,!result)))
+                                     (,(intern "RECUR") (,@fake-vars)
+                                       `(progn
+                                          (setf ,@(apply #'append
+                                                         (mapcar #'list
+                                                                 ',vars
+                                                                 ,(cons 'list fake-vars))))
+                                          (go ,',!self)))
+                                     (,(intern "SEND-RECUR") (,!result ,@fake-vars)
+                                       `(return-from ,',!end
+                                          (prog1
+                                              ,,!result
+                                            (setf ,@(apply #'append
+                                                           (mapcar #'list
+                                                                   ',vars
+                                                                   ,(cons 'list fake-vars))))))))
+                            (tagbody
+                               ,!self
+                               ,@content)))))
+              final-forms))
+      `(flet ,final-forms
+         ,@body)))))
