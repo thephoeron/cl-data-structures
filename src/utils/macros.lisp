@@ -222,7 +222,7 @@
                                             (return-from ,',!end
                                               (values (progn ,@,!result)
                                                       t))))
-                                       (,(intern "FINISH") (&body ,!result)
+                                       (,(intern "FINISH") ()
                                          `(progn
                                             (setf ,',!finished t)
                                             (return-from ,',!end
@@ -241,7 +241,9 @@
                                  ,!self
                                  (when ,!finished
                                    (return-from ,!end (values nil nil)))
-                                 ,@content))))))
+                                 ,@content
+                                 (setf ,!finished t)
+                                 (values nil nil)))))))
               final-forms))
       `(flet ,final-forms
          ,@body))))

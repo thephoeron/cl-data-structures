@@ -3,7 +3,7 @@
 
 (defpackage :cl-data-structures
   (:use #:common-lisp #:docstample #:docstample.mechanics #:alexandria
-        #:iterate #:alexandria #:serapeum)
+        #:iterate #:alexandria #:serapeum #:metabang-bind)
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
