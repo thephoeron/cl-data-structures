@@ -12,7 +12,8 @@
                 :prove-asdf      :docstample
                 :more-conditions :closer-mop
                 :lparallel       :flexichain
-                :metabang-bind   :bordeaux-threads)
+                :metabang-bind   :bordeaux-threads
+                :trivial-garbage)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"

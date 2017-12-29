@@ -156,11 +156,22 @@ Interface class.
   ((%root :accessor access-root
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
+   (%ownership-tag :reader read-ownership-tag
+                   :initform (list* (gensym) (bt:make-lock))
+                   :initarg :ownership-tag
+                   :documentation "Ownership tag is used to check if it is allowed to mutate internal nodes.")
    (%size :initarg :size
           :initform 0
           :type non-negative-fixnum
           :accessor access-size
           :documentation "How many elements are in there?")))
+
+
+(flet ((enclose (tag)
+         (setf (car tag) nil)))
+  (defmethod initialize-instance :after ((obj hamt-container) &rest all &key &allow-other-keys)
+    (declare (ignore all))
+    (trivial-garbage:finalize obj (enclose (read-ownership-tag obj)))))
 
 
 #|
