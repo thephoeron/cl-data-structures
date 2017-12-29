@@ -136,7 +136,8 @@ Tree structure of HAMT
 (defstruct hash-node
   (node-mask 0 :type hash-mask)
   (content #() :type simple-array)
-  ownership-tag)
+  ownership-tag
+  lock (bt:make-lock))
 
 
 (declaim (inline make-hash-node))
@@ -154,7 +155,7 @@ Interface class.
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
    (%ownership-tag :reader read-ownership-tag
-                   :initform (list* (gensym) (bt:make-lock))
+                   :initform (list (gensym))
                    :initarg :ownership-tag
                    :documentation "Ownership tag is used to check if it is allowed to mutate internal nodes.")
    (%size :initarg :size
@@ -517,14 +518,13 @@ Copy nodes and stuff.
 (-> hash-node-transactional-replace
     (list hash-node t hash-node-index) hash-node)
 (defun hash-node-transactional-replace (ownership-tag node content index) ;TODO
-  (bind (((:accessors (tag hash-node-ownership-tag))
-          node)
+  (bind (((:accessors (tag hash-node-ownership-tag) (lock hash-node-lock)) node)
          (can-be-mutated (or (eq tag ownership-tag)
                              (when (null (car tag))
-                               (bt:with-lock-held ((cdr tag))
-                                 (when (null (car tag))
-                                   (setf tag ownership-tag)
-                                   t)))))
+                               (bt:with-lock-held (lock)
+                                 (if (null (car tag))
+                                     (progn (setf tag ownership-tag) t)
+                                     (eq tag ownership-tag))))))
          (result (if can-be-mutated
                      (hash-node-replace! node content index)
                      (hash-node-replace-in-the-copy node
