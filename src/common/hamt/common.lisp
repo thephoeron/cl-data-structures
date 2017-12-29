@@ -135,11 +135,8 @@ Tree structure of HAMT
 
 (defstruct hash-node
   (node-mask 0 :type hash-mask)
-  (content #() :type simple-array))
-
-
-(defstruct (transactional-hash-node (:include hash-node))
-  (modification-mask 0 :type hash-mask))
+  (content #() :type simple-array)
+  ownership-tag)
 
 
 (declaim (inline make-hash-node))
@@ -169,9 +166,13 @@ Interface class.
 
 (flet ((enclose (tag)
          (setf (car tag) nil)))
-  (defmethod initialize-instance :after ((obj hamt-container) &rest all &key &allow-other-keys)
-    (declare (ignore all))
+  (defun enclose-finalizer (obj)
     (trivial-garbage:finalize obj (enclose (read-ownership-tag obj)))))
+
+
+(defmethod initialize-instance :after ((obj hamt-container) &rest all &key &allow-other-keys)
+  (declare (ignore all))
+  (enclose-finalizer obj))
 
 
 #|
@@ -279,25 +280,21 @@ Copy nodes and stuff.
 
 (-> copy-node (hash-node &key
                          (:node-mask hash-mask)
-                         (:modification-mask hash-mask)
+                         (:ownership-tag list)
                          (:content simple-vector))
     hash-node)
 (declaim (inline copy-node))
-(defun copy-node (node &key node-mask content modification-mask)
+(defun copy-node (node &key node-mask ownership-tag content)
   (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
-  (if (transactional-hash-node-p node)
-      (make-hash-node
-       :node-mask (or node-mask (hash-node-node-mask node))
-       :content (or content (hash-node-content node)))
-      (make-transactional-hash-node
-       :node-mask (or node-mask (transactional-hash-node-node-mask node))
-       :content (or content (transactional-hash-node-content node))
-       :modification-mask (or modification-mask (transactional-hash-node-modification-mask node)))))
+  (make-hash-node
+   :ownership-tag (or ownership-tag (hash-node-ownership-tag node))
+   :node-mask (or node-mask (hash-node-node-mask node))
+   :content (or content (hash-node-content node))))
 
 
-(-> hash-node-replace-in-the-copy (hash-node t hash-node-index &key (:transactional boolean)) hash-node)
+(-> hash-node-replace-in-the-copy (hash-node t hash-node-index list) hash-node)
 (declaim (inline hash-node-replace-in-the-copy))
-(defun hash-node-replace-in-the-copy (hash-node item index &key (transactional nil))
+(defun hash-node-replace-in-the-copy (hash-node item index ownership-tag)
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
@@ -310,16 +307,14 @@ Copy nodes and stuff.
           (aref content
                 (logcount (ldb (byte index 0) node-mask)))
           item)
-    (if transactional
-        (make-transactional-hash-node :node-mask node-mask
-                                      :content content)
-        (make-hash-node :node-mask node-mask
-                        :content content))))
+    (make-hash-node :node-mask node-mask
+                    :ownership-tag ownership-tag
+                    :content content)))
 
 
-(-> hash-node-insert-into-copy (hash-node t hash-node-index &key (:transactional boolean)) hash-node)
+(-> hash-node-insert-into-copy (hash-node t hash-node-index list) hash-node)
 (declaim (inline hash-node-insert-into-copy))
-(defun hash-node-insert-into-copy (hash-node content index &key (transactional nil))
+(defun hash-node-insert-into-copy (hash-node content index ownership-tag)
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0)
@@ -350,16 +345,14 @@ Copy nodes and stuff.
       ;;just make new hash-node
       (let ((node-mask (hash-node-node-mask hash-node)))
         (setf (ldb (byte 1 index) node-mask) 1)
-        (if transactional
-            (make-transactional-hash-node :node-mask node-mask
-                                          :content new-array)
-            (make-hash-node :node-mask node-mask
-                            :content new-array))))))
+        (make-hash-node :node-mask node-mask
+                        :ownership-tag ownership-tag
+                        :content new-array)))))
 
 
-(-> rebuild-rehashed-node (fixnum t &key (:transactional boolean)) t)
-(-> build-rehashed-node (fixnum simple-vector &key (:transactional boolean)) t)
-(defun build-rehashed-node (depth content &key (transactional nil))
+(-> rebuild-rehashed-node (fixnum t list) t)
+(-> build-rehashed-node (fixnum simple-vector list) t)
+(defun build-rehashed-node (depth content ownership-tag)
   (let ((mask 0)
         (node-mask 0)
         (size 0))
@@ -378,53 +371,21 @@ Copy nodes and stuff.
           (setf (array i)
                 (rebuild-rehashed-node depth
                                        conflict
-                                       :transactional transactional)
+                                       ownership-tag)
                 (ldb (byte 1 index) node-mask) 1)))
-      (if transactional
-          (make-transactional-hash-node :node-mask node-mask
-                                        :content array)
-          (make-hash-node :node-mask node-mask
-                          :content array)))))
+      (make-hash-node :node-mask node-mask
+                      :ownership-tag ownership-tag
+                      :content array))))
 
 
-(let ((max-mask (iterate
-                  (for i from 0 below +maximum-children-count+)
-                  (for result
-                       initially 0
-                       then (dpb 1 (byte 1 i) result))
-                  (finally (return result)))))
-  (defun mark-everything-as-modified (node)
-    (setf (transactional-hash-node-modification-mask node)
-          max-mask)
-    node))
-
-
-(defun transactional-rebuild-rehashed-node (depth conflict)
-  (declare (optimize (speed 3)))
-  (flet ((cont (array)
-           (let ((result (build-rehashed-node (1+ depth) array
-                                              :transactional t)))
-             (mark-everything-as-modified result))))
-    (declare (dynamic-extent #'cont))
-    (if (or (>= depth +depth+) (cl-ds.common:single-element-p conflict))
-        conflict
-        (rehash conflict depth
-                #'cont))))
-
-
-(defun rebuild-rehashed-node (depth conflict &key (transactional nil))
+(defun rebuild-rehashed-node (depth conflict ownership-tag)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
                      (space 0))
            (type fixnum depth))
   (flet ((cont (array)
-           (let ((result (build-rehashed-node (1+ depth)
-                                              array
-                                              :transactional transactional)))
-             (when transactional
-               (mark-everything-as-modified result))
-             result)))
+           (build-rehashed-node (1+ depth) array ownership-tag)))
     (declare (dynamic-extent #'cont))
     (if (or (>= depth +depth+) (cl-ds.common:single-element-p conflict))
         conflict
@@ -433,9 +394,10 @@ Copy nodes and stuff.
                 #'cont))))
 
 
-(-> build-node (hash-node-index t) hash-node)
-(defun build-node (index content)
+(-> build-node (hash-node-index t list) hash-node)
+(defun build-node (index content ownership-tag)
   (make-hash-node :node-mask (ash 1 index)
+                  :ownership-tag ownership-tag
                   :content (make-array 1 :initial-element content)))
 
 
@@ -472,20 +434,18 @@ Copy nodes and stuff.
   node)
 
 
-(-> hash-node-remove-from-the-copy (hash-node fixnum &key (:transactional boolean)) hash-node)
+(-> hash-node-remove-from-the-copy (hash-node fixnum list) hash-node)
 (-> hash-node-remove! (hash-node fixnum) hash-node)
 (flet ((new-array (node index)
          (cl-ds.utils:copy-without (hash-node-content node)
                                    (1- (logcount (ldb (byte (1+ index) 0)
                                                       (hash-node-whole-mask node)))))))
 
-  (defun hash-node-remove-from-the-copy (node index &key (transactional nil))
+  (defun hash-node-remove-from-the-copy (node index ownership-tag)
     "Returns copy of node, but without element under index. Not safe, does not check if element is actually present."
-    (if transactional
-        (make-transactional-hash-node :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
-                                      :content (new-array node index))
-        (make-hash-node :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
-                        :content (new-array node index))))
+    (make-hash-node :node-mask (dpb 0 (byte 1 index) (hash-node-node-mask node))
+                    :ownership-tag ownership-tag
+                    :content (new-array node index)))
 
 
   (defun hash-node-remove! (node index)
@@ -520,8 +480,8 @@ Copy nodes and stuff.
     (funcall cont result)))
 
 
-(-> copy-on-write ((vector fixnum) vector fixnum t) t)
-(defun copy-on-write (indexes path depth conflict)
+(-> copy-on-write (list (vector fixnum) vector fixnum t) t)
+(defun copy-on-write (ownership-tag indexes path depth conflict)
   (declare (type index-path indexes)
            (type node-path path)
            (type fixnum depth)
@@ -542,35 +502,23 @@ Copy nodes and stuff.
                             ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                             conflict
                             (rebuild-rehashed-node depth
-                                                   conflict))
+                                                   conflict
+                                                   ownership-tag))
            then (if ac
                     (if (hash-node-contains node index)
-                        (hash-node-replace-in-the-copy node ac index)
-                        (hash-node-insert-into-copy node ac index))
+                        (hash-node-replace-in-the-copy node ac index ownership-tag)
+                        (hash-node-insert-into-copy node ac index ownership-tag))
                     (if (eql 1 (hash-node-size node))
                         ac
-                        (hash-node-remove-from-the-copy node index))))
+                        (hash-node-remove-from-the-copy node index ownership-tag))))
       (finally (return ac)))))
 
 
-(-> hash-node-content-modified (hash-node hash-node-index) boolean)
-(defun hash-node-content-modified (node index)
-  (~>> node
-       transactional-hash-node-modification-mask
-       (ldb-test (byte 1 index))))
-
-
-(-> set-modified (transactional-hash-node hash-node-index) hash-node)
-(defun set-modified (node index)
-  (setf (ldb (byte 1 index) (transactional-hash-node-modification-mask node)) 1)
-  node)
-
-
 (-> hash-node-transactional-replace
-    (boolean hash-node t hash-node-index) hash-node)
-(defun hash-node-transactional-replace (must-copy node content index)
+    (list hash-node t hash-node-index) hash-node)
+(defun hash-node-transactional-replace (ownership-tag node content index) ;TODO
   (let ((result (if must-copy
-                    (hash-node-replace-in-the-copy node content index :transactional t)
+                    (hash-node-replace-in-the-copy node content index ownership-tag)
                     (hash-node-replace! node content index))))
     (when (transactional-hash-node-p result)
       (if (transactional-hash-node-p node)
@@ -581,9 +529,9 @@ Copy nodes and stuff.
 
 
 (-> hash-node-transactional-insert
-    (boolean hash-node t hash-node-index)
+    (list hash-node t hash-node-index)
     hash-node)
-(defun hash-node-transactional-insert (must-copy node content index)
+(defun hash-node-transactional-insert (ownership-tag node content index) ;TODO
   (let ((result (if must-copy
                     (hash-node-insert-into-copy node content index :transactional t)
                     (hash-node-insert! node content index))))
@@ -596,9 +544,9 @@ Copy nodes and stuff.
 
 
 (-> hash-node-transactional-remove
-    (boolean hash-node hash-node-index)
+    (list hash-node hash-node-index)
     hash-node)
-(defun hash-node-transactional-remove (must-copy node index)
+(defun hash-node-transactional-remove (ownership-tag node index) ;TODO
   (let ((result (if must-copy
                     (hash-node-remove-from-the-copy node index :transactional t)
                     (hash-node-remove! node index))))
@@ -611,13 +559,13 @@ Copy nodes and stuff.
 
 
 (-> transactional-copy-on-write
-    ((vector fixnum) vector fixnum t boolean)
+    (list (vector fixnum) vector fixnum t)
     t)
-(defun transactional-copy-on-write (indexes
+(defun transactional-copy-on-write (ownership-tag
+                                    indexes
                                     path
                                     depth
-                                    conflict
-                                    root-already-copied)
+                                    conflict) ;TODO
   (declare (type (simple-array fixnum) indexes)
            (type simple-array path)
            (type fixnum depth)
@@ -647,45 +595,28 @@ Copy nodes and stuff.
                                                                  conflict))
            then (if ac
                     (if (hash-node-contains node index)
-                        (hash-node-transactional-replace must-copy node ac index)
-                        (hash-node-transactional-insert must-copy
+                        (hash-node-transactional-replace ownership-tag node ac index)
+                        (hash-node-transactional-insert ownership-tag
                                                         node ac index))
                     (if (eql 1 (hash-node-size node))
                         ac
-                        (hash-node-transactional-remove must-copy node index))))
+                        (hash-node-transactional-remove ownership-tag node index))))
       (when (eq node ac)
         (leave (path 0)))
       (finally (return ac)))))
 
 
-(-> clear-modification-masks (hash-node) hash-node)
-(declaim (notinline clear-modification-masks))
-(defun clear-modification-masks (node)
-  (declare (optimize (speed 3)))
-  (iterate
-    (for i from 0 below +maximum-children-count+)
-    (when (and (hash-node-content-modified node i)
-               (hash-node-contains-node node i))
-      (clear-modification-masks (hash-node-access node i))))
-  (setf (transactional-hash-node-modification-mask node) 0)
-  node)
-
-
-(-> hash-node-deep-copy (hash-node) (values hash-node (or null hash-mask)))
+(-> hash-node-deep-copy (hash-node list) hash-node)
 (declaim (inline hash-node-deep-copy))
-(defun hash-node-deep-copy (node)
-  (if (transactional-hash-node-p node)
-      (values (make-hash-node :node-mask (transactional-hash-node-node-mask node)
-                              :content (copy-array (transactional-hash-node-content node)))
-              (transactional-hash-node-modification-mask node))
-      (values (make-hash-node :node-mask (hash-node-node-mask node)
-                              :content (copy-array (hash-node-content node)))
-              nil)))
+(defun hash-node-deep-copy (node ownership-tag)
+  (make-hash-node :node-mask (transactional-hash-node-node-mask node)
+                  :content (copy-array (transactional-hash-node-content node))
+                  :ownership-tag ownership-tag))
 
 
-(-> isolate-transactional-instance (hash-node boolean) hash-node)
+(-> isolate-transactional-instance (hash-node list) hash-node)
 (declaim (notinline isolate-transactional-instance))
-(defun isolate-transactional-instance (parent parent-was-modified)
+(defun isolate-transactional-instance (parent ownership-tag) ;TODO
   (multiple-value-bind (parent mask) (if parent-was-modified
                                          (hash-node-deep-copy parent)
                                          (values parent nil))
@@ -711,7 +642,7 @@ Copy nodes and stuff.
 
 
 (defmethod cl-ds:clone ((cell hamt-range-stack-cell))
-  (make-hamt-range-stack-cell 
+  (make-hamt-range-stack-cell
    :start (hamt-range-stack-cell-start cell)
    :end (hamt-range-stack-cell-end cell)
    :node (hamt-range-stack-cell-node cell)))
@@ -770,7 +701,11 @@ Copy nodes and stuff.
 
 
 (defmethod cl-ds:reset ((obj hamt-container))
-  (bind (((:slots %root %size) obj))
+  (bind (((:slots %root %size %ownership-tag) obj))
     (setf %root nil
-          %size 0)
+          %size 0
+          (car %ownership-tag) nil
+          %ownership-tag (list* (gensym) (bt:make-lock)))
+    (trivial-garbage:cancel-finalization obj)
+    (enclose-finalizer obj)
     obj))
