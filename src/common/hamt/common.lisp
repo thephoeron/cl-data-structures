@@ -517,14 +517,20 @@ Copy nodes and stuff.
 (-> hash-node-transactional-replace
     (list hash-node t hash-node-index) hash-node)
 (defun hash-node-transactional-replace (ownership-tag node content index) ;TODO
-  (let ((result (if must-copy
-                    (hash-node-replace-in-the-copy node content index ownership-tag)
-                    (hash-node-replace! node content index))))
-    (when (transactional-hash-node-p result)
-      (if (transactional-hash-node-p node)
-          (setf (transactional-hash-node-modification-mask result)
-                (dpb 1 (byte 1 index) (transactional-hash-node-modification-mask node)))
-          (set-modified result index)))
+  (bind (((:accessors (tag hash-node-ownership-tag))
+          node)
+         (can-be-mutated (or (eq tag ownership-tag)
+                             (when (null (car tag))
+                               (bt:with-lock-held ((cdr tag))
+                                 (when (null (car tag))
+                                   (setf tag ownership-tag)
+                                   t)))))
+         (result (if can-be-mutated
+                     (hash-node-replace! node content index)
+                     (hash-node-replace-in-the-copy node
+                                                    content
+                                                    index
+                                                    ownership-tag))))
     result))
 
 
