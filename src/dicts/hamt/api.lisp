@@ -129,6 +129,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((changed nil)
+          (tag (list (gensym)))
           (hash (hash-fn location)))
       (flet ((grow-bucket (bucket)
                (multiple-value-bind (a b c)
@@ -142,6 +143,12 @@ Methods. Those will just call non generic functions.
                           all)
                  (setf changed c)
                  (values a b c)))
+             (copy-on-write (indexes path depth conflict)
+               (copy-on-write tag
+                              indexes
+                              path
+                              depth
+                              conflict))
              (make-bucket ()
                (multiple-value-bind (a b c)
                    (apply #'cl-ds:make-bucket
@@ -165,6 +172,7 @@ Methods. Those will just call non generic functions.
                        'functional-hamt-dictionary
                        :hash-fn (cl-ds.dicts:read-hash-fn container)
                        :equal-fn (cl-ds.dicts:read-equal-fn container)
+                       :ownership-tag tag
                        :root new-root
                        :size (if (cl-ds:found status)
                                  (the non-negative-fixnum (access-size container))
@@ -207,11 +215,11 @@ Methods. Those will just call non generic functions.
                  (setf changed c)
                  (values a b c)))
              (copy-on-write (indexes path depth conflict)
-               (transactional-copy-on-write indexes
-                path
-                depth
-                conflict
-                (the boolean (access-root-was-modified container)))))
+               (transactional-copy-on-write (read-ownership-tag container)
+                                            indexes
+                                            path
+                                            depth
+                                            conflict)))
         (declare (dynamic-extent (function make-bucket)
                                  (function grow-bucket)
                                  (function copy-on-write)))
@@ -241,6 +249,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (let ((hash (hash-fn location))
+          (tag (list (gensym)))
           (changed nil))
       (flet ((shrink-bucket (bucket)
                (multiple-value-bind (a b c)
@@ -253,6 +262,12 @@ Methods. Those will just call non generic functions.
                           all)
                  (setf changed c)
                  (values a b c)))
+             (copy-on-write (indexes path depth conflict)
+               (copy-on-write tag
+                              indexes
+                              path
+                              depth
+                              conflict))
              (just-return ()
                (return-from cl-ds:position-modification
                  (values container
@@ -269,6 +284,7 @@ Methods. Those will just call non generic functions.
                             :hash-fn (cl-ds.dicts:read-hash-fn container)
                             :equal-fn (cl-ds.dicts:read-equal-fn container)
                             :root new-root
+                            :ownership-tag tag
                             :size (1- (the non-negative-fixnum (access-size container))))
                       container)
                   status))))))
@@ -302,11 +318,11 @@ Methods. Those will just call non generic functions.
                  (values container
                          cl-ds.common:empty-eager-modification-operation-status)))
              (copy-on-write (indexes path depth conflict)
-               (transactional-copy-on-write indexes
+               (transactional-copy-on-write (read-ownership-tag container)
+                                            indexes
                                             path
                                             depth
-                                            conflict
-                                            (access-root-was-modified container))))
+                                            conflict)))
         (declare (dynamic-extent (function just-return)
                                  (function shrink-bucket)
                                  (function copy-on-write)))
@@ -387,6 +403,7 @@ Methods. Those will just call non generic functions.
       (let* ((prev-node nil)
              (prev-index 0)
              (root (access-root container))
+             (tag (read-ownership-tag container))
              (result
                (hash-do
                    (node index c)
@@ -403,7 +420,8 @@ Methods. Those will just call non generic functions.
                                                          container
                                                          location
                                                          :hash hash
-                                                         :value value)))
+                                                         :value value))
+                                     tag)
                                     prev-index)
                                    root)
                                  (handle-bucket
@@ -424,7 +442,8 @@ Methods. Those will just call non generic functions.
                                                            node
                                                            location
                                                            :hash hash
-                                                           :value value)))
+                                                           :value value))
+                                      tag)
                                      prev-index)
                                     root)
                                   (rebuild-rehashed-node
@@ -435,7 +454,8 @@ Methods. Those will just call non generic functions.
                                                         node
                                                         location
                                                         :hash hash
-                                                        :value value)))))))
+                                                        :value value))
+                                   tag)))))
         (setf (access-root container) result)
         (unless (cl-ds:found status)
           (incf (the fixnum (access-size container))))
@@ -469,10 +489,6 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:become-transactional ((container transactional-hamt-dictionary))
   (let ((root (access-root container)))
-    (when (and root (hash-node-p root))
-      (setf root (isolate-transactional-instance
-                  root
-                  (access-root-was-modified container))))
     (make 'transactional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root

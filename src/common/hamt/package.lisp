@@ -38,15 +38,13 @@
    #:hash-node-transactional-remove
    #:hash-node-transactional-replace
    #:hash-node-whole-mask
-   #:isolate-transactional-instance
-   #:mark-everything-as-modified
    #:new-cell
    #:obtain-value
    #:read-max-depth
    #:rebuild-rehashed-node
    #:rehash
-   #:set-modified
    #:transactional-copy-on-write
+   #:read-ownership-tag
    #:transactional-rebuild-rehashed-node
    #:with-destructive-erase-hamt
    #:with-hamt-path
