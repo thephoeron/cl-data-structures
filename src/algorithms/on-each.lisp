@@ -42,7 +42,7 @@
 
 
 (defmethod cl-ds:traverse (function (range forward-proxy-box-range))
-  (cl-ds:traverse (compose function (read-function range) (read-key range))
+  (cl-ds:traverse (compose function (read-function range) (or (read-key range) #'identity))
                   (read-original-range range))
   range)
 

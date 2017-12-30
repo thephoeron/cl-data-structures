@@ -72,7 +72,7 @@
     (block end
       (cl-ds:traverse (lambda (x)
                         (let ((k (funcall extract-key x)))
-                          (unless (gethash finished k)
+                          (unless (gethash k finished)
                             (let ((state (ensure (gethash k groups)
                                            (apply #'make-state function
                                                   (gethash k old-groups)))))
@@ -95,18 +95,12 @@
     nil))
 
 
-(defmethod apply-aggregation-function ((range group-by-proxy)
-                                       (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
-  (let ((groups (copy-hash-table (read-groups range)))
-        (extract-key (read-key range)))
-    ;; first, create groups…
-    (cl-ds:traverse (lambda (x)
-                      (let ((k (funcall extract-key x)))
-                        (setf (gethash k groups) all)))
-                    (read-original-range range))
-    ;; next, initialize prior states…
-    (let ((prior-stages (apply #'multi-aggregation-stages function all)))
+(defgeneric get-initial-states (range function argument)
+  (:method ((range group-by-proxy)
+            (function multi-aggregation-function)
+            all)
+    (let ((groups (call-next-method))
+          (prior-stages (apply #'multi-aggregation-stages function all)))
       (unless (null prior-stages)
         (let ((collector (make-instance 'group-by-states-collector
                                         :groups (read-groups range)
@@ -116,30 +110,49 @@
           (iterate
             (for (label . stage) in prior-stages)
             (setf (access-label collector) label)
-            (funcall stage collector)))))
-    (let ((final-states (copy-hash-table (read-groups range) :size (hash-table-size groups)))
-          (finished (copy-hash-table (read-groups range) :size (hash-table-size groups))))
-      (block end
-        (cl-ds:traverse (lambda (x)
-                          (let ((k (funcall extract-key x)))
-                            (unless (gethash finished k)
-                              (let ((state (ensure (gethash k final-states)
-                                             (apply #'make-state function
-                                                    (gethash k groups)))))
-                                (if (aggregation-finished-p function state)
-                                    (progn
-                                      (setf (gethash finished k) t)
-                                      (when (eql (hash-table-count finished)
-                                                 (hash-table-count final-states))
-                                        (return-from end)))
-                                    (aggregate function
-                                               state
-                                               (if (null key) x (funcall key x))))))))
-                        (read-original-range range)))
-      (maphash (lambda (key state)
-                 (setf (gethash key final-states) (state-result function state)))
-               final-states)
-      (make-hash-table-range final-states))))
+            (funcall stage collector))))
+      groups))
+  (:method ((range group-by-proxy)
+            (function aggregation-function)
+            all)
+    (let ((groups (copy-hash-table (read-groups range)))
+          (extract-key (read-key range)))
+      ;; first, create groups…
+      (cl-ds:traverse (lambda (x)
+                        (let ((k (funcall extract-key x)))
+                          (setf (gethash k groups) all)))
+                      (read-original-range range))
+      groups)))
+
+
+(defmethod apply-aggregation-function ((range group-by-proxy)
+                                       (function aggregation-function)
+                                       &rest all &key key &allow-other-keys)
+  (let* ((groups (get-initial-states range function all))
+         (extract-key (read-key range))
+         (final-states (copy-hash-table (read-groups range) :size (hash-table-size groups)))
+         (finished (copy-hash-table (read-groups range) :size (hash-table-size groups))))
+    (block end
+      (cl-ds:traverse (lambda (x)
+                        (let ((k (funcall extract-key x)))
+                          (unless (gethash k finished)
+                            (let ((state (ensure (gethash k final-states)
+                                           (apply #'make-state function
+                                                  (gethash k groups)))))
+                              (if (aggregation-finished-p function state)
+                                  (progn
+                                    (setf (gethash finished k) t)
+                                    (when (eql (hash-table-count finished)
+                                               (hash-table-count final-states))
+                                      (return-from end)))
+                                  (aggregate function
+                                             state
+                                             (if (null key) x (funcall key x))))))))
+                      (read-original-range range)))
+    (maphash (lambda (key state)
+               (setf (gethash key final-states) (state-result function state)))
+             final-states)
+    (make-hash-table-range final-states)))
 
 
 (defmethod make-proxy ((range group-by-proxy)
