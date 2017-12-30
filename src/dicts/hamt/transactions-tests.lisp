@@ -6,7 +6,7 @@
    :run-suite))
 (in-package :transactional-hamt-dictionary-tests)
 
-(plan 56)
+(plan 48)
 (diag "Testing isolation of insert")
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql)))
   (iterate
