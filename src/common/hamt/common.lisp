@@ -175,7 +175,7 @@ Interface class.
                                        &rest all &key &allow-other-keys)
   (declare (ignore all))
   (unless (slot-boundp obj '%ownership-tag)
-    (setf (slot-value obj '%ownership-tag) (list (gensym))))
+    (setf (slot-value obj '%ownership-tag) (list t)))
   (enclose-finalizer obj))
 
 
@@ -545,7 +545,7 @@ Copy nodes and stuff.
     hash-node)
 (defun hash-node-transactional-insert (ownership-tag node content index) ;TODO
   (bind (((:accessors (tag hash-node-ownership-tag) (lock hash-node-lock)) node)
-         (can-be-mutated (or (eq (print tag) (print ownership-tag))
+         (can-be-mutated (or (eq tag ownership-tag)
                              (when (null (car tag))
                                (bt:with-lock-held (lock)
                                  (if (null (car tag))
@@ -700,7 +700,7 @@ Copy nodes and stuff.
     (setf %root nil
           %size 0
           (car %ownership-tag) nil
-          %ownership-tag (list* (gensym) (bt:make-lock)))
+          %ownership-tag (list t))
     (trivial-garbage:cancel-finalization obj)
     (enclose-finalizer obj)
     obj))
