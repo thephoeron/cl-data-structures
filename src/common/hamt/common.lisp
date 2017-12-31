@@ -411,21 +411,18 @@ Copy nodes and stuff.
 (-> hash-node-insert! (hash-node t hash-node-index) hash-node)
 (defun hash-node-insert! (node content index)
   (assert (not (ldb-test (byte 1 index) (hash-node-whole-mask node))))
-  (let* ((next-size (~> node
-                        hash-node-content
-                        (array-dimension 0)
-                        1+))
-         (next-mask (~>> node
+  (let* ((next-mask (~>> node
                          hash-node-whole-mask
                          (dpb 1 (byte 1 index))))
+         (next-size (~> next-mask
+                        logcount))
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
                             logcount)))
     (cl-ds.utils:with-vectors ((s (hash-node-content node))
                                (n (if (< (array-dimension s 0) next-size)
-                                      (make-array (min +maximum-children-count+
-                                                       (ash (ceiling (/ next-size 2.0))
-                                                            1)))
+                                      (make-array (ash (ceiling (/ next-size 2.0))
+                                                       1))
                                       s)))
       (iterate
         (for i from 0 below next-size)

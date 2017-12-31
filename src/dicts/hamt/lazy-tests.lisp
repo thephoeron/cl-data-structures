@@ -6,7 +6,7 @@
    :run-suite))
 (in-package :lazy-hamt-dictionary-tests)
 
-(plan 794)
+(plan 1114)
 (diag "Testing lazy HAMT")
 (let ((dict (become-lazy (make-mutable-hamt-dictionary #'identity #'eql))))
   (diag "testing insert into empty")
@@ -62,7 +62,18 @@
     (diag "Testing forcing.")
     (iterate
       (for i below 256)
-      (is (at n-dict i) i)))
+      (is (at n-dict i) i))
+    (diag "Testing removing")
+    (let ((p-dict n-dict))
+      (iterate
+        (for i below 128)
+        (setf p-dict (erase p-dict i)))
+      (iterate
+        (for i below 64)
+        (is (at p-dict i) nil))
+      (iterate
+        (for i below 256)
+        (is (at n-dict i) i))))
   (is (size mutable) 8)
   (iterate
     (for i below 8)
