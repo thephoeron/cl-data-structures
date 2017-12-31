@@ -337,14 +337,11 @@ Copy nodes and stuff.
                   (<= +maximum-children-count+)))
       ;;before new element
       (iterate
-
         (for i from 0 below position)
-        (setf (new-array i)
-              (current-array i)))
+        (setf (new-array i) (current-array i)))
 
       ;;new element
-      (setf (new-array position)
-            content)
+      (setf (new-array position) content)
 
       ;;after new element
       (iterate
