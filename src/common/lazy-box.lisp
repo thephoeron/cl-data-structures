@@ -93,7 +93,7 @@
       (let* ((lazy-status (make 'lazy-modification-operation-status))
              (t-operation (cl-ds:destructive-counterpart operation))
              (next-instance (make (type-of container)
-                                  :content (cl-ds:become-transactional content)
+                                  :content content
                                   :operations (add-change operations
                                                           (enclose-wrapper t-operation
                                                                            location

@@ -464,19 +464,23 @@ Copy nodes and stuff.
                        (speed 3)
                        (space 0)))
     (let ((next-size (1- (logcount (hash-node-node-mask node))))
-          (masked-index (1- (logcount (ldb (byte (1+ index) 0)
-                                           (hash-node-whole-mask node))))))
+          (masked-index (1- (logcount (the fixnum
+                                           (ldb (byte (1+ index) 0)
+                                                (the fixnum (hash-node-whole-mask node))))))))
       (cl-ds.utils:with-vectors ((s (hash-node-content node))
-                                 (n (if (>= (array-dimension s 0) next-size)
+                                 (n (if (> (array-dimension s 0) (ash next-size 1))
                                         (make-array (ash (ceiling (/ next-size 2.0))
                                                          1))
                                         s)))
         (set-in-node-mask node index 0)
+        (unless (eq s n)
+          (iterate
+            (for i from 0 below masked-index)
+            (setf (n i) (s i))))
         (iterate
           (for i from masked-index below next-size)
           (setf (n i) (s (1+ i))))
         (setf (hash-node-content node) n)
-        (set-in-node-mask node index 1)
         node))))
 
 

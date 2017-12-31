@@ -50,15 +50,19 @@
   (iterate
     (for i below 8)
     (is (at mutable i) 'correct))
-
   (iterate
     (for i below 256)
     (for next = (insert dict i i)))
   (is (size dict) 8)
-  (iterate
-    (for i below 256)
-    (for next = (insert dict i i))
-    (is (at next i) i))
+  (diag "Testing delayed insert.")
+  (let ((n-dict dict))
+    (iterate
+      (for i below 256)
+      (setf n-dict (insert n-dict i i)))
+    (diag "Testing forcing.")
+    (iterate
+      (for i below 256)
+      (is (at n-dict i) i)))
   (is (size mutable) 8)
   (iterate
     (for i below 8)
