@@ -125,9 +125,10 @@
 
 
 (defun run-suite ()
-  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'equal) 100))
+  (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) 100))
 
 
-(plan 3572)
-(run-suite)
-(finalize)
+(progn
+  (plan 3572)
+  (run-suite)
+  (finalize))

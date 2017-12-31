@@ -331,7 +331,7 @@ Copy nodes and stuff.
   (let ((position (hash-node-to-masked-index hash-node index)))
     (cl-ds.utils:with-vectors
         ((current-array (hash-node-content hash-node))
-         (new-array (make-array (1+ (array-dimension current-array 0)))))
+         (new-array (make-array (~> hash-node hash-node-whole-mask logcount 1+))))
       (assert (~> (array-dimension new-array 0)
                   (<= +maximum-children-count+)))
       ;;before new element
@@ -371,7 +371,7 @@ Copy nodes and stuff.
       (when elt
         (incf size)
         (setf (ldb (byte 1 index) mask) 1)))
-    (cl-ds.utils:with-vectors ((array (make-array size)))
+    (cl-ds.utils:with-vectors ((array (make-array (round-size size) :initial-element nil)))
       (iterate
         (for conflict in-vector content)
         (for index from 0)
@@ -426,15 +426,17 @@ Copy nodes and stuff.
                             logcount)))
     (cl-ds.utils:with-vectors ((s (hash-node-content node))
                                (n (if (< (array-dimension s 0) next-size)
-                                      (make-array (round-size next-size))
+                                      (make-array (round-size next-size) :initial-element nil)
                                       s)))
+      (unless (eq s n)
+        (iterate
+          (for i from 0 below masked-index)
+          (setf (n i) (s i))))
       (iterate
-        (for i from 0 below next-size)
-        (cl-ds.utils:cond-compare (i masked-index)
-                                  (setf (n i) (s i))
-                                  (setf (n i) content)
-                                  (setf (n i) (s (1- i)))))
-      (setf (hash-node-content node) n)
+        (for i from (1- next-size) downto (max 1 masked-index))
+        (setf (n i) (s (1- i))))
+      (setf (hash-node-content node) n
+            (n masked-index) content)
       (set-in-node-mask node index 1)
       node)))
 

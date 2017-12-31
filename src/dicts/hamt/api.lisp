@@ -431,31 +431,30 @@ Methods. Those will just call non generic functions.
                                                      :hash hash
                                                      :value value)))
                    :on-leaf (if prev-node
-                                  (progn
-                                    (hash-node-replace!
-                                     prev-node
-                                     (rebuild-rehashed-node
-                                      c
-                                      (handle-bucket
-                                       (cl-ds:grow-bucket! operation
-                                                           container
-                                                           node
-                                                           location
-                                                           :hash hash
-                                                           :value value))
-                                      tag)
-                                     prev-index)
-                                    root)
-                                  (rebuild-rehashed-node
-                                   c
-                                   (handle-bucket
-                                    (cl-ds:grow-bucket! operation
-                                                        container
-                                                        node
-                                                        location
-                                                        :hash hash
-                                                        :value value))
-                                   tag)))))
+                                (progn
+                                  (hash-node-replace!
+                                   prev-node
+                                   (rebuild-rehashed-node c
+                                    (handle-bucket
+                                     (cl-ds:grow-bucket! operation
+                                                         container
+                                                         node
+                                                         location
+                                                         :hash hash
+                                                         :value value))
+                                    tag)
+                                   prev-index)
+                                  root)
+                                (rebuild-rehashed-node
+                                 c
+                                 (handle-bucket
+                                  (cl-ds:grow-bucket! operation
+                                                      container
+                                                      node
+                                                      location
+                                                      :hash hash
+                                                      :value value))
+                                 tag)))))
         (setf (access-root container) result)
         (unless (cl-ds:found status)
           (incf (the fixnum (access-size container))))
