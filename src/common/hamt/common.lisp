@@ -421,7 +421,10 @@ Copy nodes and stuff.
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
                             logcount)))
-    (cl-ds.utils:with-vectors ((n (make-array next-size)) (s (hash-node-content node)))
+    (cl-ds.utils:with-vectors ((s (hash-node-content node))
+                               (n (if (< (array-dimension s 0) next-size)
+                                      (make-array (* 2 (ceiling (/ next-size 2))))
+                                      s)))
       (iterate
         (for i from 0 below next-size)
         (cl-ds.utils:cond-compare (i masked-index)
