@@ -257,35 +257,31 @@ Copy nodes and stuff.
     (values t cl-ds.common:eager-modification-operation-status))
 (defun go-down-on-path
     (container hash on-leaf on-nil after)
-  (declare (optimize (speed 0)
-                     (debug 3)
-                     (safety 3)
+  (declare (optimize (speed 3)
+                     (debug 0)
+                     (safety 1)
                      (space 0))
            (type fixnum hash))
-  (let ((status nil))
-    (flet ((after (indexes path depth next)
-             (funcall after
-                      indexes
-                      path
-                      depth
-                      next)))
-      (values (block loop-block
-                (with-hamt-path node hash
-                  (access-root container)
-                  :operation after
-                  :on-leaf (multiple-value-bind (b s c)
-                               (funcall on-leaf node)
-                             (setf status s)
-                             (unless c
-                               (return-from loop-block nil))
-                             b)
-                  :on-nil (multiple-value-bind (b s c)
-                              (funcall on-nil)
-                            (setf status s)
-                            (unless c
-                              (return-from loop-block nil))
-                            b)))
-              status))))
+  (bind ((status nil)
+         ((:flet after (indexes path depth next))
+          (funcall after indexes path depth next)))
+    (values (block loop-block
+              (with-hamt-path node hash
+                (access-root container)
+                :operation after
+                :on-leaf (multiple-value-bind (b s c)
+                             (funcall on-leaf node)
+                           (setf status s)
+                           (unless c
+                             (return-from loop-block nil))
+                           b)
+                :on-nil (multiple-value-bind (b s c)
+                            (funcall on-nil)
+                          (setf status s)
+                          (unless c
+                            (return-from loop-block nil))
+                          b)))
+            status)))
 
 
 (-> copy-node (hash-node &key
@@ -329,32 +325,35 @@ Copy nodes and stuff.
                      (debug 0)
                      (safety 1)
                      (space 0)))
-  (let ((position (hash-node-to-masked-index hash-node index)))
-    (cl-ds.utils:with-vectors
-        ((current-array (hash-node-content hash-node))
-         (new-array (make-array (~> hash-node hash-node-whole-mask logcount 1+))))
-      (assert (~> (array-dimension new-array 0)
-                  (<= +maximum-children-count+)))
-      ;;before new element
-      (iterate
-        (for i from 0 below position)
-        (setf (new-array i) (current-array i)))
+  (bind ((position (hash-node-to-masked-index hash-node index))
+         ((:vectors current-array (hash-node-content hash-node)
+                    new-array (make-array (~> hash-node
+                                              hash-node-whole-mask
+                                              logcount
+                                              1+)))))
+    (assert (~> (array-dimension new-array 0)
+                (<= +maximum-children-count+)))
+    ;;before new element
+    (iterate
+      (for i from 0 below position)
+      (setf (new-array i) (current-array i)))
 
-      ;;new element
-      (setf (new-array position) content)
+    ;;new element
+    (setf (new-array position)
+          content)
 
-      ;;after new element
-      (iterate
-        (for i from position below (array-dimension current-array 0))
-        (for j from (1+ position) below (array-dimension new-array 0))
-        (setf (new-array j) (current-array i)))
+    ;;after new element
+    (iterate
+      (for i from position below (array-dimension current-array 0))
+      (for j from (1+ position) below (array-dimension new-array 0))
+      (setf (new-array j) (current-array i)))
 
-      ;;just make new hash-node
-      (let ((node-mask (hash-node-node-mask hash-node)))
-        (setf (ldb (byte 1 index) node-mask) 1)
-        (make-hash-node :node-mask node-mask
-                        :ownership-tag ownership-tag
-                        :content new-array)))))
+    ;;just make new hash-node
+    (let ((node-mask (hash-node-node-mask hash-node)))
+      (setf (ldb (byte 1 index) node-mask) 1)
+      (make-hash-node :node-mask node-mask
+                      :ownership-tag ownership-tag
+                      :content new-array))))
 
 
 (-> rebuild-rehashed-node (fixnum t list) t)
@@ -414,29 +413,29 @@ Copy nodes and stuff.
 (-> hash-node-insert! (hash-node t hash-node-index) hash-node)
 (defun hash-node-insert! (node content index)
   (assert (not (ldb-test (byte 1 index) (hash-node-whole-mask node))))
-  (let* ((next-mask (~>> node
+  (bind ((next-mask (~>> node
                          hash-node-whole-mask
                          (dpb 1 (byte 1 index))))
          (next-size (~> next-mask
                         logcount))
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
-                            logcount)))
-    (cl-ds.utils:with-vectors ((s (hash-node-content node))
-                               (n (if (< (array-dimension s 0) next-size)
-                                      (make-array (round-size next-size) :initial-element nil)
-                                      s)))
-      (unless (eq s n)
-        (iterate
-          (for i from 0 below masked-index)
-          (setf (n i) (s i))))
+                            logcount))
+         ((:vectors s (hash-node-content node)
+                    n (if (< (array-dimension s 0) next-size)
+                          (make-array (round-size next-size) :initial-element nil)
+                          s))))
+    (unless (eq s n)
       (iterate
-        (for i from (1- next-size) downto (max 1 masked-index))
-        (setf (n i) (s (1- i))))
-      (setf (hash-node-content node) n
-            (n masked-index) content)
-      (set-in-node-mask node index 1)
-      node)))
+        (for i from 0 below masked-index)
+        (setf (n i) (s i))))
+    (iterate
+      (for i from (1- next-size) downto (max 1 masked-index))
+      (setf (n i) (s (1- i))))
+    (setf (hash-node-content node) n
+          (n masked-index) content)
+    (set-in-node-mask node index 1)
+    node))
 
 
 (defun hash-node-replace! (node content index)
@@ -465,26 +464,26 @@ Copy nodes and stuff.
     (declare (optimize (debug 0)
                        (speed 3)
                        (space 0)))
-    (let ((next-size (1- (logcount (hash-node-node-mask node))))
-          (masked-index (1- (logcount (the fixnum
-                                           (ldb (byte (1+ index) 0)
-                                                (the fixnum (hash-node-whole-mask
-                                                             node))))))))
-      (cl-ds.utils:with-vectors ((s (hash-node-content node))
-                                 (n (if (> (array-dimension s 0)
-                                           (ash next-size 1))
-                                        (make-array (round-size next-size))
-                                        s)))
-        (set-in-node-mask node index 0)
-        (unless (eq s n)
-          (iterate
-            (for i from 0 below masked-index)
-            (setf (n i) (s i))))
+    (bind ((next-size (1- (logcount (hash-node-node-mask node))))
+           (masked-index (1- (logcount (the fixnum
+                                            (ldb (byte (1+ index) 0)
+                                                 (the fixnum (hash-node-whole-mask
+                                                              node)))))))
+           ((:vectors s (hash-node-content node)
+                      n (if (> (array-dimension s 0)
+                               (ash next-size 1))
+                            (make-array (round-size next-size))
+                            s))))
+      (set-in-node-mask node index 0)
+      (unless (eq s n)
         (iterate
-          (for i from masked-index below next-size)
-          (setf (n i) (s (1+ i))))
-        (setf (hash-node-content node) n)
-        node))))
+          (for i from 0 below masked-index)
+          (setf (n i) (s i))))
+      (iterate
+        (for i from masked-index below next-size)
+        (setf (n i) (s (1+ i))))
+      (setf (hash-node-content node) n)
+      node)))
 
 
 (defun rehash (conflict level cont)

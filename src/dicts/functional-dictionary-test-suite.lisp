@@ -127,9 +127,9 @@
     (with-open-file (str path :direction :output :if-exists :supersede)
       (let ((prove:*test-result-output* str))
         (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
-        (diag "Running functional HAMT tests:")
+        (format t "Running functional HAMT tests:")
         (time (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) limit))
-        (diag "Running lazy HAMT tests:")
+        (format t "Running lazy HAMT tests:")
         (time (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary
                                                      #'sxhash
                                                      #'string=))

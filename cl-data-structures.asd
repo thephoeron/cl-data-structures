@@ -29,6 +29,7 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
+                             (:file "bind")
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
