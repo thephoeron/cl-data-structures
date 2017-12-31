@@ -200,8 +200,8 @@
   (defun run-stress-test (limit)
     (with-open-file (str path :direction :output :if-exists :supersede)
       (let ((prove:*test-result-output* str))
-        (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
-        (diag "Running functional HAMT tests:")
+        (format t "Running transactional HAMT tests, output redirected to ~a:~%" path)
+        (diag "Running transactional HAMT tests:")
         (time (insert-every-word (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=) limit))))))
 
 

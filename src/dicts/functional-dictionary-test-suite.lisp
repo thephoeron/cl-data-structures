@@ -122,6 +122,20 @@
                      100))
 
 
+(let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))
+  (defun run-stress-test (limit)
+    (with-open-file (str path :direction :output :if-exists :supersede)
+      (let ((prove:*test-result-output* str))
+        (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
+        (diag "Running functional HAMT tests:")
+        (time (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) limit))
+        (diag "Running lazy HAMT tests:")
+        (time (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary
+                                                     #'sxhash
+                                                     #'string=))
+                                 limit))))))
+
+
 (progn
   (plan 6346)
   (run-suite)

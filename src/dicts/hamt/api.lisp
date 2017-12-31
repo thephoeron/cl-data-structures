@@ -83,7 +83,7 @@
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)
-  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
+  (declare (optimize (speed 3) (safety 1) (debug 0) (space 0)))
   "Implementation of AT"
   (with-hash-tree-functions (container)
     (let* ((hash (hash-fn location))
@@ -124,7 +124,7 @@ Methods. Those will just call non generic functions.
                                         (container functional-hamt-dictionary)
                                         location &rest all &key value)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
@@ -185,7 +185,7 @@ Methods. Those will just call non generic functions.
                                         (container transactional-hamt-dictionary)
                                         location &rest all &key value)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
@@ -244,7 +244,7 @@ Methods. Those will just call non generic functions.
                                         &rest all
                                         &key)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
@@ -296,7 +296,7 @@ Methods. Those will just call non generic functions.
                                         &rest all
                                         &key)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
@@ -346,7 +346,7 @@ Methods. Those will just call non generic functions.
                                         &rest all
                                         &key)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container)
@@ -385,7 +385,7 @@ Methods. Those will just call non generic functions.
                                         &rest all
                                         &key value)
   (declare (optimize (speed 3)
-                     (safety 0)
+                     (safety 1)
                      (debug 0)
                      (space 0)))
   (let ((status nil)
