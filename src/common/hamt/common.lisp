@@ -126,6 +126,11 @@ Macros
   node)
 
 
+(declaim (inline round-size))
+(defun round-size (size)
+  (ash (ceiling (/ size 8.0)) 3))
+
+
 #|
 
 Tree structure of HAMT
@@ -421,8 +426,7 @@ Copy nodes and stuff.
                             logcount)))
     (cl-ds.utils:with-vectors ((s (hash-node-content node))
                                (n (if (< (array-dimension s 0) next-size)
-                                      (make-array (ash (ceiling (/ next-size 2.0))
-                                                       1))
+                                      (make-array (round-size next-size))
                                       s)))
       (iterate
         (for i from 0 below next-size)
@@ -469,9 +473,7 @@ Copy nodes and stuff.
       (cl-ds.utils:with-vectors ((s (hash-node-content node))
                                  (n (if (> (array-dimension s 0)
                                            (ash next-size 1))
-                                        (make-array (ash (ceiling (/ next-size
-                                                                     2.0))
-                                                         1))
+                                        (make-array (round-size next-size))
                                         s)))
         (set-in-node-mask node index 0)
         (unless (eq s n)
