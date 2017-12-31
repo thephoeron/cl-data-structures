@@ -423,8 +423,9 @@ Copy nodes and stuff.
                             logcount)))
     (cl-ds.utils:with-vectors ((s (hash-node-content node))
                                (n (if (< (array-dimension s 0) next-size)
-                                      (make-array (ash (ceiling (/ next-size 2.0))
-                                                       1))
+                                      (make-array (min +maximum-children-count+
+                                                       (ash (ceiling (/ next-size 2.0))
+                                                            1)))
                                       s)))
       (iterate
         (for i from 0 below next-size)
