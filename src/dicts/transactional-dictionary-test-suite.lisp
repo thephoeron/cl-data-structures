@@ -210,6 +210,7 @@
   (isolation-test (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'string=)) 100))
 
 
-(plan 2913)
-(run-suite)
-(finalize)
+(progn
+  (plan 2911)
+  (run-suite)
+  (finalize))

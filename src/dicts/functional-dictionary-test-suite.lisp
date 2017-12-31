@@ -121,6 +121,8 @@
   (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=))
                      100))
 
-(plan 6348)
-(run-suite)
-(finalize)
+
+(progn
+  (plan 6346)
+  (run-suite)
+  (finalize))

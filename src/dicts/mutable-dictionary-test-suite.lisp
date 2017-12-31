@@ -129,6 +129,6 @@
 
 
 (progn
-  (plan 3572)
+  (plan 3571)
   (run-suite)
   (finalize))
