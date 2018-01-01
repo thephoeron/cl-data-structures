@@ -24,25 +24,31 @@
 
 (defmethod state-result ((function hash-join-function)
                          state)
-  (with-slots (table ranges keys join-function primary-key) state
-    (let* ((result (vect))
+  (bind (((:struct hash-join-function-state- table ranges keys join-function) state))
+    (iterate
+      (for range in-vector ranges)
+      (for key in-vector keys)
+      (for i from 1)
+      (cl-ds:traverse (lambda (x)
+                        (nest
+                         (let ((maybe-vector (gethash (funcall key x) table))))
+                         (unless (null maybe-vector))
+                         (let ((effective-vector (aref maybe-vector i))))
+                         (vector-push-extend x effective-vector)))
+                      range))
+    (bind ((result (let ((size 0))
+                     (maphash (lambda (key value)
+                                (declare (ignore key))
+                                (incf size (reduce #'+ value :key #'length)))
+                              table)
+                     (make-array size :element-type t :adjustable t :fill-pointer 0)))
            (collector (compose (rcurry #'vector-push-extend result)
                                join-function)))
-      (iterate
-        (for range in-vector ranges)
-        (for key in-vector keys)
-        (for i from 1)
-        (cl-ds:traverse (lambda (x)
-                          (nest
-                           (let ((maybe-vector (gethash (funcall key x) table))))
-                           (unless (null maybe-vector))
-                           (let ((effective-vector (aref maybe-vector i))))
-                           (vector-push-extend x effective-vector)))
-                        range))
       (maphash
        (lambda (key value)
          (declare (ignore key))
-         (cl-ds.utils:cartesian value collector))
+         (unless (some #'emptyp value)
+           (cl-ds.utils:cartesian value collector)))
        table)
       result)))
 

@@ -51,5 +51,6 @@
                                  :accept-multiple-forms-p nil)
   (multiple-value-bind (bindings ignores)
       (metabang.bind.developer:bind-fix-nils metabang.bind::variables)
+    (declare (ignore bindings))
     `(mod-bind ,metabang.bind::variables ,values
        (declare (ignore ,@ignores)))))

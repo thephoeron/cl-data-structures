@@ -2,14 +2,15 @@
 
 
 (defun cartesian (sequence-of-sequences result-callback)
-  (let* ((l (length sequence-of-sequences))
+  (let* ((sequence-of-sequences (remove-if #'emptyp sequence-of-sequences))
+         (l (length sequence-of-sequences))
          (lengths (map '(vector fixnum) #'length sequence-of-sequences))
          (indexes (make-array l :element-type 'fixnum)))
     (iterate
       (for i = (iterate
                  (for i from 0 below l)
-                 (finding i such-that (< (1+ (aref indexes i))
-                                         (aref lengths i)))))
+                 (finding i such-that (not (eql (1+ (aref indexes i))
+                                                (aref lengths i))))))
       (for p-i previous i initially 0)
       (apply result-callback
              (map 'list #'elt sequence-of-sequences indexes))

@@ -32,10 +32,6 @@
                                            functions)
                                  ,@(mapcar (lambda (x) `(function (setf ,x)))
                                            functions))
-                      (dynamic-extent ,@(mapcar (lambda (x) `(function ,x))
-                                                functions)
-                                      ,@(mapcar (lambda (x) `(function (setf ,x)))
-                                                functions))
                       (inline ,@functions
                               ,@(mapcar (lambda (x) `(setf ,x))
                                         functions)))
