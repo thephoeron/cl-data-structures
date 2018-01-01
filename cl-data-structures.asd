@@ -91,4 +91,6 @@
                                            (:test-file "lazy-tests")))
                              (:test-file "functional-dictionary-test-suite")
                              (:test-file "mutable-dictionary-test-suite")
-                             (:test-file "transactional-dictionary-test-suite")))))
+                             (:test-file "transactional-dictionary-test-suite")))
+               (:module "sequences"
+                :components ((:file "packages")))))
