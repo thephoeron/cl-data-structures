@@ -469,8 +469,7 @@ Copy nodes and stuff.
     (bind ((next-size (1- (logcount (hash-node-node-mask node))))
            (masked-index (1- (logcount (the fixnum
                                             (ldb (byte (1+ index) 0)
-                                                 (the fixnum (hash-node-whole-mask
-                                                              node)))))))
+                                                 (hash-node-whole-mask node))))))
            ((:vectors s n)
             (hash-node-content node)
             (if (> (array-dimension s 0)
