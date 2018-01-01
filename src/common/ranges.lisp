@@ -32,16 +32,14 @@
 (defun read-implementation (stack obtain-value)
   (if (null stack)
       (values stack nil nil)
-      (flet ((push-to-stack (x)
-               (push x stack))
-             (pop-stack ()
-               (when (endp stack)
-                 (return-from read-implementation
-                   (values stack nil nil)))
-               (pop stack)))
-        (declare (dynamic-extent #'push-to-stack #'pop-stack))
-        (let ((result (funcall obtain-value #'pop-stack #'push-to-stack)))
-          (values stack result t)))))
+      (bind (((:dflet push-to-stack (x))
+              (push x stack))
+             ((:dflet pop-stack ())
+              (when (endp stack)
+                (return-from read-implementation
+                  (values stack nil nil))))
+             (result (funcall obtain-value #'pop-stack #'push-to-stack)))
+        (values stack result t))))
 
 
 (defmethod cl-ds:traverse (function (range forward-tree-range))
@@ -58,33 +56,36 @@
 
 
 (defmethod cl-ds:peek-front ((range forward-tree-range))
-  (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)
-                   (key read-key)) range
-    (multiple-value-bind (new-stack result found)
-        (read-implementation stack obtain-value)
-      (declare (ignore new-stack))
-      (values (when found (funcall key result)) found))))
+  (bind (((:accessors (stack access-forward-stack)
+                      (obtain-value read-obtain-value)
+                      (key read-key))
+          range)
+         ((:values _ result found)
+          (read-implementation stack obtain-value)))
+    (values (when found (funcall key result)) found)))
 
 
 (defmethod (setf cl-ds:peek-front) (new-value (range assignable-forward-tree-range))
-  (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)
-                   (store-value read-store-value)) range
-    (multiple-value-bind (new-stack result found)
-        (read-implementation stack obtain-value)
-      (declare (ignore new-stack))
-      (values (when found (funcall store-value result new-value)) found))))
+  (bind (((:accessors (stack access-forward-stack)
+                      (obtain-value read-obtain-value)
+                      (key read-key)
+                      (store-value read-store-value))
+          range)
+         ((:values _ result found)
+          (read-implementation stack obtain-value)))
+    (values (when found (funcall store-value result new-value)) found)))
 
 
 (defmethod cl-ds:consume-front ((range forward-tree-range))
-  (with-accessors ((stack access-forward-stack)
-                   (obtain-value read-obtain-value)
-                   (key read-key)) range
-    (multiple-value-bind (new-stack result found)
-        (read-implementation stack obtain-value)
-      (setf stack new-stack)
-      (values (when found (funcall key result)) found))))
+  (bind (((:accessors (stack access-forward-stack)
+                      (obtain-value read-obtain-value)
+                      (key read-key)
+                      (store-value read-store-value))
+          range)
+         ((:values new-stack result found)
+          (read-implementation stack obtain-value)))
+    (setf stack new-stack)
+    (values (when found (funcall key result)) found)))
 
 
 (defmethod cl-ds:drop-front ((range forward-tree-range) count)
