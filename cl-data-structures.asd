@@ -55,7 +55,8 @@
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")
-                             (:file "hash-join")))
+                             (:file "hash-join")
+                             (:test-file "hash-join-tests")))
                (:module "stat"
                 :components ((:file "package")
                              (:file "average")

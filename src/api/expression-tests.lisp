@@ -1,9 +1,8 @@
-(in-package :cl-user)
+(in-package #:cl-user)
 (defpackage expression-tests
   (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
-  (:shadowing-import-from :iterate :collecting :summing :in)
-  (:export :run-suite))
-(in-package :expression-tests)
+  (:shadowing-import-from :iterate :collecting :summing :in))
+(in-package #:expression-tests)
 
 (plan 2)
 (let ((data nil)
