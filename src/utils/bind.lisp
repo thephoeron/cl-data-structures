@@ -19,3 +19,10 @@
       `(serapeum:nest
         (let* (,@tables ,@at-arguments))
         (symbol-macrolet ,at-forms)))))
+
+
+(defbinding-form (:lazy :use-values-p nil :accept-multiple-forms-p t)
+  (multiple-value-bind (vars ignores)
+      (metabang.bind.developer:bind-fix-nils variables)
+    `(cl-ds.utils:with-vectors ,(serapeum:batches variables 2)
+       (declare (ignore ,@ignores)))))
