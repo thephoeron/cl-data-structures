@@ -489,8 +489,6 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
   (let ((root (access-root container)))
-    (when (and root (hash-node-p root))
-      (clear-modification-masks root))
     (make 'mutable-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
@@ -500,8 +498,6 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
   (let ((root (access-root container)))
-    (when (and root (hash-node-p root))
-      (clear-modification-masks root))
     (make 'functional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
