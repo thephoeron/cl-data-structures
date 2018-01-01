@@ -263,7 +263,7 @@ Copy nodes and stuff.
                      (space 0))
            (type fixnum hash))
   (bind ((status nil)
-         ((:flet after (indexes path depth next))
+         ((:dflet after (indexes path depth next))
           (funcall after indexes path depth next)))
     (values (block loop-block
               (with-hamt-path node hash
