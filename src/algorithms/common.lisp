@@ -115,51 +115,45 @@
 
 
 (defmethod consume-front ((range hash-table-range))
-  (with-slots ((begin %begin) (end %end) (ht %hash-table) (keys %keys)) range
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+         ((:lazy key result)
+          (prog1 (aref keys begin) (incf begin))
+          (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
-        (let ((key (aref keys begin)))
-          (incf begin)
-          (values
-           (list* key (gethash key ht))
-           t)))))
+        (values result t))))
 
 
 (defmethod consume-back ((range hash-table-range))
-  (with-slots ((begin %begin) (end %end) (ht %hash-table) (keys %keys)) range
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+         ((:lazy key result)
+          (aref keys (decf end))
+          (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
-        (let ((key (aref keys (decf end))))
-          (values
-           (list* key (gethash key ht))
-           t)))))
+        (values result t))))
 
 
 (defmethod peek-front ((range hash-table-range))
-  (with-slots ((begin %begin) (end %end) (ht %hash-table) (keys %keys)) range
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+         ((:lazy key result) (aref keys begin) (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
-        (let ((key (aref keys begin)))
-          (values
-           (list* key
-                  (gethash key ht))
-           t)))))
+        (values result t))))
 
 
 (defmethod peek-back ((range hash-table-range))
-  (with-slots ((begin %begin) (end %end) (ht %hash-table) (keys %keys)) range
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+         ((:lazy key result) (aref keys end) (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
-        (let ((key (aref keys end)))
-          (values
-           (list* key
-                  (gethash key ht))
-           t)))))
+        (values result t))))
 
 
 (defmethod drop-front ((range hash-table-range) count)
-  (with-slots ((begin %begin) (end %end)) range
-    (setf begin (min end (+ begin count))))
+  (bind (((:slots (begin %begin) (end %end)) range)
+         (count (min end (+ begin count))))
+    (setf begin count))
   range)
 
 
@@ -175,17 +169,18 @@
 
 
 (defmethod at ((range hash-table-range) location)
-  (with-slots ((ht %hash-table)) range
-    (let ((test (hash-table-test ht))
-          (begin (access-begin range))
-          (end (access-end range))
-          (keys (read-keys range)))
-      (if (iterate
-            (for i from begin below end)
-            (for l = (aref keys i))
-            (finding t such-that (funcall test l location)))
-          (gethash location ht)
-          (values nil nil)))))
+  (bind (((:slots (ht %hash-table)) range)
+         ((:hash-table (result location)) ht)
+         (test (hash-table-test ht))
+         (begin (access-begin range))
+         (end (access-end range))
+         (keys (read-keys range)))
+    (if (iterate
+          (for i from begin below end)
+          (for l = (aref keys i))
+          (finding t such-that (funcall test l location)))
+        (values result t)
+        (values nil nil))))
 
 
 (defun make-hash-table-range (hash-table)

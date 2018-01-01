@@ -2,21 +2,21 @@
 
 
 (defbinding-form (:vectors :use-values-p nil :accept-multiple-forms-p t)
-  `(cl-ds.utils:with-vectors ,(serapeum:batches variables 2)))
+  `(cl-ds.utils:with-vectors ,(mapcar #'list variables values)))
 
 
-(defbinding-form (:hash-tables :use-values-p nil :accept-multiple-forms-p t)
-  (let* ((tables (mapcar (lambda (x) (list (gensym) (first x))) variables))
-         (at-arguments (mapcar (lambda (x) (list (gensym) (third x))) variables))
-         (at-forms (mapcar (lambda (x container argument)
-                             (list (second x)
+(defbinding-form (:hash-table :use-values-p nil :accept-multiple-forms-p nil)
+  (let* ((tables (list (gensym) values))
+         (at-arguments (mapcar (lambda (x) (list (gensym) (second x))) variables))
+         (at-forms (mapcar (lambda (x argument)
+                             (list (first x)
                                    `(gethash ,(first argument)
-                                             ,(first container))))
-                           variables tables at-arguments)))
+                                             ,(first tables))))
+                           variables at-arguments)))
     `(serapeum:nest
-      (let* (,@tables ,@at-arguments))
+      (let* (,tables ,@at-arguments))
       (symbol-macrolet ,at-forms))))
 
 
 (defbinding-form (:lazy :use-values-p nil :accept-multiple-forms-p t)
-  `(cl-ds.utils:lazy-let ,variables))
+  `(cl-ds.utils:lazy-let ,(mapcar #'list variables values)))

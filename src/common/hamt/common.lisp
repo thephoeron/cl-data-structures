@@ -326,11 +326,12 @@ Copy nodes and stuff.
                      (safety 1)
                      (space 0)))
   (bind ((position (hash-node-to-masked-index hash-node index))
-         ((:vectors current-array (hash-node-content hash-node)
-                    new-array (make-array (~> hash-node
-                                              hash-node-whole-mask
-                                              logcount
-                                              1+)))))
+         ((:vectors current-array new-array)
+          (hash-node-content hash-node)
+          (make-array (~> hash-node
+                          hash-node-whole-mask
+                          logcount
+                          1+))))
     (assert (~> (array-dimension new-array 0)
                 (<= +maximum-children-count+)))
     ;;before new element
@@ -421,10 +422,11 @@ Copy nodes and stuff.
          (masked-index (~>> next-mask
                             (ldb (byte index 0))
                             logcount))
-         ((:vectors s (hash-node-content node)
-                    n (if (< (array-dimension s 0) next-size)
-                          (make-array (round-size next-size) :initial-element nil)
-                          s))))
+         ((:vectors s n)
+          (hash-node-content node)
+          (if (< (array-dimension s 0) next-size)
+              (make-array (round-size next-size) :initial-element nil)
+              s)))
     (unless (eq s n)
       (iterate
         (for i from 0 below masked-index)
@@ -469,11 +471,12 @@ Copy nodes and stuff.
                                             (ldb (byte (1+ index) 0)
                                                  (the fixnum (hash-node-whole-mask
                                                               node)))))))
-           ((:vectors s (hash-node-content node)
-                      n (if (> (array-dimension s 0)
-                               (ash next-size 1))
-                            (make-array (round-size next-size))
-                            s))))
+           ((:vectors s n)
+            (hash-node-content node)
+            (if (> (array-dimension s 0)
+                   (ash next-size 1))
+                (make-array (round-size next-size))
+                s)))
       (set-in-node-mask node index 0)
       (unless (eq s n)
         (iterate

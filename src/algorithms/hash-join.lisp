@@ -72,9 +72,8 @@
 (defmethod aggregate ((function hash-join-function)
                       state
                       element)
-  (nest
-   (with-slots (table ranges keys join-function primary-key) state)
-   (let ((key (funcall primary-key element))))
+  (bind (((:struct hash-join-function-state- table ranges primary-key) state)
+         (key (funcall primary-key element)))
    (vector-push-extend
     element
     (aref (ensure (gethash key table)
