@@ -11,10 +11,10 @@
 (defun execute-changes (changes instance)
   (declare (type (or null changes) changes))
   (unless (null changes)
-    (let ((parent (changes-parent changes)))
+    (bind ((parent (changes-parent changes))
+           ((:vectors content) (changes-content changes)))
       (unless (null parent)
-        (execute-changes parent instance)))
-    (cl-ds.utils:with-vectors ((content (changes-content changes)))
+        (execute-changes parent instance))
       (iterate
         (for i from 0 below (changes-end-index changes))
         (funcall (content i) instance)))))
@@ -58,15 +58,15 @@
 
 (-> force-version (lazy-box-container) lazy-box-container)
 (defun force-version (instance)
-  (with-accessors ((operations access-operations)
-                   (content access-content))
-      instance
-    (let ((transactional-instance (cl-ds:become-transactional
-                                   content)))
-      (execute-changes operations transactional-instance)
-      (setf operations nil
-            content transactional-instance)))
-  instance)
+  (bind (((:accessors (operations access-operations)
+                      (content access-content))
+          instance)
+         (transactional-instance (cl-ds:become-transactional
+                                  content)))
+    (execute-changes operations transactional-instance)
+    (setf operations nil
+          content transactional-instance)
+    instance))
 
 
 (flet ((enclose-wrapper (t-operation location lazy-status args)
@@ -89,19 +89,21 @@
   (defmethod cl-ds:position-modification (operation (container lazy-box-container)
                                           location &rest args
                                           &key &allow-other-keys)
-    (with-accessors ((operations access-operations) (content access-content)) container
-      (let* ((lazy-status (make 'lazy-modification-operation-status))
-             (t-operation (cl-ds:destructive-counterpart operation))
-             (next-instance (make (type-of container)
-                                  :content content
-                                  :operations (add-change operations
-                                                          (enclose-wrapper t-operation
-                                                                           location
-                                                                           lazy-status
-                                                                           args)))))
-        (write-lazy-instance next-instance lazy-status)
-        (values next-instance
-                lazy-status)))))
+    (bind (((:accessors (operations access-operations)
+                        (content access-content))
+            container)
+           (lazy-status (make 'lazy-modification-operation-status))
+           (t-operation (cl-ds:destructive-counterpart operation))
+           (next-instance (make (type-of container)
+                                :content content
+                                :operations (add-change operations
+                                                        (enclose-wrapper t-operation
+                                                                         location
+                                                                         lazy-status
+                                                                         args)))))
+      (write-lazy-instance next-instance lazy-status)
+      (values next-instance
+              lazy-status))))
 
 
 (defmethod cl-ds:size ((container lazy-box-container))
