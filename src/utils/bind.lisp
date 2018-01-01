@@ -24,5 +24,6 @@
 (defbinding-form (:lazy :use-values-p nil :accept-multiple-forms-p t)
   (multiple-value-bind (vars ignores)
       (metabang.bind.developer:bind-fix-nils variables)
-    `(cl-ds.utils:with-vectors ,(serapeum:batches variables 2)
+    (declare (ignore vars))
+    `(cl-ds.utils:lazy-let ,variables
        (declare (ignore ,@ignores)))))
