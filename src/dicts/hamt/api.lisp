@@ -128,57 +128,56 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
-    (let ((changed nil)
-          (tag (list t))
-          (hash (hash-fn location)))
-      (flet ((grow-bucket (bucket)
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:grow-bucket
-                          operation
-                          container
-                          bucket
-                          location
-                          :hash hash
-                          :value value
-                          all)
-                 (setf changed c)
-                 (values a b c)))
-             (copy-on-write (indexes path depth conflict)
-               (copy-on-write tag
-                              indexes
-                              path
-                              depth
-                              conflict))
-             (make-bucket ()
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:make-bucket
-                          operation
-                          container
-                          location
-                          :hash hash
-                          :value value
-                          all)
-                 (setf changed c)
-                 (values a b c))))
-        (declare (dynamic-extent (function make-bucket) (function grow-bucket)))
-        (multiple-value-bind (new-root status)
+    (bind ((changed nil)
+           (tag (list t))
+           (hash (hash-fn location))
+           ((:dflet grow-bucket (bucket))
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:grow-bucket
+                       operation
+                       container
+                       bucket
+                       location
+                       :hash hash
+                       :value value
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:dflet copy-on-write (indexes path depth conflict))
+            (copy-on-write tag
+                           indexes
+                           path
+                           depth
+                           conflict))
+           ((:dflet make-bucket ())
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:make-bucket
+                       operation
+                       container
+                       location
+                       :hash hash
+                       :value value
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:values new-root status)
             (go-down-on-path container
                              hash
                              #'grow-bucket
                              #'make-bucket
-                             #'copy-on-write)
-          (values (if changed
-                      (make
-                       'functional-hamt-dictionary
-                       :hash-fn (cl-ds.dicts:read-hash-fn container)
-                       :equal-fn (cl-ds.dicts:read-equal-fn container)
-                       :ownership-tag tag
-                       :root new-root
-                       :size (if (cl-ds:found status)
-                                 (the non-negative-fixnum (access-size container))
-                                 (1+ (the non-negative-fixnum (access-size container)))))
-                      container)
-                  status))))))
+                             #'copy-on-write)))
+      (values (if changed
+                  (make
+                   'functional-hamt-dictionary
+                   :hash-fn (cl-ds.dicts:read-hash-fn container)
+                   :equal-fn (cl-ds.dicts:read-equal-fn container)
+                   :ownership-tag tag
+                   :root new-root
+                   :size (if (cl-ds:found status)
+                             (the non-negative-fixnum (access-size container))
+                             (1+ (the non-negative-fixnum (access-size container)))))
+                  container)
+              status))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
@@ -189,53 +188,50 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location))
-          (changed nil))
-      (flet ((grow-bucket (bucket)
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:grow-bucket
-                          operation
-                          container
-                          bucket
-                          location
-                          :hash hash
-                          :value value
-                          all)
-                 (setf changed c)
-                 (values a b c)))
-             (make-bucket ()
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:make-bucket
-                          operation
-                          container
-                          location
-                          :hash hash
-                          :value value
-                          all)
-                 (setf changed c)
-                 (values a b c)))
-             (copy-on-write (indexes path depth conflict)
-               (transactional-copy-on-write (read-ownership-tag container)
-                                            indexes
-                                            path
-                                            depth
-                                            conflict)))
-        (declare (dynamic-extent (function make-bucket)
-                                 (function grow-bucket)
-                                 (function copy-on-write)))
-        (multiple-value-bind (new-root status)
+    (bind ((hash (hash-fn location))
+           (changed nil)
+           ((:dflet grow-bucket (bucket))
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:grow-bucket
+                       operation
+                       container
+                       bucket
+                       location
+                       :hash hash
+                       :value value
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:dflet make-bucket ())
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:make-bucket
+                       operation
+                       container
+                       location
+                       :hash hash
+                       :value value
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:dflet copy-on-write (indexes path depth conflict))
+            (transactional-copy-on-write (read-ownership-tag container)
+                                         indexes
+                                         path
+                                         depth
+                                         conflict))
+           ((:values new-root status)
             (go-down-on-path container
                              hash
                              #'grow-bucket
                              #'make-bucket
-                             #'copy-on-write)
-          (when changed
-            (setf (access-root container) new-root
-                  (access-root-was-modified container) t)
-            (unless (cl-ds:found status)
-              (incf (the non-negative-fixnum (access-size container)))))
-          (values container
-                  status))))))
+                             #'copy-on-write)))
+      (when changed
+        (setf (access-root container) new-root
+              (access-root-was-modified container) t)
+        (unless (cl-ds:found status)
+          (incf (the non-negative-fixnum (access-size container)))))
+      (values container
+              status))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
@@ -248,46 +244,45 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location))
-          (tag (list t))
-          (changed nil))
-      (flet ((shrink-bucket (bucket)
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:shrink-bucket
-                          operation
-                          container
-                          bucket
-                          location
-                          :hash hash
-                          all)
-                 (setf changed c)
-                 (values a b c)))
-             (copy-on-write (indexes path depth conflict)
-               (copy-on-write tag
-                              indexes
-                              path
-                              depth
-                              conflict))
-             (just-return ()
-               (return-from cl-ds:position-modification
-                 (values container
-                         cl-ds.common:empty-eager-modification-operation-status))))
-        (declare (dynamic-extent (function just-return) (function shrink-bucket)))
-        (multiple-value-bind (new-root status)
+    (bind ((hash (hash-fn location))
+           (tag (list t))
+           (changed nil)
+           ((:dflet shrink-bucket (bucket))
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:shrink-bucket
+                       operation
+                       container
+                       bucket
+                       location
+                       :hash hash
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:dflet copy-on-write (indexes path depth conflict))
+            (copy-on-write tag
+                           indexes
+                           path
+                           depth
+                           conflict))
+           ((:dflet just-return ())
+            (return-from cl-ds:position-modification
+              (values container
+                      cl-ds.common:empty-eager-modification-operation-status)))
+           ((:values new-root status)
             (go-down-on-path container
                              hash
                              #'shrink-bucket
                              #'just-return
-                             #'copy-on-write)
-          (values (if changed
-                      (make 'functional-hamt-dictionary
-                            :hash-fn (cl-ds.dicts:read-hash-fn container)
-                            :equal-fn (cl-ds.dicts:read-equal-fn container)
-                            :root new-root
-                            :ownership-tag tag
-                            :size (1- (the non-negative-fixnum (access-size container))))
-                      container)
-                  status))))))
+                             #'copy-on-write)))
+      (values (if changed
+                  (make 'functional-hamt-dictionary
+                        :hash-fn (cl-ds.dicts:read-hash-fn container)
+                        :equal-fn (cl-ds.dicts:read-equal-fn container)
+                        :root new-root
+                        :ownership-tag tag
+                        :size (1- (the non-negative-fixnum (access-size container))))
+                  container)
+              status))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
@@ -300,44 +295,40 @@ Methods. Those will just call non generic functions.
                      (debug 0)
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
-    (let ((hash (hash-fn location))
-          (changed nil))
-      (declare (dynamic-extent hash changed))
-      (flet ((shrink-bucket (bucket)
-               (multiple-value-bind (a b c)
-                   (apply #'cl-ds:shrink-bucket
-                          operation
-                          container
-                          bucket
-                          location :hash hash
-                          all)
-                 (setf changed c)
-                 (values a b c)))
-             (just-return ()
-               (return-from cl-ds:position-modification
-                 (values container
-                         cl-ds.common:empty-eager-modification-operation-status)))
-             (copy-on-write (indexes path depth conflict)
-               (transactional-copy-on-write (read-ownership-tag container)
-                                            indexes
-                                            path
-                                            depth
-                                            conflict)))
-        (declare (dynamic-extent (function just-return)
-                                 (function shrink-bucket)
-                                 (function copy-on-write)))
-        (multiple-value-bind (new-root status)
+    (bind ((hash (hash-fn location))
+           (changed nil)
+           ((:dflet shrink-bucket (bucket))
+            (multiple-value-bind (a b c)
+                (apply #'cl-ds:shrink-bucket
+                       operation
+                       container
+                       bucket
+                       location :hash hash
+                       all)
+              (setf changed c)
+              (values a b c)))
+           ((:dflet just-return ())
+            (return-from cl-ds:position-modification
+              (values container
+                      cl-ds.common:empty-eager-modification-operation-status)))
+           ((:dflet copy-on-write (indexes path depth conflict))
+            (transactional-copy-on-write (read-ownership-tag container)
+                                         indexes
+                                         path
+                                         depth
+                                         conflict))
+           ((:values new-root status)
             (go-down-on-path container
                              hash
                              #'shrink-bucket
                              #'just-return
-                             #'copy-on-write)
-          (when changed
-            (setf (access-root container) new-root
-                  (access-root-was-modified container) t)
-            (decf (the non-negative-fixnum (access-size container))))
-          (values container
-                  status))))))
+                             #'copy-on-write)))
+      (when changed
+        (setf (access-root container) new-root
+              (access-root-was-modified container) t)
+        (decf (the non-negative-fixnum (access-size container))))
+      (values container
+              status))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
