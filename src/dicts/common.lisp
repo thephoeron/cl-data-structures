@@ -15,19 +15,15 @@
 
 (defmethod find-content ((container hashing-dictionary)
                          (bucket list) location &rest all &key hash)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((compare-fn (a b)
-             (and (eql (cl-ds.common:hash-content-hash a) hash)
-                  (funcall equal-fn
-                           (cl-ds.common:hash-content-location a)
-                           b))))
-      (declare (dynamic-extent (function compare-fn)))
-      (multiple-value-bind (r f) (try-find
-                                  location
-                                  bucket
-                                  :test #'compare-fn)
-        (values (and f (cl-ds.common:hash-dict-content-value r))
-                f)))))
+  (bind ((equal-fn (read-equal-fn container))
+         ((:dflet compare-fn (a b))
+          (and (eql (cl-ds.common:hash-content-hash a) hash)
+               (funcall equal-fn
+                        (cl-ds.common:hash-content-location a)
+                        b)))
+         ((:values r f) (try-find location bucket :test #'compare-fn)))
+    (values (and f (cl-ds.common:hash-dict-content-value r))
+            f)))
 
 
 (defmacro bucket-growing-macro ((container bucket location hash value)
@@ -64,27 +60,26 @@
                                 location
                                 &rest all
                                 &key hash)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((location-test (node location)
-             (and (eql hash (cl-ds.common:hash-content-hash node))
-                  (funcall equal-fn location
-                           (cl-ds.common:hash-content-location node)))))
-      (declare (dynamic-extent (function location-test)))
-      (multiple-value-bind (list removed value)
+  (bind ((equal-fn (read-equal-fn container))
+         ((:dflet location-test (node location))
+          (and (eql hash (cl-ds.common:hash-content-hash node))
+               (funcall equal-fn location
+                        (cl-ds.common:hash-content-location node))))
+         ((:values list removed value)
           (try-remove location
                       bucket
-                      :test #'location-test)
-        (if removed
-            (values
-             list
-             (cl-ds.common:make-eager-modification-operation-status
-              t
-              (cl-ds.common:hash-dict-content-value value))
-             t)
-            (values
-             bucket
-             cl-ds.common:empty-eager-modification-operation-status
-             nil))))))
+                      :test #'location-test)))
+    (if removed
+        (values
+         list
+         (cl-ds.common:make-eager-modification-operation-status
+          t
+          (cl-ds.common:hash-dict-content-value value))
+         t)
+        (values
+         bucket
+         cl-ds.common:empty-eager-modification-operation-status
+         nil))))
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-if-function)
@@ -93,37 +88,36 @@
                                 location
                                 &rest all
                                 &key hash condition-fn)
-  (let ((equal-fn (read-equal-fn container)))
-    (flet ((location-test (node location)
-             (when (and (eql hash (cl-ds.common:hash-content-hash node))
-                        (funcall equal-fn location
-                                 (cl-ds.common:hash-content-location node)))
-               (let ((result (funcall condition-fn
-                                      (cl-ds.common:hash-content-location node)
-                                      (cl-ds.common:hash-dict-content-value node))))
-                    (unless result
-                      (return-from cl-ds:shrink-bucket
-                        (values
-                         bucket
-                         cl-ds.common:empty-eager-modification-operation-status
-                         nil)))
-                    t))))
-      (declare (dynamic-extent (function location-test)))
-      (multiple-value-bind (list removed value)
+  (bind ((equal-fn (read-equal-fn container))
+         ((:dflet location-test (node location))
+          (when (and (eql hash (cl-ds.common:hash-content-hash node))
+                     (funcall equal-fn location
+                              (cl-ds.common:hash-content-location node)))
+            (let ((result (funcall condition-fn
+                                   (cl-ds.common:hash-content-location node)
+                                   (cl-ds.common:hash-dict-content-value node))))
+              (unless result
+                (return-from cl-ds:shrink-bucket
+                  (values
+                   bucket
+                   cl-ds.common:empty-eager-modification-operation-status
+                   nil)))
+              t)))
+         ((:values list removed value)
           (try-remove location
                       bucket
-                      :test #'location-test)
-        (if removed
-            (values
-             list
-             (cl-ds.common:make-eager-modification-operation-status
-              t
-              (cl-ds.common:hash-dict-content-value value))
-             t)
-            (values
-             bucket
-             cl-ds.common:empty-eager-modification-operation-status
-             nil))))))
+                      :test #'location-test)))
+    (if removed
+        (values
+         list
+         (cl-ds.common:make-eager-modification-operation-status
+          t
+          (cl-ds.common:hash-dict-content-value value))
+         t)
+        (values
+         bucket
+         cl-ds.common:empty-eager-modification-operation-status
+         nil))))
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)

@@ -37,7 +37,8 @@
              ((:dflet pop-stack ())
               (when (endp stack)
                 (return-from read-implementation
-                  (values stack nil nil))))
+                  (values stack nil nil)))
+              (pop stack))
              (result (funcall obtain-value #'pop-stack #'push-to-stack)))
         (values stack result t))))
 
@@ -79,8 +80,7 @@
 (defmethod cl-ds:consume-front ((range forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
-                      (key read-key)
-                      (store-value read-store-value))
+                      (key read-key))
           range)
          ((:values new-stack result found)
           (read-implementation stack obtain-value)))
