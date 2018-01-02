@@ -18,4 +18,16 @@
     (while not-finished)
     (push value data))
   (is data '(4 3 2 1) :test #'equal))
+
+(let* ((data '(1 2 (3 4) (5 (6 7))))
+       (expression (cl-ds:xpr (:stack (list data))
+                     (unless (endp stack)
+                       (let ((front (first stack)))
+                         (cond ((atom front)
+                                (send-recur front :stack (rest stack)))
+                               (t (recur :stack (append front (rest stack))))))))))
+  (let ((result nil))
+    (cl-ds:traverse (lambda (x) (push x result)) expression)
+    (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
+
 (finalize)
