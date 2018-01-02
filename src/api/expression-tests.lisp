@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package #:expression-tests)
 
-(plan 2)
+(plan 4)
 (let ((data nil)
       (expression (cl-ds:xpr (:iteration 1)
                     (when (< iteration 5)
