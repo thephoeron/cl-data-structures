@@ -30,4 +30,15 @@
     (cl-ds:traverse (lambda (x) (push x result)) expression)
     (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
 
+(let* ((data '(1 2 (3 4) (5 (6 7))))
+       (expression (cl-ds:xpr (:stack (list data))
+                     (unless (endp stack)
+                       (destructuring-bind (front . stack) stack
+                         (cond ((atom front)
+                                (send-recur front :stack stack))
+                               (t (recur :stack (append front stack)))))))))
+  (let ((result nil))
+    (cl-ds:traverse (lambda (x) (push x result)) expression)
+    (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
+
 (finalize)

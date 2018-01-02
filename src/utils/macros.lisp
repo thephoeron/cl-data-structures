@@ -192,12 +192,11 @@
              (with p-fake-values = (serapeum:plist-values args))
              (for key in p-fake-keys)
              (for value in p-fake-values)
-             (for var = (find (symbol-name key) vars
-                              :key #'symbol-name
-                              :test #'string=))
-             (when (null var)
-               (error "No such var!"))
-             (collect (list var value))))))
+             (for (real . fake) = (find (symbol-name key) vars
+                                        :key (compose #'symbol-name
+                                                      #'car)
+                                        :test #'string=))
+             (collect (list fake value))))))
 
 
 (defmacro let-generator (forms &body body)
@@ -208,38 +207,41 @@
         (for (name vars . content) in forms)
         (for vars-length = (length vars))
         (for fake-vars = (iterate (repeat vars-length) (collect (gensym))))
+        (for vars-asg = (mapcar #'list* vars fake-vars))
         (push `(,name (&key ,@vars)
                       (let ((,!finished nil))
-                        (lambda ()
-                          (block ,!end
-                            (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
-                                         `(progn
-                                            (setf ,',!finished t)
-                                            (return-from ,',!end
-                                              (values (progn ,@,!result)
+                        (let ,(mapcar #'list fake-vars vars)
+                          (lambda ()
+                            (block ,!end
+                              (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
+                                           `(progn
+                                              (setf ,',!finished t)
+                                              (return-from ,',!end
+                                                (values (progn ,@,!result)
+                                                        t))))
+                                         (,(intern "FINISH") ()
+                                           `(progn
+                                              (setf ,',!finished t)
+                                              (return-from ,',!end
+                                                (values nil nil))))
+                                         (,(intern "RECUR") (&rest args)
+                                           `(progn
+                                              (setf ,@(build-setf-form ',vars-asg args))
+                                              (go ,',!self)))
+                                         (,(intern "SEND-RECUR") (,!result &rest args)
+                                           `(return-from ,',!end
+                                              (values (prog1
+                                                          ,,!result
+                                                        (setf ,@(build-setf-form ',vars-asg args)))
                                                       t))))
-                                       (,(intern "FINISH") ()
-                                         `(progn
-                                            (setf ,',!finished t)
-                                            (return-from ,',!end
-                                              (values nil nil))))
-                                       (,(intern "RECUR") (&rest args)
-                                         `(progn
-                                            (setf ,@(build-setf-form ',vars args))
-                                            (go ,',!self)))
-                                       (,(intern "SEND-RECUR") (,!result &rest args)
-                                         `(return-from ,',!end
-                                            (values (prog1
-                                                        ,,!result
-                                                      (setf ,@(build-setf-form ',vars args)))
-                                                    t))))
-                              (tagbody
-                                 ,!self
-                                 (when ,!finished
-                                   (return-from ,!end (values nil nil)))
-                                 ,@content
-                                 (setf ,!finished t)
-                                 (values nil nil)))))))
+                                (tagbody
+                                   ,!self
+                                   (let ,(mapcar #'list vars fake-vars)
+                                     (when ,!finished
+                                       (return-from ,!end (values nil nil)))
+                                     ,@content
+                                     (setf ,!finished t)
+                                     (values nil nil)))))))))
               final-forms))
       `(flet ,final-forms
          ,@body))))
