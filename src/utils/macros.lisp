@@ -235,9 +235,9 @@
                                                       t))))
                                 (tagbody
                                    ,!self
+                                   (when ,!finished
+                                     (return-from ,!end (values nil nil)))
                                    (let ,(mapcar #'list vars fake-vars)
-                                     (when ,!finished
-                                       (return-from ,!end (values nil nil)))
                                      ,@content
                                      (setf ,!finished t)
                                      (values nil nil)))))))))
