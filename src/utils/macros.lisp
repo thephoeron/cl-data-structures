@@ -240,8 +240,7 @@
                                    (let ,(mapcar #'list vars fake-vars)
                                      ,@content
                                      (setf ,!finished t)
-                                     (values nil nil)))))))))
+                                     (return-from ,!end (values nil nil))))))))))
               final-forms))
       `(flet ,final-forms
          ,@body))))
-
