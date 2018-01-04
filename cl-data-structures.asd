@@ -72,7 +72,8 @@
                              (:file "content-tuple")
                              (:file "ranges")
                              (:module "abstract"
-                              :components ((:file "package")))
+                              :components ((:file "package")
+                                           (:file "common")))
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))
