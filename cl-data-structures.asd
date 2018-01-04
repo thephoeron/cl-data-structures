@@ -71,6 +71,8 @@
                              (:file "lazy-range")
                              (:file "content-tuple")
                              (:file "ranges")
+                             (:module "abstract"
+                              :components ((:file "package")))
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))
