@@ -22,7 +22,7 @@
 
 
 (cl-ds.utils:with-vectors ((data #(0 1 2 3 4 5)))
-  (let ((matrix (cl-ds.utils:make-distance-matrix-from-vector 'single-float data #'jaccard-metric)))
+  (let ((matrix (cl-ds.utils:make-distance-matrix-from-vector 'single-float #'jaccard-metric data)))
     (iterate
       (for i below 5)
       (is (cl-ds.utils:distance matrix i i) 0.0 :test #'=))
