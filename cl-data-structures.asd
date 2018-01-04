@@ -73,6 +73,9 @@
                              (:file "ranges")
                              (:module "hamt"
                               :components ((:file "package")
+                                           (:file "common")))
+                             (:module "rrb"
+                              :components ((:file "package")
                                            (:file "common")))))
                (:module "adapters"
                 :components ((:file "package")
