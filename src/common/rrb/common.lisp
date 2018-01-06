@@ -19,6 +19,22 @@
                  :content (copy-array (rrb-node-content node))))
 
 
+(defun rrb-node-push! (node position element)
+  (setf (aref (rrb-node-content node) position) element)
+  node)
+
+
+(defun rrb-node-push (node position element ownership-tag)
+  (let ((result-content (make-array +maximum-children-count+))
+        (source-content (rrb-node-content node)))
+    (setf (aref result-content position) element)
+    (iterate
+      (for i from 0 below position)
+      (setf (aref result-content i) (aref source-content i)))
+    (make-rrb-node :ownership-tag ownership-tag
+                   :content result-content)))
+
+
 (defclass rrb-container (fundamental-ownership-tagged-object)
   ((%root :accessor access-root
           :initarg :root
