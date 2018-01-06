@@ -1,3 +1,4 @@
+;; link to java implementation https://github.com/clojure/clojure/blob/0b73494c3c855e54b1da591eeb687f24f608f346/src/jvm/clojure/lang/PersistentVector.java
 (in-package #:cl-data-structures.common.rrb)
 
 
