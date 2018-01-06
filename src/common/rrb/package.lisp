@@ -2,7 +2,8 @@
 
 
 (defpackage :cl-data-structures.common.rrb
-  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind)
+  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind
+        #:cl-data-structures.common.abstract)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.rrb)
   (:export
