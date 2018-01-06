@@ -139,11 +139,9 @@ Tree structure of HAMT
 |#
 
 
-(defstruct hash-node
+(defstruct (hash-node (:include tagged-node))
   (node-mask 0 :type hash-mask)
-  (content #() :type simple-array)
-  ownership-tag
-  (lock (bt:make-lock)))
+  (content #() :type simple-array))
 
 
 (declaim (inline make-hash-node))
@@ -156,34 +154,15 @@ Interface class.
 |#
 
 
-(defclass hamt-container ()
+(defclass hamt-container (fundamental-ownership-tagged-object)
   ((%root :accessor access-root
           :initarg :root
           :documentation "Hash node pointing to root of the whole hash tree.")
-   (%ownership-tag :reader read-ownership-tag
-                   :initarg :ownership-tag
-                   :documentation "Ownership tag is used to check if it is allowed to mutate internal nodes.")
    (%size :initarg :size
           :initform 0
           :type non-negative-fixnum
           :accessor access-size
           :documentation "How many elements are in there?")))
-
-
-(flet ((enclose (tag)
-         (lambda ()
-           (setf (car tag) nil))))
-  (defun enclose-finalizer (obj)
-    (trivial-garbage:finalize obj (enclose (read-ownership-tag obj)))))
-
-
-(defmethod initialize-instance :after ((obj hamt-container)
-                                       &rest all &key &allow-other-keys)
-  (declare (ignore all))
-  (unless (slot-boundp obj '%ownership-tag)
-    (setf (slot-value obj '%ownership-tag) (list t)))
-  (enclose-finalizer obj))
-
 
 #|
 
@@ -548,12 +527,7 @@ Copy nodes and stuff.
     (list hash-node t hash-node-index) hash-node)
 (defun hash-node-transactional-replace (ownership-tag node content index) ;TODO
   (bind (((:accessors (tag hash-node-ownership-tag) (lock hash-node-lock)) node)
-         (can-be-mutated (or (eq tag ownership-tag)
-                             (when (null (car tag))
-                               (bt:with-lock-held (lock)
-                                 (if (null (car tag))
-                                     (progn (setf tag ownership-tag) t)
-                                     (eq tag ownership-tag))))))
+         (can-be-mutated (acquire-ownership node ownership-tag))
          (result (if can-be-mutated
                      (hash-node-replace! node content index)
                      (hash-node-replace-in-the-copy node
@@ -568,12 +542,7 @@ Copy nodes and stuff.
     hash-node)
 (defun hash-node-transactional-insert (ownership-tag node content index) ;TODO
   (bind (((:accessors (tag hash-node-ownership-tag) (lock hash-node-lock)) node)
-         (can-be-mutated (or (eq tag ownership-tag)
-                             (when (null (car tag))
-                               (bt:with-lock-held (lock)
-                                 (if (null (car tag))
-                                     (progn (setf tag ownership-tag) t)
-                                     (eq tag ownership-tag))))))
+         (can-be-mutated (acquire-ownership node ownership-tag))
          (result (if can-be-mutated
                      (hash-node-insert! node content index)
                      (hash-node-insert-into-copy node
@@ -588,12 +557,7 @@ Copy nodes and stuff.
     hash-node)
 (defun hash-node-transactional-remove (ownership-tag node index) ;TODO
   (bind (((:accessors (tag hash-node-ownership-tag) (lock hash-node-lock)) node)
-         (can-be-mutated (or (eq tag ownership-tag)
-                             (when (null (car tag))
-                               (bt:with-lock-held (lock)
-                                 (if (null (car tag))
-                                     (progn (setf tag ownership-tag) t)
-                                     (eq tag ownership-tag))))))
+         (can-be-mutated (acquire-ownership node ownership-tag))
          (result (if can-be-mutated
                      (hash-node-remove! node index)
                      (hash-node-remove-from-the-copy node
@@ -719,11 +683,7 @@ Copy nodes and stuff.
 
 
 (defmethod cl-ds:reset! ((obj hamt-container))
-  (bind (((:slots %root %size %ownership-tag) obj))
+  (bind (((:slots %root %size) obj))
     (setf %root nil
-          %size 0
-          (car %ownership-tag) nil
-          %ownership-tag (list t))
-    (trivial-garbage:cancel-finalization obj)
-    (enclose-finalizer obj)
-    obj))
+          %size 0)
+    (call-next-method)))

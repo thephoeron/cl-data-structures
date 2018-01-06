@@ -6,5 +6,10 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.abstract)
   (:export
-   #:access-root
-   #:access-size))
+   #:acquire-ownership
+   #:read-ownership-tag
+   #:fundamental-ownership-tagged-object
+   #:make-tagged-node
+   #:tagged-node
+   #:tagged-node-lock
+   #:tagged-node-ownership-tag))

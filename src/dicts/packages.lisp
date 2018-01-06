@@ -28,8 +28,9 @@
 
 
 (defpackage :cl-data-structures.dicts.hamt
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils #:metabang-bind
-        #:docstample #:docstample.mechanics #:cl-data-structures.common.hamt)
+  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
+        #:metabang-bind #:docstample #:docstample.mechanics
+        #:cl-data-structures.common.hamt #:cl-data-structures.common.abstract)
   (:nicknames #:cl-ds.dicts.hamt)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export

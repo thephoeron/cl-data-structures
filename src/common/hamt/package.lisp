@@ -2,7 +2,8 @@
 
 
 (defpackage :cl-data-structures.common.hamt
-  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind)
+  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind
+        #:cl-data-structures.common.abstract)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.hamt)
   (:export
@@ -44,7 +45,6 @@
    #:rebuild-rehashed-node
    #:rehash
    #:transactional-copy-on-write
-   #:read-ownership-tag
    #:transactional-rebuild-rehashed-node
    #:with-destructive-erase-hamt
    #:with-hamt-path

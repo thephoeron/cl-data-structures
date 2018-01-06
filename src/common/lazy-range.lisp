@@ -57,7 +57,7 @@
 
 
 (defmethod cl-ds:morep :before ((range lazy-range))
-  (force-lazy-ragne range))
+  (force-lazy-range range))
 
 
 (defclass lazy-forward-range (cl-ds:fundamental-forward-range

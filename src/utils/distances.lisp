@@ -44,7 +44,11 @@
             :content result))))
 
 
-(-> make-distance-matrix-from-vector ((or list symbol) (-> (t t) number) vector &key (:key (-> (t) t))) distance-matrix)
+(-> make-distance-matrix-from-vector ((or list symbol)
+                                      (-> (t t) number)
+                                      vector
+                                      &key (:key (-> (t) t)))
+    distance-matrix)
 (defun make-distance-matrix-from-vector (type function sequence &key (key #'identity))
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
@@ -71,12 +75,13 @@
 
 
 (-> parallel-make-distance-matrix-from-vector ((or list symbol)
-                                               function
+                                               (or function symbol)
                                                vector
                                                &key
                                                (:key (-> (t) t))
                                                (:key-context (-> (t) t))
-                                               (:function-context (-> (t) t))) distance-matrix)
+                                               (:function-context (-> (t) t)))
+    distance-matrix)
 (defun parallel-make-distance-matrix-from-vector (type function sequence
                                                   &key
                                                     (key #'identity)
@@ -113,8 +118,10 @@
             :content result))))
 
 
-(-> make-distance-matrix-from-vector ((or list symbol) vector (-> (t t) single-float)) distance-matrix)
-(defun make-distance-matrix-from-vector (type sequence function)
+(-> make-distance-matrix-from-vector ((or list symbol)
+                                      (-> (t t) single-float)
+                                      vector) distance-matrix)
+(defun make-distance-matrix-from-vector (type function sequence)
   (let* ((size (length sequence))
          (result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                       (1- size)
