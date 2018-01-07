@@ -2,7 +2,7 @@
 
 
 (defun make-ownership-tag ()
-  (list t))
+  (box t))
 
 
 (defclass fundamental-ownership-tagged-object ()
@@ -12,28 +12,31 @@
 
 (defstruct tagged-node
   (lock (bt:make-lock))
-  (ownership-tag nil :type list))
+  (ownership-tag nil :type t))
 
 
 (declaim (inline acquire-ownership))
-(-> acquire-ownership (tagged-node list) boolean)
+(-> acquire-ownership (tagged-node t) boolean)
 (defun acquire-ownership (node ownership-tag)
   (bind (((:accessors (tag tagged-node-ownership-tag)
                       (lock tagged-node-lock))
           node))
     (or (eq tag ownership-tag)
-        (when (null (car tag))
+        (when (null (unbox tag))
           (bt:with-lock-held (lock)
-            (if (null (car tag))
+            (if (null (unbox tag))
                 (progn (setf tag ownership-tag) t)
                 (eq tag ownership-tag)))))))
 
 
 (flet ((enclose (tag)
          (lambda ()
-           (setf (car tag) nil))))
+           (assert (unbox tag))
+           (setf (unbox tag) nil))))
   (defun enclose-finalizer (obj)
-    (trivial-garbage:finalize obj (enclose (read-ownership-tag obj)))))
+    (let ((tag (read-ownership-tag obj)))
+      (assert (unbox tag))
+      (trivial-garbage:finalize obj (enclose tag)))))
 
 
 (defmethod initialize-instance :after
@@ -48,7 +51,7 @@
 (defmethod cl-ds:reset! ((obj fundamental-ownership-tagged-object))
   (bind (((:slots %ownership-tag) obj))
     (setf (car %ownership-tag) nil
-          %ownership-tag (list t))
+          %ownership-tag (make-ownership-tag))
     (trivial-garbage:cancel-finalization obj)
     (enclose-finalizer obj)
     obj))

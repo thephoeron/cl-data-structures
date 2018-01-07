@@ -155,6 +155,7 @@
            (multiple-value-bind (v f) (at dict word)
              (is v word :test #'string=)
              (ok f)))
+         (cl-ds:reset! dict)
          (diag "Testing isolation between transactional instances")
          (let ((t-another-dict (become-transactional t-dict)))
            (iterate

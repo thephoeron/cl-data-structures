@@ -10,6 +10,7 @@
    #:read-ownership-tag
    #:fundamental-ownership-tagged-object
    #:make-tagged-node
+   #:make-ownership-tag
    #:tagged-node
    #:tagged-node-lock
    #:tagged-node-ownership-tag))

@@ -53,10 +53,7 @@
 (defclass transactional-hamt-dictionary (hamt-dictionary
                                          cl-ds.dicts:transactional-hashing-dictionary
                                          cl-ds.dicts:abstract-hashing-dictionary)
-  ((%root-was-modified :type boolean
-                       :initform nil
-                       :accessor access-root-was-modified
-                       :initarg :root-was-modified)))
+  ())
 
 
 (-> make-functional-hamt-dictionary ((-> (t) fixnum)
@@ -129,7 +126,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (bind ((changed nil)
-           (tag (list t))
+           (tag (make-ownership-tag))
            (hash (hash-fn location))
            ((:dflet grow-bucket (bucket))
             (multiple-value-bind (a b c)
@@ -226,8 +223,7 @@ Methods. Those will just call non generic functions.
                              #'make-bucket
                              #'copy-on-write)))
       (when changed
-        (setf (access-root container) new-root
-              (access-root-was-modified container) t)
+        (setf (access-root container) new-root)
         (unless (cl-ds:found status)
           (incf (the non-negative-fixnum (access-size container)))))
       (values container
@@ -245,7 +241,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (bind ((hash (hash-fn location))
-           (tag (list t))
+           (tag (cl-ds.common.abstract:make-tagged-node))
            (changed nil)
            ((:dflet shrink-bucket (bucket))
             (multiple-value-bind (a b c)
@@ -324,8 +320,7 @@ Methods. Those will just call non generic functions.
                              #'just-return
                              #'copy-on-write)))
       (when changed
-        (setf (access-root container) new-root
-              (access-root-was-modified container) t)
+        (setf (access-root container) new-root)
         (decf (the non-negative-fixnum (access-size container))))
       (values container
               status))))
@@ -483,7 +478,6 @@ Methods. Those will just call non generic functions.
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :equal-fn (cl-ds.dicts:read-equal-fn container)
-          :root-was-modified (access-root-was-modified container)
           :size (access-size container))))
 
 

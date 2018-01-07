@@ -71,6 +71,7 @@
 
 (flet ((enclose-wrapper (t-operation location lazy-status args)
          (lambda (instance)
+           (assert (cl-ds:transactionalp instance))
            (let ((eager-status
                    (nth-value 1
                               (apply #'cl-ds:position-modification
