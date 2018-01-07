@@ -20,6 +20,15 @@
            :reader read-class)))
 
 
+(define-condition operation-not-allowed (more-conditions:reference-condition
+                                         textual-error)
+  ())
+
+
+(define-condition ice-error (operation-not-allowed)
+  ())
+
+
 (defmethod print-object ((condition initialization-error) stream)
   (format stream "During initialization of ~a...~%"
           (read-class condition))

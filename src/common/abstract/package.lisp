@@ -13,4 +13,5 @@
    #:make-ownership-tag
    #:tagged-node
    #:tagged-node-lock
+   #:enclose-finalizer
    #:tagged-node-ownership-tag))

@@ -129,7 +129,7 @@
       (let ((prove:*test-result-output* str))
         (format t "Running functional HAMT tests, output redirected to ~a:~%" path)
         (format t "Running functional HAMT tests:")
-        ;; (time (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) limit))
+        (time (insert-every-word (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'string=) limit))
         (format t "Running lazy HAMT tests:")
         (time (insert-every-word (cl-ds:become-lazy (cl-ds.dicts.hamt:make-functional-hamt-dictionary
                                                      #'sxhash
@@ -139,5 +139,5 @@
 
 (progn
   (plan 6346)
-  (run-stress-test 1000)
+  (run-suite)
   (finalize))

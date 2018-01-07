@@ -21,7 +21,12 @@
   (bind (((:accessors (tag tagged-node-ownership-tag)
                       (lock tagged-node-lock))
           node))
-    (or (eq tag ownership-tag))))
+    (or (eq tag ownership-tag)
+        (when (null (unbox tag))
+          (bt:with-lock-held (lock)
+            (if (null (unbox tag))
+                (progn (setf tag ownership-tag) t)
+                (eq tag ownership-tag)))))))
 
 
 (flet ((enclose (tag)

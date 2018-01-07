@@ -44,6 +44,8 @@
    #:expression
    #:force
    #:found
+   #:freeze!
+   #:frozenp
    #:functional
    #:functional-add-function
    #:functional-counterpart
@@ -70,6 +72,7 @@
    #:hash-content-location
    #:hash-dict-content
    #:hash-dict-content-value
+   #:ice-error
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
@@ -81,12 +84,14 @@
    #:make-bucket
    #:make-delay
    #:make-state
+   #:melt!
    #:mod-bind
    #:morep
    #:mutable
    #:mutablep
    #:near
    #:not-implemented
+   #:operation-not-allowed
    #:out-of-bounds
    #:peek-back
    #:peek-front

@@ -1,5 +1,22 @@
 (in-package #:cl-data-structures)
 
+(defgeneric frozenp (obj))
+
+(defgeneric freeze! (obj))
+
+(defgeneric melt! (obj))
+
+(defun ensure-not-frozen (obj)
+  (when (frozenp obj)
+    (error 'ice-error :test "Trying to change frozen object!")))
+
+(defmethod position-modification :before (operation
+                                          container
+                                          location
+                                          &rest all
+                                          &key &allow-other-keys)
+  (declare (ignore operation location all))
+  (ensure-not-frozen container))
 
 (defgeneric at (container location))
 

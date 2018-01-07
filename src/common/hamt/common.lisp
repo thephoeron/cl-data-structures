@@ -655,4 +655,4 @@ Copy nodes and stuff.
   (bind (((:slots %root %size) obj))
     (setf %root nil
           %size 0)
-    (call-next-method)))
+    obj))
