@@ -77,6 +77,7 @@
            (is (size dict) (size v))
            (setf dict v)))
        (diag "Testing erase")
+       (trivial-garbage:gc :full t)
        (let ((dict dict))
          (iterate
            (for s from 1 below ,limit)

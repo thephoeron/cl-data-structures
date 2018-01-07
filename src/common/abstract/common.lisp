@@ -21,12 +21,7 @@
   (bind (((:accessors (tag tagged-node-ownership-tag)
                       (lock tagged-node-lock))
           node))
-    (or (eq tag ownership-tag)
-        (when (null (unbox tag))
-          (bt:with-lock-held (lock)
-            (if (null (unbox tag))
-                (progn (setf tag ownership-tag) t)
-                (eq tag ownership-tag)))))))
+    (or (eq tag ownership-tag))))
 
 
 (flet ((enclose (tag)
@@ -44,14 +39,11 @@
      &rest all &key &allow-other-keys)
   (declare (ignore all))
   (unless (slot-boundp obj '%ownership-tag)
-    (setf (slot-value obj '%ownership-tag) (make-ownership-tag)))
-  (enclose-finalizer obj))
+    (setf (slot-value obj '%ownership-tag) (make-ownership-tag))))
 
 
 (defmethod cl-ds:reset! ((obj fundamental-ownership-tagged-object))
   (bind (((:slots %ownership-tag) obj))
-    (setf (car %ownership-tag) nil
+    (setf (unbox %ownership-tag) nil
           %ownership-tag (make-ownership-tag))
-    (trivial-garbage:cancel-finalization obj)
-    (enclose-finalizer obj)
     obj))

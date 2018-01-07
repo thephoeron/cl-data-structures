@@ -546,16 +546,17 @@ Copy nodes and stuff.
       (for index = (indexes i))
       (for parent = (and (not (zerop i))
                          (path (1- i))))
-      (for ac initially (if (null conflict)
-                            ;;if we didn't find element or element was found but depth was already maximal,
-                            ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
-                            conflict
-                            (rebuild-rehashed-node depth
-                                                   conflict
-                                                   ownership-tag))
+      (for ac
+           initially (if (null conflict)
+           ;;if we didn't find element or element was found but depth was already maximal,
+           ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
+                         conflict
+                         (rebuild-rehashed-node depth
+                                                conflict
+                                                ownership-tag))
            then (if ac
                     (cl-ds.utils:cond+ ((hash-node-contains node index)
-                                        (and owned-depth (< i owned-depth)))
+                                        (< i owned-depth))
                       ((t t) (hash-node-replace! node ac index))
                       ((nil t) (hash-node-insert! node ac index))
                       ((t nil) (hash-node-replace-in-the-copy node
@@ -567,7 +568,7 @@ Copy nodes and stuff.
                                                              index
                                                              ownership-tag)))
                     (cl-ds.utils:cond+ ((eql 1 (hash-node-size node))
-                                        (and owned-depth (< i owned-depth)))
+                                        (< i owned-depth))
                       ((t t) ac)
                       ((t nil) ac)
                       ((nil t) (hash-node-remove! node index))
