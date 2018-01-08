@@ -652,6 +652,7 @@ Copy nodes and stuff.
 
 
 (defmethod cl-ds:reset! ((obj hamt-container))
+  (reset-ownership-tag obj)
   (bind (((:slots %root %size) obj))
     (setf %root nil
           %size 0)

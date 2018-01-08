@@ -7,11 +7,12 @@
   (:nicknames #:cl-ds.common.abstract)
   (:export
    #:acquire-ownership
-   #:read-ownership-tag
+   #:enclose-finalizer
    #:fundamental-ownership-tagged-object
-   #:make-tagged-node
    #:make-ownership-tag
+   #:make-tagged-node
+   #:read-ownership-tag
+   #:reset-ownership-tag
    #:tagged-node
    #:tagged-node-lock
-   #:enclose-finalizer
    #:tagged-node-ownership-tag))

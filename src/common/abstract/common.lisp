@@ -45,3 +45,11 @@
   (declare (ignore all))
   (unless (slot-boundp obj '%ownership-tag)
     (setf (slot-value obj '%ownership-tag) (make-ownership-tag))))
+
+
+
+(defgeneric reset-ownership-tag (object)
+  (:method ((object fundamental-ownership-tagged-object))
+    (bind (((:slots %ownership-tag) object))
+      (setf (unbox %ownership-tag) nil
+            %ownership-tag (make-ownership-tag)))))
