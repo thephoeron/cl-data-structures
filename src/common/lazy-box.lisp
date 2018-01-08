@@ -90,6 +90,8 @@
   (defmethod cl-ds:position-modification (operation (container lazy-box-container)
                                           location &rest args
                                           &key &allow-other-keys)
+    (when (cl-ds:frozenp (access-content container))
+      (error 'cl-ds:ice-error :text "Trying to change frozen object!"))
     (bind (((:accessors (operations access-operations)
                         (content access-content))
             container)
@@ -137,3 +139,18 @@
 
   (defmethod cl-ds:value ((status lazy-modification-operation-status))
     (cl-ds:value (force-status status))))
+
+
+(defmethod cl-ds:freeze! ((container lazy-box-container))
+  (force-version container)
+  (cl-ds:freeze! (access-content container)))
+
+
+(defmethod cl-ds:melt! ((container lazy-box-container))
+  (force-version container)
+  (cl-ds:freeze! (access-content container)))
+
+
+(defmethod cl-ds:frozenp ((container lazy-box-container))
+  (force-version container)
+  (cl-ds:frozenp container))
