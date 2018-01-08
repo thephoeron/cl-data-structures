@@ -46,7 +46,10 @@
 (defclass box-container (cl-ds:fundamental-container)
   ((%content :initarg :content
              :type fundamental-container
-             :accessor access-content)))
+             :accessor access-content)
+   (%frozen :initform nil
+            :type boolean
+            :accessor access-frozen)))
 
 
 (defclass lazy-box-container (cl-ds:lazy box-container)
@@ -59,13 +62,16 @@
 (-> force-version (lazy-box-container) lazy-box-container)
 (defun force-version (instance)
   (bind (((:accessors (operations access-operations)
-                      (content access-content))
+                      (content access-content)
+                      (frozen access-frozen))
           instance)
          (transactional-instance (cl-ds:become-transactional
                                   content)))
     (execute-changes operations transactional-instance)
     (setf operations nil
           content transactional-instance)
+    (when frozen
+      (cl-ds:freeze! transactional-instance))
     instance))
 
 
@@ -90,8 +96,6 @@
   (defmethod cl-ds:position-modification (operation (container lazy-box-container)
                                           location &rest args
                                           &key &allow-other-keys)
-    (when (cl-ds:frozenp (access-content container))
-      (error 'cl-ds:ice-error :text "Trying to change frozen object!"))
     (bind (((:accessors (operations access-operations)
                         (content access-content))
             container)
@@ -112,6 +116,11 @@
 (defmethod cl-ds:size ((container lazy-box-container))
   (force-version container)
   (cl-ds:size (access-content container)))
+
+
+(defmethod cl-ds:reset! ((container lazy-box-container))
+  (force-version container)
+  (cl-ds:reset! (access-content container)))
 
 
 (defmethod cl-ds:become-transactional ((container lazy-box-container))
@@ -142,15 +151,14 @@
 
 
 (defmethod cl-ds:freeze! ((container lazy-box-container))
-  (force-version container)
-  (cl-ds:freeze! (access-content container)))
+  (prog1 (access-frozen container)
+    (setf (access-frozen container) t)))
 
 
 (defmethod cl-ds:melt! ((container lazy-box-container))
-  (force-version container)
-  (cl-ds:freeze! (access-content container)))
+  (prog1 (access-frozen container)
+    (setf (access-frozen container) nil)))
 
 
 (defmethod cl-ds:frozenp ((container lazy-box-container))
-  (force-version container)
-  (cl-ds:frozenp container))
+  (access-frozen container))
