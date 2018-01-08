@@ -38,4 +38,5 @@
    #:try-find
    #:try-find-cell
    #:try-remove
+   #:unfold-table
    #:with-vectors))
