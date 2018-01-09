@@ -79,7 +79,8 @@
                                            (:file "common")))
                              (:module "rrb"
                               :components ((:file "package")
-                                           (:file "common")))))
+                                           (:file "common")
+                                           (:test-file "tests")))))
                (:module "adapters"
                 :components ((:file "package")
                              (:file "hash-table")))
