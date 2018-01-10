@@ -21,7 +21,8 @@
 
 
 (defstruct (rrb-node (:include tagged-node))
-  (content (make-array +maximum-children-count+) :type node-content))
+  (content (make-array +maximum-children-count+ :initial-element nil)
+   :type node-content))
 
 
 (-> rrb-node-deep-copy (rrb-node list) rrb-node)
@@ -117,7 +118,7 @@
          (root-overflow (> (the fixnum (ash (the fixnum %size) (- +bit-count+)))
                            (the fixnum (ash 1 (the shift %shift))))))
     (if root-overflow
-        (bind ((new-node (iterate
+        (let ((new-node (iterate
                            (repeat (the non-negative-fixnum %shift))
                            (for node
                                 initially tail
