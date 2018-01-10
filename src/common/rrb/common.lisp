@@ -63,6 +63,7 @@
 (defclass rrb-container (fundamental-ownership-tagged-object)
   ((%root :accessor access-root
           :initarg :root
+          :initform nil
           :type (or null rrb-node)
           :documentation "root of the tree")
    (%shift :initarg :shift
