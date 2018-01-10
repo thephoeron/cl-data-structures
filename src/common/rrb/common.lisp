@@ -107,13 +107,18 @@
         (setf (content %tail-size) element)
         t))))
 
-
+(-> insert-tail (rrb-container
+                 t
+                 (-> ((or null rrb-node) node-size rrb-node t) rrb-node)
+                 rrb-node) rrb-node)
 (defun insert-tail (rrb-container ownership-tag insert-function tail)
+  (declare (optimize (speed 3)))
   (bind (((:slots %size %shift %root) rrb-container)
-         (root-overflow (> (ash %size (- +bit-count+)) (ash 1 %shift))))
+         (root-overflow (> (the fixnum (ash (the fixnum %size) (- +bit-count+)))
+                           (the fixnum (ash 1 (the shift %shift))))))
     (if root-overflow
         (bind ((new-node (iterate
-                           (repeat %shift)
+                           (repeat (the non-negative-fixnum %shift))
                            (for node
                                 initially tail
                                 then (let ((next (make-rrb-node :ownership-tag ownership-tag)))
@@ -130,7 +135,7 @@
         (let ((path (make-array `(,+maximum-children-count+ 2))))
           (declare (dynamic-extent path))
           (iterate
-            (with size = (1- %size))
+            (with size = (1- (the non-negative-fixnum %size)))
             (for i from %shift downto 0)
             (for position from 0 by 5)
             (for index = (ldb (byte +bit-count+ position) size))
@@ -142,7 +147,7 @@
           (iterate
             (for i from 0 to %shift)
             (for existing-node = (aref path i 0))
-            (for index = (aref path i 1))
+            (for index = (the node-size (aref path i 1)))
             (for next-node
                  initially (funcall insert-function
                                     existing-node
