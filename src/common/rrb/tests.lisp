@@ -77,9 +77,15 @@
                                       (impl elt))
                                     (result node))))
                        (impl another-root)))))
+      (setf (access-size container) (+ 1024 32)
+            (access-shift container) 2
+            (access-root container) another-root)
       (is result (iota (+ 1024 32))
           :test #'equal)
       (is (iterate
             (for elt in-vector (rrb-node-content another-root))
             (counting elt))
-          2))))
+          2)
+      (iterate
+        (for i from 0 below (+ 1024 32))
+        (is (rrb-at container i) i)))))

@@ -177,6 +177,22 @@
                       nil)))))))
 
 
+(defun rrb-at (container index)
+  (declare (optimize (debug 3))
+           (type non-negative-fixnum index)
+           (type rrb-container container))
+  (unless (> (access-size container) index)
+    (error "TODO error."))
+  (iterate
+    (with shift = (slot-value container '%shift))
+    (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
+    (for i = (ldb (byte +bit-count+ position) index))
+    (for node
+         initially (slot-value container '%root)
+         then (~> node rrb-node-content (aref i)))
+    (finally (return node))))
+
+
 (-> copy-on-write (t t t t t) t)
 (defun copy-on-write (path indexes shift ownership-tag tail)
   (declare (optimize (debug 3)))
@@ -198,8 +214,35 @@
     (finally (return node))))
 
 
-(defun transactional-on-write (path indexes shift ownership-tag))
+(defun transactional-on-write (path indexes shift ownership-tag tail)
+  (let ((acquired (or (iterate
+                        (for i from 0 below shift)
+                        (for node = (aref path i))
+                        (finding i such-that (~> node
+                                                 (acquire-ownership ownership-tag)
+                                                 null)))
+                      shift)))
+    (iterate
+      (for i from 0 below shift)
+      (for position = (aref indexes i))
+      (for old-node = (aref path i))
+      (for node
+           initially (make-rrb-node :content tail
+                                    :ownership-tag ownership-tag)
+           then (if (null old-node)
+                    (let ((n (make-rrb-node :ownership-tag ownership-tag)))
+                      (setf (~> n rrb-node-content (aref position)) node)
+                      n)
+                    (if (< i acquired)
+                        (rrb-node-push! old-node
+                                        position
+                                        node)
+                        (rrb-node-push-into-copy old-node
+                                                 position
+                                                 node
+                                                 ownership-tag))))
+      (finally (return node)))))
 
 
-(defun destructive-write (path indexes shift ownership-tag)
+(defun destructive-write (path indexes shift ownership-tag tail)
   (declare (ignore ownership-tag)))
