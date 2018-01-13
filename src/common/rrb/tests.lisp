@@ -6,7 +6,7 @@
 
 (progn
   (prove:plan 2)
-  (is (tail-offset 32) 0)
+  (is (tail-offset +maximum-children-count+) 0)
   (is (tail-offset 500) 480)
   (prove:finalize))
 
@@ -32,7 +32,7 @@
                   (iota +maximum-children-count+
                         :start +maximum-children-count+))
         (setf (access-root container) new-root)
-        (setf (access-size container) 32)
+        (setf (access-size container) +maximum-children-count+)
         (setf (access-tail-size container) 0)
         (let ((another-root (insert-tail container
                                          tag
@@ -52,9 +52,9 @@
     (setf (access-shift container) 1)
     (setf (access-size container) (* +maximum-children-count+ +maximum-children-count+))
     (iterate
-      (for i from 2 below 32)
+      (for i from 2 below +maximum-children-count+)
       (iterate
-        (for c from 0 below 32)
+        (for c from 0 below +maximum-children-count+)
         (setf (~> container access-root rrb-node-content (aref i))
               (make-rrb-node :content
                               (map 'vector #'identity
@@ -63,7 +63,7 @@
                              :ownership-tag tag))))
     (let* ((another-tail (map 'vector #'identity
                              (iota +maximum-children-count+
-                                   :start 1024)))
+                                   :start (expt +maximum-children-count+ 2))))
            (another-root (insert-tail container
                                       tag
                                       #'copy-on-write
@@ -77,15 +77,15 @@
                                       (impl elt))
                                     (result node))))
                        (impl another-root)))))
-      (setf (access-size container) (+ 1024 32)
+      (setf (access-size container) (+ (expt +maximum-children-count+ 2) +maximum-children-count+)
             (access-shift container) 2
             (access-root container) another-root)
-      (is result (iota (+ 1024 32))
+      (is result (iota (+ (expt +maximum-children-count+ 2) +maximum-children-count+))
           :test #'equal)
       (is (iterate
             (for elt in-vector (rrb-node-content another-root))
             (counting elt))
           2)
       (iterate
-        (for i from 0 below (+ 1024 32))
+        (for i from 0 below (+ (expt +maximum-children-count+ 2) +maximum-children-count+))
         (is (rrb-at container i) i)))))
