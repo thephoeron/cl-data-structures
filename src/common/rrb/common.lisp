@@ -130,51 +130,48 @@
     rrb-node)
 (defun insert-tail (rrb-container ownership-tag continue tail)
   (declare (optimize (debug 3)))
-  (block nil
-    (bind (((:slots %size %shift %root) rrb-container)
-           (root-overflow (>= (the fixnum (ash (the fixnum %size) (- +bit-count+)))
-                              (ash 1 (* +bit-count+ (the shift %shift))))))
-      (if root-overflow
-          (let ((new-node (iterate
-                            (repeat %shift)
-                            (for node
-                                 initially (make-rrb-node :content tail
-                                                          :ownership-tag ownership-tag)
-                                 then (let ((next (make-rrb-node
-                                                   :ownership-tag ownership-tag)))
-                                        (setf (~> next rrb-node-content (aref 0))
-                                              node)
-                                        next))
-                            (finally (return node)))))
-            (bind ((root (make-rrb-node :ownership-tag ownership-tag))
-                   ((:vectors content) (rrb-node-content root)))
-              (setf (content 0) %root
-                    (content 1) new-node)
-              (return (values root t))))
-          (let ((path (make-array +maximum-children-count+
-                                  :initial-element nil))
-                (indexes (make-array +maximum-children-count+
-                                     :element-type `(integer 0 ,+maximum-children-count+))))
-            (declare (dynamic-extent path)
-                     (dynamic-extent indexes))
-            (iterate
-              (with size = (the non-negative-fixnum %size))
-              (for i from 0 below %shift)
-              (for position from (* +bit-count+ %shift) downto 0 by +bit-count+)
-              (for index = (ldb (byte +bit-count+ position) size))
-              (for node
-                   initially %root
-                   then (and node (~> node rrb-node-content (aref index))))
-              (setf (aref path i) node
-                    (aref indexes i) index))
-            (return
-              (values (funcall continue
-                               path
-                               indexes
-                               %shift
-                               ownership-tag
-                               tail)
-                      nil)))))))
+  (bind (((:slots %size %shift %root) rrb-container)
+         (root-overflow (>= (the fixnum (ash (the fixnum %size) (- +bit-count+)))
+                            (ash 1 (* +bit-count+ (the shift %shift))))))
+    (if root-overflow
+        (let ((new-node (iterate
+                          (repeat %shift)
+                          (for node
+                               initially (make-rrb-node :content tail
+                                                        :ownership-tag ownership-tag)
+                               then (let ((next (make-rrb-node :ownership-tag ownership-tag)))
+                                      (setf (~> next rrb-node-content (aref 0))
+                                            node)
+                                      next))
+                          (finally (return node)))))
+          (bind ((root (make-rrb-node :ownership-tag ownership-tag))
+                 ((:vectors content) (rrb-node-content root)))
+            (setf (content 0) %root
+                  (content 1) new-node)
+            (values root t)))
+        (let ((path (make-array +maximum-children-count+
+                                :initial-element nil))
+              (indexes (make-array +maximum-children-count+
+                                   :element-type `(integer 0 ,+maximum-children-count+))))
+          (declare (dynamic-extent path)
+                   (dynamic-extent indexes))
+          (iterate
+            (with size = (the non-negative-fixnum %size))
+            (for i from 0 below %shift)
+            (for position from (* +bit-count+ %shift) downto 0 by +bit-count+)
+            (for index = (ldb (byte +bit-count+ position) size))
+            (for node
+                 initially %root
+                 then (and node (~> node rrb-node-content (aref index))))
+            (setf (aref path i) node
+                  (aref indexes i) index))
+          (values (funcall continue
+                           path
+                           indexes
+                           %shift
+                           ownership-tag
+                           tail)
+                  nil)))))
 
 
 (defun rrb-at (container index)
