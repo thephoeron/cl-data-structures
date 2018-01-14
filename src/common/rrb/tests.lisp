@@ -15,7 +15,7 @@
        (tag (make-ownership-tag))
        (container (make-instance 'rrb-container
                                  :tail tail
-                                 :size 0)))
+                                 :size 32)))
   (map-into tail #'identity
             (iota +maximum-children-count+))
   (let ((new-root (insert-tail container
@@ -87,4 +87,22 @@
         2)
     (iterate
       (for i from 0 below (+ (expt +maximum-children-count+ 2) +maximum-children-count+))
-      (is (rrb-at container i) i))))
+      (is (rrb-at container i) i)))
+  (let ((old-root (access-root container))
+        (another-root (remove-tail container
+                                   tag
+                                   #'copy-on-write-without-tail)))
+    (setf (access-shift container) 1
+          (access-root container) another-root)
+    (decf (access-size container) +maximum-children-count+)
+    (is another-root
+        (~> old-root rrb-node-content (aref 0)))
+    (setf another-root (remove-tail container
+                                    tag
+                                    #'copy-on-write-without-tail))
+    (iterate
+      (for i from 0 below (1- +maximum-children-count+))
+      (is-type (~> another-root rrb-node-content (aref i))
+               'rrb-node))
+    (is (~> another-root rrb-node-content (aref (1- +maximum-children-count+)))
+        nil)))

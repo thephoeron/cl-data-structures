@@ -62,15 +62,18 @@
 
 
 (defun rrb-node-pop-in-the-copy (node position ownership-tag)
-  (let* ((source-content (rrb-node-content node))
-         (result-content (copy-array source-content)))
-    (setf (aref result-content position) nil)
-    (make-rrb-node :ownership-tag ownership-tag
-                   :content result-content)))
+  (declare (optimize (debug 3)))
+  (unless (zerop position)
+    (let* ((source-content (rrb-node-content node))
+           (result-content (copy-array source-content)))
+      (setf (aref result-content position) nil)
+      (make-rrb-node :ownership-tag ownership-tag
+                     :content result-content))))
 
 
 (defun rrb-node-pop! (node position)
-  (setf (aref (rrb-node-content node) position) nil))
+  (setf (aref (rrb-node-content node) position) nil)
+  node)
 
 
 (defclass rrb-container (fundamental-ownership-tagged-object)
@@ -149,9 +152,9 @@
             (setf (content 0) %root
                   (content 1) new-node)
             (values root t)))
-        (let ((path (make-array +maximum-children-count+
+        (let ((path (make-array +maximal-level+
                                 :initial-element nil))
-              (indexes (make-array +maximum-children-count+
+              (indexes (make-array +maximal-level+
                                    :element-type `(integer 0 ,+maximum-children-count+))))
           (declare (dynamic-extent path)
                    (dynamic-extent indexes))
@@ -193,8 +196,9 @@
 (-> copy-on-write (t t t t t) t)
 (defun copy-on-write (path indexes shift ownership-tag tail)
   (declare (optimize (debug 3)))
+  (break)
   (iterate
-    (for i from 0 below shift)
+    (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
     (for old-node = (aref path i))
     (for node
@@ -211,7 +215,7 @@
     (finally (return node))))
 
 
-(defun transactional-on-write (path indexes shift ownership-tag tail)
+(defun transactional-copy-on-write (path indexes shift ownership-tag tail)
   (let ((acquired (or (iterate
                         (for i from 0 below shift)
                         (for node = (aref path i))
@@ -220,7 +224,7 @@
                                                  null)))
                       shift)))
     (iterate
-      (for i from 0 below shift)
+      (for i from (1- shift) downto 0)
       (for position = (aref indexes i))
       (for old-node = (aref path i))
       (for node
@@ -242,4 +246,71 @@
 
 
 (defun destructive-write (path indexes shift ownership-tag tail)
-  (declare (ignore ownership-tag)))
+  (iterate
+    (for i from 0 below shift)
+    (for position = (aref indexes i))
+    (for old-node = (aref path i))
+    (for node
+         initially (make-rrb-node :content tail
+                                  :ownership-tag ownership-tag)
+         then (if (null old-node)
+                  (let ((n (make-rrb-node :ownership-tag ownership-tag)))
+                    (setf (~> n rrb-node-content (aref position)) node)
+                    n)
+                  (rrb-node-push! old-node position node)))
+    (finally (return node))))
+
+
+(defun remove-tail (rrb-container ownership-tag continue)
+  (bind (((:slots %size %shift %root) rrb-container)
+         (first-index (* +bit-count+ %shift))
+         (root-size (ldb (byte +bit-count+ first-index)
+                         %size))
+         (root-underflow (eql root-size 1))
+         (path (make-array +maximal-level+
+                           :initial-element nil))
+         (indexes (make-array +maximal-level+
+                              :element-type `(integer 0 ,+maximum-children-count+))))
+    (declare (dynamic-extent path indexes))
+    (assert (> %shift 0))
+    (if root-underflow
+        (if (eql 1 %shift)
+            (values nil t)
+            (values (~> %root rrb-node-content (aref 0))
+                    t))
+        (iterate
+          (with size = (the non-negative-fixnum %size))
+          (for i from 0 below %shift)
+          (for position
+               from first-index
+               downto 0
+               by +bit-count+)
+          (for index = (ldb (byte +bit-count+ position) (1- size)))
+          (for node
+               initially %root
+               then (and node (~> node rrb-node-content (aref index))))
+          (setf (aref path i) node
+                (aref indexes i) index)
+          (finally (return (values (funcall continue
+                                            path
+                                            indexes
+                                            %shift
+                                            ownership-tag)
+                                   nil)))))))
+
+
+(defun copy-on-write-without-tail (path indexes shift ownership-tag)
+  (declare (optimize (debug 3)))
+  (iterate
+    (for i from 0 below shift)
+    (for position = (aref indexes i))
+    (for old-node = (aref path i))
+    (for node
+         first (rrb-node-pop-in-the-copy old-node
+                                         position
+                                         ownership-tag)
+         then (rrb-node-push-into-copy old-node
+                                       position
+                                       node
+                                       ownership-tag))
+    (finally (return node))))
