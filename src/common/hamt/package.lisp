@@ -39,6 +39,7 @@
    #:hash-node-transactional-remove
    #:hash-node-transactional-replace
    #:hash-node-whole-mask
+   #:isolate-transaction
    #:new-cell
    #:obtain-value
    #:read-max-depth

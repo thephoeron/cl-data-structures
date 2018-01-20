@@ -473,28 +473,40 @@ Methods. Those will just call non generic functions.
 
 
 (defmethod cl-ds:become-transactional ((container transactional-hamt-dictionary))
-  (let ((root (access-root container)))
+  (let* ((tag (make-ownership-tag))
+         (root (~> container
+                   access-root
+                   (isolate-transaction tag))))
     (make 'transactional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
+          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 
 (defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
-  (let ((root (access-root container)))
+  (let* ((tag (make-ownership-tag))
+         (root (~> container
+                   access-root
+                   (isolate-transaction (read-ownership-tag container)))))
     (make 'mutable-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
+          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 
 (defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
-  (let ((root (access-root container)))
+  (let* ((tag (make-ownership-tag))
+         (root (~> container
+                   access-root
+                   (isolate-transaction (read-ownership-tag container)))))
     (make 'functional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
+          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 

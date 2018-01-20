@@ -657,3 +657,19 @@ Copy nodes and stuff.
     (setf %root nil
           %size 0)
     obj))
+
+
+(defun isolate-transaction (tree tag)
+  (if (and (hash-node-p tree)
+           (acquire-ownership tree tag))
+      (let ((content (copy-array (hash-node-content tree))))
+        (iterate
+          (with size = (hash-node-size tree))
+          (for i below size)
+          (setf (aref content i)
+                (isolate-transaction (aref content i)
+                                     tag)))
+        (make-hash-node :ownership-tag tag
+                        :node-mask (hash-node-whole-mask tree)
+                        :content content))
+      tree))
