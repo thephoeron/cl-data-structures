@@ -10,17 +10,6 @@
          ,@body))))
 
 
-(defmacro transaction ((binding instance) &body operations)
-  (alexandria:once-only (instance)
-    `(let ((,binding (become-transactional ,instance)))
-       ,@operations
-       (cond ((functionalp ,instance)
-              (become-functional ,binding))
-             ((transactionalp ,instance)
-              ,binding)
-             (t (become-mutable ,instance))))))
-
-
 (defmacro traverse-through ((traversable var) &body body)
   (with-gensyms (!callback)
     `(flet ((,!callback (,var)

@@ -15,7 +15,7 @@
        (tag (make-ownership-tag))
        (container (make-instance 'rrb-container
                                  :tail tail
-                                 :size 32)))
+                                 :size 0)))
   (map-into tail #'identity
             (iota +maximum-children-count+))
   (let ((new-root (insert-tail container

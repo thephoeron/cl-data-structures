@@ -112,6 +112,8 @@
   (:method (object)
     (traverse *traverse-callback* object)))
 
+(defgeneric transaction (operation object location &rest args))
+
 #|
 
 Range releated functions.

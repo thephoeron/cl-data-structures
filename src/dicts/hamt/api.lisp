@@ -473,40 +473,36 @@ Methods. Those will just call non generic functions.
 
 
 (defmethod cl-ds:become-transactional ((container transactional-hamt-dictionary))
-  (let* ((tag (make-ownership-tag))
-         (root (~> container
+  (let* ((root (~> container
                    access-root
-                   (isolate-transaction tag))))
+                   (isolate-transaction (read-ownership-tag container)))))
     (make 'transactional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 
 (defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
-  (let* ((tag (make-ownership-tag))
+  (let* ((tag (read-ownership-tag container))
          (root (~> container
                    access-root
                    (isolate-transaction (read-ownership-tag container)))))
     (make 'mutable-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
 
 (defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
-  (let* ((tag (make-ownership-tag))
+  (let* ((tag (read-ownership-tag container))
          (root (~> container
                    access-root
-                   (isolate-transaction (read-ownership-tag container)))))
+                   (isolate-transaction tag))))
     (make 'functional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
-          :ownership-tag tag
           :equal-fn (cl-ds.dicts:read-equal-fn container)
           :size (access-size container))))
 
@@ -525,3 +521,32 @@ Methods. Those will just call non generic functions.
         :forward-stack (list (new-cell (access-root container)))
         :store-value (lambda (node value) (setf (cl-ds.common:hash-dict-content-value node) value))
         :container container))
+
+
+(defmethod cl-ds:transaction ((operation cl-ds:destructive-function)
+                              (container transactional-hamt-dictionary)
+                              location &rest args)
+  (let ((result (make 'transactional-hamt-dictionary
+                      :hash-fn (cl-ds.dicts:read-hash-fn container)
+                      :root (access-root container)
+                      :equal-fn (cl-ds.dicts:read-equal-fn container)
+                      :size (access-size container))))
+    (apply operation result location args)
+    (cl-ds:freeze! container)
+    result))
+
+
+(defmethod cl-ds:transaction ((operation cl-ds:insert!-function)
+                              (container transactional-hamt-dictionary)
+                              location &rest args)
+  (let ((result (make 'transactional-hamt-dictionary
+                      :hash-fn (cl-ds.dicts:read-hash-fn container)
+                      :root (access-root container)
+                      :equal-fn (cl-ds.dicts:read-equal-fn container)
+                      :size (access-size container)))
+        (new-value (first args))
+        (args (rest args)))
+    (assert (null args))
+    (funcall operation new-value result location)
+    (cl-ds:freeze! container)
+    result))

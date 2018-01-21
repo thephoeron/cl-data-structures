@@ -79,7 +79,8 @@
 (defclass rrb-container (fundamental-ownership-tagged-object)
   ((%root :accessor access-root
           :initarg :root
-          :type rrb-node
+          :initform nil
+          :type (or rrb-node nil)
           :documentation "root of the tree")
    (%shift :initarg :shift
            :accessor access-shift
@@ -196,7 +197,6 @@
 (-> copy-on-write (t t t t t) t)
 (defun copy-on-write (path indexes shift ownership-tag tail)
   (declare (optimize (debug 3)))
-  (break)
   (iterate
     (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
@@ -215,34 +215,38 @@
     (finally (return node))))
 
 
+(defun acquire-path (path shift ownership-tag)
+  (or (iterate
+        (for i from 0 below shift)
+        (for node = (aref path i))
+        (finding i such-that (~> node
+                                 (acquire-ownership ownership-tag)
+                                 null)))
+      shift))
+
+
 (defun transactional-copy-on-write (path indexes shift ownership-tag tail)
-  (let ((acquired (or (iterate
-                        (for i from 0 below shift)
-                        (for node = (aref path i))
-                        (finding i such-that (~> node
-                                                 (acquire-ownership ownership-tag)
-                                                 null)))
-                      shift)))
-    (iterate
-      (for i from (1- shift) downto 0)
-      (for position = (aref indexes i))
-      (for old-node = (aref path i))
-      (for node
-           initially (make-rrb-node :content tail
-                                    :ownership-tag ownership-tag)
-           then (if (null old-node)
-                    (let ((n (make-rrb-node :ownership-tag ownership-tag)))
-                      (setf (~> n rrb-node-content (aref position)) node)
-                      n)
-                    (if (< i acquired)
-                        (rrb-node-push! old-node
-                                        position
-                                        node)
-                        (rrb-node-push-into-copy old-node
-                                                 position
-                                                 node
-                                                 ownership-tag))))
-      (finally (return node)))))
+  (iterate
+    (with acquired = (acquire-path path shift ownership-tag))
+    (for i from (1- shift) downto 0)
+    (for position = (aref indexes i))
+    (for old-node = (aref path i))
+    (for node
+         initially (make-rrb-node :content tail
+                                  :ownership-tag ownership-tag)
+         then (if (null old-node)
+                  (let ((n (make-rrb-node :ownership-tag ownership-tag)))
+                    (setf (~> n rrb-node-content (aref position)) node)
+                    n)
+                  (if (< i acquired)
+                      (rrb-node-push! old-node
+                                      position
+                                      node)
+                      (rrb-node-push-into-copy old-node
+                                               position
+                                               node
+                                               ownership-tag))))
+    (finally (return node))))
 
 
 (defun destructive-write (path indexes shift ownership-tag tail)
@@ -302,7 +306,7 @@
 (defun copy-on-write-without-tail (path indexes shift ownership-tag)
   (declare (optimize (debug 3)))
   (iterate
-    (for i from 0 below shift)
+    (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
     (for old-node = (aref path i))
     (for node
@@ -314,3 +318,52 @@
                                        node
                                        ownership-tag))
     (finally (return node))))
+
+
+(defun transactional-copy-on-write-without-tail (path indexes shift ownership-tag)
+  (declare (optimize (debug 3)))
+  (bind ((acquired (acquire-path path shift ownership-tag))
+         ((:dflet push-impl (old-node position node ownership-tag i))
+          (if (< i acquired)
+              (rrb-node-push! old-node
+                              position
+                              node)
+              (rrb-node-push-into-copy old-node
+                                       position
+                                       node
+                                       ownership-tag)))
+         ((:dflet pop-impl (old-node position ownership-tag i))
+          (if (< i acquired)
+              (rrb-node-pop! old-node position)
+              (rrb-node-pop-in-the-copy old-node position ownership-tag))))
+    (iterate
+      (for i from (1- shift) downto 0)
+      (for position = (aref indexes i))
+      (for old-node = (aref path i))
+      (for node
+           first (pop-impl old-node position ownership-tag i)
+           then (push-impl old-node position node ownership-tag i))
+      (finally (return node)))))
+
+
+(defun destructive-write-without-tail (path indexes shift ownership-tag)
+  (declare (optimize (debug 3))
+           (ignore ownership-tag))
+  (iterate
+    (for i from (1- shift) downto 0)
+    (for position = (aref indexes i))
+    (for old-node = (aref path i))
+    (for node
+         first (rrb-node-pop! old-node
+                              position)
+         then (rrb-node-push! old-node
+                              position
+                              node))
+    (for p-node previous node initially t)
+    (until (null p-node))
+    (finally (return node))))
+
+
+(defmethod cl-ds:size ((container rrb-container))
+  (+ (access-size container)
+     (access-tail-size container)))
