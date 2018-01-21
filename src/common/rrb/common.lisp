@@ -153,9 +153,9 @@
             (setf (content 0) %root
                   (content 1) new-node)
             (values root t)))
-        (let ((path (make-array +maximal-level+
+        (let ((path (make-array +maximal-shift+
                                 :initial-element nil))
-              (indexes (make-array +maximal-level+
+              (indexes (make-array +maximal-shift+
                                    :element-type `(integer 0 ,+maximum-children-count+))))
           (declare (dynamic-extent path)
                    (dynamic-extent indexes))
@@ -271,9 +271,9 @@
          (root-size (ldb (byte +bit-count+ first-index)
                          %size))
          (root-underflow (eql root-size 1))
-         (path (make-array +maximal-level+
+         (path (make-array +maximal-shift+
                            :initial-element nil))
-         (indexes (make-array +maximal-level+
+         (indexes (make-array +maximal-shift+
                               :element-type `(integer 0 ,+maximum-children-count+))))
     (declare (dynamic-extent path indexes))
     (assert (> %shift 0))
