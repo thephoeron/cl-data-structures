@@ -7,8 +7,24 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.rrb)
   (:export
-   #:+depth+
    #:+bit-count+
+   #:+depth+
    #:+maximum-children-count+
    #:access-root
-   #:access-size))
+   #:access-size
+   #:access-tail
+   #:access-tail-size
+   #:copy-on-write
+   #:copy-on-write-without-tail
+   #:copy-on-write-without-tail
+   #:destructive-write
+   #:destructive-write-without-tail
+   #:make-rrb-node
+   #:make-node-content
+   #:access-shift
+   #:insert-tail
+   #:remove-tail
+   #:rrb-at
+   #:rrb-container
+   #:transactional-copy-on-write
+   #:transactional-copy-on-write-without-tail))

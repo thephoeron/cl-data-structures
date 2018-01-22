@@ -100,4 +100,6 @@
                              (:test-file "mutable-dictionary-test-suite")
                              (:test-file "transactional-dictionary-test-suite")))
                (:module "sequences"
-                :components ((:file "packages")))))
+                :components ((:file "packages")
+                             (:module "rrb"
+                              :components ((:file "api.lisp")))))))

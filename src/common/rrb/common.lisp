@@ -20,9 +20,12 @@
   `(integer 0 ,+maximal-shift+))
 
 
+(defun make-node-content ()
+  (make-array +maximum-children-count+ :initial-element nil))
+
+
 (defstruct (rrb-node (:include tagged-node))
-  (content (make-array +maximum-children-count+ :initial-element nil)
-   :type node-content))
+  (content (make-node-content) :type node-content))
 
 
 (defmethod print-object ((obj rrb-node) stream)
@@ -182,16 +185,19 @@
   (declare (optimize (debug 3))
            (type non-negative-fixnum index)
            (type rrb-container container))
-  (unless (> (access-size container) index)
+  (unless (> (cl-ds:size container) index)
     (error "TODO error."))
-  (iterate
-    (with shift = (slot-value container '%shift))
-    (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
-    (for i = (ldb (byte +bit-count+ position) index))
-    (for node
-         initially (slot-value container '%root)
-         then (~> node rrb-node-content (aref i)))
-    (finally (return node))))
+  (if (> index (access-size container))
+      (let ((offset (- (access-size container) index)))
+        (~> container access-tail (aref offset)))
+      (iterate
+        (with shift = (slot-value container '%shift))
+        (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
+        (for i = (ldb (byte +bit-count+ position) index))
+        (for node
+             initially (slot-value container '%root)
+             then (~> node rrb-node-content (aref i)))
+        (finally (return node)))))
 
 
 (-> copy-on-write (t t t t t) t)
