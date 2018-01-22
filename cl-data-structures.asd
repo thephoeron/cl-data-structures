@@ -102,4 +102,4 @@
                (:module "sequences"
                 :components ((:file "packages")
                              (:module "rrb"
-                              :components ((:file "api.lisp")))))))
+                              :components ((:file "api")))))))
