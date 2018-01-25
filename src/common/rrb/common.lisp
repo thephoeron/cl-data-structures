@@ -182,7 +182,7 @@
 
 
 (defun rrb-at (container index)
-  (declare (optimize (debug 3))
+  (declare (optimize (speed 3))
            (type non-negative-fixnum index)
            (type rrb-container container))
   (unless (> (cl-ds:size container) index)
@@ -201,6 +201,7 @@
 
 
 (defmethod cl-ds:at ((container rrb-container) index)
+  (check-type index non-negative-fixnum)
   (rrb-at container index))
 
 
