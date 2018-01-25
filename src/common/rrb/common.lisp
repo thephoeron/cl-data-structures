@@ -94,6 +94,7 @@
           :type non-negative-fixnum
           :accessor access-size)
    (%tail-size :initform 0
+               :initarg :tail-size
                :type node-size
                :accessor access-tail-size)
    (%tail :initform nil
@@ -182,14 +183,12 @@
 
 
 (defun rrb-at (container index)
-  (declare (optimize (speed 3))
+  (declare (optimize (debug 3))
            (type non-negative-fixnum index)
            (type rrb-container container))
   (unless (> (cl-ds:size container) index)
     (error "TODO error."))
-  (if (> index (access-size container))
-      (let ((offset (- (access-size container) index)))
-        (~> container access-tail (aref offset)))
+  (if (< index (access-size container))
       (iterate
         (with shift = (slot-value container '%shift))
         (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
@@ -197,7 +196,9 @@
         (for node
              initially (slot-value container '%root)
              then (~> node rrb-node-content (aref i)))
-        (finally (return node)))))
+        (finally (return node)))
+      (let ((offset (- index (access-size container))))
+        (~> container access-tail (aref offset)))))
 
 
 (defmethod cl-ds:at ((container rrb-container) index)

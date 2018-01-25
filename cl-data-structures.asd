@@ -101,6 +101,7 @@
                              (:test-file "transactional-dictionary-test-suite")))
                (:module "sequences"
                 :components ((:file "packages")
+                             (:file "common")
                              (:module "rrb"
                               :components ((:file "api")
                                            (:test-file "tests")))))))
