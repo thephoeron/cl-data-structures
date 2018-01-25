@@ -102,4 +102,5 @@
                (:module "sequences"
                 :components ((:file "packages")
                              (:module "rrb"
-                              :components ((:file "api")))))))
+                              :components ((:file "api")
+                                           (:test-file "tests")))))))

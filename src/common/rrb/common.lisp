@@ -200,6 +200,10 @@
         (finally (return node)))))
 
 
+(defmethod cl-ds:at ((container rrb-container) index)
+  (rrb-at container index))
+
+
 (-> copy-on-write (t t t t t) t)
 (defun copy-on-write (path indexes shift ownership-tag tail)
   (declare (optimize (debug 3)))
