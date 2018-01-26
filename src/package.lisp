@@ -33,6 +33,7 @@
    #:drop-front
    #:empty-clone
    #:empty-clone-of-inner-container
+   #:empty-container
    #:erase
    #:erase!
    #:erase!-function

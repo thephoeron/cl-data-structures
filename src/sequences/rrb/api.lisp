@@ -60,7 +60,7 @@
         (tag (cl-ds.common.abstract:make-ownership-tag)))
     (if (zerop tail-size)
         (if (zerop (cl-ds.common.rrb:access-size container))
-            (cl-ds.utils:todo)
+            (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
             (bind ((zero-shift (zerop (cl-ds.common.rrb:access-shift container)))
                    ((:values new-root tail shift-decreased)
                     (if zero-shift

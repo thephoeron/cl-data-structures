@@ -54,6 +54,10 @@
   ())
 
 
+(define-condition empty-container (textual-error)
+  ())
+
+
 (defmethod print-object ((condition argument-out-of-bounds) stream)
   (format stream "Argument ~a has value ~a which is out of bounds ~a~%"
           (read-argument condition)
