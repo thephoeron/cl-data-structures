@@ -142,21 +142,21 @@
          (root-overflow (>= (the fixnum (ash (the fixnum %size) (- +bit-count+)))
                             (ash 1 (* +bit-count+ (the shift %shift))))))
     (if root-overflow
-        (let ((new-node (iterate
-                          (repeat %shift)
-                          (for node
-                               initially (make-rrb-node :content tail
-                                                        :ownership-tag ownership-tag)
-                               then (let ((next (make-rrb-node :ownership-tag ownership-tag)))
-                                      (setf (~> next rrb-node-content (aref 0))
-                                            node)
-                                      next))
-                          (finally (return node)))))
-          (bind ((root (make-rrb-node :ownership-tag ownership-tag))
-                 ((:vectors content) (rrb-node-content root)))
-            (setf (content 0) %root
-                  (content 1) new-node)
-            (values root t)))
+        (iterate
+          (repeat %shift)
+          (for node
+               initially (make-rrb-node :content tail
+                                        :ownership-tag ownership-tag)
+               then (let ((next (make-rrb-node :ownership-tag ownership-tag)))
+                      (setf (~> next rrb-node-content (aref 0))
+                            node)
+                      next))
+          (finally
+           (bind ((root (make-rrb-node :ownership-tag ownership-tag))
+                  ((:vectors content) (rrb-node-content root)))
+             (setf (content 0) %root
+                   (content 1) node)
+             (return (values root t)))))
         (let ((path (make-array +maximal-shift+
                                 :initial-element nil))
               (indexes (make-array +maximal-shift+
