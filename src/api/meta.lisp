@@ -41,6 +41,10 @@
   ())
 
 
+(defclass take-out-function (shrink-function)
+  ())
+
+
 (defclass functional-insert-function (closer-mop:standard-generic-function
                                       functional-function
                                       insert-function)
@@ -79,6 +83,13 @@
 (defclass functional-put-function (closer-mop:standard-generic-function
                                    functional-function
                                    put-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass functional-take-out-function (closer-mop:standard-generic-function
+                                        functional-function
+                                        take-out-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 

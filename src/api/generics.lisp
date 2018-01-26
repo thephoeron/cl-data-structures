@@ -29,6 +29,9 @@
 (defgeneric put (container item)
   (:generic-function-class functional-put-function))
 
+(defgeneric take-out (container)
+  (:generic-function-class functional-take-out-function))
+
 (defgeneric near (container item maximal-distance))
 
 (defgeneric add! (container location new-value)

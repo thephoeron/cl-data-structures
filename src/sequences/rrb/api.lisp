@@ -7,7 +7,7 @@
   ())
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:put-function)
+(defmethod cl-ds:position-modification ((operation cl-ds:functional-put-function)
                                         (container functional-rrb-vector)
                                         location &key value)
   (declare (optimize (speed 3)))
@@ -50,3 +50,14 @@
               :ownership-tag tag
               :size (cl-ds.common.rrb:access-size container)
               :shift (cl-ds.common.rrb:access-shift container)))))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)
+                                        (container functional-rrb-vector)
+                                        location &key)
+  (declare (optimize (debug 3)))
+  (let ((tail-size (cl-ds.common.rrb:access-tail-size container))
+        (tag (cl-ds.common.abstract:make-ownership-tag)))
+    (if (zerop tail-size)
+        (cl-ds.utils:todo)
+        (cl-ds.utils:todo))))

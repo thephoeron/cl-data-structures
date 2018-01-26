@@ -53,6 +53,8 @@
    #:functional-erase-if-function
    #:functional-function
    #:functional-insert-function
+   #:functional-put-function
+   #:functional-take-out-function
    #:functional-update-function
    #:functionalp
    #:fundamental-assignable-forward-range
@@ -111,6 +113,8 @@
    #:shrink-function
    #:size
    #:special-traverse
+   #:take-out
+   #:take-out-function
    #:textual-error
    #:transaction
    #:transactional
@@ -125,6 +129,7 @@
    #:value
    #:whole-range
    #:xpr))
+
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)
