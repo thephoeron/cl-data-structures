@@ -187,7 +187,10 @@
            (type non-negative-fixnum index)
            (type rrb-container container))
   (unless (> (cl-ds:size container) index)
-    (error "TODO error."))
+    (error 'cl-ds:argument-out-of-bounds
+           :bounds (list 0 (cl-ds:size container))
+           :value index
+           :text "Index out of bounds."))
   (if (< index (access-size container))
       (iterate
         (with shift = (slot-value container '%shift))
