@@ -26,5 +26,6 @@
    #:remove-tail
    #:rrb-at
    #:rrb-container
+   #:rrb-node-content
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail))

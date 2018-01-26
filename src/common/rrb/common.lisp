@@ -294,8 +294,9 @@
     (assert (> %shift 0))
     (if root-underflow
         (if (eql 1 %shift)
-            (values nil t)
+            (values nil nil t)
             (values (~> %root rrb-node-content (aref 0))
+                    nil
                     t))
         (iterate
           (with size = (the non-negative-fixnum %size))
@@ -315,6 +316,7 @@
                                             indexes
                                             %shift
                                             ownership-tag)
+                                   (aref path (1- %shift))
                                    nil)))))))
 
 
