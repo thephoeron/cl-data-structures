@@ -188,6 +188,7 @@
            (type rrb-container container))
   (unless (> (cl-ds:size container) index)
     (error 'cl-ds:argument-out-of-bounds
+           :argument 'index
            :bounds (list 0 (cl-ds:size container))
            :value index
            :text "Index out of bounds."))

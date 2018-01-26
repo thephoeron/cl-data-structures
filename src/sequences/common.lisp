@@ -12,7 +12,7 @@
   value)
 
 
-(defmethod cl-ds:shrink-bucket ((operation cl-ds:grow-function)
+(defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
                                 (container abstract-sequence)
                                 bucket
                                 location
