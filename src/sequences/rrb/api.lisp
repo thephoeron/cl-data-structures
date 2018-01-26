@@ -55,7 +55,7 @@
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)
                                         (container functional-rrb-vector)
                                         location &key)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((tail-size (cl-ds.common.rrb:access-tail-size container))
         (tag (cl-ds.common.abstract:make-ownership-tag)))
     (if (zerop tail-size)
