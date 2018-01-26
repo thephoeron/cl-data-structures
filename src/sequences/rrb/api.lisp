@@ -61,10 +61,13 @@
     (if (zerop tail-size)
         (if (zerop (cl-ds.common.rrb:access-size container))
             (cl-ds.utils:todo)
-            (bind (((:values new-root tail shift-decreased)
-                    (cl-ds.common.rrb:remove-tail container
-                                                  tag
-                                                  #'cl-ds.common.rrb:copy-on-write-without-tail))
+            (bind ((zero-shift (zerop (cl-ds.common.rrb:access-shift container)))
+                   ((:values new-root tail shift-decreased)
+                    (if zero-shift
+                        (values nil (cl-ds.common.rrb:access-root container) nil)
+                        (cl-ds.common.rrb:remove-tail container
+                                                      tag
+                                                      #'cl-ds.common.rrb:copy-on-write-without-tail)))
                    (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array))))
               (unless (null new-tail)
                 (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))

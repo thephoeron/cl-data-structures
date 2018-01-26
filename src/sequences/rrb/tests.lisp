@@ -3,7 +3,6 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-
 (plan 36)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
@@ -21,5 +20,9 @@
     (repeat cl-data-structures.common.rrb:+maximum-children-count+)
     (is (cl-ds:at container (1- i)) i))
   (setf container (cl-ds:take-out container))
-  (is (cl-ds:size container) 33))
+  (is (cl-ds:size container) 33)
+  (setf container (cl-ds:take-out container))
+  (is (cl-ds:size container) 32)
+  (setf container (cl-ds:take-out container))
+  (is (cl-ds:size container) 31)
 (finalize)
