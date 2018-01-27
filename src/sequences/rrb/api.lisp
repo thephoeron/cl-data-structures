@@ -105,14 +105,15 @@
 
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:update-function)
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container functional-rrb-vector)
                                         index &rest rest &key value &allow-other-keys)
   (declare (optimize (debug 3)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
          (tag (cl-ds.common.abstract:make-ownership-tag))
          (size (cl-ds.common.rrb:access-size container))
-         (root (cl-ds.common.rrb:access-root container)))
+         (root (cl-ds.common.rrb:access-root container))
+         (result-status nil))
     (unless (> (cl-ds:size container) index)
       (error 'cl-ds:argument-out-of-bounds
              :argument 'index
@@ -120,34 +121,37 @@
              :value index
              :text "Index out of range."))
     (if (< index size)
-        (bind (((:dflet cont (path indexes shift &aux (shift (1- shift))))
+        (bind (((:dflet change-bucket (bucket index value))
+                (multiple-value-bind (node status changed)
+                    (apply #'cl-ds:grow-bucket
+                           operation
+                           container
+                           bucket
+                           index
+                           :value value
+                           rest)
+                  (unless changed (return-from cl-ds:position-modification (values container status)))
+                  (setf result-status status)
+                  node))
+               ((:dflet cont (path indexes shift &aux (shift (1- shift))))
                 (if (< shift 0) ;;changing just root
-                    (cl-ds.common.rrb:rrb-node-push-into-copy root
-                                                              index
-                                                              (apply #'cl-ds:grow-bucket
-                                                                     operation
-                                                                     container
-                                                                     (~> root
-                                                                         cl-ds.common.rrb:rrb-node-content
-                                                                         (aref index))
-                                                                     index
-                                                                     :value value
-                                                                     rest)
-                                                              tag)
+                    (cl-ds.common.rrb:rrb-node-push-into-copy
+                     root
+                     index
+                     (change-bucket (~> root
+                                        cl-ds.common.rrb:rrb-node-content
+                                        (aref index))
+                                    index
+                                    value)
+                     tag)
                     (iterate
                       (for i from shift downto 0)
                       (for position = (aref indexes i))
                       (for old-node = (aref path i))
                       (for node
-                           initially (let* ((next-value (apply #'cl-ds:grow-bucket
-                                                               operation
-                                                               container
-                                                               (aref (cl-ds.common.rrb:rrb-node-content
-                                                                      (aref path shift))
-                                                                     (aref index shift))
-                                                               index
-                                                               :value value
-                                                               rest))
+                           initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
+                                                          (aref index shift)))
+                                            (next-value (change-bucket bucket index value))
                                             (content (copy-array (aref path shift))))
                                        (setf (aref content (aref index shift)) next-value)
                                        (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
@@ -168,21 +172,23 @@
                 :ownership-tag tag
                 :tail-size tail-size
                 :size size))
-        (make 'functional-rrb-vector
-              :root (cl-ds.common.rrb:access-root container)
-              :tail (let* ((new-tail (~> container cl-ds.common.rrb:access-tail copy-array))
-                           (offset (- index size)))
-                      (setf (aref new-tail offset)
-                            (apply #'cl-ds:grow-bucket
-                                   operation
-                                   container
-                                   (aref new-tail offset)
-                                   index
-                                   :value value
-                                   rest))
-                      new-tail)
-              :ownership-tag tag
-              :tail-size tail-size
-              :ownership-tag tag
-              :size size
-              :shift (cl-ds.common.rrb:access-shift container)))))
+        (values
+         (make 'functional-rrb-vector
+               :root (cl-ds.common.rrb:access-root container)
+               :tail (let* ((new-tail (~> container cl-ds.common.rrb:access-tail copy-array))
+                            (offset (- index size)))
+                       (setf (aref new-tail offset)
+                             (apply #'cl-ds:grow-bucket
+                                    operation
+                                    container
+                                    (aref new-tail offset)
+                                    index
+                                    :value value
+                                    rest))
+                       new-tail)
+               :ownership-tag tag
+               :tail-size tail-size
+               :ownership-tag tag
+               :size size
+               :shift (cl-ds.common.rrb:access-shift container))
+         result-status))))
