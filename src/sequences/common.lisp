@@ -9,7 +9,7 @@
                               (container abstract-sequence)
                               location
                               &key value &allow-other-keys)
-  (values value cl-ds.common:empty-eager-modification-operation-status t))
+  (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
@@ -31,7 +31,7 @@
                               &rest rest &key value
                               &allow-other-keys)
   (declare (ignore rest))
-  (values value
+  (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket)
           t))

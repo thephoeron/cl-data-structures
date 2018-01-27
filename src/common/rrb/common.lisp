@@ -191,7 +191,7 @@
     (declare (dynamic-extent path)
              (dynamic-extent indexes))
     (iterate
-      (for i from 0 below shift)
+      (for i from 0 to shift)
       (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
       (for index = (ldb (byte +bit-count+ position) location))
       (for node
