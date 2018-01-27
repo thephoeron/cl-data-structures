@@ -21,9 +21,23 @@
   nil)
 
 
+(defmethod cl-ds:grow-bucket ((operation cl-ds:grow-function)
+                              (container abstract-sequence)
+                              bucket
+                              location
+                              &rest rest &key value
+                              &allow-other-keys)
+  value)
+
+
 (defmethod cl-ds:put ((container abstract-sequence) item)
   (cl-ds:position-modification #'cl-ds:put container nil :value item))
 
 
 (defmethod cl-ds:take-out ((container abstract-sequence))
   (cl-ds:position-modification #'cl-ds:take-out container nil))
+
+
+(defmethod cl-ds:update ((container abstract-sequence) location new-value)
+  (cl-ds:position-modification #'cl-ds:update container location
+                               :value new-value))

@@ -11,21 +11,23 @@
    #:+depth+
    #:+maximum-children-count+
    #:access-root
+   #:access-shift
    #:access-size
    #:access-tail
    #:access-tail-size
    #:copy-on-write
    #:copy-on-write-without-tail
    #:copy-on-write-without-tail
+   #:descend-into-tree
    #:destructive-write
    #:destructive-write-without-tail
-   #:make-rrb-node
-   #:make-node-content
-   #:access-shift
    #:insert-tail
+   #:make-node-content
+   #:make-rrb-node
    #:remove-tail
    #:rrb-at
    #:rrb-container
+   #:rrb-node-push-into-copy
    #:rrb-node-content
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail))

@@ -182,6 +182,29 @@
                   nil)))))
 
 
+(defun descend-into-tree (rrb-container location continue)
+  (let ((path (make-array +maximal-shift+
+                          :initial-element nil))
+        (shift (access-shift rrb-container))
+        (indexes (make-array +maximal-shift+
+                             :element-type `(integer 0 ,+maximum-children-count+))))
+    (declare (dynamic-extent path)
+             (dynamic-extent indexes))
+    (iterate
+      (for i from 0 below shift)
+      (for position from (* +bit-count+ shift) downto 0 by +bit-count+)
+      (for index = (ldb (byte +bit-count+ position) location))
+      (for node
+           initially (access-root rrb-container)
+           then (and node (~> node rrb-node-content (aref index))))
+      (setf (aref path i) node
+            (aref indexes i) index))
+    (funcall continue
+             path
+             indexes
+             shift)))
+
+
 (defun rrb-at (container index)
   (declare (optimize (debug 3))
            (type non-negative-fixnum index)
