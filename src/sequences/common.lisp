@@ -9,7 +9,7 @@
                               (container abstract-sequence)
                               location
                               &key value &allow-other-keys)
-  value)
+  (values value cl-ds.common:empty-eager-modification-operation-status t))
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
@@ -17,8 +17,11 @@
                                 bucket
                                 location
                                 &rest rest &key &allow-other-keys)
-  (declare (ignore operation container bucket location rest))
-  nil)
+  (declare (ignore rest))
+  (values nil
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:grow-function)
@@ -27,7 +30,11 @@
                               location
                               &rest rest &key value
                               &allow-other-keys)
-  value)
+  (declare (ignore rest))
+  (values value
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
 
 
 (defmethod cl-ds:put ((container abstract-sequence) item)
