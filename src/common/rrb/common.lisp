@@ -450,6 +450,11 @@
    (%last-size :initarg :last-size
                :type fixnum
                :accessor access-tail-size)
+   (%lower-bound :initform 0
+                 :type fixnum
+                 :accessor access-lower-bound)
+   (%upper-bound :initarg :upper-bound
+                 :accessor access-upper-bound)
    (%content :reader read-content)))
 
 
@@ -459,7 +464,7 @@
 
 (defmethod initialize-instance :after ((instance rrb-node-range)
                                        &key container &allow-other-keys)
-  (bind (((:slots %last-size %content) instance)
+  (bind (((:slots %last-size %content %lower-bound %upper-bound) instance)
          ((:slots %root %shift %size %tail-size %tail) container))
     (setf %content (make-instance 'flexichain:standard-flexichain
                                   :min-size (iterate
@@ -468,7 +473,8 @@
                                                    initially 1
                                                    then (ash result +bit-count+))
                                               (finally (return result))))
-          %last-size %tail-size)
+          %last-size %tail-size
+          %upper-bound (cl-ds:size container))
     (labels ((collect-bottom (node depth)
                (if (zerop depth)
                    (flexichain:push-end %content (rrb-node-content node))
@@ -490,9 +496,25 @@
             (values t)))))
 
 
+(defmethod cl-ds:at ((range rrb-node-range) index)
+  (bind (((:slots %upper-bound %lower-bound %content) range))
+    (unless (and (>= index %lower-bound)
+                 (< index %upper-bound))
+      (error 'cl-ds:argument-out-of-bounds
+             :argument 'index
+             :bounds (list %lower-bound %upper-bound)
+             :value index
+             :text "Index out of bounds."))
+    (let* ((index (- index %lower-bound))
+           (which-array (ash index (- +bit-count+)))
+           (array-index (logand index (lognot +tail-mask+))))
+      (~> (flexichain:element* %content which-array)
+          (aref array-index)))))
+
+
 (defmethod cl-ds:consume-front ((range rrb-node-range))
   (block nil
-    (bind (((:slots %start %content %last-size) range))
+    (bind (((:slots %start %content %last-size %lower-bound) range))
       (if (null %content)
           (values nil nil)
           (let* ((new-start (rem (1+ %start) +maximum-children-count+))
@@ -506,6 +528,7 @@
             (when (zerop new-start)
               (flexichain:pop-start %content))
             (setf %start new-start)
+            (incf %lower-bound)
             (~> first-array
                 (aref old-start)
                 (values t)))))))
@@ -513,7 +536,7 @@
 
 (defmethod cl-ds:consume-back ((range rrb-node-range))
   (block nil
-    (bind (((:slots %start %content %last-size) range))
+    (bind (((:slots %start %content %last-size %upper-bound) range))
       (if (null %content)
           (values nil nil)
           (let* ((new-end (if (eql %last-size 1)
@@ -533,6 +556,7 @@
             (when (eql old-end 1)
               (flexichain:pop-end %content))
             (setf %last-size new-end)
+            (decf %upper-bound)
             (~> last-array
                 (aref position)
                 (values t)))))))
