@@ -37,6 +37,18 @@
   (cl-ds:position-modification #'cl-ds:update! container location :value new-value))
 
 
+(defmethod cl-ds:update-if ((container functional-dictionary) location new-value condition-fn)
+  (cl-ds:position-modification #'cl-ds:update-if container location
+                               :value new-value
+                               :condition-fn condition-fn))
+
+
+(defmethod cl-ds:update-if! ((container mutable-dictionary) location new-value condition-fn)
+  (cl-ds:position-modification #'cl-ds:update-if! container location
+                               :value new-value
+                               :condition-fn condition-fn))
+
+
 (defmethod (setf cl-ds:at) (new-value (container mutable-dictionary) location)
   (let ((status (nth-value
                  1

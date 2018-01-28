@@ -5,15 +5,23 @@
   ())
 
 
+(defclass functional-sequence (abstract-sequence cl-ds:functional)
+  ())
+
+
+(defclass mutable-sequence (abstract-sequence cl-ds:mutable)
+  ())
+
+
 (defmethod cl-ds:make-bucket ((operation cl-ds:grow-function)
-                              (container abstract-sequence)
+                              (container functional-sequence)
                               location
                               &key value &allow-other-keys)
   (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
-                                (container abstract-sequence)
+                                (container functional-sequence)
                                 bucket
                                 location
                                 &rest rest &key &allow-other-keys)
@@ -25,7 +33,7 @@
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:grow-function)
-                              (container abstract-sequence)
+                              (container functional-sequence)
                               bucket
                               location
                               &rest rest &key value
@@ -37,14 +45,40 @@
           t))
 
 
-(defmethod cl-ds:put ((container abstract-sequence) item)
+(defmethod cl-ds:grow-bucket ((operation cl-ds:update-if-function)
+                              (container abstract-sequence)
+                              bucket
+                              location
+                              &rest rest &key value condition-fn
+                              &allow-other-keys)
+  (declare (ignore rest))
+  (if (funcall condition-fn bucket)
+      (values (cl-ds:force value)
+              (cl-ds.common:make-eager-modification-operation-status t
+                                                                     bucket)
+              t)
+      (values bucket
+              cl-ds.common:empty-eager-modification-operation-status
+              nil)))
+
+
+(defmethod cl-ds:put ((container functional-sequence) item)
   (cl-ds:position-modification #'cl-ds:put container nil :value item))
 
 
-(defmethod cl-ds:take-out ((container abstract-sequence))
+(defmethod cl-ds:take-out ((container functional-sequence))
   (cl-ds:position-modification #'cl-ds:take-out container nil))
 
 
-(defmethod cl-ds:update ((container abstract-sequence) location new-value)
+(defmethod cl-ds:update ((container functional-sequence) location new-value)
   (cl-ds:position-modification #'cl-ds:update container location
                                :value new-value))
+
+
+(defmethod cl-ds:update-if ((container functional-sequence)
+                            location
+                            new-value
+                            condition-fn)
+  (cl-ds:position-modification #'cl-ds:update-if container location
+                               :value new-value
+                               :condition-fn condition-fn))

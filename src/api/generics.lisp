@@ -60,8 +60,14 @@
 (defgeneric update (container location new-value)
   (:generic-function-class functional-update-function))
 
+(defgeneric update-if (container location new-value condition-fn)
+  (:generic-function-class functional-update-if-function))
+
 (defgeneric update! (container location new-value)
   (:generic-function-class update!-function))
+
+(defgeneric update-if! (container location new-value condition-fn)
+  (:generic-function-class update-if!-function))
 
 (defgeneric become-functional (container)
   (:method ((container functional)) container))

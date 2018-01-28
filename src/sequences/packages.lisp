@@ -7,7 +7,9 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.seqs)
   (:export
-   #:abstract-sequence))
+   #:abstract-sequence
+   #:functional-sequence
+   #:mutable-sequence))
 
 
 (defpackage :cl-data-structures.sequences.rrb-vector

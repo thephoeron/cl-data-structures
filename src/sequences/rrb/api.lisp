@@ -2,8 +2,7 @@
 
 
 (defclass functional-rrb-vector (cl-ds.common.rrb:rrb-container
-                                 cl-ds.seqs:abstract-sequence
-                                 cl-ds:functional)
+                                 cl-ds.seqs:functional-sequence)
   ())
 
 
@@ -75,44 +74,46 @@
             (unless changed
               (return-from cl-ds:position-modification (values container status)))
             bucket)))
-    (if (zerop tail-size)
-        (if (zerop (cl-ds.common.rrb:access-size container))
-            (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
-            (bind ((zero-shift (zerop (cl-ds.common.rrb:access-shift container)))
-                   ((:values new-root tail shift-decreased)
-                    (if zero-shift
-                        (values nil (cl-ds.common.rrb:access-root container) nil)
-                        (cl-ds.common.rrb:remove-tail container
-                                                      tag
-                                                      #'cl-ds.common.rrb:copy-on-write-without-tail)))
-                   (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array))))
-              (unless (null new-tail)
-                (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
-                      (shrink-bucket  (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
-              (make 'functional-rrb-vector
-                    :root new-root
-                    :tail new-tail
-                    :ownership-tag tag
-                    :tail-size (1- cl-ds.common.rrb:+maximum-children-count+)
-                    :size (- (cl-ds.common.rrb:access-size container)
-                             cl-ds.common.rrb:+maximum-children-count+)
-                    :shift (if shift-decreased
-                               (1- (cl-ds.common.rrb:access-shift container))
-                               (cl-ds.common.rrb:access-shift container)))))
-        (make 'functional-rrb-vector
-              :root (cl-ds.common.rrb:access-root container)
-              :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
-                           (new-tail (if (null tail)
-                                         (cl-ds.common.rrb:make-node-content)
-                                         (copy-array tail))))
-                      (setf (aref new-tail (1- tail-size))
-                            (shrink-bucket  (aref new-tail (1- tail-size))))
-                      new-tail)
-              :ownership-tag tag
-              :tail-size (1- tail-size)
-              :ownership-tag tag
-              :size (cl-ds.common.rrb:access-size container)
-              :shift (cl-ds.common.rrb:access-shift container)))))
+    (values
+     (if (zerop tail-size)
+         (if (zerop (cl-ds.common.rrb:access-size container))
+             (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
+             (bind ((zero-shift (zerop (cl-ds.common.rrb:access-shift container)))
+                    ((:values new-root tail shift-decreased)
+                     (if zero-shift
+                         (values nil (cl-ds.common.rrb:access-root container) nil)
+                         (cl-ds.common.rrb:remove-tail container
+                                                       tag
+                                                       #'cl-ds.common.rrb:copy-on-write-without-tail)))
+                    (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array))))
+               (unless (null new-tail)
+                 (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
+                       (shrink-bucket  (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
+               (make 'functional-rrb-vector
+                     :root new-root
+                     :tail new-tail
+                     :ownership-tag tag
+                     :tail-size (1- cl-ds.common.rrb:+maximum-children-count+)
+                     :size (- (cl-ds.common.rrb:access-size container)
+                              cl-ds.common.rrb:+maximum-children-count+)
+                     :shift (if shift-decreased
+                                (1- (cl-ds.common.rrb:access-shift container))
+                                (cl-ds.common.rrb:access-shift container)))))
+         (make 'functional-rrb-vector
+               :root (cl-ds.common.rrb:access-root container)
+               :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
+                            (new-tail (if (null tail)
+                                          (cl-ds.common.rrb:make-node-content)
+                                          (copy-array tail))))
+                       (setf (aref new-tail (1- tail-size))
+                             (shrink-bucket  (aref new-tail (1- tail-size))))
+                       new-tail)
+               :ownership-tag tag
+               :tail-size (1- tail-size)
+               :ownership-tag tag
+               :size (cl-ds.common.rrb:access-size container)
+               :shift (cl-ds.common.rrb:access-shift container)))
+     result-status)))
 
 
 
@@ -145,47 +146,45 @@
              :bounds (list 0 (cl-ds:size container))
              :value index
              :text "Index out of range."))
-    (if (< index size)
-        (bind (((:dflet cont (path indexes shift &aux (shift (1- shift))))
-                (iterate
-                  (for i from shift downto 0)
-                  (for position = (aref indexes i))
-                  (for old-node = (aref path i))
-                  (for node
-                       initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
-                                                      (aref index shift)))
-                                        (next-value (change-bucket bucket))
-                                        (content (copy-array (aref path shift))))
-                                   (setf (aref content (aref index shift)) next-value)
-                                   (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
-                                                                   :content content))
-                       then (cl-ds.common.rrb:rrb-node-push-into-copy old-node
-                                                                      position
-                                                                      node
-                                                                      tag))
-                  (finally (return node))))
-               (new-root (if (zerop shift)
-                             (cl-ds.common.rrb:rrb-node-push-into-copy
-                              root
-                              index
-                              (change-bucket (~> root
-                                                 cl-ds.common.rrb:rrb-node-content
-                                                 (aref index)))
-                              tag)
-                             (cl-ds.common.rrb:descend-into-tree container index #'cont)))
-               ((:accessors (tail cl-ds.common.rrb:access-tail)
-                            (shift cl-ds.common.rrb:access-shift))
-                container))
-          (values
+    (values
+     (if (< index size)
+         (bind (((:dflet cont (path indexes shift &aux (shift (1- shift))))
+                 (iterate
+                   (for i from shift downto 0)
+                   (for position = (aref indexes i))
+                   (for old-node = (aref path i))
+                   (for node
+                        initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
+                                                       (aref index shift)))
+                                         (next-value (change-bucket bucket))
+                                         (content (copy-array (aref path shift))))
+                                    (setf (aref content (aref index shift)) next-value)
+                                    (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
+                                                                    :content content))
+                        then (cl-ds.common.rrb:rrb-node-push-into-copy old-node
+                                                                       position
+                                                                       node
+                                                                       tag))
+                   (finally (return node))))
+                (new-root (if (zerop shift)
+                              (cl-ds.common.rrb:rrb-node-push-into-copy
+                               root
+                               index
+                               (change-bucket (~> root
+                                                  cl-ds.common.rrb:rrb-node-content
+                                                  (aref index)))
+                               tag)
+                              (cl-ds.common.rrb:descend-into-tree container index #'cont)))
+                ((:accessors (tail cl-ds.common.rrb:access-tail)
+                             (shift cl-ds.common.rrb:access-shift))
+                 container))
            (make 'functional-rrb-vector
                  :root new-root
                  :tail tail
                  :shift shift
                  :ownership-tag tag
                  :tail-size tail-size
-                 :size size)
-           result-status))
-        (values
+                 :size size))
          (make 'functional-rrb-vector
                :root (cl-ds.common.rrb:access-root container)
                :tail (let* ((new-tail (~> container cl-ds.common.rrb:access-tail copy-array))
@@ -197,5 +196,5 @@
                :tail-size tail-size
                :ownership-tag tag
                :size size
-               :shift (cl-ds.common.rrb:access-shift container))
-         result-status))))
+               :shift (cl-ds.common.rrb:access-shift container)))
+     result-status)))

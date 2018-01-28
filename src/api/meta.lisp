@@ -25,6 +25,10 @@
   ())
 
 
+(defclass update-if-function (grow-function)
+  ())
+
+
 (defclass add-function (grow-function)
   ())
 
@@ -43,6 +47,13 @@
 
 (defclass take-out-function (shrink-function)
   ())
+
+
+(defclass functional-update-if-function (closer-mop:standard-generic-function
+                                         functional-function
+                                         update-if-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
 
 
 (defclass functional-insert-function (closer-mop:standard-generic-function
@@ -104,6 +115,13 @@
 (defclass update!-function (closer-mop:standard-generic-function
                             destructive-function
                             update-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass update-if!-function (closer-mop:standard-generic-function
+                               destructive-function
+                               update-if-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 

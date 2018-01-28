@@ -152,6 +152,83 @@
       (not ^replaced)))
 
 
+(defmethod cl-ds:grow-bucket ((operation cl-ds:update-if-function)
+                              (container hashing-dictionary)
+                              (bucket list)
+                              location
+                              &rest all
+                              &key hash value condition-fn)
+  (declare (ignore all))
+  (bind ((equal-fn (read-equal-fn container))
+         (result (iterate
+                   (for elt on bucket)
+                   (for node = (car elt))
+                   (finding elt such-that
+                            (and (eql hash (cl-ds.common:hash-content-hash node))
+                                 (funcall equal-fn
+                                          location
+                                          (cl-ds.common:hash-content-location node))))))
+         (node (first result)))
+    (if (or (null result)
+            (not (funcall condition-fn
+                          (cl-ds.common:hash-content-location node)
+                          (cl-ds.common:hash-dict-content-value node))))
+        (values bucket cl-ds.common:empty-eager-modification-operation-status nil)
+        (iterate
+          (with tail = nil)
+          (for e on bucket)
+          (until (eq e result))
+          (for i = (first e))
+          (collecting i at start into r)
+          (when (endp tail)
+            (setf tail r))
+          (finally
+           (setf (cdr tail) (cdr result))
+           (return
+             (values
+              (cons (cl-ds.common:make-hash-dict-content
+                     :hash (cl-ds.common:hash-content-hash node)
+                     :location location
+                     :value (cl-ds:force value))
+                    r)
+              (cl-ds.common:make-eager-modification-operation-status
+               t
+               (cl-ds.common:hash-dict-content-value node))
+              t)))))))
+
+
+(defmethod cl-ds:grow-bucket ((operation cl-ds:update-if!-function)
+                              (container hashing-dictionary)
+                              (bucket list)
+                              location
+                              &rest all
+                              &key hash value condition-fn)
+  (declare (ignore all))
+  (bind ((equal-fn (read-equal-fn container))
+         (result (iterate
+                   (for elt on bucket)
+                   (for node = (car elt))
+                   (finding elt such-that
+                            (and (eql hash (cl-ds.common:hash-content-hash node))
+                                 (funcall equal-fn
+                                          location
+                                          (cl-ds.common:hash-content-location node))))))
+         (node (first result)))
+    (if (or (null result)
+            (not (funcall condition-fn
+                          (cl-ds.common:hash-content-location node)
+                          (cl-ds.common:hash-dict-content-value node))))
+        (values bucket cl-ds.common:empty-eager-modification-operation-status nil)
+        (progn
+          (setf (cl-ds.common:hash-content-location node) location
+                (cl-ds.common:hash-dict-content-value node) (cl-ds:force value))
+          (values bucket
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t
+                   (cl-ds.common:hash-dict-content-value node))
+                  t)))))
+
+
 (defmethod cl-ds:grow-bucket ((operation cl-ds:update-function)
                               (container hashing-dictionary)
                               (bucket list)

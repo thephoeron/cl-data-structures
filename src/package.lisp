@@ -127,6 +127,10 @@
    #:update!
    #:update!-function
    #:update-function
+   #:update-if-function
+   #:update-if!-function
+   #:update-if
+   #:update-if!
    #:value
    #:whole-range
    #:xpr))
