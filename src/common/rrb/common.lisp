@@ -423,3 +423,20 @@
         (make-rrb-node :ownership-tag tag
                        :content content))
       tree))
+
+
+(labels ((impl (function node depth)
+           (if (zerop depth)
+               (map nil function (rrb-node-content node))
+               (map nil
+                    (lambda (x) (impl function x (1- depth)))
+                    (rrb-node-content node)))))
+  (defmethod cl-ds:traverse (function (object rrb-container))
+    (let ((root (access-root object)))
+      (unless (null root)
+        (impl function root (access-shift object))))
+    (iterate
+      (with tail = (access-tail object))
+      (for i from 0 below (access-tail-size object))
+      (funcall function (aref tail i)))
+    object))
