@@ -449,7 +449,7 @@
            :accessor access-start)
    (%last-size :initarg :last-size
                :type fixnum
-               :accessor access-tail-size)
+               :accessor access-last-size)
    (%lower-bound :initform 0
                  :type fixnum
                  :accessor access-lower-bound)

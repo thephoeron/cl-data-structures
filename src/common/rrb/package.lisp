@@ -10,11 +10,15 @@
    #:+bit-count+
    #:+depth+
    #:+maximum-children-count+
+   #:access-last-size
+   #:access-lower-bound
    #:access-root
    #:access-shift
    #:access-size
+   #:access-start
    #:access-tail
    #:access-tail-size
+   #:access-upper-bound
    #:copy-on-write
    #:copy-on-write-without-tail
    #:copy-on-write-without-tail
@@ -27,7 +31,8 @@
    #:remove-tail
    #:rrb-at
    #:rrb-container
-   #:rrb-node-push-into-copy
    #:rrb-node-content
+   #:rrb-node-push-into-copy
+   #:rrb-node-range
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail))
