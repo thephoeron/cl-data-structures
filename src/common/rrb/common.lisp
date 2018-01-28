@@ -12,6 +12,7 @@
 (define-constant +maximum-children-count+ (ash 1 +bit-count+))
 (define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0) most-positive-fixnum))
 
+
 (deftype node-content ()
   `(simple-vector ,+maximum-children-count+))
 (deftype node-size ()
@@ -571,3 +572,20 @@
             (~> last-array
                 (aref position)
                 (values t)))))))
+
+
+(defmethod cl-ds:traverse (function (range rrb-node-range))
+  (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
+         (index %start)
+         (last-position (1- (flexichain:nb-elements %content))))
+    (iterate
+      (for i from 0 below (flexichain:nb-elements %content))
+      (for array = (flexichain:element* %content i))
+      (for end = (eql i last-position))
+      (iterate
+        (for a from index below (if end
+                                    %last-size
+                                    +maximum-children-count+))
+        (funcall function (aref array a)))
+      (setf index 0))
+    range))
