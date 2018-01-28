@@ -413,8 +413,7 @@
 
 
 (defun isolate-transaction (tree tag)
-  (if (and (rrb-node-p tree)
-           (acquire-ownership tree tag))
+  (if (and (rrb-node-p tree) (acquire-ownership tree tag))
       (let ((content (copy-array (rrb-node-content tree))))
         (iterate
           (with size = 32)
@@ -533,8 +532,7 @@
                  (old-start %start)
                  (reached-tail (eql 1 (flexichain:nb-elements %content)))
                  (first-array (flexichain:element* %content 0)))
-            (when (and reached-tail
-                       (eql old-start %last-size))
+            (when (and reached-tail (eql old-start %last-size))
               (setf %content nil)
               (return (values nil nil)))
             (when (zerop new-start)
@@ -561,8 +559,7 @@
                                   flexichain:nb-elements
                                   1-
                                   (flexichain:element* %content))))
-            (when (and reached-tail
-                       (eql %start position))
+            (when (and reached-tail (eql %start position))
               (setf %content nil)
               (return (values nil nil)))
             (when (eql old-end 1)
@@ -583,9 +580,7 @@
       (for array = (flexichain:element* %content i))
       (for end = (eql i last-position))
       (iterate
-        (for a from index below (if end
-                                    %last-size
-                                    +maximum-children-count+))
+        (for a from index below (if end %last-size +maximum-children-count+))
         (funcall function (aref array a)))
       (setf index 0))
     range))
