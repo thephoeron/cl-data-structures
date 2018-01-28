@@ -496,6 +496,16 @@
             (values t)))))
 
 
+(defmethod cl-ds:peek-back ((range rrb-node-range))
+  (bind (((:slots %tail-size %content) range))
+    (if (null %content)
+        (values nil nil)
+        (~> %content
+            (flexichain:element* (~> %content flexichain:nb-elements 1-))
+            (aref (1- %tail-size))
+            (values t)))))
+
+
 (defmethod cl-ds:at ((range rrb-node-range) index)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound)
