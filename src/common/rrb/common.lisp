@@ -518,7 +518,8 @@
     (let* ((index (- index %lower-bound))
            (which-array (ash index (- +bit-count+)))
            (array-index (logand index (lognot +tail-mask+))))
-      (~> (flexichain:element* %content which-array)
+      (~> %content
+          (flexichain:element* which-array)
           (aref array-index)))))
 
 
