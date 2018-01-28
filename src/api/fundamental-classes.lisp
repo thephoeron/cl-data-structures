@@ -1,13 +1,13 @@
 (in-package #:cl-data-structures)
 
 
-(defclass fundamental-container ()
-  ((%frozen :initform nil
-            :accessor access-frozen)))
-
-
 (defclass traversable ()
   ())
+
+
+(defclass fundamental-container (traversable)
+  ((%frozen :initform nil
+            :accessor access-frozen)))
 
 
 (defclass fundamental-modification-operation-status ()
