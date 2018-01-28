@@ -508,8 +508,7 @@
 
 (defmethod cl-ds:at ((range rrb-node-range) index)
   (bind (((:slots %upper-bound %lower-bound %content) range))
-    (unless (and (>= index %lower-bound)
-                 (< index %upper-bound))
+    (unless (and (>= index %lower-bound) (< index %upper-bound))
       (error 'cl-ds:argument-out-of-bounds
              :argument 'index
              :bounds (list %lower-bound %upper-bound)
@@ -574,7 +573,7 @@
 (defmethod cl-ds:traverse (function (range rrb-node-range))
   (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
          (index %start)
-         (last-position (1- (flexichain:nb-elements %content))))
+         (last-position (~> %content flexichain:nb-elements 1-)))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
       (for array = (flexichain:element* %content i))
