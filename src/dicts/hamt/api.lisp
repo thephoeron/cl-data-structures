@@ -550,3 +550,19 @@ Methods. Those will just call non generic functions.
     (funcall operation new-value result location)
     (cl-ds:freeze! container)
     result))
+
+
+(defmethod cl-ds:traverse (function (container hamt-dictionary))
+  (labels ((impl (node)
+             (if (listp node)
+                 (map nil
+                      (lambda (x) (funcall function
+                                      (cl-ds.common:hash-content-location x)
+                                      (cl-ds.common:hash-dict-content-value x)))
+                      node)
+                 (iterate
+                   (with content = (cl-ds.common.hamt:hash-node-content node))
+                   (for i from 0 below (cl-ds.common.hamt:hash-node-size node))
+                   (impl (aref content i))))))
+    (impl (access-root container))
+    container))

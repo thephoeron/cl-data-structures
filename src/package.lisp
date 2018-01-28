@@ -73,8 +73,6 @@
    #:hash-content
    #:hash-content-hash
    #:hash-content-location
-   #:hash-dict-content
-   #:hash-dict-content-value
    #:ice-error
    #:initialization-error
    #:initialization-out-of-bounds

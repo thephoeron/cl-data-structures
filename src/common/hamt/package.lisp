@@ -24,6 +24,7 @@
    #:hash-node-access
    #:hash-node-contains
    #:hash-node-contains-node
+   #:hash-node-content
    #:hash-node-content-modified
    #:hash-node-deep-copy
    #:hash-node-insert!

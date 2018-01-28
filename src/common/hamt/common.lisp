@@ -48,8 +48,7 @@ Macros
               (,index (ldb (byte ,+hash-level+ 0) ,hash)
                       (ldb (byte ,+hash-level+ ,!pos) ,hash))
               (,count 0 (1+ ,count))
-              (,node ,root (and (hash-node-contains ,node ,index)
-                                (hash-node-access ,node ,index))))
+              (,node ,root (and (hash-node-contains ,node ,index) (hash-node-access ,node ,index))))
              (nil nil)
            (declare (type fixnum ,hash ,!pos ,index ,count)
                     (dynamic-extent ,!pos ,index ,count))
@@ -544,8 +543,7 @@ Copy nodes and stuff.
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
       (for node = (path i))
       (for index = (indexes i))
-      (for parent = (and (not (zerop i))
-                         (path (1- i))))
+      (for parent = (and (not (zerop i)) (path (1- i))))
       (for ac
            initially (if (null conflict)
            ;;if we didn't find element or element was found but depth was already maximal,
@@ -660,8 +658,7 @@ Copy nodes and stuff.
 
 
 (defun isolate-transaction (tree tag)
-  (if (and (hash-node-p tree)
-           (acquire-ownership tree tag))
+  (if (and (hash-node-p tree) (acquire-ownership tree tag))
       (let ((content (copy-array (hash-node-content tree))))
         (iterate
           (with size = (hash-node-size tree))
