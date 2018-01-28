@@ -116,7 +116,6 @@
      result-status)))
 
 
-
 (defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
                                         (container functional-rrb-vector)
                                         index &rest rest &key &allow-other-keys)

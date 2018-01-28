@@ -408,3 +408,18 @@
 (defmethod cl-ds:size ((container rrb-container))
   (+ (access-size container)
      (access-tail-size container)))
+
+
+(defun isolate-transaction (tree tag)
+  (if (and (rrb-node-p tree)
+           (acquire-ownership tree tag))
+      (let ((content (copy-array (rrb-node-content tree))))
+        (iterate
+          (with size = 32)
+          (for i below size)
+          (setf (aref content i)
+                (isolate-transaction (aref content i)
+                                     tag)))
+        (make-rrb-node :ownership-tag tag
+                       :content content))
+      tree))
