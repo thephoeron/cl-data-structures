@@ -441,3 +441,98 @@
       (for i from 0 below (access-tail-size object))
       (funcall function (aref tail i)))
     object))
+
+
+(defclass rrb-node-range (cl-ds:fundamental-random-access-range)
+  ((%start :initform 0
+           :type fixnum
+           :accessor access-start)
+   (%last-size :initarg :last-size
+               :type fixnum
+               :accessor access-tail-size)
+   (%content :reader read-content)))
+
+
+(defmethod cl-ds:whole-range ((container rrb-container))
+  (make 'rrb-node-range :container container))
+
+
+(defmethod initialize-instance :after ((instance rrb-node-range)
+                                       &key container &allow-other-keys)
+  (bind (((:slots %last-size %content) instance)
+         ((:slots %root %shift %size %tail-size %tail) container))
+    (setf %content (make-instance 'flexichain:standard-flexichain
+                                  :min-size (iterate
+                                              (repeat %shift)
+                                              (for result
+                                                   initially 1
+                                                   then (ash result +bit-count+))
+                                              (finally (return result))))
+          %last-size %tail-size)
+    (labels ((collect-bottom (node depth)
+               (if (zerop depth)
+                   (flexichain:push-end %content (rrb-node-content node))
+                   (iterate
+                     (for i from 0 below +maximum-children-count+)
+                     (collect-bottom (~> node rrb-node-content (aref i))
+                                     (1- depth))))))
+      (collect-bottom %root %shift))
+    (unless (null %tail)
+      (flexichain:push-end %content %tail))))
+
+
+(defmethod cl-ds:peek-front ((range rrb-node-range))
+  (bind (((:slots %start %content) range))
+    (if (null %content)
+        (values nil nil)
+        (~> (flexichain:element* %content 0)
+            (aref %start)
+            (values t)))))
+
+
+(defmethod cl-ds:consume-front ((range rrb-node-range))
+  (block nil
+    (bind (((:slots %start %content %last-size) range))
+      (if (null %content)
+          (values nil nil)
+          (let* ((new-start (rem (1+ %start) +maximum-children-count+))
+                 (old-start %start)
+                 (reached-tail (eql 1 (flexichain:nb-elements %content)))
+                 (first-array (flexichain:element* %content 0)))
+            (when (and reached-tail
+                       (eql (1+ old-start) %last-size))
+              (setf %content nil)
+              (return (values nil nil)))
+            (when (zerop new-start)
+              (flexichain:pop-start %content))
+            (setf %start new-start)
+            (~> first-array
+                (aref old-start)
+                (values t)))))))
+
+
+(defmethod cl-ds:consume-back ((range rrb-node-range))
+  (block nil
+    (bind (((:slots %start %content %last-size) range))
+      (if (null %content)
+          (values nil nil)
+          (let* ((new-end (if (eql %last-size 1)
+                              +maximum-children-count+
+                              (1- %last-size)))
+                 (old-end %last-size)
+                 (position (1- %last-size))
+                 (reached-tail (eql 1 (flexichain:nb-elements %content)))
+                 (last-array (~>> %content
+                                  flexichain:nb-elements
+                                  1-
+                                  (flexichain:element* %content))))
+            (when (and reached-tail
+                       (eql %start position))
+              (setf %content nil)
+              (return (values nil nil)))
+            (when (eql old-end 1)
+              (flexichain:pop-end %content))
+            (setf %last-size new-end)
+            (~> last-array
+                (aref position)
+                (values t)))))))

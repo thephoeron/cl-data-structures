@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 41)
+(plan 107)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -24,6 +24,18 @@
     (cl-ds:traverse (lambda (x) (push x content))
                     container)
     (is (reverse content) (alexandria:iota 34 :start 1)))
+  (let ((range (cl-ds:whole-range container)))
+    (iterate
+      (for (values value not-end) = (cl-ds:consume-front range))
+      (for i from 1)
+      (while not-end)
+      (is value i)))
+  (let ((range (cl-ds:whole-range container)))
+    (iterate
+      (for (values value not-end) = (cl-ds:consume-back range))
+      (for i from 34 downto 0)
+      (while not-end)
+      (is value i)))
   (setf container (cl-ds:update container 10 'a))
   (is (cl-ds:at container 10) 'a)
   (setf container (cl-ds:take-out container))
