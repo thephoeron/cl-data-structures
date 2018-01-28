@@ -500,7 +500,7 @@
                  (reached-tail (eql 1 (flexichain:nb-elements %content)))
                  (first-array (flexichain:element* %content 0)))
             (when (and reached-tail
-                       (eql (1+ old-start) %last-size))
+                       (eql old-start %last-size))
               (setf %content nil)
               (return (values nil nil)))
             (when (zerop new-start)
