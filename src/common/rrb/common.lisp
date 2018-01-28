@@ -79,7 +79,8 @@
   node)
 
 
-(defclass rrb-container (fundamental-ownership-tagged-object)
+(defclass rrb-container (fundamental-ownership-tagged-object
+                         cl-ds:traversable)
   ((%root :accessor access-root
           :initarg :root
           :initform nil

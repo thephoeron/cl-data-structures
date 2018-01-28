@@ -3,10 +3,11 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 40)
+(plan 41)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
+  (ok (cl:subtypep (type-of container) 'cl-ds:traversable))
   (is (cl-ds:at cont2 0) 1)
   (is (cl-ds:at cont2 1) 2)
   (setf container cont2)
