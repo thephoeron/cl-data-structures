@@ -14,7 +14,7 @@
 
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:grow-function)
-                              (container functional-sequence)
+                              (container abstract-sequence)
                               location
                               &key value &allow-other-keys)
   (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))

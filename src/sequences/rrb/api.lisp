@@ -40,49 +40,53 @@
                                         (container functional-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
   (declare (optimize (speed 3)))
-  (let ((tail-size (cl-ds.common.rrb:access-tail-size container))
-        (tag (cl-ds.common.abstract:make-ownership-tag)))
-    (if (eql tail-size +maximum-children-count+)
-        (bind ((new-tail (cl-ds.common.rrb:make-node-content))
-               ((:values new-root shift-increased)
-                (cl-ds.common.rrb:insert-tail container
-                                              tag
-                                              #'cl-ds.common.rrb:copy-on-write
-                                              (cl-ds.common.rrb:access-tail container))))
-          (setf (aref new-tail 0) (apply #'cl-ds:make-bucket
-                                         operation
-                                         container
-                                         location
-                                         rest))
+  (block nil
+    (let ((tail-size (cl-ds.common.rrb:access-tail-size container))
+          (tag (cl-ds.common.abstract:make-ownership-tag)))
+      (if (eql tail-size +maximum-children-count+)
+          (bind ((new-tail (cl-ds.common.rrb:make-node-content))
+                 ((:values new-root shift-increased)
+                  (cl-ds.common.rrb:insert-tail container
+                                                tag
+                                                #'cl-ds.common.rrb:copy-on-write
+                                                (cl-ds.common.rrb:access-tail container)))
+                 ((:values new-bucket status changed) (apply #'cl-ds:make-bucket
+                                                             operation
+                                                             container
+                                                             location
+                                                             rest)))
+            (unless changed
+              (return container))
+            (setf (aref new-tail 0) new-bucket)
+            (make 'functional-rrb-vector
+                  :root new-root
+                  :tail new-tail
+                  :ownership-tag tag
+                  :tail-size 1
+                  :size (+ +maximum-children-count+
+                           (cl-ds.common.rrb:access-size container))
+                  :tail new-tail
+                  :shift (if shift-increased
+                             (1+ (cl-ds.common.rrb:access-shift container))
+                             (cl-ds.common.rrb:access-shift container))))
           (make 'functional-rrb-vector
-                :root new-root
-                :tail new-tail
+                :root (cl-ds.common.rrb:access-root container)
+                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
+                             (new-tail (if (null tail)
+                                           (cl-ds.common.rrb:make-node-content)
+                                           (copy-array tail))))
+                        (setf (aref new-tail tail-size)
+                              (apply #'cl-ds:make-bucket
+                                     operation
+                                     container
+                                     location
+                                     rest))
+                        new-tail)
                 :ownership-tag tag
-                :tail-size 1
-                :size (+ +maximum-children-count+
-                         (cl-ds.common.rrb:access-size container))
-                :tail new-tail
-                :shift (if shift-increased
-                           (1+ (cl-ds.common.rrb:access-shift container))
-                           (cl-ds.common.rrb:access-shift container))))
-        (make 'functional-rrb-vector
-              :root (cl-ds.common.rrb:access-root container)
-              :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
-                           (new-tail (if (null tail)
-                                         (cl-ds.common.rrb:make-node-content)
-                                         (copy-array tail))))
-                      (setf (aref new-tail tail-size)
-                            (apply #'cl-ds:make-bucket
-                                   operation
-                                   container
-                                   location
-                                   rest))
-                      new-tail)
-              :ownership-tag tag
-              :tail-size (1+ tail-size)
-              :ownership-tag tag
-              :size (cl-ds.common.rrb:access-size container)
-              :shift (cl-ds.common.rrb:access-shift container)))))
+                :tail-size (1+ tail-size)
+                :ownership-tag tag
+                :size (cl-ds.common.rrb:access-size container)
+                :shift (cl-ds.common.rrb:access-shift container))))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)
