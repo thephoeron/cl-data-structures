@@ -6,6 +6,11 @@
   ())
 
 
+(defclass mutable-rrb-vector (cl-ds.common.rrb:rrb-container
+                              cl-ds.seqs:mutable-sequence)
+  ())
+
+
 (defmethod cl-ds:position-modification ((operation cl-ds:functional-put-function)
                                         (container functional-rrb-vector)
                                         location &rest rest &key &allow-other-keys)

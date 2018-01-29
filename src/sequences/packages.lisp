@@ -18,4 +18,5 @@
   (:nicknames #:cl-ds.seqs.rrb)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:functional-rrb-vector))
+   #:functional-rrb-vector
+   #:mutable-rrb-vector))
