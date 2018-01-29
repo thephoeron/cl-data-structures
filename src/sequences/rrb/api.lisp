@@ -41,22 +41,22 @@
                                         location &rest rest &key &allow-other-keys)
   (declare (optimize (speed 3)))
   (block nil
-    (let ((tail-size (cl-ds.common.rrb:access-tail-size container))
-          (tag (cl-ds.common.abstract:make-ownership-tag)))
+    (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
+           (tag (cl-ds.common.abstract:make-ownership-tag))
+           ((:values new-bucket status changed) (apply #'cl-ds:make-bucket
+                                                       operation
+                                                       container
+                                                       location
+                                                       rest)))
+      (unless changed
+        (return container))
       (if (eql tail-size +maximum-children-count+)
           (bind ((new-tail (cl-ds.common.rrb:make-node-content))
                  ((:values new-root shift-increased)
                   (cl-ds.common.rrb:insert-tail container
                                                 tag
                                                 #'cl-ds.common.rrb:copy-on-write
-                                                (cl-ds.common.rrb:access-tail container)))
-                 ((:values new-bucket status changed) (apply #'cl-ds:make-bucket
-                                                             operation
-                                                             container
-                                                             location
-                                                             rest)))
-            (unless changed
-              (return container))
+                                                (cl-ds.common.rrb:access-tail container))))
             (setf (aref new-tail 0) new-bucket)
             (make 'functional-rrb-vector
                   :root new-root
@@ -75,12 +75,7 @@
                              (new-tail (if (null tail)
                                            (cl-ds.common.rrb:make-node-content)
                                            (copy-array tail))))
-                        (setf (aref new-tail tail-size)
-                              (apply #'cl-ds:make-bucket
-                                     operation
-                                     container
-                                     location
-                                     rest))
+                        (setf (aref new-tail tail-size) new-bucket)
                         new-tail)
                 :ownership-tag tag
                 :tail-size (1+ tail-size)
