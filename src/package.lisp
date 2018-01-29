@@ -113,6 +113,7 @@
    #:size
    #:special-traverse
    #:take-out
+   #:take-out!-function
    #:take-out-function
    #:textual-error
    #:transaction
@@ -125,14 +126,13 @@
    #:update!
    #:update!-function
    #:update-function
-   #:update-if-function
-   #:update-if!-function
    #:update-if
    #:update-if!
+   #:update-if!-function
+   #:update-if-function
    #:value
    #:whole-range
    #:xpr))
-
 
 (in-package #:cl-ds)
 (docstample:define-accumulated-docs *documentation*)
