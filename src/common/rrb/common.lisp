@@ -105,6 +105,16 @@
           :accessor access-tail)))
 
 
+(defmethod initialize-instance :after ((container rrb-container) &key &allow-other-keys)
+  (bind (((:slots %tail %tail-size %size %shift %root) container)
+         (max-size (ash +maximum-children-count+ (* +bit-count+ %shift))))
+    (assert (<= 0 %shift +maximal-shift+))
+    (assert (<= 0 %tail-size +maximum-children-count+))
+    (assert (<= 0 %size))
+    (assert (<= %size max-size))
+    (assert (if (null %tail) (zerop %tail-size) t))))
+
+
 (declaim (inline tail-offset))
 (-> tail-offset (non-negative-fixnum) non-negative-fixnum)
 (defun tail-offset (size)
@@ -307,43 +317,33 @@
 
 
 (defun remove-tail (rrb-container ownership-tag continue)
+  (declare (optimize (debug 3)))
   (bind (((:slots %size %shift %root) rrb-container)
-         (first-index (* +bit-count+ %shift))
-         (root-size (ldb (byte +bit-count+ first-index)
-                         %size))
-         (root-underflow (eql root-size 1))
-         (path (make-array +maximal-shift+
-                           :initial-element nil))
-         (indexes (make-array +maximal-shift+
-                              :element-type `(integer 0 ,+maximum-children-count+))))
-    (declare (dynamic-extent path indexes))
-    (assert (> %shift 0))
-    (if root-underflow
-        (if (eql 1 %shift)
-            (values nil nil t)
-            (values (~> %root rrb-node-content (aref 0))
-                    nil
-                    t))
+         (root-underflow (eql (ash (- %size +maximum-children-count+)
+                                   (- (* %shift +bit-count+)))
+                              1)))
+    (if (zerop %shift)
+        (values nil %root nil)
         (iterate
-          (with size = (the non-negative-fixnum %size))
-          (for i from 0 below %shift)
+          (with last = (1- (the non-negative-fixnum %size)))
+          (repeat %shift)
           (for position
-               from first-index
+               from (* +bit-count+ %shift)
                downto 0
                by +bit-count+)
-          (for index = (ldb (byte +bit-count+ position) (1- size)))
+          (for index = (ldb (byte +bit-count+ position) last))
           (for node
                initially %root
-               then (and node (~> node rrb-node-content (aref index))))
-          (setf (aref path i) node
-                (aref indexes i) index)
-          (finally (return (values (funcall continue
-                                            path
-                                            indexes
-                                            %shift
-                                            ownership-tag)
-                                   (aref path (1- %shift))
-                                   nil)))))))
+               then (~> node rrb-node-content (aref index)))
+          (finally
+           (check-type node rrb-node)
+           (return
+             (values
+              (if root-underflow
+                  (~> %root rrb-node-content (aref 0))
+                  %root)
+              node
+              root-underflow)))))))
 
 
 (defun copy-on-write-without-tail (path indexes shift ownership-tag)

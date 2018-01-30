@@ -63,8 +63,8 @@
       (is (cl-ds:at next j) j))
     (setf container next))
   (iterate
-    (for i from 1025 downto 1)
-    (is (cl-ds:size container) i)
+    (for i from 1024 downto 1)
+    (format t "iteration: ~a~%" i)
     (for next = (cl-ds:take-out container))
     (iterate
       (for j from 0 to i)

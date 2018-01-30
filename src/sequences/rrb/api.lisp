@@ -110,7 +110,7 @@
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)
                                         (container functional-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 3)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
          (tag (cl-ds.common.abstract:make-ownership-tag))
          (result-status nil)
@@ -133,26 +133,32 @@
      (if (zerop tail-size)
          (if (zerop (cl-ds.common.rrb:access-size container))
              (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
-             (bind ((zero-shift (zerop (cl-ds.common.rrb:access-shift container)))
-                    ((:values new-root tail shift-decreased)
-                     (if zero-shift
-                         (values nil (cl-ds.common.rrb:access-root container) nil)
-                         (cl-ds.common.rrb:remove-tail container
-                                                       tag
-                                                       #'cl-ds.common.rrb:copy-on-write-without-tail)))
-                    (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array))))
+             (bind (((:values new-root tail shift-decreased)
+                     (cl-ds.common.rrb:remove-tail container
+                                                   tag
+                                                   #'cl-ds.common.rrb:copy-on-write-without-tail))
+                    (new-shift (if shift-decreased
+                                   (1- (cl-ds.common.rrb:access-shift container))
+                                   (cl-ds.common.rrb:access-shift container)))
+                    (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
+                                        cl-ds.common.rrb:+maximum-children-count+)))
+                    (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array)))
+                    (tail-size (if (null new-root)
+                                   (cl-ds.common.rrb:access-size container)
+                                   cl-ds.common.rrb:+maximum-children-count+)))
                (unless (null new-tail)
                  (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
-                       (shrink-bucket  (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
+                       (shrink-bucket (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
+               (assert (or new-root new-tail (zerop new-size)))
+               (assert (<= 0 tail-size +maximum-children-count+))
                (make 'functional-rrb-vector
                      :root new-root
                      :tail new-tail
                      :ownership-tag tag
-                     :tail-size (if tail
-                                    (+ cl-ds.common.rrb:+maximum-children-count+ tail-change)
-                                    0)
-                     :size (- (cl-ds.common.rrb:access-size container)
-                              cl-ds.common.rrb:+maximum-children-count+)
+                     :tail-size (if (null new-tail)
+                                    0
+                                    (+ tail-size tail-change))
+                     :size new-size
                      :shift (if shift-decreased
                                 (1- (cl-ds.common.rrb:access-shift container))
                                 (cl-ds.common.rrb:access-shift container)))))
@@ -164,7 +170,9 @@
                              (shrink-bucket  (aref new-tail (1- tail-size))))
                        new-tail)
                :ownership-tag tag
-               :tail-size (+ tail-size tail-change)
+               :tail-size (let ((s (+ tail-size tail-change)))
+                            (assert (<= 0 s +maximum-children-count+))
+                            s)
                :ownership-tag tag
                :size (cl-ds.common.rrb:access-size container)
                :shift (cl-ds.common.rrb:access-shift container)))
