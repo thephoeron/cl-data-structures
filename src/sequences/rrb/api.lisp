@@ -39,16 +39,14 @@
                       ((:values new-root new-tail shift-decreased)
                        (if zero-shift
                            (values nil (cl-ds.common.rrb:access-root container) nil)
-                           (cl-ds.common.rrb:remove-tail container
-                                                         (cl-ds.common.abstract:read-ownership-tag container)
-                                                         #'cl-ds.common.rrb:destructive-write-without-tail)))
+                           (cl-ds.common.rrb:remove-tail container)))
                       ((:values new-bucket status changed) (and new-tail (shrink-bucket (aref new-root (1- cl-ds.common.rrb:+maximum-children-count+))))))
                  (setf (cl-ds.common.rrb:access-tail container) new-tail)
                  (unless (null new-tail)
-                   (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
-                         (shrink-bucket (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))
-
-                         (cl-ds.common.rrb:access-tail-size container)
+                   (unless (null new-bucket)
+                     (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
+                           (shrink-bucket (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
+                   (setf (cl-ds.common.rrb:access-tail-size container)
                          (+ cl-ds.common.rrb:+maximum-children-count+ tail-change))))))
           ((eql 1 tail-size)
            (setf (cl-ds.common.rrb:access-tail-size container) 0
@@ -134,21 +132,24 @@
          (if (zerop (cl-ds.common.rrb:access-size container))
              (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
              (bind (((:values new-root tail shift-decreased)
-                     (cl-ds.common.rrb:remove-tail container
-                                                   tag
-                                                   #'cl-ds.common.rrb:copy-on-write-without-tail))
+                     (cl-ds.common.rrb:remove-tail container))
                     (new-shift (if shift-decreased
                                    (1- (cl-ds.common.rrb:access-shift container))
                                    (cl-ds.common.rrb:access-shift container)))
                     (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
                                         cl-ds.common.rrb:+maximum-children-count+)))
-                    (new-tail (and tail (~> tail cl-ds.common.rrb:rrb-node-content copy-array)))
+                    (new-tail (~> tail cl-ds.common.rrb:rrb-node-content))
                     (tail-size (if (null new-root)
                                    (cl-ds.common.rrb:access-size container)
-                                   cl-ds.common.rrb:+maximum-children-count+)))
-               (unless (null new-tail)
-                 (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
-                       (shrink-bucket (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
+                                   cl-ds.common.rrb:+maximum-children-count+))
+                    (new-bucket (~> new-tail
+                                    (aref (1- cl-ds.common.rrb:+maximum-children-count+))
+                                    shrink-bucket)))
+               (cond ((and (null new-bucket) (zerop (+ tail-change tail-size)))
+                      (setf new-tail nil))
+                     (new-bucket
+                      (setf new-tail (copy-array new-tail)
+                            (aref new-tail (+ tail-change tail-size)) new-bucket)))
                (assert (or new-root new-tail (zerop new-size)))
                (assert (<= 0 tail-size +maximum-children-count+))
                (make 'functional-rrb-vector
@@ -165,10 +166,11 @@
          (make 'functional-rrb-vector
                :root (cl-ds.common.rrb:access-root container)
                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
-                            (new-tail (copy-array tail)))
-                       (setf (aref new-tail (1- tail-size))
-                             (shrink-bucket  (aref new-tail (1- tail-size))))
-                       new-tail)
+                            (new-bucket (shrink-bucket  (aref tail (1- tail-size)))))
+                       (unless (null new-bucket)
+                         (setf tail (copy-array tail)
+                               (aref tail (+ tail-change tail-size)) new-bucket))
+                       tail)
                :ownership-tag tag
                :tail-size (let ((s (+ tail-size tail-change)))
                             (assert (<= 0 s +maximum-children-count+))

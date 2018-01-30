@@ -316,7 +316,7 @@
     (finally (return node))))
 
 
-(defun remove-tail (rrb-container ownership-tag continue)
+(defun remove-tail (rrb-container)
   (declare (optimize (debug 3)))
   (bind (((:slots %size %shift %root) rrb-container)
          (root-underflow (eql (ash (- %size +maximum-children-count+)

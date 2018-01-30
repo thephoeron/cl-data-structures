@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 528053)
+(plan 1053877)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -64,7 +64,6 @@
     (setf container next))
   (iterate
     (for i from 1024 downto 1)
-    (format t "iteration: ~a~%" i)
     (for next = (cl-ds:take-out container))
     (iterate
       (for j from 0 to i)
