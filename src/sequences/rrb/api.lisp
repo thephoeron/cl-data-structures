@@ -156,9 +156,7 @@
                      :root new-root
                      :tail new-tail
                      :ownership-tag tag
-                     :tail-size (if (null new-tail)
-                                    0
-                                    (+ tail-size tail-change))
+                     :tail-size (+ tail-size tail-change)
                      :size new-size
                      :shift (if shift-decreased
                                 (1- (cl-ds.common.rrb:access-shift container))
