@@ -382,28 +382,27 @@
     object))
 
 
-(defclass rrb-node-range (cl-ds:fundamental-random-access-range)
-  ((%start :initform 0
-           :type fixnum
+(defclass rrb-range (cl-ds:fundamental-random-access-range)
+  ((%start :type fixnum
            :accessor access-start)
-   (%last-size :initarg :last-size
-               :type fixnum
+   (%last-size :type fixnum
                :accessor access-last-size)
-   (%lower-bound :initform 0
-                 :type fixnum
+   (%lower-bound :type fixnum
                  :accessor access-lower-bound)
    (%upper-bound :initarg :upper-bound
                  :accessor access-upper-bound)
-   (%content :reader read-content)))
+   (%content :reader read-content)
+   (%container :initarg container
+               :accessor access-container)))
 
 
 (defmethod cl-ds:whole-range ((container rrb-container))
-  (make 'rrb-node-range :container container))
+  (make 'rrb-range :container container))
 
 
-(defmethod initialize-instance :after ((instance rrb-node-range)
+(defmethod initialize-instance :after ((instance rrb-range)
                                        &key container &allow-other-keys)
-  (bind (((:slots %last-size %content %lower-bound %upper-bound) instance)
+  (bind (((:slots %start %last-size %content %lower-bound %upper-bound) instance)
          ((:slots %root %shift %size %tail-size %tail) container))
     (setf %content (make-instance 'flexichain:standard-flexichain
                                   :min-size (iterate
@@ -412,6 +411,8 @@
                                                    initially 1
                                                    then (ash result +bit-count+))
                                               (finally (return result))))
+          %start 0
+          %lower-bound 0
           %last-size %tail-size
           %upper-bound (cl-ds:size container))
     (labels ((collect-bottom (node depth)
@@ -426,7 +427,7 @@
       (flexichain:push-end %content %tail))))
 
 
-(defmethod cl-ds:peek-front ((range rrb-node-range))
+(defmethod cl-ds:peek-front ((range rrb-range))
   (bind (((:slots %start %content) range))
     (if (null %content)
         (values nil nil)
@@ -435,7 +436,7 @@
             (values t)))))
 
 
-(defmethod cl-ds:peek-back ((range rrb-node-range))
+(defmethod cl-ds:peek-back ((range rrb-range))
   (bind (((:slots %tail-size %content) range))
     (if (null %content)
         (values nil nil)
@@ -445,7 +446,7 @@
             (values t)))))
 
 
-(defmethod cl-ds:at ((range rrb-node-range) index)
+(defmethod cl-ds:at ((range rrb-range) index)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
       (error 'cl-ds:argument-out-of-bounds
@@ -461,7 +462,7 @@
           (aref array-index)))))
 
 
-(defmethod cl-ds:consume-front ((range rrb-node-range))
+(defmethod cl-ds:consume-front ((range rrb-range))
   (block nil
     (bind (((:slots %start %content %last-size %lower-bound) range))
       (if (null %content)
@@ -482,7 +483,7 @@
                 (values t)))))))
 
 
-(defmethod cl-ds:consume-back ((range rrb-node-range))
+(defmethod cl-ds:consume-back ((range rrb-range))
   (block nil
     (bind (((:slots %start %content %last-size %upper-bound) range))
       (if (null %content)
@@ -509,7 +510,7 @@
                 (values t)))))))
 
 
-(defmethod cl-ds:traverse (function (range rrb-node-range))
+(defmethod cl-ds:traverse (function (range rrb-range))
   (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
          (index %start)
          (last-position (~> %content flexichain:nb-elements 1-)))
@@ -522,3 +523,8 @@
         (funcall function (aref array a)))
       (setf index 0))
     range))
+
+
+(defmethod cl-ds:reset! ((obj rrb-range))
+  (initialize-instance obj :container (access-container obj))
+  obj)

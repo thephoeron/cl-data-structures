@@ -33,6 +33,6 @@
    #:rrb-container
    #:rrb-node-content
    #:rrb-node-push-into-copy
-   #:rrb-node-range
+   #:rrb-range
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail))
