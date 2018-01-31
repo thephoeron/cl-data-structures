@@ -6,10 +6,6 @@
                     :reader read-original-range)))
 
 
-(defmethod cl-ds:empty-clone-of-inner-container ((range proxy-range))
-  (cl-ds:empty-clone-of-inner-container (read-original-range range)))
-
-
 (defmethod cl-ds:traverse (function (range proxy-range))
   (cl-ds:traverse function (read-original-range range)))
 
@@ -71,15 +67,6 @@
       (for i from (access-begin range) below (access-end range))
       (for key = (aref keys i))
       (funcall function (list* key (gethash key table))))))
-
-
-(defmethod cl-ds:empty-clone-of-inner-container ((range hash-table-range))
-  (let ((original-table (read-hash-table range)))
-    (make-hash-table
-     :test (hash-table-test original-table)
-     :hash-function (hash-table-function original-table)
-     :rehash-size (hash-table-rehash-size original-table)
-     :rehash-threshold (hash-table-rehash-threshold original-table))))
 
 
 (defmethod clone ((range hash-table-range))

@@ -105,7 +105,3 @@
         :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
         :obtain-value (read-obtain-value range)
         :key (read-key range)))
-
-
-(defmethod cl-ds:empty-clone-of-inner-container ((range forward-tree-range))
-  (cl-ds:empty-clone (read-container range)))

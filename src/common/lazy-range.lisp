@@ -18,10 +18,6 @@
       (setf %range (funcall %range)))))
 
 
-(defmethod cl-ds:empty-clone-of-inner-container ((range lazy-range))
-  (cl-ds:empty-clone (read-container range)))
-
-
 (defmacro make-lazy-range (class container range)
   `(make-instance ',class
                   :container ,container
