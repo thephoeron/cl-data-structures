@@ -201,7 +201,7 @@
                      rest)
             (unless changed
               (return-from cl-ds:position-modification
-                (values container status))))
+                (values container status)))
             (setf result-status status)
             node)))
     (unless (> (cl-ds:size container) index)
