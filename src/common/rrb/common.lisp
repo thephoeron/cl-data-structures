@@ -346,67 +346,6 @@
               root-underflow)))))))
 
 
-(defun copy-on-write-without-tail (path indexes shift ownership-tag)
-  (declare (optimize (debug 3)))
-  (iterate
-    (for i from (1- shift) downto 0)
-    (for position = (aref indexes i))
-    (for old-node = (aref path i))
-    (for node
-         first (rrb-node-pop-in-the-copy old-node
-                                         position
-                                         ownership-tag)
-         then (rrb-node-push-into-copy old-node
-                                       position
-                                       node
-                                       ownership-tag))
-    (finally (return node))))
-
-
-(defun transactional-copy-on-write-without-tail (path indexes shift ownership-tag)
-  (declare (optimize (debug 3)))
-  (bind ((acquired (acquire-path path shift ownership-tag))
-         ((:dflet push-impl (old-node position node ownership-tag i))
-          (if (< i acquired)
-              (rrb-node-push! old-node
-                              position
-                              node)
-              (rrb-node-push-into-copy old-node
-                                       position
-                                       node
-                                       ownership-tag)))
-         ((:dflet pop-impl (old-node position ownership-tag i))
-          (if (< i acquired)
-              (rrb-node-pop! old-node position)
-              (rrb-node-pop-in-the-copy old-node position ownership-tag))))
-    (iterate
-      (for i from (1- shift) downto 0)
-      (for position = (aref indexes i))
-      (for old-node = (aref path i))
-      (for node
-           first (pop-impl old-node position ownership-tag i)
-           then (push-impl old-node position node ownership-tag i))
-      (finally (return node)))))
-
-
-(defun destructive-write-without-tail (path indexes shift ownership-tag)
-  (declare (optimize (debug 3))
-           (ignore ownership-tag))
-  (iterate
-    (for i from (1- shift) downto 0)
-    (for position = (aref indexes i))
-    (for old-node = (aref path i))
-    (for node
-         first (rrb-node-pop! old-node
-                              position)
-         then (rrb-node-push! old-node
-                              position
-                              node))
-    (for p-node previous node initially t)
-    (until (null p-node))
-    (finally (return node))))
-
-
 (defmethod cl-ds:size ((container rrb-container))
   (+ (access-size container)
      (access-tail-size container)))

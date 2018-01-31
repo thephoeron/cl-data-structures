@@ -566,3 +566,13 @@ Methods. Those will just call non generic functions.
                    (impl (aref content i))))))
     (impl (access-root container))
     container))
+
+
+(defmethod cl-ds:reset! ((obj mutable-hamt-dictionary))
+  (cl-ds.common.abstract:reset-ownership-tag obj)
+  (bind (((:accessors (root cl-ds.common.hamt:access-root)
+                      (size cl-ds.common.hamt:access-size))
+          obj))
+    (setf root nil
+          size 0)
+    obj))

@@ -1,12 +1,16 @@
 (in-package #:cl-data-structures.sequences.rrb-vector)
 
 
-(defclass functional-rrb-vector (cl-ds.common.rrb:rrb-container
+(defclass rrb-vector (cl-ds.common.rrb::rrb-container)
+  ())
+
+
+(defclass functional-rrb-vector (rrb-vector
                                  cl-ds.seqs:functional-sequence)
   ())
 
 
-(defclass mutable-rrb-vector (cl-ds.common.rrb:rrb-container
+(defclass mutable-rrb-vector (rrb-vector
                               cl-ds.seqs:mutable-sequence)
   ())
 
@@ -262,3 +266,22 @@
                :size size
                :shift (cl-ds.common.rrb:access-shift container)))
      result-status)))
+
+
+(defmethod cl-ds:empty-clone ((container rrb-vector))
+  (make-instance (type-of container)
+                 :root nil
+                 :shift 0
+                 :size 0
+                 :tail-size 0
+                 :tail nil))
+
+
+(defmethod cl-ds:reset! ((obj mutable-rrb-vector))
+  (bind (((:slots %root %shift %size %tail-size %tail) obj))
+    (setf %root nil
+          %shift 0
+          %size 0
+          %tail-size 0
+          %tail nil)
+    obj))

@@ -649,14 +649,6 @@ Copy nodes and stuff.
         :container container))
 
 
-(defmethod cl-ds:reset! ((obj hamt-container))
-  (reset-ownership-tag obj)
-  (bind (((:slots %root %size) obj))
-    (setf %root nil
-          %size 0)
-    obj))
-
-
 (defun isolate-transaction (tree tag)
   (if (and (hash-node-p tree) (acquire-ownership tree tag))
       (let ((content (copy-array (hash-node-content tree))))
