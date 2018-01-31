@@ -400,8 +400,7 @@
   (make 'rrb-range :container container))
 
 
-(defmethod initialize-instance :after ((instance rrb-range)
-                                       &key container &allow-other-keys)
+(defun init-rrb (instance container)
   (bind (((:slots %start %last-size %content %lower-bound %upper-bound) instance)
          ((:slots %root %shift %size %tail-size %tail) container))
     (setf %content (make-instance 'flexichain:standard-flexichain
@@ -425,6 +424,14 @@
       (collect-bottom %root %shift))
     (unless (null %tail)
       (flexichain:push-end %content %tail))))
+
+
+(defmethod initialize-instance :after ((instance rrb-range) &key container &allow-other-keys)
+  (init-rrb instance container))
+
+
+(defmethod reinitialize-instance (instance &key &allow-other-keys)
+  (init-rrb instance (access-container instance)))
 
 
 (defmethod cl-ds:peek-front ((range rrb-range))
@@ -526,5 +533,5 @@
 
 
 (defmethod cl-ds:reset! ((obj rrb-range))
-  (initialize-instance obj :container (access-container obj))
+  (reinitialize-instance obj)
   obj)
