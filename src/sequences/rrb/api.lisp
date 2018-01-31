@@ -64,6 +64,7 @@
   (block nil
     (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
            (tag (cl-ds.common.abstract:make-ownership-tag))
+           (tail-change 1)
            ((:values new-bucket status changed) (apply #'cl-ds:make-bucket
                                                        operation
                                                        container
@@ -83,7 +84,7 @@
                   :root new-root
                   :tail new-tail
                   :ownership-tag tag
-                  :tail-size 1
+                  :tail-size tail-change
                   :size (+ +maximum-children-count+
                            (cl-ds.common.rrb:access-size container))
                   :tail new-tail
@@ -99,7 +100,7 @@
                         (setf (aref new-tail tail-size) new-bucket)
                         new-tail)
                 :ownership-tag tag
-                :tail-size (1+ tail-size)
+                :tail-size (+ tail-size tail-change)
                 :ownership-tag tag
                 :size (cl-ds.common.rrb:access-size container)
                 :shift (cl-ds.common.rrb:access-shift container))))))
@@ -189,6 +190,7 @@
          (size (cl-ds.common.rrb:access-size container))
          (root (cl-ds.common.rrb:access-root container))
          (result-status nil)
+         (tail-change 0)
          ((:dflet change-bucket (bucket))
           (multiple-value-bind (node status changed)
               (apply #'cl-ds:grow-bucket
@@ -199,7 +201,7 @@
                      rest)
             (unless changed
               (return-from cl-ds:position-modification
-                (values container status)))
+                (values container status))))
             (setf result-status status)
             node)))
     (unless (> (cl-ds:size container) index)
