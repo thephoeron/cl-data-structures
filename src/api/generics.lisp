@@ -141,8 +141,6 @@ Range releated functions.
 
 (defgeneric (setf peek-back) (new-value range))
 
-(defgeneric chain (first-range &rest other-ranges))
-
 (defgeneric drop-front (range count))
 
 (defgeneric drop-back (range count))

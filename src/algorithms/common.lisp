@@ -170,6 +170,11 @@
         (values nil nil))))
 
 
+(defmethod size ((range hash-table-range))
+  (bind (((:slots %end %begin) range))
+    (- %end %begin)))
+
+
 (defun make-hash-table-range (hash-table)
   (let ((keys (coerce (hash-table-keys hash-table) 'vector)))
     (make-instance 'hash-table-range

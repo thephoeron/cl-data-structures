@@ -56,6 +56,7 @@
                              (:file "accumulate")
                              (:file "group-by")
                              (:file "hash-join")
+                             (:file "chain")
                              (:test-file "hash-join-tests")))
                (:module "stat"
                 :components ((:file "package")

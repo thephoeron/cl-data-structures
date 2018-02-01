@@ -535,3 +535,8 @@
 (defmethod cl-ds:reset! ((obj rrb-range))
   (reinitialize-instance obj)
   obj)
+
+
+(defmethod cl-ds:size ((obj rrb-range))
+  (bind (((:slots %upper-bound %lower-bound) obj))
+    (- %upper-bound %lower-bound)))
