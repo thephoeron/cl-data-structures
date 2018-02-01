@@ -14,11 +14,11 @@
   ())
 
 
-(defclass bidirectional-chain-of-ranges (abstract-chain-of-ranges)
+(defclass bidirectional-chain-of-ranges (forward-chain-of-ranges)
   ())
 
 
-(defclass random-access-chain-of-ranges (abstract-chain-of-ranges)
+(defclass random-access-chain-of-ranges (bidirectional-chain-of-ranges)
   ())
 
 
