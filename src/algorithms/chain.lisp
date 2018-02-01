@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass abstract-chain-of-ranges (cl-ds:fundamental-forward-range)
+(defclass forward-chain-of-ranges (cl-ds:fundamental-forward-range)
   ((%content :initarg :content
              :initform (make 'flexichain:standard-flexichain)
              :reader read-content)
@@ -10,15 +10,13 @@
                       :reader read-original-content)))
 
 
-(defclass forward-chain-of-ranges (abstract-chain-of-ranges)
+(defclass bidirectional-chain-of-ranges (forward-chain-of-ranges
+                                         fundamental-bidirectional-range)
   ())
 
 
-(defclass bidirectional-chain-of-ranges (forward-chain-of-ranges)
-  ())
-
-
-(defclass random-access-chain-of-ranges (bidirectional-chain-of-ranges)
+(defclass random-access-chain-of-ranges (bidirectional-chain-of-ranges
+                                         fundamental-random-access-range)
   ())
 
 
