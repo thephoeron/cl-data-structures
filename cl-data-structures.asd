@@ -52,6 +52,7 @@
                              (:file "common")
                              (:file "on-each")
                              (:file "summary")
+                             (:file "common-range-category")
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")
