@@ -64,7 +64,16 @@
 
 
 (defmethod cl-ds:consume-front ((range forward-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range))
+    (tagbody :start
+       (if (zerop (flexichain:nb-elements %content))
+           (values nil nil)
+           (let ((front (flexichain:element* %content 0)))
+             (if (cl-ds:morep front)
+                 (cl-ds:consume-front front)
+                 (progn
+                   (flexichain:pop-start %content)
+                   (go :start))))))))
 
 
 (defmethod cl-ds:peek-front ((range forward-chain-of-ranges))
@@ -90,3 +99,7 @@
       (for i from 0 below (flexichain:nb-elements %content))
       (cl-ds:traverse function (flexichain:element* %content i)))
     range))
+
+
+(defmethod cl-ds:morep ((range forward-chain-of-ranges))
+  (cl-ds.utils:todo))
