@@ -95,9 +95,9 @@
       (for count = (flexichain:nb-elements %content))
       (if (zerop count)
           (leave (values nil nil))
-          (let ((front (flexichain:element* %content (1- count))))
+          (let ((back (flexichain:element* %content (1- count))))
             (if (cl-ds:morep front)
-                (leave (cl-ds:consume-back front))
+                (leave (cl-ds:consume-back back))
                 (flexichain:pop-end %content)))))))
 
 
@@ -107,9 +107,9 @@
       (for count = (flexichain:nb-elements %content))
       (if (zerop count)
           (leave (values nil nil))
-          (let ((front (flexichain:element* %content (1- count))))
-            (if (cl-ds:morep front)
-                (leave (cl-ds:peek-back front))
+          (let ((back (flexichain:element* %content (1- count))))
+            (if (cl-ds:morep back)
+                (leave (cl-ds:peek-back back))
                 (flexichain:pop-end %content)))))))
 
 
