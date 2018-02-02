@@ -75,6 +75,10 @@
   (cl-ds.utils:todo))
 
 
+(defmethod cl-ds:peek-back ((range bidirectional-chain-of-ranges))
+  (cl-ds.utils:todo))
+
+
 (defmethod cl-ds:empty-clone ((range forward-chain-of-ranges))
   (make (type-of range)
         :original-content (read-original-content range)))
