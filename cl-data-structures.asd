@@ -63,7 +63,8 @@
                              (:file "group-by")
                              (:file "hash-join")
                              (:file "chain")
-                             (:test-file "hash-join-tests")))
+                             (:test-file "hash-join-tests")
+                             (:test-file "chain-tests")))
                (:module "stat"
                 :components ((:file "package")
                              (:file "average")

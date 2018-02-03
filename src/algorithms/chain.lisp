@@ -23,9 +23,7 @@
   (bind (((:slots %content %original-content) obj))
     (setf %content (make 'flexichain:standard-flexichain))
     (map nil
-         (lambda (x) (~>> x)
-                     cl-ds:clone
-                     (flexichain:push-end %content))
+         (lambda (x) (~>> x cl-ds:clone (flexichain:push-end %content)))
          %original-content)))
 
 
@@ -96,7 +94,7 @@
       (if (zerop count)
           (leave (values nil nil))
           (let ((back (flexichain:element* %content (1- count))))
-            (if (cl-ds:morep front)
+            (if (cl-ds:morep back)
                 (leave (cl-ds:consume-back back))
                 (flexichain:pop-end %content)))))))
 

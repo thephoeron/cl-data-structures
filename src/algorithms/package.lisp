@@ -14,6 +14,7 @@
    #:apply-aggregation-function
    #:apply-layer
    #:apply-range-function
+   #:chain
    #:gather-prior-states
    #:group-by
    #:group-by-function
