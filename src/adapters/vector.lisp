@@ -92,3 +92,8 @@
       (for i from %lower-bound below %upper-bound)
       (funcall function (aref %vector i)))
     range))
+
+
+(defmethod cl-ds:size ((range vector-range))
+  (bind (((:slots %lower-bound %upper-bound) range))
+    (- %upper-bound %lower-bound)))

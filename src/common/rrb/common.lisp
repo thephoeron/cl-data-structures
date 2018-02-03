@@ -540,3 +540,13 @@
 (defmethod cl-ds:size ((obj rrb-range))
   (bind (((:slots %upper-bound %lower-bound) obj))
     (- %upper-bound %lower-bound)))
+
+
+(defmethod cl-ds:morep ((obj rrb-range))
+  (and
+   (read-content obj)
+   (~> obj read-content flexichain:nb-elements zerop not)
+   (not (and
+         (eql 1 (flexichain:nb-elements (read-content obj)))
+         (eql (access-start obj)
+              (access-last-size obj))))))
