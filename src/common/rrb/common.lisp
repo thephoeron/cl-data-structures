@@ -267,13 +267,14 @@
 
 
 (defun acquire-path (path shift ownership-tag)
-  (or (iterate
-        (for i from 0 below shift)
-        (for node = (aref path i))
-        (finding i such-that (~> node
-                                 (acquire-ownership ownership-tag)
-                                 null)))
-      shift))
+  (or
+   (iterate
+     (for i from 0 below shift)
+     (for node = (aref path i))
+     (finding i such-that (~> node
+                              (acquire-ownership ownership-tag)
+                              null)))
+   shift))
 
 
 (defun transactional-copy-on-write (path indexes shift ownership-tag tail)
