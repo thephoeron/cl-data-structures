@@ -30,4 +30,5 @@
    #:state-result
    #:summary
    #:summary-function
-   #:transformation!-function))
+   #:transformation!-function
+   #:zip))
