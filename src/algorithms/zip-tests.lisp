@@ -5,6 +5,8 @@
 
 (in-package #:zip-tests)
 
+(plan 6)
+
 (let* ((vector1 (vect 1 2 3 4 5 6 7))
        (vector2 (vect 8 9 10 11 12))
        (range (cl-ds.alg:zip
@@ -18,3 +20,5 @@
     (for v1 in-vector vector1)
     (for v2 in-vector vector2)
     (is value (list* v1 v2) :test #'equal)))
+
+(finalize)

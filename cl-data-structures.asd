@@ -88,8 +88,7 @@
                                            (:file "common")))
                              (:module "rrb"
                               :components ((:file "package")
-                                           (:file "common")
-                                           (:test-file "tests")))))
+                                           (:file "common")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")

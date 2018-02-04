@@ -5,6 +5,8 @@
 
 (in-package #:chain-tests)
 
+(plan 38)
+
 (let* ((vector1 (vect 1 2 3 4 5 6 7))
        (vector2 (vect 8 9 10 11 12))
        (range (cl-ds.alg:chain (cl-ds:whole-range vector1)
@@ -33,3 +35,5 @@
     (for i from 12 downto 0)
     (is val i))
   (is (cl-ds:size range) 0))
+
+(finalize)

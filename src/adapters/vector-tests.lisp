@@ -5,6 +5,7 @@
 
 (in-package #:vector-tests)
 
+(plan 14)
 (let* ((vector (vect 1 2 3 4 5 6 7))
        (range (cl-ds:whole-range vector)))
   (iterate
@@ -18,3 +19,4 @@
     (while more)
     (for i from (1- (length vector)) downto 0)
     (is (aref vector i) val)))
+(finalize)
