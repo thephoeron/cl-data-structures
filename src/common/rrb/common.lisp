@@ -149,7 +149,8 @@
                  node-content)
     rrb-node)
 (defun insert-tail (rrb-container ownership-tag continue tail)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (safety 1)
+                     (space 0) (debug 0)))
   (bind (((:slots %size %shift %root) rrb-container)
          (root-overflow (>= (the fixnum (ash (the fixnum %size) (- +bit-count+)))
                             (ash 1 (* +bit-count+ (the shift %shift))))))
@@ -218,7 +219,8 @@
 
 
 (defun rrb-at (container index)
-  (declare (optimize (debug 3))
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0))
            (type non-negative-fixnum index)
            (type rrb-container container))
   (unless (> (cl-ds:size container) index)
@@ -245,9 +247,12 @@
   (rrb-at container index))
 
 
-(-> copy-on-write (t t t t t) t)
+(-> copy-on-write
+    (vector (vector node-size) shift serapeum:box cl-ds.common.rrb:node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun copy-on-write (path indexes shift ownership-tag tail)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (debug 0)
+                     (space 0) (safety 1)))
   (iterate
     (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
@@ -277,6 +282,9 @@
    shift))
 
 
+(-> transactional-copy-on-write
+    (vector (vector node-size) shift serapeum:box cl-ds.common.rrb:node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun transactional-copy-on-write (path indexes shift ownership-tag tail)
   (iterate
     (with acquired = (acquire-path path shift ownership-tag))
@@ -301,7 +309,12 @@
     (finally (return node))))
 
 
+(-> destructive-write
+    (vector (vector node-size) shift serapeum:box cl-ds.common.rrb:node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun destructive-write (path indexes shift ownership-tag tail)
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (iterate
     (for i from 0 below shift)
     (for position = (aref indexes i))
@@ -318,7 +331,8 @@
 
 
 (defun remove-tail (rrb-container)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (bind (((:slots %size %shift %root) rrb-container)
          (root-underflow (eql (ash (- %size +maximum-children-count+)
                                    (- (* %shift +bit-count+)))
@@ -435,7 +449,9 @@
       (flexichain:push-end %content %tail))))
 
 
-(defmethod initialize-instance :after ((instance rrb-range) &key container &allow-other-keys)
+(defmethod initialize-instance :after ((instance rrb-range)
+                                       &key container
+                                       &allow-other-keys)
   (init-rrb instance container))
 
 

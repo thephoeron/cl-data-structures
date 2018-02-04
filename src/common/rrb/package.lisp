@@ -29,7 +29,9 @@
    #:insert-tail
    #:make-node-content
    #:make-rrb-node
+   #:node-content
    #:remove-tail
+   #:rrb-node
    #:rrb-at
    #:rrb-container
    #:rrb-node-content
