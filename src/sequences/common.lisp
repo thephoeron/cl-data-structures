@@ -20,8 +20,20 @@
   (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
 
 
+(defmethod cl-ds:shrink-bucket! ((operation cl-ds:shrink-function)
+                                 (container mutable-sequence)
+                                 bucket
+                                 location
+                                 &rest rest &key &allow-other-keys)
+  (declare (ignore rest))
+  (values nil
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
+
+
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
-                                (container functional-sequence)
+                                (container abstract-sequence)
                                 bucket
                                 location
                                 &rest rest &key &allow-other-keys)
@@ -68,6 +80,10 @@
 
 (defmethod cl-ds:put! ((container mutable-sequence) item)
   (cl-ds:position-modification #'cl-ds:put! container nil :value item))
+
+
+(defmethod cl-ds:take-out! ((container mutable-sequence))
+  (cl-ds:position-modification #'cl-ds:take-out! container nil))
 
 
 (defmethod cl-ds:take-out ((container functional-sequence))

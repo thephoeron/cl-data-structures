@@ -18,47 +18,56 @@
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out!-function)
                                         (container mutable-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
-  (bind ((result-status nil)
+  (declare (optimize (debug 3)))
+  (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
+         (result-status nil)
          (tail-change 0)
          ((:dflet shrink-bucket (bucket))
           (multiple-value-bind (bucket status changed)
               (apply #'cl-ds:shrink-bucket!
-                     operation container
-                     bucket location
+                     operation
+                     container
+                     bucket
+                     location
                      rest)
             (setf result-status status)
             (unless changed
               (return-from cl-ds:position-modification (values container status)))
             (when (null bucket)
               (decf tail-change))
-            bucket))
-         (root (cl-ds.common.rrb:access-root container))
-         (shift (cl-ds.common.rrb:access-shift container))
-         (tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tail (cl-ds.common.rrb:access-tail container)))
-    (cond ((null tail)
-           (if (null root)
-               (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
-               (bind ((zero-shift (zerop shift))
-                      ((:values new-root new-tail shift-decreased)
-                       (if zero-shift
-                           (values nil (cl-ds.common.rrb:access-root container) nil)
-                           (cl-ds.common.rrb:remove-tail container)))
-                      ((:values new-bucket status changed) (and new-tail (shrink-bucket (aref new-root (1- cl-ds.common.rrb:+maximum-children-count+))))))
-                 (setf (cl-ds.common.rrb:access-tail container) new-tail)
-                 (unless (null new-tail)
-                   (unless (null new-bucket)
-                     (setf (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+))
-                           (shrink-bucket (aref new-tail (1- cl-ds.common.rrb:+maximum-children-count+)))))
-                   (setf (cl-ds.common.rrb:access-tail-size container)
-                         (+ cl-ds.common.rrb:+maximum-children-count+ tail-change))))))
-          ((eql 1 tail-size)
-           (setf (cl-ds.common.rrb:access-tail-size container) 0
-                 (cl-ds.common.rrb:access-tail container) nil))
-          (t
-           (setf (aref tail (decf (cl-ds.common.rrb:access-tail-size container)))
-                 nil)))
-    container))
+            bucket)))
+    (if (zerop tail-size)
+        (if (zerop (cl-ds.common.rrb:access-size container))
+            (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
+            (bind (((:values new-root tail shift-decreased)
+                    (cl-ds.common.rrb:remove-tail container))
+                   (new-shift (if shift-decreased
+                                  (1- (cl-ds.common.rrb:access-shift container))
+                                  (cl-ds.common.rrb:access-shift container)))
+                   (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
+                                       cl-ds.common.rrb:+maximum-children-count+)))
+                   (new-tail (~> tail cl-ds.common.rrb:rrb-node-content))
+                   (tail-size (if (null new-root)
+                                  (cl-ds.common.rrb:access-size container)
+                                  cl-ds.common.rrb:+maximum-children-count+))
+                   (new-bucket (~> new-tail
+                                   (aref (1- cl-ds.common.rrb:+maximum-children-count+))
+                                   shrink-bucket)))
+              (cond ((and (null new-bucket) (zerop (+ tail-change tail-size)))
+                     (setf new-tail nil))
+                    (new-bucket
+                     (setf (aref new-tail (+ tail-change tail-size)) new-bucket)))
+              (assert (or new-root new-tail (zerop new-size)))
+              (assert (<= 0 tail-size +maximum-children-count+))
+              (setf (cl-ds.common.rrb:access-size container) new-size
+                    (cl-ds.common.rrb:access-tail-size container) (+ tail-size tail-change)
+                    (cl-ds.common.rrb:access-tail container) new-tail
+                    (cl-ds.common.rrb:access-root container) new-root
+                    (cl-ds.common.rrb:access-shift container) new-shift)))
+        (setf (aref (cl-ds.common.rrb:access-tail container) tail-size) nil
+              (cl-ds.common.rrb:access-tail-size container) (1- tail-size)))
+    (values container
+            result-status)))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:put!-function)
@@ -202,13 +211,11 @@
                      :ownership-tag tag
                      :tail-size (+ tail-size tail-change)
                      :size new-size
-                     :shift (if shift-decreased
-                                (1- (cl-ds.common.rrb:access-shift container))
-                                (cl-ds.common.rrb:access-shift container)))))
+                     :shift new-shift)))
          (make 'functional-rrb-vector
                :root (cl-ds.common.rrb:access-root container)
                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
-                            (new-bucket (shrink-bucket  (aref tail (1- tail-size)))))
+                            (new-bucket (shrink-bucket (aref tail (1- tail-size)))))
                        (unless (null new-bucket)
                          (setf tail (copy-array tail)
                                (aref tail (+ tail-change tail-size)) new-bucket))

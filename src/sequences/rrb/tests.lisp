@@ -70,9 +70,6 @@
       (is (cl-ds:at next j) j))
     (setf container next)))
 
-(finalize)
-
-
 (let ((container (make-instance 'mutable-rrb-vector)))
   (iterate
     (for i from 0 below 1026)
@@ -80,4 +77,10 @@
     (cl-ds:put! container i))
   (iterate
     (for i from 0 below 1026)
-    (is (cl-ds:at container i) i)))
+    (is (cl-ds:at container i) i))
+  (iterate
+    (for i from 1026 downto 1)
+    (is (cl-ds:size container) i)
+    (cl-ds:take-out! container)))
+
+(finalize)
