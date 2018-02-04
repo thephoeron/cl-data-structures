@@ -131,3 +131,13 @@
                   prev
                   (cl-ds:morep next)))
             (slot-value range '%ranges))))
+
+
+(defmethod cl-ds:traverse (function (range forward-zipped-ranges))
+  (bind (((:slots %function %ranges) range))
+    (iterate
+      (for (values val more) = (cl-ds:consume-front range))
+      (while more)
+      (funcall function val)
+      (finally (cl-ds:reset! range)))
+    range))
