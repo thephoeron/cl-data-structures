@@ -10,7 +10,7 @@
                                    (until (zerop c))
                                    (counting t)))
 (define-constant +maximum-children-count+ (ash 1 +bit-count+))
-(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0) most-positive-fixnum))
+(define-constant +tail-mask+ (dpb 1 (byte +bit-count+ 0) 0))
 
 
 (deftype node-content ()

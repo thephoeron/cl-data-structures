@@ -10,6 +10,7 @@
    #:+bit-count+
    #:+depth+
    #:+maximum-children-count+
+   #:+tail-mask+
    #:access-last-size
    #:access-lower-bound
    #:access-root

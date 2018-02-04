@@ -44,6 +44,18 @@
           t))
 
 
+(defmethod cl-ds:grow-bucket! ((operation cl-ds:grow-function)
+                               (container mutable-sequence)
+                               bucket
+                               location
+                               &rest rest &key value
+                               &allow-other-keys)
+  (declare (ignore rest))
+  (values (cl-ds:force value)
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
+
 (defmethod cl-ds:grow-bucket ((operation cl-ds:grow-function)
                               (container functional-sequence)
                               bucket
@@ -102,3 +114,9 @@
   (cl-ds:position-modification #'cl-ds:update-if container location
                                :value new-value
                                :condition-fn condition-fn))
+
+
+(defmethod (setf cl-ds:at) (new-value (container mutable-sequence) location)
+  (cl-ds:position-modification #'(setf cl-ds:at)
+                               container location :value new-value)
+  new-value)

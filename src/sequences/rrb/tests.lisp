@@ -79,6 +79,12 @@
     (for i from 0 below 1026)
     (is (cl-ds:at container i) i))
   (iterate
+    (for i from 0 below 1026)
+    (setf (cl-ds:at container i) (+ i 1025)))
+  (iterate
+    (for i from 0 below 1026)
+    (is (cl-ds:at container i) (+ i 1025)))
+  (iterate
     (for i from 1026 downto 1)
     (is (cl-ds:size container) i)
     (cl-ds:take-out! container)))

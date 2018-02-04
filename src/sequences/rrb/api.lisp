@@ -70,6 +70,55 @@
             result-status)))
 
 
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
+                                        (container mutable-rrb-vector)
+                                        index &rest rest &key &allow-other-keys)
+  (declare (optimize (debug 3)))
+  (bind ((size (cl-ds.common.rrb:access-size container))
+         (result-status nil)
+         (last-index (ldb (byte cl-ds.common.rrb:+bit-count+ 0) index))
+         ((:dflet change-bucket (bucket))
+          (multiple-value-bind (node status changed)
+              (apply #'cl-ds:grow-bucket!
+                     operation
+                     container
+                     bucket
+                     index
+                     rest)
+            (unless changed
+              (return-from cl-ds:position-modification
+                (values container status)))
+            (setf result-status status)
+            node)))
+    (unless (> (cl-ds:size container) index)
+      (error 'cl-ds:argument-out-of-bounds
+             :argument 'index
+             :bounds (list 0 (cl-ds:size container))
+             :value index
+             :text "Index out of range."))
+    (if (< index size)
+        (let* ((node (iterate
+                       (with shift = (cl-ds.common.rrb:access-shift container))
+                       (repeat shift)
+                       (for position
+                            from (* cl-ds.common.rrb:+bit-count+ shift)
+                            downto 0
+                            by cl-ds.common.rrb:+bit-count+)
+                       (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position) index))
+                       (for node
+                            initially (cl-ds.common.rrb:access-root container)
+                            then (~> node cl-ds.common.rrb:rrb-node-content (aref i)))
+                       (finally (return node))))
+               (last-array (cl-ds.common.rrb:rrb-node-content node))
+               (bucket (change-bucket (aref last-array last-index))))
+          (setf (aref last-array last-index) bucket))
+        (let* ((offset (- index size))
+               (tail (cl-ds.common.rrb:access-tail container))
+               (bucket (change-bucket (aref tail offset))))
+          (setf (aref tail offset) bucket)))
+    (values container result-status)))
+
+
 (defmethod cl-ds:position-modification ((operation cl-ds:put!-function)
                                         (container mutable-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
