@@ -15,7 +15,7 @@
   ())
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)
+(defmethod cl-ds:position-modification ((operation cl-ds:take-out!-function)
                                         (container mutable-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
   (bind ((result-status nil)
@@ -61,6 +61,43 @@
     container))
 
 
+(defmethod cl-ds:position-modification ((operation cl-ds:put!-function)
+                                        (container mutable-rrb-vector)
+                                        location &rest rest &key &allow-other-keys)
+  (declare (optimize (debug 3)))
+  (block nil
+    (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
+           (tail (cl-ds.common.rrb:access-tail container))
+           ((:values new-bucket status changed) (apply #'cl-ds:make-bucket
+                                                       operation
+                                                       container
+                                                       location
+                                                       rest)))
+      (unless changed
+        (return (values container status)))
+      (if (eql tail-size +maximum-children-count+)
+          (bind ((new-tail (cl-ds.common.rrb:make-node-content))
+                 ((:values new-root shift-increased)
+                  (cl-ds.common.rrb:insert-tail container
+                                                (cl-ds.common.abstract:read-ownership-tag container)
+                                                #'cl-ds.common.rrb:destructive-write
+                                                tail)))
+            (setf (aref new-tail 0) new-bucket
+                  (cl-ds.common.rrb:access-tail container) new-tail
+                  (cl-ds.common.rrb:access-root container) new-root
+                  (cl-ds.common.rrb:access-tail-size container) 1)
+            (when shift-increased
+              (incf (cl-ds.common.rrb:access-shift container)))
+            (incf (cl-ds.common.rrb:access-size container) +maximum-children-count+)
+            (values container status))
+          (progn
+            (setf tail (or tail (cl-ds.common.rrb:make-node-content))
+                  (aref tail tail-size) new-bucket
+                  (cl-ds.common.rrb:access-tail container) tail)
+            (incf (cl-ds.common.rrb:access-tail-size container))
+            (values container status))))))
+
+
 (defmethod cl-ds:position-modification ((operation cl-ds:functional-put-function)
                                         (container functional-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
@@ -75,7 +112,7 @@
                                                        location
                                                        rest)))
       (unless changed
-        (return container))
+        (return (values container status)))
       (if (eql tail-size +maximum-children-count+)
           (bind ((new-tail (cl-ds.common.rrb:make-node-content))
                  ((:values new-root shift-increased)
@@ -95,19 +132,21 @@
                   :shift (if shift-increased
                              (1+ (cl-ds.common.rrb:access-shift container))
                              (cl-ds.common.rrb:access-shift container))))
-          (make 'functional-rrb-vector
-                :root (cl-ds.common.rrb:access-root container)
-                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
-                             (new-tail (if (null tail)
-                                           (cl-ds.common.rrb:make-node-content)
-                                           (copy-array tail))))
-                        (setf (aref new-tail tail-size) new-bucket)
-                        new-tail)
-                :ownership-tag tag
-                :tail-size (+ tail-size tail-change)
-                :ownership-tag tag
-                :size (cl-ds.common.rrb:access-size container)
-                :shift (cl-ds.common.rrb:access-shift container))))))
+          (values
+           (make 'functional-rrb-vector
+                 :root (cl-ds.common.rrb:access-root container)
+                 :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
+                              (new-tail (if (null tail)
+                                            (cl-ds.common.rrb:make-node-content)
+                                            (copy-array tail))))
+                         (setf (aref new-tail tail-size) new-bucket)
+                         new-tail)
+                 :ownership-tag tag
+                 :tail-size (+ tail-size tail-change)
+                 :ownership-tag tag
+                 :size (cl-ds.common.rrb:access-size container)
+                 :shift (cl-ds.common.rrb:access-shift container))
+           status)))))
 
 
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out-function)

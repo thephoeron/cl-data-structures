@@ -66,6 +66,10 @@
   (cl-ds:position-modification #'cl-ds:put container nil :value item))
 
 
+(defmethod cl-ds:put! ((container mutable-sequence) item)
+  (cl-ds:position-modification #'cl-ds:put! container nil :value item))
+
+
 (defmethod cl-ds:take-out ((container functional-sequence))
   (cl-ds:position-modification #'cl-ds:take-out container nil))
 

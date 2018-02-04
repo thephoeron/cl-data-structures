@@ -543,10 +543,4 @@
 
 
 (defmethod cl-ds:morep ((obj rrb-range))
-  (and
-   (read-content obj)
-   (~> obj read-content flexichain:nb-elements zerop not)
-   (not (and
-         (eql 1 (flexichain:nb-elements (read-content obj)))
-         (eql (access-start obj)
-              (access-last-size obj))))))
+  (not (zerop (cl-ds:size obj))))
