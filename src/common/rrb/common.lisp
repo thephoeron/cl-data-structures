@@ -396,6 +396,10 @@
                :accessor access-container)))
 
 
+(defclass mutable-rrb-range (rrb-range)
+  ())
+
+
 (defmethod cl-ds:whole-range ((container rrb-container))
   (make 'rrb-range :container container))
 
@@ -544,3 +548,22 @@
 
 (defmethod cl-ds:morep ((obj rrb-range))
   (not (zerop (cl-ds:size obj))))
+
+
+(defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
+  (bind (((:slots %tail-size %content) range))
+    (if (null %content)
+        (cl-ds.utils:todo)
+        (setf (aref (~> %content
+                        (flexichain:element* (~> %content flexichain:nb-elements 1-)))
+                    (1- %tail-size))
+              new-value))))
+
+
+(defmethod (setf cl-ds:peek-front) (new-value (range mutable-rrb-range))
+  (bind (((:slots %start %content) range))
+    (if (null %content)
+        (cl-ds.utils:todo)
+        (setf (aref (flexichain:element* %content 0)
+                    %start)
+              new-value))))
