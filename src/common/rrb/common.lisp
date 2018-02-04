@@ -404,6 +404,10 @@
   (make 'rrb-range :container container))
 
 
+(defmethod cl-ds:whole-range ((container mutable-rrb-range))
+  (make 'mutable-rrb-range :container container))
+
+
 (defun init-rrb (instance container)
   (bind (((:slots %start %last-size %content %lower-bound %upper-bound) instance)
          ((:slots %root %shift %size %tail-size %tail) container))
@@ -553,7 +557,7 @@
 (defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
   (bind (((:slots %tail-size %content) range))
     (if (null %content)
-        (cl-ds.utils:todo)
+        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
         (setf (aref (~> %content
                         (flexichain:element* (~> %content flexichain:nb-elements 1-)))
                     (1- %tail-size))
@@ -563,7 +567,24 @@
 (defmethod (setf cl-ds:peek-front) (new-value (range mutable-rrb-range))
   (bind (((:slots %start %content) range))
     (if (null %content)
-        (cl-ds.utils:todo)
+        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
         (setf (aref (flexichain:element* %content 0)
                     %start)
               new-value))))
+
+
+(defmethod (setf cl-ds:at) (new-value (range mutable-rrb-range) index)
+  (bind (((:slots %upper-bound %lower-bound %content) range))
+    (unless (and (>= index %lower-bound) (< index %upper-bound))
+      (error 'cl-ds:argument-out-of-bounds
+             :argument 'index
+             :bounds (list %lower-bound %upper-bound)
+             :value index
+             :text "Index out of bounds."))
+    (let* ((index (- index %lower-bound))
+           (which-array (ash index (- +bit-count+)))
+           (array-index (logand index (lognot +tail-mask+))))
+      (setf (aref (~> %content
+                      (flexichain:element* which-array))
+                  array-index)
+            new-value))))
