@@ -23,9 +23,7 @@
   (bind (((:slots %content %original-content) obj))
     (setf %content (make 'flexichain:standard-flexichain))
     (map nil
-         (lambda (x) (~>> x
-                     cl-ds:clone
-                     (flexichain:push-end %content)))
+         (lambda (x) (~>> x cl-ds:clone (flexichain:push-end %content)))
          %original-content)))
 
 
@@ -60,32 +58,57 @@
 
 
 (defmethod cl-ds:size ((range random-access-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range)
+         (count (flexichain:nb-elements %content)))
+    (iterate
+      (for i below count)
+      (sum (~> %content (flexichain:element* i) cl-ds:size)))))
 
 
 (defmethod cl-ds:consume-front ((range forward-chain-of-ranges))
   (bind (((:slots %content) range))
-    (tagbody :start
-       (if (zerop (flexichain:nb-elements %content))
-           (values nil nil)
-           (let ((front (flexichain:element* %content 0)))
-             (if (cl-ds:morep front)
-                 (cl-ds:consume-front front)
-                 (progn
-                   (flexichain:pop-start %content)
-                   (go :start))))))))
+    (iterate
+      (if (zerop (flexichain:nb-elements %content))
+          (leave (values nil nil))
+          (let ((front (flexichain:element* %content 0)))
+            (if (cl-ds:morep front)
+                (leave (cl-ds:consume-front front))
+                (flexichain:pop-start %content)))))))
 
 
 (defmethod cl-ds:peek-front ((range forward-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range))
+    (iterate
+      (if (zerop (flexichain:nb-elements %content))
+          (leave (values nil nil))
+          (let ((front (flexichain:element* %content 0)))
+            (if (cl-ds:morep front)
+                (leave (cl-ds:peek-front front))
+                (flexichain:pop-start %content)))))))
 
 
 (defmethod cl-ds:consume-back ((range bidirectional-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range))
+    (iterate
+      (for count = (flexichain:nb-elements %content))
+      (if (zerop count)
+          (leave (values nil nil))
+          (let ((back (flexichain:element* %content (1- count))))
+            (if (cl-ds:morep back)
+                (leave (cl-ds:consume-back back))
+                (flexichain:pop-end %content)))))))
 
 
 (defmethod cl-ds:peek-back ((range bidirectional-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range))
+    (iterate
+      (for count = (flexichain:nb-elements %content))
+      (if (zerop count)
+          (leave (values nil nil))
+          (let ((back (flexichain:element* %content (1- count))))
+            (if (cl-ds:morep back)
+                (leave (cl-ds:peek-back back))
+                (flexichain:pop-end %content)))))))
 
 
 (defmethod cl-ds:empty-clone ((range forward-chain-of-ranges))
@@ -102,4 +125,10 @@
 
 
 (defmethod cl-ds:morep ((range forward-chain-of-ranges))
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range)
+         (count (flexichain:nb-elements %content)))
+    (iterate
+      (for i below count)
+      (finding t such-that (~> %content
+                               (flexichain:element* i)
+                               cl-ds:morep)))))

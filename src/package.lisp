@@ -112,6 +112,7 @@
    #:size
    #:special-traverse
    #:take-out
+   #:take-out!
    #:take-out!-function
    #:take-out-function
    #:textual-error

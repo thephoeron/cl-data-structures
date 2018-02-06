@@ -20,8 +20,20 @@
   (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
 
 
+(defmethod cl-ds:shrink-bucket! ((operation cl-ds:shrink-function)
+                                 (container mutable-sequence)
+                                 bucket
+                                 location
+                                 &rest rest &key &allow-other-keys)
+  (declare (ignore rest))
+  (values nil
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
+
+
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
-                                (container functional-sequence)
+                                (container abstract-sequence)
                                 bucket
                                 location
                                 &rest rest &key &allow-other-keys)
@@ -31,6 +43,18 @@
                                                                  bucket)
           t))
 
+
+(defmethod cl-ds:grow-bucket! ((operation cl-ds:grow-function)
+                               (container mutable-sequence)
+                               bucket
+                               location
+                               &rest rest &key value
+                               &allow-other-keys)
+  (declare (ignore rest))
+  (values (cl-ds:force value)
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:grow-function)
                               (container functional-sequence)
@@ -66,6 +90,14 @@
   (cl-ds:position-modification #'cl-ds:put container nil :value item))
 
 
+(defmethod cl-ds:put! ((container mutable-sequence) item)
+  (cl-ds:position-modification #'cl-ds:put! container nil :value item))
+
+
+(defmethod cl-ds:take-out! ((container mutable-sequence))
+  (cl-ds:position-modification #'cl-ds:take-out! container nil))
+
+
 (defmethod cl-ds:take-out ((container functional-sequence))
   (cl-ds:position-modification #'cl-ds:take-out container nil))
 
@@ -82,3 +114,9 @@
   (cl-ds:position-modification #'cl-ds:update-if container location
                                :value new-value
                                :condition-fn condition-fn))
+
+
+(defmethod (setf cl-ds:at) (new-value (container mutable-sequence) location)
+  (cl-ds:position-modification #'(setf cl-ds:at)
+                               container location :value new-value)
+  new-value)

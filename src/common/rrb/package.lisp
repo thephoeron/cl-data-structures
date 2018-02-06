@@ -10,6 +10,7 @@
    #:+bit-count+
    #:+depth+
    #:+maximum-children-count+
+   #:+tail-mask+
    #:access-last-size
    #:access-lower-bound
    #:access-root
@@ -28,7 +29,9 @@
    #:insert-tail
    #:make-node-content
    #:make-rrb-node
+   #:node-content
    #:remove-tail
+   #:rrb-node
    #:rrb-at
    #:rrb-container
    #:rrb-node-content

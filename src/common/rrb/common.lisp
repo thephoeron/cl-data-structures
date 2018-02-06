@@ -19,7 +19,12 @@
   `(integer 0 ,+maximum-children-count+))
 (deftype shift ()
   `(integer 0 ,+maximal-shift+))
-
+(deftype rrb-index ()
+  `(integer 0 ,(ash 1 (* +bit-count+ +maximal-shift+))))
+(deftype rrb-indexes ()
+  `(simple-array node-size (,+maximal-shift+)))
+(deftype rrb-path ()
+  `(simple-array * (,+maximal-shift+)))
 
 (defun make-node-content ()
   (make-array +maximum-children-count+ :initial-element nil))
@@ -142,14 +147,16 @@
         t))))
 
 
-(declaim (notinline insert-tail))
+(declaim (inline insert-tail))
 (-> insert-tail (rrb-container
                  t
-                 function
+                 (-> (rrb-path rrb-indexes shift serapeum:box node-content)
+                     cl-ds.common.rrb:rrb-node)
                  node-content)
     rrb-node)
 (defun insert-tail (rrb-container ownership-tag continue tail)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (safety 1)
+                     (space 0) (debug 0)))
   (bind (((:slots %size %shift %root) rrb-container)
          (root-overflow (>= (the fixnum (ash (the fixnum %size) (- +bit-count+)))
                             (ash 1 (* +bit-count+ (the shift %shift))))))
@@ -194,7 +201,14 @@
                   nil)))))
 
 
+(-> descend-into-tree
+    (rrb-container
+     rrb-index
+     (-> (rrb-path rrb-indexes shift) t))
+    t)
 (defun descend-into-tree (rrb-container location continue)
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (let ((path (make-array +maximal-shift+
                           :initial-element nil))
         (shift (access-shift rrb-container))
@@ -217,10 +231,10 @@
              shift)))
 
 
+(-> rrb-at (rrb-container rrb-index) t)
 (defun rrb-at (container index)
-  (declare (optimize (debug 3))
-           (type non-negative-fixnum index)
-           (type rrb-container container))
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (unless (> (cl-ds:size container) index)
     (error 'cl-ds:argument-out-of-bounds
            :argument 'index
@@ -241,13 +255,17 @@
 
 
 (defmethod cl-ds:at ((container rrb-container) index)
-  (check-type index non-negative-fixnum)
+  (check-type index rrb-index)
   (rrb-at container index))
 
 
-(-> copy-on-write (t t t t t) t)
+(declaim (inline copy-on-write))
+(-> copy-on-write
+    (rrb-path rrb-indexes shift serapeum:box node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun copy-on-write (path indexes shift ownership-tag tail)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (debug 0)
+                     (space 0) (safety 1)))
   (iterate
     (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
@@ -267,15 +285,19 @@
 
 
 (defun acquire-path (path shift ownership-tag)
-  (or (iterate
-        (for i from 0 below shift)
-        (for node = (aref path i))
-        (finding i such-that (~> node
-                                 (acquire-ownership ownership-tag)
-                                 null)))
-      shift))
+  (or
+   (iterate
+     (for i from 0 below shift)
+     (for node = (aref path i))
+     (finding i such-that (~> node
+                              (acquire-ownership ownership-tag)
+                              null)))
+   shift))
 
 
+(-> transactional-copy-on-write
+    (rrb-path rrb-indexes shift serapeum:box cl-ds.common.rrb:node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun transactional-copy-on-write (path indexes shift ownership-tag tail)
   (iterate
     (with acquired = (acquire-path path shift ownership-tag))
@@ -300,7 +322,13 @@
     (finally (return node))))
 
 
+(declaim (inline destructive-write))
+(-> destructive-write
+    (rrb-path rrb-indexes shift serapeum:box cl-ds.common.rrb:node-content)
+    cl-ds.common.rrb:rrb-node)
 (defun destructive-write (path indexes shift ownership-tag tail)
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (iterate
     (for i from 0 below shift)
     (for position = (aref indexes i))
@@ -316,8 +344,10 @@
     (finally (return node))))
 
 
+(-> remove-tail (rrb-container) t)
 (defun remove-tail (rrb-container)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (debug 0)
+                     (safety 1) (space 0)))
   (bind (((:slots %size %shift %root) rrb-container)
          (root-underflow (eql (ash (- %size +maximum-children-count+)
                                    (- (* %shift +bit-count+)))
@@ -396,8 +426,16 @@
                :accessor access-container)))
 
 
+(defclass mutable-rrb-range (rrb-range)
+  ())
+
+
 (defmethod cl-ds:whole-range ((container rrb-container))
   (make 'rrb-range :container container))
+
+
+(defmethod cl-ds:whole-range ((container mutable-rrb-range))
+  (make 'mutable-rrb-range :container container))
 
 
 (defun init-rrb (instance container)
@@ -426,7 +464,9 @@
       (flexichain:push-end %content %tail))))
 
 
-(defmethod initialize-instance :after ((instance rrb-range) &key container &allow-other-keys)
+(defmethod initialize-instance :after ((instance rrb-range)
+                                       &key container
+                                       &allow-other-keys)
   (init-rrb instance container))
 
 
@@ -470,51 +510,49 @@
 
 
 (defmethod cl-ds:consume-front ((range rrb-range))
-  (block nil
-    (bind (((:slots %start %content %last-size %lower-bound) range))
-      (if (null %content)
-          (values nil nil)
-          (let* ((new-start (rem (1+ %start) +maximum-children-count+))
-                 (old-start %start)
-                 (reached-tail (eql 1 (flexichain:nb-elements %content)))
-                 (first-array (flexichain:element* %content 0)))
-            (when (and reached-tail (eql old-start %last-size))
-              (setf %content nil)
-              (return (values nil nil)))
-            (when (zerop new-start)
-              (flexichain:pop-start %content))
-            (setf %start new-start)
-            (incf %lower-bound)
-            (~> first-array
-                (aref old-start)
-                (values t)))))))
+  (bind (((:slots %start %content %last-size %lower-bound) range))
+    (if (null %content)
+        (values nil nil)
+        (let* ((new-start (rem (1+ %start) +maximum-children-count+))
+               (old-start %start)
+               (reached-tail (eql 1 (flexichain:nb-elements %content)))
+               (first-array (flexichain:element* %content 0)))
+          (when (and reached-tail (eql old-start %last-size))
+            (setf %content nil)
+            (return-from cl-ds:consume-front (values nil nil)))
+          (when (zerop new-start)
+            (flexichain:pop-start %content))
+          (setf %start new-start)
+          (incf %lower-bound)
+          (~> first-array
+              (aref old-start)
+              (values t))))))
 
 
 (defmethod cl-ds:consume-back ((range rrb-range))
-  (block nil
-    (bind (((:slots %start %content %last-size %upper-bound) range))
-      (if (null %content)
-          (values nil nil)
-          (let* ((new-end (if (eql %last-size 1)
-                              +maximum-children-count+
-                              (1- %last-size)))
-                 (old-end %last-size)
-                 (position (1- %last-size))
-                 (reached-tail (eql 1 (flexichain:nb-elements %content)))
-                 (last-array (~>> %content
-                                  flexichain:nb-elements
-                                  1-
-                                  (flexichain:element* %content))))
-            (when (and reached-tail (eql %start position))
-              (setf %content nil)
-              (return (values nil nil)))
-            (when (eql old-end 1)
-              (flexichain:pop-end %content))
-            (setf %last-size new-end)
-            (decf %upper-bound)
-            (~> last-array
-                (aref position)
-                (values t)))))))
+  (bind (((:slots %start %content %last-size %upper-bound) range))
+    (if (null %content)
+        (values nil nil)
+        (let* ((new-end (if (eql %last-size 1)
+                            +maximum-children-count+
+                            (1- %last-size)))
+               (old-end %last-size)
+               (position (1- %last-size))
+               (reached-tail (eql 1 (flexichain:nb-elements %content)))
+               (last-array (~>> %content
+                                flexichain:nb-elements
+                                1-
+                                (flexichain:element* %content))))
+          (when (and reached-tail (eql %start position))
+            (setf %content nil)
+            (return-from cl-ds:consume-back (values nil nil)))
+          (when (eql old-end 1)
+            (flexichain:pop-end %content))
+          (setf %last-size new-end)
+          (decf %upper-bound)
+          (~> last-array
+              (aref position)
+              (values t))))))
 
 
 (defmethod cl-ds:traverse (function (range rrb-range))
@@ -540,3 +578,43 @@
 (defmethod cl-ds:size ((obj rrb-range))
   (bind (((:slots %upper-bound %lower-bound) obj))
     (- %upper-bound %lower-bound)))
+
+
+(defmethod cl-ds:morep ((obj rrb-range))
+  (not (zerop (cl-ds:size obj))))
+
+
+(defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
+  (bind (((:slots %tail-size %content) range))
+    (if (null %content)
+        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
+        (setf (aref (~> %content
+                        (flexichain:element* (~> %content flexichain:nb-elements 1-)))
+                    (1- %tail-size))
+              new-value))))
+
+
+(defmethod (setf cl-ds:peek-front) (new-value (range mutable-rrb-range))
+  (bind (((:slots %start %content) range))
+    (if (null %content)
+        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
+        (setf (aref (flexichain:element* %content 0)
+                    %start)
+              new-value))))
+
+
+(defmethod (setf cl-ds:at) (new-value (range mutable-rrb-range) index)
+  (bind (((:slots %upper-bound %lower-bound %content) range))
+    (unless (and (>= index %lower-bound) (< index %upper-bound))
+      (error 'cl-ds:argument-out-of-bounds
+             :argument 'index
+             :bounds (list %lower-bound %upper-bound)
+             :value index
+             :text "Index out of bounds."))
+    (let* ((index (- index %lower-bound))
+           (which-array (ash index (- +bit-count+)))
+           (array-index (logand index (lognot +tail-mask+))))
+      (setf (aref (~> %content
+                      (flexichain:element* which-array))
+                  array-index)
+            new-value))))

@@ -9,6 +9,5 @@
   (:nicknames #:cl-ds.stat)
   (:export
    #:average
-   #:entropy
    #:variance
    #:standard-deviation))

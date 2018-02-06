@@ -46,6 +46,11 @@
                              (:file "macros")
                              (:file "docstrings")
                              (:test-file "expression-tests")))
+               (:module "adapters"
+                :components ((:file "package")
+                             (:file "hash-table")
+                             (:file "vector")
+                             (:test-file "vector-tests")))
                (:module "algorithms"
                 :components ((:file "package")
                              (:file "meta")
@@ -58,11 +63,13 @@
                              (:file "group-by")
                              (:file "hash-join")
                              (:file "chain")
-                             (:test-file "hash-join-tests")))
+                             (:file "zip")
+                             (:test-file "hash-join-tests")
+                             (:test-file "chain-tests")
+                             (:test-file "zip-tests")))
                (:module "stat"
                 :components ((:file "package")
                              (:file "average")
-                             (:file "entropy")
                              (:file "variance")
                              (:file "standard-deviation")))
                (:module "common"
@@ -81,11 +88,7 @@
                                            (:file "common")))
                              (:module "rrb"
                               :components ((:file "package")
-                                           (:file "common")
-                                           (:test-file "tests")))))
-               (:module "adapters"
-                :components ((:file "package")
-                             (:file "hash-table")))
+                                           (:file "common")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")

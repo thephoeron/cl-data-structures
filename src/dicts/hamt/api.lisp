@@ -50,9 +50,8 @@
             ,@body))))))
 
 
-(defclass transactional-hamt-dictionary (hamt-dictionary
-                                         cl-ds.dicts:transactional-hashing-dictionary
-                                         cl-ds.dicts:abstract-hashing-dictionary)
+(defclass transactional-hamt-dictionary (mutable-hamt-dictionary
+                                         cl-ds.dicts:transactional-hashing-dictionary)
   ())
 
 

@@ -29,6 +29,9 @@
 (defgeneric put (container item)
   (:generic-function-class functional-put-function))
 
+(defgeneric take-out! (container)
+  (:generic-function-class take-out!-function))
+
 (defgeneric take-out (container)
   (:generic-function-class functional-take-out-function))
 
@@ -101,6 +104,7 @@
   (:method ((operation erase-if!-function)) #'erase-if)
   (:method ((operation add!-function)) #'add)
   (:method ((operation insert!-function)) #'insert)
+  (:method ((operation take-out!-function)) #'functional-take-out-function)
   (:method ((operation update!-function)) #'update))
 
 (defgeneric destructive-counterpart (operation)
@@ -109,6 +113,7 @@
   (:method ((operation functional-erase-if-function)) #'erase-if!)
   (:method ((operation functional-add-function)) #'add!)
   (:method ((operation functional-insert-function)) #'(setf at))
+  (:method ((operation functional-take-out-function)) #'take-out!)
   (:method ((operation functional-update-function)) #'update!))
 
 (defgeneric empty-clone (container))

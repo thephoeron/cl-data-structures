@@ -49,6 +49,13 @@
   ())
 
 
+(defclass take-out!-function (closer-mop:standard-generic-function
+                              destructive-function
+                              take-out-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defclass functional-update-if-function (closer-mop:standard-generic-function
                                          functional-function
                                          update-if-function)
