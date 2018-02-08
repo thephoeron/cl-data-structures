@@ -156,4 +156,7 @@ Range releated functions.
 
 (defgeneric whole-range (container))
 
-(defgeneric reset! (obj))
+(defgeneric reset! (obj)
+  (:method :before ((obj mutable))
+    (when (frozenp obj)
+      (error 'ice-error :text "Can't reset frozen containers."))))
