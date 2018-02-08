@@ -394,7 +394,7 @@
         :root (cl-ds.common.rrb:access-root container)
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
-        :tail-size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-tail-size container)
         :tail (cl-ds.common.rrb:access-tail container)))
 
 
@@ -403,7 +403,7 @@
         :root (cl-ds.common.rrb:access-root container)
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
-        :tail-size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-tail-size container)
         :tail (cl-ds.common.rrb:access-tail container)))
 
 
