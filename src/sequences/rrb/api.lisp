@@ -387,3 +387,20 @@
           %tail-size 0
           %tail nil)
     obj))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
+                                        (traversable cl-ds:traversable)
+                                        &key)
+  (let ((result (make 'mutable-rrb-vector)))
+    (cl-ds:traverse (lambda (x) (cl-ds:put! result x))
+                    traversable)
+    result))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
+                                        (traversable cl-ds:traversable)
+                                        &key)
+  (~> (cl-ds:make-from-traversable 'mutable-rrb-vector traversable)
+      cl-ds:become-functional))
+

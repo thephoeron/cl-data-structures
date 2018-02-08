@@ -128,7 +128,7 @@
 
 (defgeneric transaction (operation object location &rest args))
 
-(defgeneric make-from-traversable (class traversable))
+(defgeneric make-from-traversable (class traversable &key &allow-other-keys))
 
 #|
 
