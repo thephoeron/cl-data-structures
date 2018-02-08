@@ -594,7 +594,7 @@ Methods. Those will just call non generic functions.
                                    traversable
                                    :hash-fn hash-fn
                                    :equal-fn equal-fn)
-      cl-ds:become-transactional))
+      cl-ds:become-functional))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-hamt-dictionary))
