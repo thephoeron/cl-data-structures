@@ -389,6 +389,24 @@
     obj))
 
 
+(defmethod cl-ds:become-mutable ((container functional-rrb-vector))
+  (make 'mutable-rrb-vector
+        :root (cl-ds.common.rrb:access-root container)
+        :shift (cl-ds.common.rrb:access-shift container)
+        :size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-size container)
+        :tail (cl-ds.common.rrb:access-tail container)))
+
+
+(defmethod cl-ds:become-functional ((container mutable-rrb-vector))
+  (make 'functional-rrb-vector
+        :root (cl-ds.common.rrb:access-root container)
+        :shift (cl-ds.common.rrb:access-shift container)
+        :size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-size container)
+        :tail (cl-ds.common.rrb:access-tail container)))
+
+
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
                                         (traversable cl-ds:traversable)
                                         &key)
