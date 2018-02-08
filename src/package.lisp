@@ -83,6 +83,7 @@
    #:lazy
    #:make-bucket
    #:make-delay
+   #:make-from-traversable
    #:make-state
    #:melt!
    #:mod-bind
