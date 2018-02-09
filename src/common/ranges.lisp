@@ -43,7 +43,7 @@
         (values stack result t))))
 
 
-(defmethod cl-ds:traverse (function (range forward-tree-range))
+(defmethod cl-ds:across (function (range forward-tree-range))
   (let* ((stack (access-forward-stack range))
          (obtain-value (read-obtain-value range))
          (key (read-key range)))
@@ -53,7 +53,20 @@
           (read-implementation stack obtain-value)
         (setf stack new-stack)
         (funcall function (funcall key value))))
-    (setf (access-forward-stack range) stack)
+    range))
+
+
+(defmethod cl-ds:traverse (function (range forward-tree-range))
+  (let* ((stack (access-forward-stack range))
+         (obtain-value (read-obtain-value range))
+         (key (read-key range)))
+    (iterate
+      (until (null stack))
+      (multiple-value-bind (new-stack value)
+          (read-implementation stack obtain-value)
+        (setf stack new-stack
+              (access-forward-stack range) stack)
+        (funcall function (funcall key value))))
     range))
 
 

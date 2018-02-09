@@ -551,7 +551,7 @@ Methods. Those will just call non generic functions.
     result))
 
 
-(defmethod cl-ds:traverse (function (container hamt-dictionary))
+(defmethod cl-ds:across (function (container hamt-dictionary))
   (labels ((impl (node)
              (if (listp node)
                  (map nil

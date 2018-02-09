@@ -122,6 +122,12 @@
   (:method (function (object sequence))
     (map nil function object)))
 
+(defgeneric across (function object)
+  (:method (function (object sequence))
+    (map nil function object))
+  (:method (function (object fundamental-range))
+    (traverse function (clone object))))
+
 (defgeneric special-traverse (object)
   (:method (object)
     (traverse *traverse-callback* object)))

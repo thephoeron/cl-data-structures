@@ -9,6 +9,7 @@
   (:export
    #:*documentation*
    #:*traverse-callback*
+   #:across
    #:add
    #:add!
    #:add!-function

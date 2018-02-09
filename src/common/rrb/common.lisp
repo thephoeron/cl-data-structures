@@ -555,7 +555,7 @@
               (values t))))))
 
 
-(defmethod cl-ds:traverse (function (range rrb-range))
+(defmethod cl-ds:across (function (range rrb-range))
   (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
          (index %start)
          (last-position (~> %content flexichain:nb-elements 1-)))
@@ -567,11 +567,27 @@
         (for a from index below (if end %last-size +maximum-children-count+))
         (funcall function (aref array a)))
       (setf index 0))
-    (setf %start 0
-          %lower-bound 0
-          %upper-bound 0
-          %content (make 'flexichain:standard-flexichain)
-          %last-size 0)
+    range))
+
+
+(defmethod cl-ds:traverse (function (range rrb-range))
+  (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
+         (index %start)
+         (last-position (~> %content flexichain:nb-elements 1-)))
+    (iterate
+      (for i from 0)
+      (until (zerop (flexichain:nb-elements %content)))
+      (for array = (flexichain:element* %content 0))
+      (iterate
+        (with end = (eql i last-position))
+        (with last-index = (if end %last-size +maximum-children-count+))
+        (for a from index below last-index)
+        (setf %start (1+ a))
+        (incf %lower-bound)
+        (when (eql %start last-index)
+          (flexichain:pop-start %content))
+        (funcall function (aref array a)))
+      (setf index 0))
     range))
 
 
