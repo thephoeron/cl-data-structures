@@ -40,6 +40,15 @@
   obj)
 
 
+(defmethod across (function (obj expression))
+  (bind (((:slots %arguments %construct-function) obj)
+         (fn (apply %construct-function %arguments)))
+    (iterate
+      (for (values value not-finished) = (funcall fn))
+      (while not-finished)
+      (funcall function value))))
+
+
 (defmethod consume-front ((obj expression))
   (funcall obj))
 
