@@ -92,37 +92,37 @@
                (push label
                      (gethash key old-groups)))
              groups)
-    nil))
+    nil)
 
 
-(defgeneric get-initial-states (range function argument)
-  (:method ((range group-by-proxy)
-            (function multi-aggregation-function)
-            all)
-    (let ((groups (call-next-method))
-          (prior-stages (apply #'multi-aggregation-stages function all)))
-      (unless (null prior-stages)
-        (let ((collector (make-instance 'group-by-states-collector
-                                        :groups (read-groups range)
-                                        :accumulated-args groups
-                                        :original-range (read-original-range range)
-                                        :key (read-key range))))
-          (iterate
-            (for (label . stage) in prior-stages)
-            (setf (access-label collector) label)
-            (funcall stage collector))))
-      groups))
-  (:method ((range group-by-proxy)
-            (function aggregation-function)
-            all)
-    (let ((groups (copy-hash-table (read-groups range)))
-          (extract-key (read-key range)))
-      ;; first, create groups…
-      (cl-ds:traverse (lambda (x)
-                        (let ((k (funcall extract-key x)))
-                          (setf (gethash k groups) all)))
-                      (read-original-range range))
-      groups)))
+  (defgeneric get-initial-states (range function argument)
+    (:method ((range group-by-proxy)
+              (function multi-aggregation-function)
+              all)
+      (let ((groups (call-next-method))
+            (prior-stages (apply #'multi-aggregation-stages function all)))
+        (unless (null prior-stages)
+          (let ((collector (make-instance 'group-by-states-collector
+                                          :groups (read-groups range)
+                                          :accumulated-args groups
+                                          :original-range (read-original-range range)
+                                          :key (read-key range))))
+            (iterate
+              (for (label . stage) in prior-stages)
+              (setf (access-label collector) label)
+              (funcall stage collector))))
+        groups))
+    (:method ((range group-by-proxy)
+              (function aggregation-function)
+              all)
+      (let ((groups (copy-hash-table (read-groups range)))
+            (extract-key (read-key range)))
+        ;; first, create groups…
+        (cl-ds:traverse (lambda (x)
+                          (let ((k (funcall extract-key x)))
+                            (setf (gethash k groups) all)))
+                        (cl-ds:clone (read-original-range range)))
+        groups))))
 
 
 (defmethod apply-aggregation-function ((range group-by-proxy)

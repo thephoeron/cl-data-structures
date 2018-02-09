@@ -6,6 +6,16 @@
                     :reader read-original-range)))
 
 
+(defmethod cl-ds:reset! ((range proxy-range))
+  (cl-ds:reset! (read-original-range range))
+  range)
+
+
+(defmethod cl-ds:clone ((range proxy-range))
+  (make (type-of range)
+        :original-range (cl-ds:clone (read-original-range range))))
+
+
 (defmethod cl-ds:traverse (function (range proxy-range))
   (cl-ds:traverse function (read-original-range range)))
 

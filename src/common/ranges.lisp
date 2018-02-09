@@ -103,6 +103,7 @@
 
 (defmethod cl-ds:clone ((range forward-tree-range))
   (make 'forward-tree-range
+        :container (read-container range)
         :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
         :obtain-value (read-obtain-value range)
         :key (read-key range)))
