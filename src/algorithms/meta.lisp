@@ -107,9 +107,9 @@
     (push (access-label range) (access-args range))))
 
 
-(defmethod apply-aggregation-function(range
-                                      (function multi-aggregation-function)
-                                      &rest all &key key &allow-other-keys)
+(defmethod apply-aggregation-function (range
+                                       (function multi-aggregation-function)
+                                       &rest all &key key &allow-other-keys)
   (declare (ignore key))
   (let ((stages (apply #'multi-aggregation-stages function all)))
     (unless (endp stages)
