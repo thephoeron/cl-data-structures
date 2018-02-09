@@ -1,0 +1,2 @@
+* Redesign 
+** TODO Currently traverse is designed to not change traversable object. This is strong assumption, and should be removed.
