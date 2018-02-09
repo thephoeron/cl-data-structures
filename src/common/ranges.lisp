@@ -53,6 +53,7 @@
           (read-implementation stack obtain-value)
         (setf stack new-stack)
         (funcall function (funcall key value))))
+    (setf (access-forward-stack range) stack)
     range))
 
 

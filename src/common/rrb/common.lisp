@@ -567,6 +567,11 @@
         (for a from index below (if end %last-size +maximum-children-count+))
         (funcall function (aref array a)))
       (setf index 0))
+    (setf %start 0
+          %lower-bound 0
+          %upper-bound 0
+          %content (make 'flexichain:standard-flexichain)
+          %last-size 0)
     range))
 
 

@@ -33,13 +33,11 @@
 
 
 (defmethod traverse (function (obj expression))
-  (bind (((:slots %construct-function %arguments) obj)
-         (fn (apply %construct-function %arguments)))
-    (iterate
-      (for (values value not-finished) = (funcall fn))
-      (while not-finished)
-      (funcall function value))
-    obj))
+  (iterate
+    (for (values value not-finished) = (funcall obj))
+    (while not-finished)
+    (funcall function value))
+  obj)
 
 
 (defmethod consume-front ((obj expression))
