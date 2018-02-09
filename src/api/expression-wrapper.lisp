@@ -46,7 +46,8 @@
     (iterate
       (for (values value not-finished) = (funcall fn))
       (while not-finished)
-      (funcall function value))))
+      (funcall function value))
+    obj))
 
 
 (defmethod consume-front ((obj expression))
