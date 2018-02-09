@@ -125,6 +125,8 @@
 (defgeneric across (function object)
   (:method (function (object sequence))
     (map nil function object))
+  (:method (function (object fundamental-container))
+    (traverse function object))
   (:method (function (object fundamental-range))
     (traverse function (clone object))))
 
