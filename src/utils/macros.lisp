@@ -210,37 +210,42 @@
         (push `(,name (&key ,@vars)
                       (let ((,!finished nil))
                         (let ,(mapcar #'list fake-vars vars)
-                          (lambda ()
-                            (block ,!end
-                              (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
-                                           `(progn
-                                              (setf ,',!finished t)
-                                              (return-from ,',!end
-                                                (values (progn ,@,!result)
-                                                        t))))
-                                         (,(intern "FINISH") ()
-                                           `(progn
-                                              (setf ,',!finished t)
-                                              (return-from ,',!end
-                                                (values nil nil))))
-                                         (,(intern "RECUR") (&rest args)
-                                           `(progn
-                                              (setf ,@(build-setf-form ',vars-asg args))
-                                              (go ,',!self)))
-                                         (,(intern "SEND-RECUR") (,!result &rest args)
-                                           `(return-from ,',!end
-                                              (values (prog1
-                                                          ,,!result
-                                                        (setf ,@(build-setf-form ',vars-asg args)))
-                                                      t))))
-                                (tagbody
-                                   ,!self
-                                   (when ,!finished
-                                     (return-from ,!end (values nil nil)))
-                                   (let ,(mapcar #'list vars fake-vars)
-                                     ,@content
-                                     (setf ,!finished t)
-                                     (return-from ,!end (values nil nil))))))))))
+                          (lambda (&optional operation)
+                            (if operation
+                                (list ,@(apply #'append
+                                               (mapcar (lambda (name binding) (list (make-keyword name) binding))
+                                                       vars
+                                                       fake-vars)))
+                                (block ,!end
+                                  (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
+                                               `(progn
+                                                  (setf ,',!finished t)
+                                                  (return-from ,',!end
+                                                    (values (progn ,@,!result)
+                                                            t))))
+                                             (,(intern "FINISH") ()
+                                               `(progn
+                                                  (setf ,',!finished t)
+                                                  (return-from ,',!end
+                                                    (values nil nil))))
+                                             (,(intern "RECUR") (&rest args)
+                                               `(progn
+                                                  (setf ,@(build-setf-form ',vars-asg args))
+                                                  (go ,',!self)))
+                                             (,(intern "SEND-RECUR") (,!result &rest args)
+                                               `(return-from ,',!end
+                                                  (values (prog1
+                                                              ,,!result
+                                                            (setf ,@(build-setf-form ',vars-asg args)))
+                                                          t))))
+                                    (tagbody
+                                       ,!self
+                                       (when ,!finished
+                                         (return-from ,!end (values nil nil)))
+                                       (let ,(mapcar #'list vars fake-vars)
+                                         ,@content
+                                         (setf ,!finished t)
+                                         (return-from ,!end (values nil nil)))))))))))
               final-forms))
       `(flet ,final-forms
          ,@body))))

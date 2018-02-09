@@ -8,17 +8,19 @@
                         :reader read-body)
    (%arguments :initarg :arguments
                :initform nil
-               :reader read-arguments))
+               :reader read-arguments)
+   (%closure :accessor access-closure))
   (:metaclass c2mop:funcallable-standard-class))
 
 
 (defmethod initialize-instance :after ((obj expression) &rest all
                                        &key &allow-other-keys)
   (declare (ignore all))
-  (bind (((:slots %construct-function %arguments) obj))
-    (c2mop:set-funcallable-instance-function obj
-                                             (apply %construct-function
-                                                    %arguments))))
+  (bind (((:slots %construct-function %arguments %closure) obj)
+         (function (apply %construct-function
+                          %arguments)))
+    (setf %closure function)
+    (c2mop:set-funcallable-instance-function obj (lambda () (funcall function)))))
 
 
 (defmacro xpr (arguments &body body)
@@ -41,8 +43,8 @@
 
 
 (defmethod across (function (obj expression))
-  (bind (((:slots %arguments %construct-function) obj)
-         (fn (apply %construct-function %arguments)))
+  (bind (((:slots %arguments %construct-function %closure) obj)
+         (fn (apply %construct-function (funcall %closure t))))
     (iterate
       (for (values value not-finished) = (funcall fn))
       (while not-finished)
@@ -55,8 +57,9 @@
 
 
 (defmethod reset! ((obj expression))
-  (bind (((:slots %construct-function %arguments) obj))
-    (c2mop:set-funcallable-instance-function obj
-                                             (apply %construct-function
-                                                    %arguments)))
+  (bind (((:slots %construct-function %arguments %closure) obj)
+         (function (apply %construct-function
+                          %arguments)))
+    (setf %closure function)
+    (c2mop:set-funcallable-instance-function obj (lambda () (funcall function))))
   obj)
