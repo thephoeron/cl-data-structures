@@ -604,10 +604,6 @@
                  (copy-array (cl-ds.common.rrb:access-tail container)))))
 
 
-(defmethod cl-ds:become-transactional ((container transactional-rrb-vector))
-  (cl-ds.utils:todo))
-
-
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
                                         (traversable cl-ds:traversable)
                                         &key)

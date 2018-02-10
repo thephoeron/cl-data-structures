@@ -65,8 +65,7 @@
                       (content access-content)
                       (frozen access-frozen))
           instance)
-         (transactional-instance (cl-ds:become-transactional
-                                  content)))
+         (transactional-instance (cl-ds:become-transactional content)))
     (execute-changes operations transactional-instance)
     (setf operations nil
           content transactional-instance)
