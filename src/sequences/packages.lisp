@@ -20,5 +20,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:functional-rrb-vector
+   #:make-functional-rrb-vector
+   #:make-mutable-rrb-vector
    #:mutable-rrb-vector
    #:transactional-rrb-vector))

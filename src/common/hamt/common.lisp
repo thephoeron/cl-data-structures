@@ -626,7 +626,6 @@ Copy nodes and stuff.
 
 
 (defun obtain-value (pull push)
-  (declare (optimize (debug 3)))
   (iterate
     (for old-cell = (funcall pull))
     (for (values new-cell modified-cell) = (forward-cell old-cell))

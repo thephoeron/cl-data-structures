@@ -32,6 +32,7 @@
    #:node-content
    #:remove-tail
    #:rrb-node
+   #:rrb-node-push!
    #:rrb-at
    #:rrb-container
    #:rrb-node-content
