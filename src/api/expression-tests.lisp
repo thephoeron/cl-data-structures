@@ -9,8 +9,8 @@
       (expression (cl-ds:xpr (:iteration 1)
                     (when (< iteration 5)
                       (send-recur iteration :iteration (1+ iteration))))))
-  (cl-ds:traverse (lambda (x) (push x data))
-                  expression)
+  (cl-ds:across (lambda (x) (push x data))
+                expression)
   (is data '(4 3 2 1) :test #'equal)
   (setf data nil)
   (iterate

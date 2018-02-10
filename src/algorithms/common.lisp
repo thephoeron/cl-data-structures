@@ -20,6 +20,10 @@
   (cl-ds:traverse function (read-original-range range)))
 
 
+(defmethod cl-ds:across (function (range proxy-range))
+  (cl-ds:across function (read-original-range range)))
+
+
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
   ())
 

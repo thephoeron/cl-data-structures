@@ -47,6 +47,12 @@
   range)
 
 
+(defmethod cl-ds:across (function (range forward-proxy-box-range))
+  (cl-ds:across (compose function (read-function range) (or (read-key range) #'identity))
+                (read-original-range range))
+  range)
+
+
 (defgeneric on-each-proxy-range-from-range (range function key)
   (:method :around ((range fundamental-range) function key)
     (check-type function (or symbol function))

@@ -41,7 +41,10 @@
                                 (declare (ignore key))
                                 (incf size (reduce #'+ value :key #'length)))
                               table)
-                     (make-array size :element-type t :adjustable t :fill-pointer 0)))
+                     (make-array size
+                                 :element-type t
+                                 :adjustable t
+                                 :fill-pointer 0)))
            (collector (compose (rcurry #'vector-push-extend result)
                                join-function)))
       (maphash

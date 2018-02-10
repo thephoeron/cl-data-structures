@@ -56,6 +56,14 @@
   (force-lazy-range range))
 
 
+(defmethod cl-ds:traverse :before (function (range lazy-range))
+  (force-lazy-range range))
+
+
+(defmethod cl-ds:across :before (function (range lazy-range))
+  (force-lazy-range range))
+
+
 (defclass lazy-forward-range (cl-ds:fundamental-forward-range
                               lazy-range)
   ())
@@ -97,3 +105,11 @@
 
 (defmethod cl-ds:drop-back ((range lazy-bidirectional-range) count)
   (cl-ds:drop-back (slot-value range '%range) count))
+
+
+(defmethod cl-ds:traverse (function (range lazy-forward-range))
+  (cl-ds:traverse function (slot-value range '%range)))
+
+
+(defmethod cl-ds:across (function (range lazy-forward-range))
+  (cl-ds:across function (slot-value range '%range)))
