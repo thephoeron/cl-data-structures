@@ -96,13 +96,13 @@
   (let ((state (apply #'make-state function (access-args range))))
     (unless (aggregation-finished-p function state)
       (block end
-        (cl-ds:traverse (lambda (x)
-                          (aggregate function
-                                     state
-                                     (if key (funcall key x) x))
-                          (when (aggregation-finished-p function state)
-                            (return-from end)))
-                        (read-original range))))
+        (cl-ds:across (lambda (x)
+                        (aggregate function
+                                   state
+                                   (if key (funcall key x) x))
+                        (when (aggregation-finished-p function state)
+                          (return-from end)))
+                      (read-original range))))
     (push (state-result function state) (access-args range))
     (push (access-label range) (access-args range))))
 
@@ -130,11 +130,11 @@
   (let ((state (apply #'make-state function all)))
     (unless (aggregation-finished-p function state)
       (block end
-        (cl-ds:traverse (lambda (x)
-                          (aggregate function
-                                     state
-                                     (if key (funcall key x) x))
-                          (when (aggregation-finished-p function state)
-                            (return-from end)))
-                        range)))
+        (cl-ds:across (lambda (x)
+                        (aggregate function
+                                   state
+                                   (if key (funcall key x) x))
+                        (when (aggregation-finished-p function state)
+                          (return-from end)))
+                      range)))
     (state-result function state)))

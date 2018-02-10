@@ -70,7 +70,7 @@
         (extract-key (read-key range))
         (finished (copy-hash-table (read-groups range))))
     (block end
-      (cl-ds:traverse (lambda (x)
+      (cl-ds:across (lambda (x)
                         (let ((k (funcall extract-key x)))
                           (unless (gethash k finished)
                             (let ((state (ensure (gethash k groups)
@@ -85,7 +85,7 @@
                                   (aggregate function
                                              state
                                              (if (null key) x (funcall key x))))))))
-                      (cl-ds:clone range)))
+                    (cl-ds:clone range)))
     (maphash (lambda (key state)
                (push (state-result function state)
                      (gethash key old-groups))
@@ -118,10 +118,10 @@
     (let ((groups (copy-hash-table (read-groups range)))
           (extract-key (read-key range)))
       ;; first, create groups…
-      (cl-ds:traverse (lambda (x)
+      (cl-ds:across (lambda (x)
                         (let ((k (funcall extract-key x)))
                           (setf (gethash k groups) all)))
-                      (cl-ds:clone (read-original-range range)))
+                    (read-original-range range))
       groups)))
 
 
@@ -133,7 +133,7 @@
          (final-states (copy-hash-table (read-groups range) :size (hash-table-size groups)))
          (finished (copy-hash-table (read-groups range) :size (hash-table-size groups))))
     (block end
-      (cl-ds:traverse (lambda (x)
+      (cl-ds:across (lambda (x)
                         (let ((k (funcall extract-key x)))
                           (unless (gethash k finished)
                             (let ((state (ensure (gethash k final-states)
@@ -148,7 +148,7 @@
                                   (aggregate function
                                              state
                                              (if (null key) x (funcall key x))))))))
-                      (read-original-range range)))
+                    (read-original-range range)))
     (maphash (lambda (key state)
                (setf (gethash key final-states) (state-result function state)))
              final-states)
