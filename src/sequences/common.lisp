@@ -13,6 +13,10 @@
   ())
 
 
+(defclass transactional-sequence (mutable-sequence cl-ds:transactional)
+  ())
+
+
 (defmethod cl-ds:make-bucket ((operation cl-ds:grow-function)
                               (container abstract-sequence)
                               location

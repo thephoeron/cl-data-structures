@@ -9,7 +9,8 @@
   (:export
    #:abstract-sequence
    #:functional-sequence
-   #:mutable-sequence))
+   #:mutable-sequence
+   #:transactional-sequence))
 
 
 (defpackage :cl-data-structures.sequences.rrb-vector
@@ -19,4 +20,5 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:functional-rrb-vector
-   #:mutable-rrb-vector))
+   #:mutable-rrb-vector
+   #:transactional-rrb-vector))

@@ -581,9 +581,9 @@ Methods. Those will just call non generic functions.
                                         (traversable cl-ds:traversable)
                                         &key hash-fn equal-fn)
   (let ((result (make-mutable-hamt-dictionary hash-fn equal-fn)))
-    (cl-ds:traverse (lambda (x &aux (key (car x)) (value (cdr x)))
-                      (setf (cl-ds:at result key) value))
-                    traversable)
+    (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
+                    (setf (cl-ds:at result key) value))
+                  traversable)
     result))
 
 

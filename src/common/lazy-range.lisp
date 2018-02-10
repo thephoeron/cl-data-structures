@@ -40,10 +40,6 @@
   (force-lazy-range range))
 
 
-;; (defmethod cl-ds:consume-some :before ((range lazy-range) count)
-;;   (force-lazy-range range))
-
-
 (defmethod cl-ds:drop-front :before ((range lazy-range) count)
   (force-lazy-range range))
 

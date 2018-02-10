@@ -15,6 +15,11 @@
   ())
 
 
+(defclass transactional-rrb-vector (rrb-vector
+                                    cl-ds.seqs:transactional-sequence)
+  ())
+
+
 (defmethod cl-ds:position-modification ((operation cl-ds:take-out!-function)
                                         (container mutable-rrb-vector)
                                         location &rest rest &key &allow-other-keys)
@@ -411,8 +416,8 @@
                                         (traversable cl-ds:traversable)
                                         &key)
   (let ((result (make 'mutable-rrb-vector)))
-    (cl-ds:traverse (lambda (x) (cl-ds:put! result x))
-                    traversable)
+    (cl-ds:across (lambda (x) (cl-ds:put! result x))
+                  traversable)
     result))
 
 
@@ -421,4 +426,3 @@
                                         &key)
   (~> (cl-ds:make-from-traversable 'mutable-rrb-vector traversable)
       cl-ds:become-functional))
-
