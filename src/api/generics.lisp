@@ -134,7 +134,7 @@
   (:method (object)
     (traverse *traverse-callback* object)))
 
-(defgeneric transaction (operation object location &rest args))
+(defgeneric transaction (operation object &rest args))
 
 (defgeneric make-from-traversable (class traversable &key &allow-other-keys)
   (:method ((class symbol) (trav sequence) &rest all &key &allow-other-keys)

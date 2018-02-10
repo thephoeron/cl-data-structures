@@ -582,7 +582,7 @@
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
-        :tail (cl-ds.common.rrb:access-tail container)))
+        :tail (copy-array (cl-ds.common.rrb:access-tail container))))
 
 
 (defmethod cl-ds:become-functional ((container mutable-rrb-vector))
@@ -591,10 +591,20 @@
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
-        :tail (cl-ds.common.rrb:access-tail container)))
+        :tail (copy-array (cl-ds.common.rrb:access-tail container))))
 
 
 (defmethod cl-ds:become-transactional ((container rrb-vector))
+  (make 'transactional-rrb-vector
+        :root (cl-ds.common.rrb:access-root container)
+        :shift (cl-ds.common.rrb:access-shift container)
+        :size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-tail-size container)
+        :tail (and (cl-ds.common.rrb:access-tail container)
+                 (copy-array (cl-ds.common.rrb:access-tail container)))))
+
+
+(defmethod cl-ds:become-transactional ((container transactional-rrb-vector))
   (cl-ds.utils:todo))
 
 
@@ -614,9 +624,62 @@
       cl-ds:become-functional))
 
 
+(defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
+                                        (traversable cl-ds:traversable)
+                                        &key)
+  (~> (cl-ds:make-from-traversable 'mutable-rrb-vector traversable)
+      cl-ds:become-transactional))
+
+
 (defun make-functional-rrb-vector ()
   (make 'functional-rrb-vector))
 
 
 (defun make-mutable-rrb-vector ()
   (make 'mutable-rrb-vector))
+
+
+(defun make-transactional-rrb-vector ()
+  (make 'transactional-rrb-vector))
+
+
+(defmethod cl-ds:freeze! ((obj transactional-rrb-vector))
+  (let ((result (call-next-method)))
+    (unless result
+      (cl-ds.common.abstract:enclose-finalizer obj))
+    result))
+
+
+(defmethod cl-ds:melt! ((obj transactional-rrb-vector))
+  (let ((result (call-next-method)))
+    (when result
+      (trivial-garbage:cancel-finalization obj))
+    result))
+
+
+(defmethod cl-ds:transaction ((operation cl-ds:put!-function)
+                              (container transactional-rrb-vector)
+                              &rest args)
+  (bind ((result (cl-ds:become-transactional container)))
+    (apply operation result args)
+    (cl-ds:freeze! container)
+    result))
+
+
+(defmethod cl-ds:transaction ((operation cl-ds:take-out!-function)
+                              (container transactional-rrb-vector)
+                              &rest args)
+  (declare (ignore args))
+  (bind ((result (cl-ds:become-transactional container)))
+    (funcall operation result)
+    (cl-ds:freeze! container)
+    result))
+
+
+(defmethod cl-ds:transaction ((operation cl-ds:insert!-function)
+                              (container transactional-rrb-vector)
+                              &rest args)
+  (bind ((result (cl-ds:become-transactional container)))
+    (apply operation result args)
+    (cl-ds:freeze! container)
+    result))

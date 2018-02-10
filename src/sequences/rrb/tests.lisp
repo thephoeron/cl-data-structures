@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 17735)
+(plan 18529)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -96,5 +96,29 @@
   (iterate
     (for i from 0 below 10)
     (is (cl-ds:at container i) i)))
+
+(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector
+                                              (cl-ds:xpr (:i 0)
+                                                (when (< i 64)
+                                                  (send-recur i :i (1+ i)))))))
+  (iterate
+    (for i from 0 below 64)
+    (is (cl-ds:at container i) i))
+  (let ((new-container (cl-ds:become-transactional container)))
+    (iterate
+      (for i from 64 below 365)
+      (cl-ds:put! new-container i))
+    (iterate
+      (for i from 64 below 365)
+      (cl-ds:put! container (* i 2)))
+    (iterate
+      (for i from 64 below 365)
+      (is (cl-ds:at container i) (* i 2)))
+    (iterate
+      (for i from 0 below 64)
+      (is (cl-ds:at new-container i) i))
+    (iterate
+      (for i from 0 below 365)
+      (is (cl-ds:at new-container i) i))))
 
 (finalize)

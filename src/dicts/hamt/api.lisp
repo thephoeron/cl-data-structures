@@ -524,28 +524,26 @@ Methods. Those will just call non generic functions.
 
 (defmethod cl-ds:transaction ((operation cl-ds:destructive-function)
                               (container transactional-hamt-dictionary)
-                              location &rest args)
+                              &rest args)
   (let ((result (make 'transactional-hamt-dictionary
                       :hash-fn (cl-ds.dicts:read-hash-fn container)
                       :root (access-root container)
                       :equal-fn (cl-ds.dicts:read-equal-fn container)
                       :size (access-size container))))
-    (apply operation result location args)
+    (apply operation result args)
     (cl-ds:freeze! container)
     result))
 
 
 (defmethod cl-ds:transaction ((operation cl-ds:insert!-function)
                               (container transactional-hamt-dictionary)
-                              location &rest args)
-  (let ((result (make 'transactional-hamt-dictionary
-                      :hash-fn (cl-ds.dicts:read-hash-fn container)
-                      :root (access-root container)
-                      :equal-fn (cl-ds.dicts:read-equal-fn container)
-                      :size (access-size container)))
-        (new-value (first args))
-        (args (rest args)))
-    (assert (null args))
+                              &rest args)
+  (bind (((location new-value . _) args)
+         (result (make 'transactional-hamt-dictionary
+                       :hash-fn (cl-ds.dicts:read-hash-fn container)
+                       :root (access-root container)
+                       :equal-fn (cl-ds.dicts:read-equal-fn container)
+                       :size (access-size container))))
     (funcall operation new-value result location)
     (cl-ds:freeze! container)
     result))
@@ -605,3 +603,17 @@ Methods. Those will just call non generic functions.
                                    :hash-fn hash-fn
                                    :equal-fn equal-fn)
       cl-ds:become-transactional))
+
+
+(defmethod cl-ds:freeze! ((obj transactional-hamt-dictionary))
+  (let ((result (call-next-method)))
+    (unless result
+      (cl-ds.common.abstract:enclose-finalizer obj))
+    result))
+
+
+(defmethod cl-ds:melt! ((obj transactional-hamt-dictionary))
+  (let ((result (call-next-method)))
+    (when result
+      (trivial-garbage:cancel-finalization obj))
+    result))

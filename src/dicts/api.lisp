@@ -57,17 +57,3 @@
                                               location
                                               :value new-value))))
     (values new-value status)))
-
-
-(defmethod cl-ds:freeze! ((obj dictionary))
-  (let ((result (call-next-method)))
-    (unless result
-      (cl-ds.common.abstract:enclose-finalizer obj))
-    result))
-
-
-(defmethod cl-ds:melt! ((obj dictionary))
-  (let ((result (call-next-method)))
-    (when result
-      (trivial-garbage:cancel-finalization obj))
-    result))

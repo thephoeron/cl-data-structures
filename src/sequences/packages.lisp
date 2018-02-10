@@ -22,5 +22,6 @@
    #:functional-rrb-vector
    #:make-functional-rrb-vector
    #:make-mutable-rrb-vector
+   #:make-transactional-rrb-vector
    #:mutable-rrb-vector
    #:transactional-rrb-vector))
