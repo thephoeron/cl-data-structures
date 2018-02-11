@@ -9,10 +9,6 @@
   ())
 
 
-(defclass lazy-sequence (functional-sequence cl-ds:lazy)
-  ())
-
-
 (defclass mutable-sequence (abstract-sequence cl-ds:mutable)
   ())
 
@@ -130,7 +126,8 @@
   new-value)
 
 
-(defclass lazy-box-sequence (cl-ds.common:lazy-box-container lazy-sequence)
+(defclass lazy-box-sequence (cl-ds.common:lazy-box-container
+                             functional-sequence)
   ())
 
 
