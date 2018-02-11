@@ -311,9 +311,7 @@
                                                               (cl-ds.common.rrb:access-shift container))))
         (setf (cl-ds.common.rrb:access-tail container)
               (let* ((tail (cl-ds.common.rrb:access-tail container))
-                     (new-tail (if (null tail)
-                                   (cl-ds.common.rrb:make-node-content)
-                                   (copy-array tail))))
+                     (new-tail (or tail (cl-ds.common.rrb:make-node-content))))
                 (setf (aref new-tail tail-size) new-bucket)
                 new-tail)
 
@@ -439,10 +437,14 @@
                        initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
                                                       (aref index shift)))
                                         (next-value (change-bucket bucket))
-                                        (content (copy-array (aref path shift))))
+                                        (content (if (eql shift owned-depth)
+                                                     (aref path shift)
+                                                     (copy-array (aref path shift)))))
                                    (setf (aref content (aref index shift)) next-value)
-                                   (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
-                                                                   :content content))
+                                   (if (eql shift owned-depth)
+                                       (aref path shift)
+                                       (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
+                                                                       :content content)))
                        then (if (< i owned-depth)
                                 (cl-ds.common.rrb:rrb-node-push! old-node
                                                                  position
