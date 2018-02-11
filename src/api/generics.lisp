@@ -11,7 +11,7 @@
     (error 'ice-error :test "Trying to change frozen object!")))
 
 (defmethod position-modification :before (operation
-                                          container
+                                          (container transactional)
                                           location
                                           &rest all
                                           &key &allow-other-keys)
@@ -179,6 +179,6 @@ Range releated functions.
 (defgeneric whole-range (container))
 
 (defgeneric reset! (obj)
-  (:method :before ((obj mutable))
+  (:method :before ((obj transactional))
     (when (frozenp obj)
       (error 'ice-error :text "Can't reset frozen containers."))))
