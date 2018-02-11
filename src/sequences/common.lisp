@@ -9,6 +9,10 @@
   ())
 
 
+(defclass lazy-sequence (functional-sequence cl-ds:lazy)
+  ())
+
+
 (defclass mutable-sequence (abstract-sequence cl-ds:mutable)
   ())
 
@@ -124,3 +128,21 @@
   (cl-ds:position-modification #'(setf cl-ds:at)
                                container location :value new-value)
   new-value)
+
+
+(defclass lazy-box-sequence (cl-ds.common:lazy-box-container lazy-sequence)
+  ())
+
+
+(defmethod cl-ds:at ((container lazy-box-sequence) location)
+  (cl-ds.common:force-version container)
+  (cl-ds:at (cl-ds.common:access-content container) location))
+
+
+(defmethod cl-ds:become-lazy ((container cl-ds.seqs:abstract-sequence))
+  (make 'lazy-box-sequence
+        :content (cl-ds:become-transactional container)))
+
+
+(defmethod cl-ds:whole-range ((container lazy-box-sequence))
+  (cl-ds.utils:todo))
