@@ -120,6 +120,15 @@
                                :condition-fn condition-fn))
 
 
+(defmethod cl-ds:update-if! ((container functional-sequence)
+                             location
+                             new-value
+                             condition-fn)
+  (cl-ds:position-modification #'cl-ds:update-if! container location
+                               :value new-value
+                               :condition-fn condition-fn))
+
+
 (defmethod (setf cl-ds:at) (new-value (container mutable-sequence) location)
   (cl-ds:position-modification #'(setf cl-ds:at)
                                container location :value new-value)
@@ -142,4 +151,6 @@
 
 
 (defmethod cl-ds:whole-range ((container lazy-box-sequence))
-  (cl-ds.utils:todo))
+  (cl-ds.common:make-lazy-range cl-ds.common:lazy-random-access-range
+                                container
+                                (cl-ds:whole-range container)))

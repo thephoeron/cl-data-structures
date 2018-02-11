@@ -60,6 +60,10 @@
   (force-lazy-range range))
 
 
+(defmethod cl-ds:size :before ((range lazy-random-access-range))
+  (force-lazy-range range))
+
+
 (defclass lazy-forward-range (cl-ds:fundamental-forward-range
                               lazy-range)
   ())
@@ -109,3 +113,7 @@
 
 (defmethod cl-ds:across (function (range lazy-forward-range))
   (cl-ds:across function (slot-value range '%range)))
+
+
+(defmethod cl-ds:size ((range lazy-random-access-range))
+  (cl-ds:size range))
