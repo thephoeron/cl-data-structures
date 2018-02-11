@@ -24,6 +24,21 @@
                   :range (lambda () ,range)))
 
 
+(defclass lazy-forward-range (cl-ds:fundamental-forward-range
+                              lazy-range)
+  ())
+
+
+(defclass lazy-bidirectional-range (cl-ds:fundamental-bidirectional-range
+                                    lazy-forward-range)
+  ())
+
+
+(defclass lazy-random-access-range (cl-ds:fundamental-random-access-range
+                                    lazy-bidirectional-range)
+  ())
+
+
 (defmethod cl-ds:consume-front :before ((range lazy-range))
    (force-lazy-range range))
 
@@ -64,21 +79,6 @@
   (force-lazy-range range))
 
 
-(defclass lazy-forward-range (cl-ds:fundamental-forward-range
-                              lazy-range)
-  ())
-
-
-(defclass lazy-bidirectional-range (cl-ds:fundamental-bidirectional-range
-                                    lazy-forward-range)
-  ())
-
-
-(defclass lazy-random-access-range (cl-ds:fundamental-random-access-range
-                                    lazy-bidirectional-range)
-  ())
-
-
 (defmethod cl-ds:consume-front ((range lazy-forward-range))
   (cl-ds:consume-front (slot-value range '%range)))
 
@@ -116,4 +116,4 @@
 
 
 (defmethod cl-ds:size ((range lazy-random-access-range))
-  (cl-ds:size range))
+  (cl-ds:size (slot-value range '%range)))
