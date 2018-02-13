@@ -5,3 +5,4 @@
 *** DONE Add clone-and-traverse (like traverse, but will never alter passed range).
     CLOSED: [2018-02-12 pon 10:30]
 **** It is called across
+* TODO remove morep
