@@ -1,8 +1,10 @@
-* Redesign 
+* Redesign
 ** TODO Currently traverse is designed to not change traversable object. This is strong assumption, and should be removed.
 ** DONE Aggregate functions should not change range (because it makes things complicated).
    CLOSED: [2018-02-12 pon 10:30]
 *** DONE Add clone-and-traverse (like traverse, but will never alter passed range).
     CLOSED: [2018-02-12 pon 10:30]
 **** It is called across
-* TODO remove morep
+* DONE remove morep
+  CLOSED: [2018-02-14 śro 08:06]
+* TODO turn xpr into correct forward range

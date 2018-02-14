@@ -88,7 +88,6 @@
    #:make-state
    #:melt!
    #:mod-bind
-   #:morep
    #:mutable
    #:mutablep
    #:near

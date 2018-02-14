@@ -601,10 +601,6 @@
     (- %upper-bound %lower-bound)))
 
 
-(defmethod cl-ds:morep ((obj rrb-range))
-  (not (zerop (cl-ds:size obj))))
-
-
 (defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
   (bind (((:slots %tail-size %content) range))
     (if (null %content)

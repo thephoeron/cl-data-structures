@@ -24,10 +24,6 @@
                  :reader read-store-value)))
 
 
-(defmethod cl-ds:morep ((range forward-tree-range))
-  (~> range access-forward-stack null not))
-
-
 (declaim (inline read-implementation))
 (defun read-implementation (stack obtain-value)
   (if (null stack)

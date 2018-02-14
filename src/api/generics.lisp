@@ -174,8 +174,6 @@ Range releated functions.
 
 (defgeneric drop-back (range count))
 
-(defgeneric morep (range))
-
 (defgeneric clone (range))
 
 (defgeneric whole-range (container))

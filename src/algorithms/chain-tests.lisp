@@ -25,13 +25,13 @@
     (is val i))
   (reset! range)
   (iterate
-    (while (cl-ds:morep range))
-    (for val = (cl-ds:consume-front range))
+    (for (values val more) = (cl-ds:consume-front range))
+    (while more)
     (for i from 1)
     (is val i))
   (iterate
-    (while (cl-ds:morep range))
-    (for val = (cl-ds:consume-back range))
+    (for (values val more) = (cl-ds:consume-back range))
+    (while more)
     (for i from 12 downto 0)
     (is val i))
   (is (cl-ds:size range) 0))

@@ -137,7 +137,3 @@
 (defmethod cl-ds:drop-front ((range forward-proxy-box-range) count)
   (drop-back (read-original-range range) count)
   range)
-
-
-(defmethod cl-ds:morep ((range proxy-box-range))
-  (cl-ds:morep (read-original-range range)))

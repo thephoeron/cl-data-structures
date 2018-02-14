@@ -122,17 +122,6 @@
       (minimize (cl-ds:size range)))))
 
 
-(defmethod cl-ds:morep ((range forward-zipped-ranges))
-  (block nil
-    (reduce (lambda (&optional prev next)
-              (when (null prev)
-                (return-from nil nil))
-              (if (null next)
-                  prev
-                  (cl-ds:morep next)))
-            (slot-value range '%ranges))))
-
-
 (defmethod cl-ds:traverse (function (range forward-zipped-ranges))
   (bind (((:slots %function %ranges) range))
     (iterate

@@ -70,9 +70,10 @@
     (iterate
       (if (zerop (flexichain:nb-elements %content))
           (leave (values nil nil))
-          (let ((front (flexichain:element* %content 0)))
-            (if (cl-ds:morep front)
-                (leave (cl-ds:consume-front front))
+          (bind ((front (flexichain:element* %content 0))
+                 ((:values value more) (cl-ds:consume-front front)))
+            (if more
+                (leave (values value t))
                 (flexichain:pop-start %content)))))))
 
 
@@ -81,9 +82,10 @@
     (iterate
       (if (zerop (flexichain:nb-elements %content))
           (leave (values nil nil))
-          (let ((front (flexichain:element* %content 0)))
-            (if (cl-ds:morep front)
-                (leave (cl-ds:peek-front front))
+          (bind ((front (flexichain:element* %content 0))
+                 ((:values value more) (cl-ds:peek-front front)))
+            (if more
+                (leave (values value t))
                 (flexichain:pop-start %content)))))))
 
 
@@ -93,9 +95,10 @@
       (for count = (flexichain:nb-elements %content))
       (if (zerop count)
           (leave (values nil nil))
-          (let ((back (flexichain:element* %content (1- count))))
-            (if (cl-ds:morep back)
-                (leave (cl-ds:consume-back back))
+          (bind ((back (flexichain:element* %content (1- count)))
+                 ((:values value more) (cl-ds:consume-back back)))
+            (if more
+                (leave (values value t))
                 (flexichain:pop-end %content)))))))
 
 
@@ -105,9 +108,10 @@
       (for count = (flexichain:nb-elements %content))
       (if (zerop count)
           (leave (values nil nil))
-          (let ((back (flexichain:element* %content (1- count))))
-            (if (cl-ds:morep back)
-                (leave (cl-ds:peek-back back))
+          (bind ((back (flexichain:element* %content (1- count)))
+                 ((:values value more) (cl-ds:peek-back back)))
+            (if more
+                (leave (values value t))
                 (flexichain:pop-end %content)))))))
 
 
@@ -122,13 +126,3 @@
       (for i from 0 below (flexichain:nb-elements %content))
       (cl-ds:traverse function (flexichain:element* %content i)))
     range))
-
-
-(defmethod cl-ds:morep ((range forward-chain-of-ranges))
-  (bind (((:slots %content) range)
-         (count (flexichain:nb-elements %content)))
-    (iterate
-      (for i below count)
-      (finding t such-that (~> %content
-                               (flexichain:element* i)
-                               cl-ds:morep)))))

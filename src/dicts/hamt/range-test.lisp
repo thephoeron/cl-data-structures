@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 15)
+(plan 13)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -14,16 +14,15 @@
   (setf (cl-ds:at dict 8) 4)
   (let ((range (cl-ds:whole-range dict)))
     (iterate
-      (while (cl-ds:morep range))
-      (for key.value = (cl-ds:consume-front range))
+      (for (values key.value more) = (cl-ds:consume-front range))
+      (while more)
       (incf count)
       (collect key.value into result)
       (finally (setf result (sort result #'< :key #'car))
                (prove:is result
                          '((5 . 1) (6 . 2) (7 . 3) (8 . 4))
                          :test #'equal)
-               (prove:is count 4)
-               (prove:ok (not (cl-ds:morep range))))))
+               (prove:is count 4))))
   (let ((range (cl-ds:whole-range dict)))
     (iterate
       (repeat 4)
@@ -32,8 +31,7 @@
       (finally (setf result (sort result #'< :key #'car))
                (prove:is result
                          '((5 . 1) (5 . 1) (5 . 1) (5 . 1))
-                         :test #'equal)
-               (prove:ok (cl-ds:morep range)))))
+                         :test #'equal))))
   (let ((sum (~> dict
                  cl-ds:whole-range
                  (cl-ds.alg:accumulate #'+ _ :key #'cdr))))

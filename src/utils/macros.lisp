@@ -155,25 +155,6 @@
            ((= ,a ,b) ,=))))
 
 
-(defmacro let-functions (bindings &body body)
-  `(let ,(mapcar (lambda (s)
-                   (destructuring-bind (name default) s
-                     `(,name (cond ((consp ,name)
-                                    (let ((fname (second ,name)))
-                                      `(function ,fname)))
-                                   ((functionp ,name)
-                                    `(function ,',default))
-                                   (t ,name)))))
-                 bindings)
-     ,@body))
-
-
-(defmacro inlined-funcall (fn &rest args)
-  (if (consp fn)
-      `(,(cadr fn) ,@args)
-      `(funcall ,fn ,@args)))
-
-
 (defmacro import-all-package-symbols (from-package to-package)
   "Macro. Will import all internal symbols from package to package. For tests."
   (let ((from-package (find-package from-package))

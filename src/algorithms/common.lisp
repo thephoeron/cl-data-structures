@@ -111,10 +111,6 @@
   (at (read-original-range range) location))
 
 
-(defmethod morep ((range forward-proxy-range))
-  (morep (read-original-range range)))
-
-
 (defmethod consume-front ((range hash-table-range))
   (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
          ((:lazy key result)
@@ -162,11 +158,6 @@
   (with-slots ((begin %begin) (end %end)) range
     (setf end (max begin (- end count))))
   range)
-
-
-(defmethod morep ((range hash-table-range))
-  (with-slots ((begin %begin) (end %end)) range
-    (not (eql begin end))))
 
 
 (defmethod at ((range hash-table-range) location)

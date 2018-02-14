@@ -50,10 +50,6 @@
     (< %lower-bound %upper-bound)))
 
 
-(defmethod cl-ds:morep ((range vector-range))
-  (range-not-fully-read range))
-
-
 (defmethod cl-ds:peek-front ((range vector-range))
   (if (range-not-fully-read range)
       (values (~> range read-vector (aref (access-lower-bound range)))

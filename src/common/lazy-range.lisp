@@ -63,10 +63,6 @@
   (force-lazy-range range))
 
 
-(defmethod cl-ds:morep :before ((range lazy-range))
-  (force-lazy-range range))
-
-
 (defmethod cl-ds:traverse :before (function (range lazy-range))
   (force-lazy-range range))
 
@@ -97,10 +93,6 @@
 
 (defmethod cl-ds:drop-front ((range lazy-forward-range) count)
   (cl-ds:drop-front (slot-value range '%range) count))
-
-
-(defmethod cl-ds:morep ((range lazy-range))
-  (cl-ds:morep (slot-value range '%range)))
 
 
 (defmethod cl-ds:drop-back ((range lazy-bidirectional-range) count)
