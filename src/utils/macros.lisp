@@ -181,7 +181,7 @@
 
 (defmacro let-generator (forms &body body)
   "Poor man's generator (no continuations, no code-walking)."
-  (with-gensyms (!end !result !self !finished)
+  (with-gensyms (!end !result !self !finished !operation)
     (let ((final-forms nil))
       (iterate
         (for (name vars . content) in forms)
@@ -191,8 +191,8 @@
         (push `(,name (&key ,@vars)
                       (let ((,!finished nil))
                         (let ,(mapcar #'list fake-vars vars)
-                          (lambda (&optional operation)
-                            (if operation
+                          (lambda (&optional ,!operation)
+                            (if ,!operation
                                 (list ,@(apply #'append
                                                (mapcar (lambda (name binding) (list (make-keyword name) binding))
                                                        vars
