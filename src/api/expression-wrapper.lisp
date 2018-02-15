@@ -2,7 +2,7 @@
 
 
 (defclass expression (c2mop:funcallable-standard-object
-                      traversable)
+                      fundamental-forward-range)
   ((%construct-function :initarg :construct-function
                         :type (-> () function)
                         :reader read-body)
@@ -16,11 +16,7 @@
 (defmethod initialize-instance :after ((obj expression) &rest all
                                        &key &allow-other-keys)
   (declare (ignore all))
-  (bind (((:slots %construct-function %arguments %closure) obj)
-         (function (apply %construct-function
-                          %arguments)))
-    (setf %closure function)
-    (c2mop:set-funcallable-instance-function obj (lambda () (funcall function)))))
+  (reset! obj))
 
 
 (defmacro xpr (arguments &body body)
@@ -54,6 +50,12 @@
 
 (defmethod consume-front ((obj expression))
   (funcall obj))
+
+
+(defmethod peek-front ((obj expression))
+  (bind (((:slots %closure %construct-function) obj)
+         (fn (apply %construct-function (funcall %closure t))))
+    (funcall fn)))
 
 
 (defmethod reset! ((obj expression))
