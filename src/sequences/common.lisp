@@ -1,15 +1,15 @@
 (in-package #:cl-data-structures.sequences)
 
 
-(defclass abstract-sequence ()
+(defclass fundamental-sequence ()
   ())
 
 
-(defclass functional-sequence (abstract-sequence cl-ds:functional)
+(defclass functional-sequence (fundamental-sequence cl-ds:functional)
   ())
 
 
-(defclass mutable-sequence (abstract-sequence cl-ds:mutable)
+(defclass mutable-sequence (fundamental-sequence cl-ds:mutable)
   ())
 
 
@@ -18,7 +18,7 @@
 
 
 (defmethod cl-ds:make-bucket ((operation cl-ds:grow-function)
-                              (container abstract-sequence)
+                              (container fundamental-sequence)
                               location
                               &key value &allow-other-keys)
   (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
@@ -37,7 +37,7 @@
 
 
 (defmethod cl-ds:shrink-bucket ((operation cl-ds:shrink-function)
-                                (container abstract-sequence)
+                                (container fundamental-sequence)
                                 bucket
                                 location
                                 &rest rest &key &allow-other-keys)
@@ -74,7 +74,7 @@
 
 
 (defmethod cl-ds:grow-bucket ((operation cl-ds:update-if-function)
-                              (container abstract-sequence)
+                              (container fundamental-sequence)
                               bucket
                               location
                               &rest rest &key value condition-fn

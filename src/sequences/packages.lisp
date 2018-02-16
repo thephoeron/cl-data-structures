@@ -7,7 +7,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.seqs)
   (:export
-   #:abstract-sequence
+   #:fundamental-sequence
    #:functional-sequence
    #:mutable-sequence
    #:transactional-sequence))

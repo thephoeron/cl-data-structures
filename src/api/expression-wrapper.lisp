@@ -4,19 +4,34 @@
 (defclass expression (c2mop:funcallable-standard-object
                       fundamental-forward-range)
   ((%construct-function :initarg :construct-function
-                        :type (-> () function)
+                        :type function
                         :reader read-body)
    (%arguments :initarg :arguments
                :initform nil
                :reader read-arguments)
-   (%closure :accessor access-closure))
+   (%closure :accessor access-closure
+             :initarg :closure))
   (:metaclass c2mop:funcallable-standard-class))
+
+
+(defmethod clone ((obj expression))
+  (bind (((:slots %construct-function %arguments %closure) obj)
+         (result-closure (apply %construct-function (funcall %closure t)))
+         (result (make 'expression
+                       :construct-function %construct-function
+                       :arguments %arguments
+                       :closure result-closure)))
+    result))
 
 
 (defmethod initialize-instance :after ((obj expression) &rest all
                                        &key &allow-other-keys)
   (declare (ignore all))
-  (reset! obj))
+  (if (slot-boundp obj '%closure)
+      (let ((function (access-closure obj)))
+        (c2mop:set-funcallable-instance-function obj
+                                                 (lambda () (funcall function))))
+      (reset! obj)))
 
 
 (defmacro xpr (arguments &body body)
@@ -64,4 +79,9 @@
                           %arguments)))
     (setf %closure function)
     (c2mop:set-funcallable-instance-function obj (lambda () (funcall function))))
+  obj)
+
+
+(defmethod drop-front ((obj expression) count)
+  (iterate (repeat count) (funcall obj))
   obj)

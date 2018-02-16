@@ -7,8 +7,8 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.dicts)
   (:export
-   #:abstract-dictionary
-   #:abstract-hashing-dictionary
+   #:fundamental-dictionary
+   #:fundamental-hashing-dictionary
    #:bucket
    #:dictionary
    #:find-content

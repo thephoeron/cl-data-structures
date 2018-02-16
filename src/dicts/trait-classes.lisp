@@ -1,14 +1,14 @@
 (in-package #:cl-ds.dicts)
 
 
-(defclass abstract-dictionary ()
+(defclass fundamental-dictionary ()
   ((%equal-fn
     :type (-> (t t) boolean)
     :initarg :equal-fn
     :reader read-equal-fn)))
 
 
-(defclass abstract-hashing-dictionary (abstract-dictionary)
+(defclass fundamental-hashing-dictionary (fundamental-dictionary)
   ((%hash-fn
     :type (-> (t) fixnum)
     :initarg :hash-fn

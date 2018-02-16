@@ -2,7 +2,7 @@
 
 
 (defclass hamt-dictionary (cl-ds.common.hamt:hamt-container
-                           cl-ds.dicts:abstract-hashing-dictionary)
+                           cl-ds.dicts:fundamental-hashing-dictionary)
   ())
 
 
