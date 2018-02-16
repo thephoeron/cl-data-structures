@@ -509,6 +509,14 @@
           (aref array-index)))))
 
 
+(defmethod cl-ds:drop-front ((range rrb-range) count)
+  (cl-ds.utils:todo))
+
+
+(defmethod cl-ds:drop-back ((range rrb-range) count)
+  (cl-ds.utils:todo))
+
+
 (defmethod cl-ds:consume-front ((range rrb-range))
   (bind (((:slots %start %content %last-size %lower-bound) range))
     (if (null %content)
