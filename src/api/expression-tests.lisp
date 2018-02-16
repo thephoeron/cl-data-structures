@@ -4,11 +4,12 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package #:expression-tests)
 
-(plan 4)
+(plan 5)
 (let ((data nil)
       (expression (cl-ds:xpr (:iteration 1)
                     (when (< iteration 5)
                       (send-recur iteration :iteration (1+ iteration))))))
+  (is (cl-ds:peek-front expression) 1)
   (cl-ds:across (lambda (x) (push x data))
                 expression)
   (is data '(4 3 2 1) :test #'equal)
