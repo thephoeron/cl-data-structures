@@ -28,10 +28,7 @@
 
 (defstruct linear-regression-state
   (xx 0.0) (yy 0.0) (xy 0.0)
-  average-x
-  average-y
-  x-key
-  y-key)
+  average-x average-y x-key y-key)
 
 
 (defmethod cl-ds:make-state ((function simple-linear-regression)
