@@ -71,7 +71,9 @@
                 :components ((:file "package")
                              (:file "average")
                              (:file "variance")
-                             (:file "standard-deviation")))
+                             (:file "simple-linear-regression")
+                             (:file "standard-deviation")
+                             (:test-file "simple-linear-regression-tests")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
