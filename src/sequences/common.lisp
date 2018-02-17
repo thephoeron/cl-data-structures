@@ -145,7 +145,7 @@
   (cl-ds:at (cl-ds.common:access-content container) location))
 
 
-(defmethod cl-ds:become-lazy ((container cl-ds.seqs:abstract-sequence))
+(defmethod cl-ds:become-lazy ((container cl-ds.seqs:fundamental-sequence))
   (make 'lazy-box-sequence
         :content (cl-ds:become-transactional container)))
 
