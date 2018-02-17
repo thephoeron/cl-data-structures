@@ -44,6 +44,7 @@
 (defmethod cl-ds:aggregate ((function simple-linear-regression)
                             state
                             element)
+  (check-type state linear-regression-state)
   (bind (((:slots xx yy xy x-key y-key average-x average-y) state)
          (x (funcall x-key element))
          (y (funcall y-key element)))
@@ -54,6 +55,7 @@
 
 (defmethod cl-ds.alg:state-result ((function simple-linear-regression)
                                    state)
+  (check-type state linear-regression-state)
   (bind (((:slots xx yy xy average-x average-y) state)
          (beta1 (/ xy xx))
          (beta0 (- average-y (* beta1 average-x))))
