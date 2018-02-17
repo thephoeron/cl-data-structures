@@ -7,4 +7,5 @@
 **** It is called across
 * DONE remove morep
   CLOSED: [2018-02-14 śro 08:06]
-* TODO turn xpr into correct forward range
+* DONE turn xpr into correct forward range
+  CLOSED: [2018-02-16 pią 13:54]
