@@ -170,9 +170,25 @@ Range releated functions.
 
 (defgeneric (setf peek-back) (new-value range))
 
-(defgeneric drop-front (range count))
+(defgeneric drop-front (range count)
+  (:method ((range fundamental-forward-range) count)
+    (check-type count non-negative-fixnum)
+    (iterate
+      (repeat count)
+      (for i from 0)
+      (for (values value more) = (consume-front range))
+      (while more)
+      (finally (return i)))))
 
-(defgeneric drop-back (range count))
+(defgeneric drop-back (range count)
+  (:method ((range fundamental-bidirectional-range) count)
+    (check-type count non-negative-fixnum)
+    (iterate
+      (repeat count)
+      (for i from 0)
+      (for (values value more) = (consume-back range))
+      (while more)
+      (finally (return i)))))
 
 (defgeneric clone (range))
 

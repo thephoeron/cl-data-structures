@@ -83,5 +83,10 @@
 
 
 (defmethod drop-front ((obj expression) count)
-  (iterate (repeat count) (funcall obj))
-  obj)
+  (check-type count non-negative-fixnum)
+  (let ((function (access-closure obj)))
+    (iterate
+      (repeat count)
+      (for i from 0)
+      (for (values value more) = (funcall function))
+      (finally (return i)))))
