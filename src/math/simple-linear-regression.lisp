@@ -93,8 +93,9 @@
                                                &rest all
                                                &key x-key y-key)
   (declare (ignore all))
-  `((:regres . ,(lambda (range)
-                  (simple-linear-regression range x-key y-key)))))
+  (append (cl-ds.alg:multi-aggregation-stages #'simple-linear-regression :x-key x-key :y-key y-key)
+          `(:regres . ,(lambda (range)
+                         (simple-linear-regression range x-key y-key)))))
 
 
 (defmethod cl-ds.alg:aggregate ((function simple-linear-regression-with-error)
