@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.statistics)
+(in-package #:cl-data-structures.math)
 
 
 (defclass standard-deviation-function (cl-ds.alg:multi-aggregation-function)

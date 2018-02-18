@@ -1,4 +1,4 @@
- (in-package #:cl-data-structures.statistics)
+(in-package #:cl-data-structures.math)
 
 
 (defclass simple-linear-regression (cl-ds.alg:multi-aggregation-function)
@@ -21,9 +21,9 @@
                                                &allow-other-keys)
   (declare (ignore all))
   `((:average-y . ,(lambda (range)
-                     (cl-ds.stat:average range :key y-key)))
+                     (average range :key y-key)))
     (:average-x . ,(lambda (range)
-                     (cl-ds.stat:average range :key x-key)))))
+                     (average range :key x-key)))))
 
 
 (defstruct linear-regression-state

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.statistics)
+(in-package #:cl-data-structures.math)
 
 
 (defclass average-function (cl-ds.alg:aggregation-function)

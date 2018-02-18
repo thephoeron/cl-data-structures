@@ -67,7 +67,7 @@
                              (:test-file "hash-join-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
-               (:module "stat"
+               (:module "math"
                 :components ((:file "package")
                              (:file "average")
                              (:file "variance")

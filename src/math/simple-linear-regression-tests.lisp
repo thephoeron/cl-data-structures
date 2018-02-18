@@ -13,7 +13,7 @@
               (when (< x 100)
                 (send-recur (list x (* 2 x))
                             :x (1+ x)))))
-       ((:values beta1 beta0) (cl-ds.stat::simple-linear-regression
+       ((:values beta1 beta0) (cl-ds.math::simple-linear-regression
                                xpr
                                #'first
                                #'second)))
