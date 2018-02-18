@@ -117,6 +117,6 @@
 (defmethod cl-ds.alg:state-result ((function simple-linear-regression-with-error)
                                    state)
   (check-type state linear-regression-errors)
-  (bind (((:slots regres count sum-of-error-squares) state)
-         (error-rate (/ sum-of-error-squares (- count 2))))
-    `(,@regres ,error-rate)))
+  (bind (((:slots regres count sum-of-error-squares) state))
+    (assert (> count 2)) ; TODO actually proper error
+    `(,@regres ,(/ sum-of-error-squares (- count 2)))))
