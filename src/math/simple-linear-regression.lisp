@@ -60,3 +60,60 @@
          (beta1 (/ xy xx))
          (beta0 (- average-y (* beta1 average-x))))
     (list beta1 beta0)))
+
+
+(defclass simple-linear-regression-with-error (cl-ds.alg:multi-aggregation-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric simple-linear-regression-with-error (range x-key y-key)
+  (:generic-function-class simple-linear-regression-with-error)
+  (:method (range x-key y-key)
+    (cl-ds.alg:apply-aggregation-function range
+                                          #'simple-linear-regression-with-error
+                                          :x-key x-key
+                                          :y-key y-key)))
+
+
+(defstruct linear-regression-errors
+  x-key y-key (count 0) (sum-of-error-squares 0.0) regres)
+
+
+(defmethod cl-ds:make-state ((function simple-linear-regression-with-error)
+                             &rest all
+                             &key x-key y-key regres)
+  (declare (ignore all))
+  (make-linear-regression-errors :x-key x-key
+                                 :y-key y-key
+                                 :regres regres))
+
+
+(defmethod cl-ds.alg:multi-aggregation-stages ((function simple-linear-regression-with-error)
+                                               &rest all
+                                               &key x-key y-key)
+  (declare (ignore all))
+  `((:regres . ,(lambda (range)
+                  (simple-linear-regression range x-key y-key)))))
+
+
+(defmethod cl-ds.alg:aggregate ((function simple-linear-regression-with-error)
+                                state
+                                element)
+  (check-type state linear-regression-errors)
+  (bind (((:slots x-key y-key count sum-of-error-squares regres) state)
+         ((beta1 beta0) regres)
+         (x (funcall x-key element))
+         (y (funcall y-key element))
+         (fit (+ (* x beta1) beta0))
+         (er (expt (- fit y) 2)))
+    (incf count)
+    (incf sum-of-error-squares er)))
+
+
+(defmethod cl-ds.alg:state-result ((function simple-linear-regression-with-error)
+                                   state)
+  (check-type state linear-regression-errors)
+  (bind (((:slots regres count sum-of-error-squares) state)
+         (error-rate (/ sum-of-error-squares (- count 2))))
+    `(,@regres ,error-rate)))
