@@ -122,5 +122,5 @@
       (error 'cl-ds:out-of-bounds
              :text "Can't calculate error for linear regression because range does not contain at least 3 element."
              :value count
-             :bounds (list 2 :infinity)))
+             :bounds (list 3 :infinity)))
     `(,@regres ,(/ sum-of-error-squares (- count 2)))))
