@@ -20,12 +20,16 @@
   ((%value :initarg :value
            :accessor access-value)
    (%fn :initarg :fn
-        :reader read-fn)))
+        :reader read-fn)
+   (%first-iteration :initform t
+                     :accessor access-first-iteration)))
 
 
 (defmethod state-result ((function accumulate-function)
                          (state accumulation-state))
-  (access-value state))
+  (if (access-first-iteration state)
+      (funcall (read-fn state) (access-value state))
+      (access-value state)))
 
 
 (defmethod make-state ((function accumulate-function)
@@ -44,10 +48,12 @@
 (defmethod aggregate ((function accumulate-function)
                       (state accumulation-state)
                       element)
-  (with-slots ((value %value) (fn %fn)) state
+  (with-slots ((value %value) (first-iteration %first-iteration) (fn %fn)) state
     (setf value
           (if (slot-boundp state '%value)
-              (funcall fn
-                       value
-                       element)
+              (progn
+                (setf first-iteration nil)
+                (funcall fn
+                         value
+                         element))
               element))))
