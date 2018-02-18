@@ -11,14 +11,14 @@
 
 (bind ((xpr (xpr (:x 0)
               (when (< x 100)
-                (send-recur (list x (* 2 x))
+                (send-recur (list x (1+ (* 2 x)))
                             :x (1+ x)))))
-       ((:values beta1 beta0) (cl-ds.math::simple-linear-regression
-                               xpr
-                               #'first
-                               #'second)))
+       ((beta1 beta0) (cl-ds.math::simple-linear-regression
+                       xpr
+                       #'first
+                       #'second)))
   (is beta1 2 :test #'=)
-  (is beta0 0 :test #'=))
+  (is beta0 1 :test #'=))
 
 
 (finalize)

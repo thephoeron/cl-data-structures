@@ -59,4 +59,4 @@
   (bind (((:slots xx yy xy average-x average-y) state)
          (beta1 (/ xy xx))
          (beta0 (- average-y (* beta1 average-x))))
-    (values beta1 beta0)))
+    (list beta1 beta0)))
