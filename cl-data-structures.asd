@@ -13,7 +13,7 @@
                 :more-conditions :closer-mop
                 :lparallel       :flexichain
                 :metabang-bind   :bordeaux-threads
-                :trivial-garbage)
+                :trivial-garbage :fare-memoization)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
