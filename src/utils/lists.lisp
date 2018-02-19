@@ -111,3 +111,24 @@
   (let ((r (try-find-cell item list :test test :key key)))
     (values (car r)
             (not (null r)))))
+
+
+(defun lexicographic-compare (compare same av bv)
+  (setf compare (alexandria:ensure-function compare))
+  (setf same (alexandria:ensure-function same))
+  (check-type av sequence)
+  (check-type bv sequence)
+  (check-type compare function)
+  (check-type same function)
+  (iterate
+    (for ea in-sequence av)
+    (for eb in-sequence bv)
+    (for sm = (funcall same ea eb))
+    (for comp = (funcall compare ea eb))
+    (finding comp such-that comp into r)
+    (always sm)
+    (finally
+     (if r
+         (return r)
+         (when sm
+           (return (< (length av) (length bv))))))))

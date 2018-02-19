@@ -22,6 +22,7 @@
    #:lazy-let
    #:lazy-shuffle
    #:let-generator
+   #:lexicographic-compare
    #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
