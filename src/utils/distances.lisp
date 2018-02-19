@@ -110,7 +110,8 @@
              (for j from (1+ i) below size)
              (for y = (aref sequence j))
              (setf (aref result (index-in-content-of-distance-matrix size i j))
-                   (dist-function (key-function x) (key-function y)))))))
+                   (coerce (dist-function (key-function x) (key-function y))
+                           type))))))
      indexes)
     (assure distance-matrix
       (make 'distance-matrix
@@ -135,7 +136,7 @@
                  (setf (aref result (index-in-content-of-distance-matrix size
                                                                          column
                                                                          row))
-                       (funcall function first second)))))
+                       (coerce (funcall function first second) type)))))
       (iterate
         (for i from 0 below size)
         (fill-matrix i))
