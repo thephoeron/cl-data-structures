@@ -6,13 +6,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric moments (range upto around &key key)
+(defgeneric moments (range upto about &key key)
   (:generic-function-class moments-function)
-  (:method (range upto around &key (key #'identity))
+  (:method (range upto about &key (key #'identity))
     (cl-ds.alg:apply-aggregation-function range
                                           #'distribution-moments
                                           :upto upto
-                                          :around around
+                                          :around about
                                           :key key)))
 
 
@@ -26,7 +26,7 @@
 
 (defmethod cl-ds.alg:make-state ((function moments-function)
                                  &rest all
-                                 &key upto around key)
+                                 &key upto about key)
   (declare (ignore all))
   (bind ((lambdas (make-array upto))
          (result (make-array upto :element-type 'number)))
@@ -35,7 +35,7 @@
       (for index from 0 below upto)
       (setf (aref lambdas index) (let ((i i))
                                    (lambda (value)
-                                     (expt (- value around) i)))))
+                                     (expt (- value about) i)))))
     (make 'moments-state :moment result
                          :lambdas lambdas
                          :key key)))
