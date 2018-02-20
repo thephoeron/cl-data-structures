@@ -73,6 +73,7 @@
                              (:file "variance")
                              (:file "simple-linear-regression")
                              (:file "standard-deviation")
+                             (:file "moments")
                              (:test-file "simple-linear-regression-tests")))
                (:module "common"
                 :components ((:file "package")

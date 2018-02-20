@@ -9,7 +9,8 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:average
-   #:variance
+   #:moments
    #:simple-linear-regression
    #:simple-linear-regression-with-error
-   #:standard-deviation))
+   #:standard-deviation
+   #:variance))
