@@ -46,21 +46,30 @@
 
 
 (defmethod traverse (function (obj expression))
-  (iterate
-    (for (values value not-finished) = (funcall obj))
-    (while not-finished)
-    (funcall function value))
+  (declare (optimize (speed 3) (debug 0) (space 0)))
+  (let ((fn (access-closure obj))
+        (function (ensure-function function)))
+    (declare (type (-> (t) t) function)
+             (type (-> (&optional boolean) t) fn))
+    (iterate
+      (for (values value not-finished) = (funcall fn))
+      (while not-finished)
+      (funcall function value)))
   obj)
 
 
 (defmethod across (function (obj expression))
-  (bind (((:slots %arguments %construct-function %closure) obj)
-         (fn (apply %construct-function (funcall %closure t))))
-    (iterate
-      (for (values value not-finished) = (funcall fn))
-      (while not-finished)
-      (funcall function value))
-    obj))
+  (declare (optimize (speed 3) (debug 0) (space 0)))
+  (let ((function (ensure-function function)))
+    (declare (type (-> (t) t) function))
+    (bind (((:slots %construct-function %closure) obj)
+           (fn (apply %construct-function (funcall %closure t))))
+      (declare (type (-> (&optional boolean) t) fn))
+      (iterate
+        (for (values value not-finished) = (funcall fn))
+        (while not-finished)
+        (funcall function value))
+      obj)))
 
 
 (defmethod consume-front ((obj expression))
