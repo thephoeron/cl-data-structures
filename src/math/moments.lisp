@@ -46,7 +46,7 @@
 (defmethod cl-ds.alg:aggregate ((function moments-function)
                                 state
                                 element)
-  (check-type state distribution-moment-state)
+  (check-type state moments-state)
   (bind (((:slots %lambdas %key %moments) state)
          (element (funcall %key element)))
     (iterate
