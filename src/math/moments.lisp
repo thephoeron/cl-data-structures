@@ -8,17 +8,17 @@
 
 (defgeneric moments (range from count about &key key)
   (:generic-function-class moments-function)
-  (:method (range count about from &key (key #'identity))
+  (:method (range from count about &key (key #'identity))
     (cl-ds.alg:apply-aggregation-function range
-                                          #'distribution-moments
-                                          :upto count
+                                          #'moments
+                                          :count count
                                           :from from
-                                          :around about
+                                          :about about
                                           :key key)))
 
 
 (defclass moments-state ()
-  ((%moments :initarg :last-moments
+  ((%moments :initarg :moments
              :reader read-last-moments)
    (%key :initarg :key :reader read-key)
    (%lambdas :initarg :lambdas
@@ -28,7 +28,8 @@
 (defmethod cl-ds.alg:make-state ((function moments-function)
                                  &rest all
                                  &key count about key from)
-  (declare (ignore all))
+  (declare (ignore all)
+           (optimize (debug 3)))
   (assert (> from 0))
   (bind ((lambdas (make-array count))
          (result (make-array count :element-type 'number)))
@@ -38,7 +39,7 @@
       (setf (aref lambdas index) (let ((i i))
                                    (lambda (value)
                                      (expt (- value about) i)))))
-    (make 'moments-state :moment result
+    (make 'moments-state :moments result
                          :lambdas lambdas
                          :key key)))
 
@@ -51,7 +52,7 @@
          (element (funcall %key element)))
     (iterate
       (for i from 0 below (length %lambdas))
-      (incf (aref %moments i) (funcall (aref %lambdas 0) element)))))
+      (incf (aref %moments i) (funcall (aref %lambdas i) element)))))
 
 
 (defmethod cl-ds.alg:state-result ((function moments-function)
