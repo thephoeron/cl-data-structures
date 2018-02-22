@@ -100,4 +100,5 @@
       (repeat count)
       (for i from 0)
       (for (values value more) = (funcall function))
+      (while more)
       (finally (return i)))))
