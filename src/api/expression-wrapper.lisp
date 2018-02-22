@@ -9,6 +9,8 @@
    (%arguments :initarg :arguments
                :initform nil
                :reader read-arguments)
+   (%arguments-closure :accessor access-arguments-closure
+                       :initarg :arguments-closure)
    (%closure :accessor access-closure
              :initarg :closure))
   (:metaclass c2mop:funcallable-standard-class))
@@ -62,8 +64,8 @@
   (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((function (ensure-function function)))
     (declare (type (-> (t) t) function))
-    (bind (((:slots %construct-function %closure) obj)
-           (fn (apply %construct-function (funcall %closure t))))
+    (bind (((:slots %construct-function %closure %arguments-closure) obj)
+           (fn (apply %construct-function (funcall %arguments-closure))))
       (declare (type (-> (&optional boolean) t) fn))
       (iterate
         (for (values value not-finished) = (funcall fn))
@@ -77,16 +79,16 @@
 
 
 (defmethod peek-front ((obj expression))
-  (bind (((:slots %closure %construct-function) obj)
-         (fn (apply %construct-function (funcall %closure t))))
+  (bind (((:slots %closure %construct-function %arguments-closure) obj)
+         (fn (apply %construct-function (funcall %arguments-closure))))
     (funcall fn)))
 
 
 (defmethod reset! ((obj expression))
-  (bind (((:slots %construct-function %arguments %closure) obj)
-         (function (apply %construct-function
-                          %arguments)))
-    (setf %closure function)
+  (bind (((:slots %construct-function %arguments %closure %arguments-closure) obj)
+         ((:values function arguments-closure) (apply %construct-function %arguments)))
+    (setf %closure function
+          %arguments-closure arguments-closure)
     (c2mop:set-funcallable-instance-function obj (lambda () (funcall function))))
   obj)
 
