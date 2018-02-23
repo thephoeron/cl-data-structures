@@ -20,6 +20,8 @@
 (defclass moments-state ()
   ((%moments :initarg :moments
              :reader read-last-moments)
+   (%start :initarg :start
+           :reader read-start)
    (%key :initarg :key :reader read-key)
    (%lambdas :initarg :lambdas
              :accessor read-lambdas)))
@@ -41,7 +43,8 @@
                                      (expt (- value about) i)))))
     (make 'moments-state :moments result
                          :lambdas lambdas
-                         :key key)))
+                         :key key
+                         :start from)))
 
 
 (defmethod cl-ds.alg:aggregate ((function moments-function)
@@ -58,4 +61,6 @@
 (defmethod cl-ds.alg:state-result ((function moments-function)
                                    state)
   (check-type state moments-state)
-  (read-last-moments state))
+  (make-instance 'cl-ds.adapters:offset-vector-range
+                 :vector (read-last-moments state)
+                 :offset (read-start state)))

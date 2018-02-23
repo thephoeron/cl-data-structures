@@ -15,6 +15,14 @@
     :accessor access-upper-bound)))
 
 
+(defclass offset-vector-range (vector-range)
+  ((%offset
+    :type fixnum
+    :initarg :offset
+    :initform 0
+    :reader read-offset)))
+
+
 (defun init-vector-range (range)
   (bind (((:slots %upper-bound %lower-bound %vector) range))
     (setf %lower-bound 0
@@ -36,7 +44,7 @@
 
 (defmethod cl-ds:at ((range vector-range) location)
   (bind (((:slots %vector %lower-bound %upper-bound) range))
-    (if (and (>= %lower-bound location) (< %upper-bound location))
+    (if (and (>= location %lower-bound) (< location %upper-bound))
         (values (elt %vector location) t)
         (values nil nil))))
 
@@ -93,3 +101,8 @@
 (defmethod cl-ds:size ((range vector-range))
   (bind (((:slots %lower-bound %upper-bound) range))
     (- %upper-bound %lower-bound)))
+
+
+(defmethod cl-ds:at ((range offset-vector-range) location)
+  (decf location (read-offset range))
+  (call-next-method range location))

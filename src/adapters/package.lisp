@@ -6,4 +6,6 @@
         #:iterate #:alexandria #:serapeum #:bind)
   (:nicknames #:cl-ds.adapters)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
-  )
+  (:export
+   #:vector-range
+   #:offset-vector-range))
