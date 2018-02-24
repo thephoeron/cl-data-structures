@@ -74,7 +74,9 @@
                              (:file "simple-linear-regression")
                              (:file "standard-deviation")
                              (:file "moments")
+                             (:file "statistical-summary")
                              (:test-file "moments-tests.lisp")
+                             (:test-file "statistical-summary-tests.lisp")
                              (:test-file "simple-linear-regression-tests")))
                (:module "common"
                 :components ((:file "package")

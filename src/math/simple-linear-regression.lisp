@@ -20,9 +20,11 @@
                                                &key x-key y-key
                                                &allow-other-keys)
   (declare (ignore all))
-  `((:average-y . ,(lambda (range)
+  `((:average-y . ,(lambda (range &rest all)
+                     (declare (ignore all))
                      (average range :key y-key)))
-    (:average-x . ,(lambda (range)
+    (:average-x . ,(lambda (range &rest all)
+                     (declare (ignore all))
                      (average range :key x-key)))))
 
 

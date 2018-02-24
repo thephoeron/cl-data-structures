@@ -13,4 +13,5 @@
    #:simple-linear-regression
    #:simple-linear-regression-with-error
    #:standard-deviation
+   #:statistical-summary
    #:variance))

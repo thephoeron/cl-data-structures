@@ -92,16 +92,15 @@
 (defmethod apply-aggregation-function ((range states-collector)
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore all))
-  (let ((state (apply #'make-state function (access-args range))))
+  (let ((state (apply #'make-state function all)))
     (unless (aggregation-finished-p function state)
       (block end
         (cl-ds:across (lambda (x)
+                        (when (aggregation-finished-p function state)
+                          (return-from end))
                         (aggregate function
                                    state
-                                   (if key (funcall key x) x))
-                        (when (aggregation-finished-p function state)
-                          (return-from end)))
+                                   (if key (funcall key x) x)))
                       (read-original range))))
     (push (state-result function state) (access-args range))
     (push (access-label range) (access-args range))))
@@ -110,14 +109,15 @@
 (defmethod apply-aggregation-function (range
                                        (function multi-aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore key))
+  (declare (ignore key)
+           (optimize (debug 3)))
   (let ((stages (apply #'multi-aggregation-stages function all)))
     (unless (endp stages)
       (iterate
         (with collector = (make 'states-collector :args all :original range))
         (for (name . stage) in stages)
         (setf (access-label collector) name)
-        (funcall stage collector)
+        (apply stage collector (access-args collector))
         (finally (return (apply #'call-next-method
                                 range
                                 function
@@ -131,10 +131,10 @@
     (unless (aggregation-finished-p function state)
       (block end
         (cl-ds:across (lambda (x)
+                        (when (aggregation-finished-p function state)
+                          (return-from end))
                         (aggregate function
                                    state
-                                   (if key (funcall key x) x))
-                        (when (aggregation-finished-p function state)
-                          (return-from end)))
+                                   (if key (funcall key x) x)))
                       range)))
     (state-result function state)))

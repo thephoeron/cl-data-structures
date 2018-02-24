@@ -21,6 +21,7 @@
    #:hash-join
    #:layer-function
    #:make-state
+   #:make-hash-table-range
    #:multi-aggregation-function
    #:multi-aggregation-stages
    #:on-each
