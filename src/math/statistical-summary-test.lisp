@@ -15,9 +15,9 @@
   (is (cl-ds:at summary :average) 3)
   (is (cl-ds:at summary :variance) 8/3)
   (is (cl-ds:at summary :skewness) 0 :test #'=)
-  (is (cl-ds:at summary :kurtosis) 1.49 :test
+  (is (cl-ds:at summary :kurtosis) 1.5 :test
       (lambda (a b)
-        (< b a (+ b 0.01)))))
+        (< (abs (- a b)) 0.000001))))
 
 
 (finalize)
