@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 13)
+(plan 19)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -50,7 +50,7 @@
                      cl-ds:whole-range
                      (cl-ds.alg:summary
                       _
-                      '(:average-of-values cl-ds.stat:average :range :key cdr)
+                      '(:average-of-values cl-ds.math:average :range :key cdr)
                       '(:sum-of-keys cl-ds.alg:accumulate + :range :key car)))))
     (is (cl-ds:at summary :sum-of-keys) 26))
   (let ((divided-sum (~> dict
@@ -62,7 +62,7 @@
   (let ((divided-variance (~> dict
                               cl-ds:whole-range
                               (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
-                              (cl-ds.stat:variance :key #'cdr))))
+                              (cl-ds.math:variance :key #'cdr))))
     (is (cl-ds:at divided-variance nil) 1)
     (is (cl-ds:at divided-variance t) 1))
   (let ((range (cl-ds:whole-range dict))
@@ -72,4 +72,14 @@
     (cl-ds:traverse (lambda (x) (push x result))
                     range)
     (is (cdr (find 'value result :key #'cdr)) 'value)))
+
+(let ((dict (cl-ds:make-from-traversable 'cl-ds.dicts.hamt:mutable-hamt-dictionary
+                                         (list :hash-fn #'identity
+                                               :equal-fn #'=)
+                                         #((1 . 1) (2 . 2) (3 . 3))
+                                         #((4 . 4) (5 . 5) (6 . 6)))))
+  (iterate
+    (for i from 1 to 6)
+    (is (cl-ds:at dict i) i)))
+
 (finalize)

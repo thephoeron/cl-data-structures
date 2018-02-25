@@ -140,17 +140,7 @@
 
 (defgeneric transaction (operation object &rest args))
 
-(defgeneric make-from-traversable (class traversable &key &allow-other-keys)
-  (:method ((class symbol) (trav sequence) &rest all &key &allow-other-keys)
-    (apply #'make-from-traversable
-           class
-           (cl-ds:whole-range trav)
-           all))
-  (:method ((class symbol) (trav hash-table) &rest all &key &allow-other-keys)
-    (apply #'make-from-traversable
-           class
-           (cl-ds:whole-range trav)
-           all)))
+(defgeneric make-from-traversable (class arguments traversable &rest more))
 
 #|
 

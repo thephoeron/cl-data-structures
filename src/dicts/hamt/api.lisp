@@ -570,32 +570,41 @@ Methods. Those will just call non generic functions.
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-hamt-dictionary))
-                                        (traversable cl-ds:traversable)
-                                        &key hash-fn equal-fn)
-  (let ((result (make-mutable-hamt-dictionary hash-fn equal-fn)))
-    (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
-                    (setf (cl-ds:at result key) value))
-                  traversable)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (let* ((hash-fn (getf arguments :hash-fn))
+         (equal-fn (getf arguments :equal-fn))
+         (result (make-mutable-hamt-dictionary hash-fn equal-fn)))
+    (iterate
+      (for tr in (cons traversable more))
+      (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
+                      (setf (cl-ds:at result key) value))
+                    tr))
     result))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-hamt-dictionary))
-                                        (traversable cl-ds:traversable)
-                                        &key hash-fn equal-fn)
-  (~> (cl-ds:make-from-traversable 'mutable-hamt-dictionary
-                                   traversable
-                                   :hash-fn hash-fn
-                                   :equal-fn equal-fn)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (~> (apply #'cl-ds:make-from-traversable
+             'mutable-hamt-dictionary
+             arguments
+             traversable
+             more)
       cl-ds:become-functional))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-hamt-dictionary))
-                                        (traversable cl-ds:traversable)
-                                        &key hash-fn equal-fn)
-  (~> (cl-ds:make-from-traversable 'mutable-hamt-dictionary
-                                   traversable
-                                   :hash-fn hash-fn
-                                   :equal-fn equal-fn)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (~> (apply #'cl-ds:make-from-traversable
+             'mutable-hamt-dictionary
+             arguments
+             traversable
+             more)
       cl-ds:become-transactional))
 
 

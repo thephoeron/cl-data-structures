@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage rrb-vector-tests (:use :prove))
+(defpackage rrb-vector-tests (:use :prove :cl))
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
@@ -89,7 +89,7 @@
     (is (cl-ds:size container) i)
     (cl-ds:take-out! container)))
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
+(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 10)
                                                   (send-recur i :i (1+ i)))))))
@@ -97,7 +97,7 @@
     (for i from 0 below 10)
     (is (cl-ds:at container i) i)))
 
-(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector
+(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector nil
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
                                                   (send-recur i :i (1+ i)))))))
@@ -121,7 +121,7 @@
       (for i from 0 below 365)
       (is (cl-ds:at new-container i) i))))
 
-(let ((container (~> (cl-ds:make-from-traversable 'functional-rrb-vector
+(let ((container (~> (cl-ds:make-from-traversable 'functional-rrb-vector nil
                                                   (cl-ds:xpr (:i 0)
                                                     (when (< i 64)
                                                       (send-recur i :i (1+ i)))))
@@ -134,7 +134,7 @@
                           (send-recur container
                                       :container (cl-ds:put container i)
                                       :i (1+ i)))))
-         (all-containers (cl-ds:make-from-traversable 'mutable-rrb-vector
+         (all-containers (cl-ds:make-from-traversable 'mutable-rrb-vector nil
                                                       insert-more)))
     (iterate
       (for size from 64 below 128)

@@ -607,25 +607,39 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
-                                        (traversable cl-ds:traversable)
-                                        &key)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (declare (ignore arguments))
   (let ((result (make 'mutable-rrb-vector)))
-    (cl-ds:across (lambda (x) (cl-ds:put! result x))
-                  traversable)
+    (iterate
+      (for tr in (cons traversable more))
+      (cl-ds:across (lambda (x) (cl-ds:put! result x))
+                    tr))
     result))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
-                                        (traversable cl-ds:traversable)
-                                        &key)
-  (~> (cl-ds:make-from-traversable 'mutable-rrb-vector traversable)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (~> (apply #'cl-ds:make-from-traversable
+             'mutable-rrb-vector
+             arguments
+             traversable
+             more)
       cl-ds:become-functional))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
-                                        (traversable cl-ds:traversable)
-                                        &key)
-  (~> (cl-ds:make-from-traversable 'mutable-rrb-vector traversable)
+                                        arguments
+                                        traversable
+                                        &rest more)
+  (~> (apply #'cl-ds:make-from-traversable
+             'mutable-rrb-vector
+             arguments
+             traversable
+             more)
       cl-ds:become-transactional))
 
 
