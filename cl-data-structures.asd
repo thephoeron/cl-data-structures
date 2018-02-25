@@ -98,7 +98,12 @@
                                            (:file "common")))
                              (:module "rrb"
                               :components ((:file "package")
+                                           (:file "common")))
+                             (:module "egnat"
+                              :components ((:file "package")
                                            (:file "common")))))
+               (:module "metric-space"
+                :components ((:file "packages")))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")

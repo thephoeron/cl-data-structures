@@ -17,6 +17,7 @@
    #:each-in-matrix
    #:erase-from-vector
    #:extendable-vector
+   #:fill-distance-matrix-from-vector
    #:import-all-package-symbols
    #:insert-or-replace
    #:lazy-let
@@ -30,6 +31,7 @@
    #:mutate-matrix
    #:on-ordered-intersection
    #:ordered-p
+   #:parallel-fill-distance-matrix-from-vector
    #:parallel-make-distance-matrix-from-vector
    #:pop-last
    #:read-size

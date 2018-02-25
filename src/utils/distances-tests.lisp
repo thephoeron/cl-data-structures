@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage :distances-test-suite (:use :prove))
+(defpackage :distances-test-suite (:use :cl :prove))
 (in-package :distances-test-suite)
 (cl-ds.utils:import-all-package-symbols :cl-ds.utils :distances-test-suite)
 
@@ -25,7 +25,7 @@
   (let ((matrix (cl-ds.utils:make-distance-matrix-from-vector 'single-float #'jaccard-metric data)))
     (iterate
       (for i below 5)
-      (is (cl-ds.utils:distance matrix i i) 0.0 :test #'=))
+      (is (cl-ds.utils:distance matrix i i) nil))
     (iterate
       (for i below 5)
       (iterate

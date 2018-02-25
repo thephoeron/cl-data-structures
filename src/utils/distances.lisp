@@ -51,7 +51,7 @@
     distance-matrix)
 (defun make-distance-matrix-from-vector (type function sequence &key (key #'identity))
   (let* ((size (length sequence))
-         (result (make-array (1+ (index-in-content-of-distance-matrix size
+         (content (make-array (1+ (index-in-content-of-distance-matrix size
                                                                       (1- size)
                                                                       (1- size)))
                              :element-type type)))
@@ -74,27 +74,17 @@
               :content result)))))
 
 
-(-> parallel-make-distance-matrix-from-vector ((or list symbol)
-                                               (or function symbol)
-                                               vector
-                                               &key
-                                               (:key (-> (t) t))
-                                               (:key-context (-> (t) t))
-                                               (:function-context (-> (t) t)))
-    distance-matrix)
-(defun parallel-make-distance-matrix-from-vector (type function sequence
+(defun parallel-fill-distance-matrix-from-vector (matrix function sequence
                                                   &key
                                                     (key #'identity)
                                                     (key-context #'identity)
                                                     (function-context #'identity))
-  (declare (optimize (speed 3)))
+  (assert (<= (length sequence) (read-size matrix)))
   (let* ((size (length sequence))
-         (result (make-array (1+ (index-in-content-of-distance-matrix size
-                                                                      (1- size)
-                                                                      (1- size)))
-                             :element-type type))
+         (content (read-content matrix))
+         (type (array-element-type content))
          (indexes (iterate
-                    (for i below size)
+                    (for i below (length sequence))
                     (collect i into forward at start)
                     (collect i into backward)
                     (finally (return (map '(vector list) #'list backward forward))))))
@@ -109,42 +99,62 @@
            (iterate
              (for j from (1+ i) below size)
              (for y = (aref sequence j))
-             (setf (aref result (index-in-content-of-distance-matrix size i j))
+             (setf (aref content (index-in-content-of-distance-matrix size i j))
                    (coerce (dist-function (key-function x) (key-function y))
                            type))))))
      indexes)
-    (assure distance-matrix
-      (make 'distance-matrix
-            :size size
-            :content result))))
+    matrix))
+
+
+(-> parallel-make-distance-matrix-from-vector ((or list symbol)
+                                               (or function symbol)
+                                               vector
+                                               &key
+                                               (:key (-> (t) t))
+                                               (:key-context (-> (t) t))
+                                               (:function-context (-> (t) t)))
+    distance-matrix)
+(defun parallel-make-distance-matrix-from-vector (type function sequence
+                                                  &key
+                                                    (key #'identity)
+                                                    (key-context #'identity)
+                                                    (function-context #'identity))
+  (declare (optimize (speed 3)))
+  (let ((result (make-distance-matrix type (length sequence))))
+    (parallel-fill-distance-matrix-from-vector result function sequence
+                                               :key key
+                                               :key-context key-context
+                                               :function-context function-context)
+    result))
+
+
+(defun fill-distance-matrix-from-vector (matrix function sequence)
+  (assert (<= (length sequence) (read-size matrix)))
+  (let* ((size (length sequence))
+         (content (read-content matrix))
+         (type (array-element-type content)))
+    (labels ((fill-matrix (column)
+               (iterate
+                 (with first = (aref sequence column))
+                 (for row from (1+ column) below size)
+                 (for second = (aref sequence row))
+                 (setf (aref content (index-in-content-of-distance-matrix size
+                                                                          column
+                                                                          row))
+                       (coerce (funcall function first second) type)))))
+      (iterate
+        (for i from 0 below size)
+        (fill-matrix i))
+      matrix)))
 
 
 (-> make-distance-matrix-from-vector ((or list symbol)
                                       (-> (t t) single-float)
                                       vector) distance-matrix)
 (defun make-distance-matrix-from-vector (type function sequence)
-  (let* ((size (length sequence))
-         (result (make-array (1+ (index-in-content-of-distance-matrix size
-                                                                      (1- size)
-                                                                      (1- size)))
-                             :element-type type)))
-    (labels ((fill-matrix (column)
-               (iterate
-                 (with first = (aref sequence column))
-                 (for row from (1+ column) below size)
-                 (for second = (aref sequence row))
-                 (setf (aref result (index-in-content-of-distance-matrix size
-                                                                         column
-                                                                         row))
-                       (coerce (funcall function first second) type)))))
-      (iterate
-        (for i from 0 below size)
-        (fill-matrix i))
-      (assure distance-matrix
-           (make 'distance-matrix
-                 :size (length sequence)
-                 :content result)))))
-
+  (let ((result (make-distance-matrix type (length sequence))))
+    (fill-distance-matrix-from-vector result function sequence)
+    result))
 
 
 (defgeneric distance (matrix from to)
@@ -154,10 +164,9 @@
     (let ((size (slot-value matrix '%size)))
       (declare (type index size))
       (cond
-        ((or (>= from size) (>= to size))aref
+        ((or (>= from size) (>= to size))
          (error "No such position in the matrix."))
-        ((eql from to)
-         0.0)
+        ((eql from to) nil)
         (t (let ((content (slot-value matrix '%content))
                  (from (min from to))
                  (to (max from to)))
