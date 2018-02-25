@@ -46,7 +46,7 @@
       (map nil #'force-tree %children))))
 
 
-(defun make-future-egnat-nodes (data number-of-nodes number-of-content metric-fn metric-type)
+(defun make-future-egnat-nodes (data number-of-nodes number-of-content metric-fn)
   (if (<= (length data) number-of-content)
       (make 'egnat-node :content data)
       (bind ((this-content (take number-of-content data))
@@ -95,11 +95,8 @@
                                     :fill-pointer (length seeds-indexes))
                         (lambda (content)
                           (lparallel:future
-                            (make-egnat-nodes content
-                                              number-of-nodes
-                                              number-of-content
-                                              metric-fn
-                                              metric-type)))
+                            (make-future-egnat-nodes content number-of-nodes
+                                                     number-of-content metric-fn)))
                         contents))
              (ranges (cl-ds.utils:make-distance-matrix 'list number-of-nodes)))
         (cl-ds.utils:fill-distance-matrix-from-vector
