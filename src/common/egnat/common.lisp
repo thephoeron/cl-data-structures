@@ -34,6 +34,7 @@
     :reader read-content)
    (%children
     :type (or null (vector memory-gnat-node))
+    :initform nil
     :initarg :children
     :reader read-children)))
 
