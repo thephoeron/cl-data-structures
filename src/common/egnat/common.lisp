@@ -69,7 +69,7 @@
                               (while i)
                               (vector-push-extend i result)
                               (finally (return result))))
-             (reverse-mapping (let ((table (make-hash-table)))
+             (reverse-mapping (let ((table (make-hash-table :size (length seeds-indexes))))
                                 (iterate
                                   (for i in-vector seeds-indexes)
                                   (for j from 0)
