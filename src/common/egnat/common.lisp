@@ -32,13 +32,20 @@
     :type vector
     :initarg :content
     :reader read-content)
-   (%childrens
+   (%children
     :type (or null (vector memory-gnat-node))
-    :initarg :childrens
-    :reader read-childrens)))
+    :initarg :children
+    :reader read-children)))
 
 
-(defun make-egnat-nodes (data number-of-nodes number-of-content metric-fn metric-type)
+(defun force-tree (node)
+  (bind (((:slots %children) node))
+    (unless (null %children)
+      (map-into %children #'lparallel:force %children)
+      (map nil #'force-tree %children))))
+
+
+(defun make-future-egnat-nodes (data number-of-nodes number-of-content metric-fn metric-type)
   (if (<= (length data) number-of-content)
       (make 'egnat-node :content data)
       (bind ((this-content (take number-of-content data))
@@ -114,4 +121,4 @@
         (make 'egnat-node
               :content this-content
               :ranges ranges
-              :children (map-into children #'lparallel:force children)))))
+              :children children))))
