@@ -24,10 +24,16 @@
 
 
 (defclass egnat-node ()
-  ((%ranges
-    :type cl-ds.utils:distance-matrix
-    :initarg :ranges
-    :reader read-ranges)
+  ((%close-range
+    :type (or null cl-ds.utils:distance-matrix)
+    :initform nil
+    :initarg :close-range
+    :reader read-close-range)
+   (%distant-range
+    :type (or null cl-ds.utils:distance-matrix)
+    :initarg :distant-range
+    :initform nil
+    :reader read-distant-range)
    (%content
     :type vector
     :initarg :content
@@ -46,7 +52,7 @@
       (map nil #'force-tree %children))))
 
 
-(defun make-future-egnat-nodes (data number-of-nodes number-of-content metric-fn)
+(defun make-future-egnat-nodes (data number-of-nodes number-of-content metric-fn metric-type)
   (if (<= (length data) number-of-content)
       (make 'egnat-node :content data)
       (bind ((this-content (take number-of-content data))
@@ -96,9 +102,11 @@
                         (lambda (content)
                           (lparallel:future
                             (make-future-egnat-nodes content number-of-nodes
-                                                     number-of-content metric-fn)))
+                                                     number-of-content metric-fn metric-type)))
                         contents))
-             (ranges (cl-ds.utils:make-distance-matrix 'list number-of-nodes)))
+             (ranges (cl-ds.utils:make-distance-matrix 'list number-of-nodes))
+             (close-range (cl-ds.utils:make-distance-matrix metric-type number-of-nodes))
+             (distant-range (cl-ds.utils:make-distance-matrix metric-type number-of-nodes)))
         (cl-ds.utils:fill-distance-matrix-from-vector
          ranges
          (lambda (a b)
@@ -107,7 +115,8 @@
              (cl-ds.utils:cartesian
               (list a b)
               (lambda (a b)
-                (let ((distance (funcall metric-fn a b)))
+                (let ((distance (coerce (funcall metric-fn a b)
+                                        metric-type)))
                   (if (null min)
                       (setf min distance)
                       (setf min (min distance min)))
@@ -116,7 +125,10 @@
                       (setf max (max distance max))))))
              (list* min max)))
          contents)
+        (cl-ds.utils:mutate-matrix close-range #'car ranges)
+        (cl-ds.utils:mutate-matrix distant-range #'cdr ranges)
         (make 'egnat-node
               :content this-content
-              :ranges ranges
+              :close-range close-range
+              :distant-range distant-range
               :children children))))

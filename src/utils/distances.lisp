@@ -10,14 +10,15 @@
              :initarg :content)))
 
 
-(defgeneric mutate-matrix (destination fn m1 m2)
-  (:method ((destination distance-matrix) fn (m1 distance-matrix) (m2 distance-matrix))
+(defgeneric mutate-matrix (destination fn m1 &rest more)
+  (:method ((destination distance-matrix) fn m1 &rest more)
     (let ((dest (read-content destination))
-          (s1 (read-content m1))
-          (s2 (read-content m2)))
-      (unless (= (read-size destination) (read-size m1) (read-size m2))
+          (more (cons m1 more)))
+      (unless (every (compose (curry #'eql (read-size destination))
+                              #'read-size)
+                     more)
         (error "Sizes don't mach!"))
-      (lparallel:pmap-into dest fn s1 s2)
+      (apply #'map-into dest fn (mapcar #'read-content more))
       destination)))
 
 
