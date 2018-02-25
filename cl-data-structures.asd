@@ -13,7 +13,8 @@
                 :more-conditions :closer-mop
                 :lparallel       :flexichain
                 :metabang-bind   :bordeaux-threads
-                :trivial-garbage :fare-memoization)
+                :trivial-garbage :fare-memoization
+                :cl-murmurhash)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
@@ -78,6 +79,9 @@
                              (:test-file "moments-tests.lisp")
                              (:test-file "statistical-summary-tests.lisp")
                              (:test-file "simple-linear-regression-tests")))
+               (:module "streaming-algorithms"
+                :components ((:file "package")
+                             (:file "estimated-set-cardinality")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
