@@ -115,7 +115,6 @@
              (cl-ds.utils:cartesian
               (list a b)
               (lambda (a b)
-                (break)
                 (let ((distance (coerce (funcall metric-fn a b)
                                         metric-type)))
                   (if (null min)
