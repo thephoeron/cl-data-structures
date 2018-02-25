@@ -75,15 +75,14 @@
                                   (setf (gethash i table) j))
                                 table))
              (data-partitions (map '(vector fixnum)
-                                   (lambda (x)
-                                     (let ((data (aref data x)))
-                                       (iterate
-                                         (for seed-index in-vector seeds-indexes)
-                                         (for seed = (aref data seed-index))
-                                         (for distance = (funcall metric-fn data seed))
-                                         (minimize distance into min)
-                                         (finding seed-index such-that (= distance min)))))
-                                   (range 0 (length data))))
+                                   (lambda (data)
+                                     (iterate
+                                       (for seed-index in-vector seeds-indexes)
+                                       (for seed = (aref data seed-index))
+                                       (for distance = (funcall metric-fn data seed))
+                                       (minimize distance into min)
+                                       (finding seed-index such-that (= distance min))))
+                                   data))
              (contents (let ((result (make-array number-of-nodes
                                                  :adjustable t
                                                  :fill-pointer (length seeds-indexes))))
