@@ -46,8 +46,7 @@
          (skewness (/ (cl-ds:at moments 3) (expt sd 3)))
          (kurtosis (/ (cl-ds:at moments 4) (expt sd 4))))
     (cl-ds.alg:make-hash-table-range
-     (dict 'eq
-           :average average
+     (dict :average average
            :variance variance
            :skewness skewness
            :kurtosis kurtosis))))
