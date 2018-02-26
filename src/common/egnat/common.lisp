@@ -148,3 +148,23 @@
   (~> data
       (make-future-egnat-nodes number-of-nodes content-count metric-fn metric-type)
       force-tree))
+
+
+(defun prune-subtrees (trees close-range distant-range value metric-fn)
+  (let ((result (make-array (length trees)
+                            :element-type 'bit
+                            :initial-element 1))
+        (length (length trees)))
+    (iterate
+      (for i from 0)
+      (for tree in-vector trees)
+      (for content = (~> tree read-content (aref 0)))
+      (for distance = (funcall metric-fn value content))
+      (iterate
+        (for j from 0 below length)
+        (unless (or (eql i j) (zerop (aref result j)))
+          (let ((in-range (<= (cl-ds.utils:distance close-range i j)
+                              distance
+                              (cl-ds.utils:distance distant-range i j))))
+            (setf (aref result j) (if in-range 1 0))))))
+    result))
