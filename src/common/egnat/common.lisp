@@ -53,11 +53,15 @@
   node)
 
 
-(defun make-future-egnat-nodes (operation container data)
+(defun make-future-egnat-nodes (operation container extra-arguments data)
   (bind (((:slots %metric-fn %metric-type %content-count-in-node %branching-factor) container)
          (length (length data)))
     (if (<= length %content-count-in-node)
-        (make 'egnat-node :content (cl-ds:make-bucket operation container data))
+        (make 'egnat-node :content (apply #'cl-ds:make-bucket
+                                          operation
+                                          container
+                                          data
+                                          extra-arguments))
         (bind ((this-content (make-array %content-count-in-node :displaced-to data))
                (this-data (make-array (- length %content-count-in-node)
                                       :displaced-to data
@@ -105,7 +109,7 @@
                                       :fill-pointer (length contents))
                           (lambda (content)
                             (lparallel:future
-                              (make-future-egnat-nodes operation container content)))
+                              (make-future-egnat-nodes operation container extra-arguments content)))
                           contents))
                (ranges (cl-ds.utils:make-distance-matrix 'list %branching-factor))
                (close-range (cl-ds.utils:make-distance-matrix %metric-type %branching-factor))
@@ -141,15 +145,19 @@
                                            (coerce 0 %metric-type)))
                                      ranges)
           (make 'egnat-node
-                :content (cl-ds:make-bucket operation container this-content)
+                :content (apply #'cl-ds:make-bucket
+                                operation
+                                container
+                                this-content
+                                extra-arguments)
                 :close-range close-range
                 :distant-range distant-range
                 :children children)))))
 
 
-(defun make-egnat-tree (operation container data)
+(defun make-egnat-tree (operation container extra-arguments data)
   (~>> data
-       (make-future-egnat-nodes operation container)
+       (make-future-egnat-nodes operation container extra-arguments)
        force-tree))
 
 
