@@ -101,7 +101,8 @@
                                            (:file "common")))
                              (:module "egnat"
                               :components ((:file "package")
-                                           (:file "common")))))
+                                           (:file "common")
+                                           (:test-file "tests")))))
                (:module "metric-space"
                 :components ((:file "packages")))
                (:module "dicts"
