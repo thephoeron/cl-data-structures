@@ -6,24 +6,27 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric estimated-set-cardinality (range bits &key key)
+(defgeneric estimated-set-cardinality (range bits hash-fn &key key)
   (:generic-function-class estimated-set-cardinality-function)
-  (:method (range bits &key key)
+  (:method (range bits hash-fn &key key)
     (cl-ds.alg:apply-aggregation-function range
                                           #'estimated-set-cardinality
                                           :key key
+                                          :hash-fn hash-fn
                                           :bits bits)))
 
 
 (defclass estimated-set-cardinality-state ()
-  ((%bits :initarg :bits) (%registers :initarg :registers)))
+  ((%bits :initarg :bits)
+   (%registers :initarg :registers)
+   (%hash-fn :initarg :hash-fn)))
 
 
 (defmethod cl-ds.alg:aggregate ((function estimated-set-cardinality-function)
                                 state
                                 element)
-  (bind (((:slots %bits %size %registers) state)
-         (hash (cl-murmurhash:murmurhash element :seed #X5F61767A))
+  (bind (((:slots %bits %registers %hash-fn) state)
+         (hash (funcall %hash-fn element))
          (index (ash hash (- (- 32 %bits))))
          (rank (iterate
                  (for i from 1 to 32)
@@ -59,7 +62,7 @@
 
 
 (defmethod cl-ds.alg:make-state ((function estimated-set-cardinality-function)
-                                 &key bits &allow-other-keys)
+                                 &key bits hash-fn &allow-other-keys)
   (unless (< 3 bits 21)
     (error 'cl-ds:argument-out-of-bounds
            :argument 'bits
@@ -68,4 +71,5 @@
            :text "Bits out of range."))
   (make 'estimated-set-cardinality-state
         :bits bits
+        :hash-fn hash-fn
         :registers (make-array (ash 1 bits) :element-type 'unsigned-byte)))
