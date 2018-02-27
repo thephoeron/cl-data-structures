@@ -247,20 +247,19 @@
                                  values initial-value-present))
          (calls (mapcar #'first bindings))
          (optimizers (mapcar #'second bindings))
+         (!val (gensym))
          (macrolets (mapcar (lambda (first-time value optimize call)
-                              `(,call (val)
-                                      (once-only (val)
-                                        `(when (or ,',first-time
-                                                   (,',optimize ,val ,',value))
-                                           (setf ,',value ,val
-                                                 ,',first-time nil)))))
+                              `(,call (,!val)
+                                      (when (or ,first-time
+                                               (,optimize ,!val ,value))
+                                        (setf ,value ,!val
+                                              ,first-time nil))))
                             first-times
                             values
                             optimizers
                             calls)))
     `(let (,@initial-values ,@first-times-values)
-       (macrolet ,macrolets
+       (flet ,macrolets
          (progn
            ,@body
-           (values ,@values)))))))
-
+           (values ,@values))))))

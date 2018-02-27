@@ -121,20 +121,15 @@
           (cl-ds.utils:fill-distance-matrix-from-vector
            ranges
            (lambda (a b)
-             (let ((min nil)
-                   (max nil))
-               (cl-ds.utils:cartesian
-                (list a b)
-                (lambda (a b)
-                  (let ((distance (coerce (funcall %metric-fn a b)
-                                          %metric-type)))
-                    (if (null min)
-                        (setf min distance)
-                        (setf min (min distance min)))
-                    (if (null max)
-                        (setf max distance)
-                        (setf max (max distance max))))))
-               (list* min max)))
+             (multiple-value-call #'list*
+               (cl-ds.utils:optimize-value ((mini <) (maxi >))
+                 (cl-ds.utils:cartesian
+                  (list a b)
+                  (lambda (a b)
+                    (let ((distance (coerce (funcall %metric-fn a b)
+                                            %metric-type)))
+                      (mini distance)
+                      (maxi distance)))))))
            contents)
           (cl-ds.utils:mutate-matrix close-range
                                      (lambda (x)
