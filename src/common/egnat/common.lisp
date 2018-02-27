@@ -204,7 +204,7 @@
     (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
-    (for distance = (let ((sum 0)
+    (for distance = (let ((sum 0.0)
                           (count 0))
                       (cl-ds:map-bucket container content
                                         (lambda (x)

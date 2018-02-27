@@ -233,15 +233,34 @@
          ,@body))))
 
 
-(defmacro optimize-value ((optimize call) &body body)
-  (with-gensyms (!value !first-time)
-    `(let ((,!value nil)
-           (,!first-time t))
-       (macrolet ((,call (val)
-                    (once-only (val)
-                      `(when (or ,!first-time
-                                 (,',optimize ,val ,!value))
-                         (setf ,!value ,val)))))
+(defmacro optimize-value ((&rest bindings) &body body)
+  (let* ((values (mapcar #'first bindings))
+         (initial-value-present (mapcar #'cddr bindings))
+         (first-times (map-into (make-list (length bindings)) #'gensym))
+         (first-times-values (mapcar (lambda (first-symbol value) (list first-symbol (null value)))
+                                     first-times
+                                     initial-value-present))
+         (initial-values (mapcar (lambda (value-symbol value-present)
+                                   (list value-symbol
+                                         (when value-present
+                                           (car value-present))))
+                                 values initial-value-present))
+         (calls (mapcar #'first bindings))
+         (optimizers (mapcar #'second bindings))
+         (macrolets (mapcar (lambda (first-time value optimize call)
+                              `(,call (val)
+                                      (once-only (val)
+                                        `(when (or ,',first-time
+                                                   (,',optimize ,val ,',value))
+                                           (setf ,',value ,val
+                                                 ,',first-time nil)))))
+                            first-times
+                            values
+                            optimizers
+                            calls)))
+    `(let (,@initial-values ,@first-times-values)
+       (macrolet ,macrolets
          (progn
            ,@body
-           ,!value)))))
+           (values ,@values)))))))
+
