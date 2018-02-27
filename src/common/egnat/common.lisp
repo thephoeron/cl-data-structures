@@ -197,3 +197,19 @@
 
 (defun node-full (container node)
   (cl-ds:full-bucket-p container (read-content node)))
+
+
+(defun closest-node (container nodes item)
+  (iterate
+    (with metric-fn = (read-metric-fn container))
+    (for node in-vector nodes)
+    (for content = (read-content node))
+    (for distance = (let ((sum 0)
+                          (count 0))
+                      (cl-ds:map-bucket container content
+                                        (lambda (x)
+                                          (incf count)
+                                          (incf sum (funcall metric-fn x item))))
+                      (/ sum count)))
+    (minimize distance into min)
+    (finding node such-that (= distance min))))

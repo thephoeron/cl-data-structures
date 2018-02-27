@@ -231,3 +231,17 @@
               final-forms))
       `(flet ,final-forms
          ,@body))))
+
+
+(defmacro optimize-value ((optimize call) &body body)
+  (with-gensyms (!value !first-time)
+    `(let ((,!value nil)
+           (,!first-time t))
+       (macrolet ((,call (val)
+                    (once-only (val)
+                      `(when (or ,!first-time
+                                 (,',optimize ,val ,!value))
+                         (setf ,!value ,val)))))
+         (progn
+           ,@body
+           ,!value)))))

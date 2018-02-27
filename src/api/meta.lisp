@@ -186,6 +186,11 @@
                             &key &allow-other-keys))
 
 
+(defgeneric map-bucket (container bucket function)
+  (:method (container (bucket sequence) function)
+    (map nil function bucket)))
+
+
 (defgeneric full-bucket-p (container bucket))
 
 

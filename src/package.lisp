@@ -87,6 +87,7 @@
    #:make-delay
    #:make-from-traversable
    #:make-state
+   #:map-bucket
    #:melt!
    #:mod-bind
    #:mutable

@@ -30,6 +30,7 @@
    #:merge-ordered-vectors
    #:mutate-matrix
    #:on-ordered-intersection
+   #:optimize-value
    #:ordered-p
    #:parallel-fill-distance-matrix-from-vector
    #:parallel-make-distance-matrix-from-vector
