@@ -186,6 +186,9 @@
                             &key &allow-other-keys))
 
 
+(defgeneric full-bucket-p (container bucket))
+
+
 (defgeneric position-modification (operation
                                    container
                                    location

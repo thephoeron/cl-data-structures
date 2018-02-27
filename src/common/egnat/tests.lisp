@@ -9,6 +9,7 @@
 
 
 (plan 1)
+
 (let ((container (make-instance 'cl-ds.common.egnat::fundamental-egnat
                                 :branching-factor 5
                                 :metric-fn #'logxor
@@ -21,4 +22,5 @@
                     'vector)))
   (let ((root (cl-ds.common.egnat::make-egnat-tree nil container nil data)))
     (is (length (cl-ds.common.egnat::read-content root)) 5)))
+
 (finalize)

@@ -47,6 +47,7 @@
    #:found
    #:freeze!
    #:frozenp
+   #:full-bucket-p
    #:functional
    #:functional-add-function
    #:functional-counterpart
