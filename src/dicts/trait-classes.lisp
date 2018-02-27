@@ -12,7 +12,12 @@
   ((%hash-fn
     :type (-> (t) fixnum)
     :initarg :hash-fn
-    :reader read-hash-fn)))
+    :reader read-hash-fn)
+   (%bucket-size
+    :type positive-fixnum
+    :initarg :bucket-size
+    :reader read-bucket-size
+    :initform 3)))
 
 
 (defclass dictionary (cl-ds:fundamental-container)

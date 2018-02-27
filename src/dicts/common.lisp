@@ -4,12 +4,6 @@
 (deftype bucket () 'list)
 
 
-(defgeneric single-element-p (bucket)
-  (:method ((bucket list))
-    (and (not (null bucket))
-         (endp (rest bucket)))))
-
-
 (defgeneric find-content (container bucket location &key &allow-other-keys))
 
 
@@ -460,3 +454,8 @@
   (cl-ds.common:make-lazy-range cl-ds.common:forward-lazy-range
                                 container
                                 (cl-ds:whole-range container)))
+
+
+(defmethod cl-ds:full-bucket-p ((container fundamental-hashing-dictionary)
+                                bucket)
+  (>= (length bucket) (read-bucket-size container)))

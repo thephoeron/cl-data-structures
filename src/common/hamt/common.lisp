@@ -330,9 +330,9 @@ Copy nodes and stuff.
                       :content new-array))))
 
 
-(-> rebuild-rehashed-node (fixnum t t) t)
-(-> build-rehashed-node (fixnum simple-vector t) t)
-(defun build-rehashed-node (depth content ownership-tag)
+(-> rebuild-rehashed-node (hamt-container fixnum t t) t)
+(-> build-rehashed-node (hamt-container fixnum simple-vector t) t)
+(defun build-rehashed-node (container depth content ownership-tag)
   (let ((mask 0)
         (node-mask 0)
         (size 0))
@@ -350,7 +350,8 @@ Copy nodes and stuff.
         (when conflict
           (for i = (logcount (ldb (byte index 0) mask)))
           (setf (array i)
-                (rebuild-rehashed-node depth
+                (rebuild-rehashed-node container
+                                       depth
                                        conflict
                                        ownership-tag)
                 (ldb (byte 1 index) node-mask) 1)))
@@ -359,19 +360,19 @@ Copy nodes and stuff.
                       :content array))))
 
 
-(defun rebuild-rehashed-node (depth conflict ownership-tag)
+(defun rebuild-rehashed-node (container depth conflict ownership-tag)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
                      (space 0))
            (type fixnum depth))
   (flet ((cont (array)
-           (build-rehashed-node (1+ depth) array ownership-tag)))
+           (build-rehashed-node container (1+ depth) array ownership-tag)))
     (declare (dynamic-extent #'cont))
     (bind (((:accessors (lock hash-node-lock)
                         (tag hash-node-ownership-tag))
             conflict))
-      (if (or (>= depth +depth+) (cl-ds.common:single-element-p conflict))
+      (if (or (>= depth +depth+) (not (cl-ds:full-bucket-p container conflict)))
           conflict
           (rehash conflict
                   depth
@@ -484,8 +485,8 @@ Copy nodes and stuff.
     (funcall cont result)))
 
 
-(-> copy-on-write (t (vector fixnum) vector fixnum t) t)
-(defun copy-on-write (ownership-tag indexes path depth conflict)
+(-> copy-on-write (hamt-container t (vector fixnum) vector fixnum t) t)
+(defun copy-on-write (container ownership-tag indexes path depth conflict)
   (declare (type index-path indexes)
            (type node-path path)
            (type fixnum depth)
@@ -504,7 +505,8 @@ Copy nodes and stuff.
                             ;;if we didn't find element or element was found but depth was already maximal,
                             ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                             conflict
-                            (rebuild-rehashed-node depth
+                            (rebuild-rehashed-node container
+                                                   depth
                                                    conflict
                                                    ownership-tag))
            then (if ac
@@ -518,7 +520,7 @@ Copy nodes and stuff.
 
 
 (-> transactional-copy-on-write
-    (t (vector fixnum) vector fixnum list)
+    (hamt-container t (vector fixnum) vector fixnum list)
     t)
 (defun transactional-copy-on-write (ownership-tag
                                     indexes
@@ -549,7 +551,8 @@ Copy nodes and stuff.
            ;;if we didn't find element or element was found but depth was already maximal,
            ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                          conflict
-                         (rebuild-rehashed-node depth
+                         (rebuild-rehashed-node container
+                                                depth
                                                 conflict
                                                 ownership-tag))
            then (if ac

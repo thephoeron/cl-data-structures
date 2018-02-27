@@ -22,7 +22,6 @@
    #:mutable-hashing-dictionary
    #:read-equal-fn
    #:read-hash-fn
-   #:single-element-p
    #:transactional-dictionary
    #:transactional-hashing-dictionary))
 

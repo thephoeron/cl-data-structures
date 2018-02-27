@@ -140,7 +140,8 @@ Methods. Those will just call non generic functions.
               (setf changed c)
               (values a b c)))
            ((:dflet copy-on-write (indexes path depth conflict))
-            (copy-on-write tag
+            (copy-on-write container
+                           tag
                            indexes
                            path
                            depth
@@ -210,7 +211,8 @@ Methods. Those will just call non generic functions.
               (setf changed c)
               (values a b c)))
            ((:dflet copy-on-write (indexes path depth conflict))
-            (transactional-copy-on-write (read-ownership-tag container)
+            (transactional-copy-on-write container
+                                         (read-ownership-tag container)
                                          indexes
                                          path
                                          depth
@@ -254,7 +256,8 @@ Methods. Those will just call non generic functions.
               (setf changed c)
               (values a b c)))
            ((:dflet copy-on-write (indexes path depth conflict))
-            (copy-on-write tag
+            (copy-on-write container
+                           tag
                            indexes
                            path
                            depth
@@ -307,7 +310,8 @@ Methods. Those will just call non generic functions.
               (values container
                       cl-ds.common:empty-eager-modification-operation-status)))
            ((:dflet copy-on-write (indexes path depth conflict))
-            (transactional-copy-on-write (read-ownership-tag container)
+            (transactional-copy-on-write container
+                                         (read-ownership-tag container)
                                          indexes
                                          path
                                          depth
@@ -399,6 +403,7 @@ Methods. Those will just call non generic functions.
                                    (hash-node-insert!
                                     prev-node
                                     (rebuild-rehashed-node
+                                     container
                                      c
                                      (handle-bucket
                                       (cl-ds:make-bucket operation
@@ -419,7 +424,7 @@ Methods. Those will just call non generic functions.
                                 (progn
                                   (hash-node-replace!
                                    prev-node
-                                   (rebuild-rehashed-node c
+                                   (rebuild-rehashed-node container c
                                     (handle-bucket
                                      (cl-ds:grow-bucket! operation
                                                          container
@@ -431,6 +436,7 @@ Methods. Those will just call non generic functions.
                                    prev-index)
                                   root)
                                 (rebuild-rehashed-node
+                                 container
                                  c
                                  (handle-bucket
                                   (cl-ds:grow-bucket! operation
