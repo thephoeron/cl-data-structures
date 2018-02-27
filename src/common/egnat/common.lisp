@@ -17,6 +17,10 @@
     :type non-negative-fixnum
     :reader read-content-count-in-node
     :initarg :content-count-in-node)
+   (%size
+    :reader read-size
+    :type non-negative-fixnum
+    :initform 0)
    (%root
     :reader read-root
     :initform nil
@@ -179,3 +183,17 @@
                               (cl-ds.utils:distance distant-range i j))))
             (setf (aref result j) (if in-range 1 0))))))
     result))
+
+
+(defun insert-into-node (operation container node item extra-arguments)
+  (bind (((:slots %content) node))
+    (apply #'cl-ds:grow-bucket!
+           operation
+           container
+           node
+           item
+           extra-arguments)))
+
+
+(defun node-full (container node)
+  (cl-ds:full-bucket-p container (read-content node)))
