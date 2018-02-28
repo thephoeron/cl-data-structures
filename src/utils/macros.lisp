@@ -248,10 +248,10 @@
          (calls (mapcar #'first bindings))
          (optimizers (mapcar #'second bindings))
          (!val (gensym))
-         (macrolets (mapcar (lambda (first-time value optimize call)
+         (functions (mapcar (lambda (first-time value optimize call)
                               `(,call (,!val)
                                       (when (or ,first-time
-                                               (,optimize ,!val ,value))
+                                                (,optimize ,!val ,value))
                                         (setf ,value ,!val
                                               ,first-time nil))))
                             first-times
@@ -259,7 +259,7 @@
                             optimizers
                             calls)))
     `(let (,@initial-values ,@first-times-values)
-       (flet ,macrolets
+       (flet ,functions
          (progn
            ,@body
            (values ,@values))))))
