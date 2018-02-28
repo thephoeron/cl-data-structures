@@ -64,6 +64,7 @@
                              (:file "hash-join")
                              (:file "chain")
                              (:file "zip")
+                             (:file "sequence-window")
                              (:test-file "hash-join-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))

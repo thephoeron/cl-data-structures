@@ -253,7 +253,8 @@
                                       (when (or ,first-time
                                                 (,optimize ,!val ,value))
                                         (setf ,value ,!val
-                                              ,first-time nil))))
+                                              ,first-time nil))
+                                      ,value))
                             first-times
                             values
                             optimizers
