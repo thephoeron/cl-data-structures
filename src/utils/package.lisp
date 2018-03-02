@@ -2,10 +2,12 @@
 
 
 (defpackage :cl-data-structures.utils
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum)
+  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:metabang-bind)
   (:nicknames #:cl-ds.utils)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
+   #:add-into-queue
+   #:add-sinks
    #:bind-lambda
    #:cartesian
    #:cases
@@ -15,6 +17,7 @@
    #:distance
    #:distance-matrix
    #:each-in-matrix
+   #:end-execution
    #:erase-from-vector
    #:extendable-vector
    #:fill-distance-matrix-from-vector
@@ -27,6 +30,7 @@
    #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
+   #:make-pipe-fragment
    #:merge-ordered-vectors
    #:mutate-matrix
    #:on-ordered-intersection
@@ -34,6 +38,7 @@
    #:ordered-p
    #:parallel-fill-distance-matrix-from-vector
    #:parallel-make-distance-matrix-from-vector
+   #:pipe-fragment
    #:pop-last
    #:read-size
    #:swap-if
