@@ -41,6 +41,7 @@
    #:pipe-fragment
    #:pop-last
    #:read-size
+   #:start-execution
    #:swap-if
    #:swapop
    #:todo

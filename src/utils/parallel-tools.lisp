@@ -20,15 +20,7 @@
 
 
 (flet ((make-finalizer (queue)
-         (lambda () (lparallel.queue:push-queue queue '(t . nil))))
-       (make-worker (obj)
-         (bind (((:slots %queue %operation %sinks-lock %sinks) obj))
-           (lambda () (iterate
-                   (for (end . content) = (lparallel.queue:pop-queue %queue))
-                   (until end)
-                   (setf content (funcall %operation content))
-                   (bt:with-lock-held (%sinks-lock)
-                     (map nil (rcurry #'funcall content) %sinks)))))))
+         (lambda () (lparallel.queue:push-queue queue '(t . nil)))))
   (defmethod initialize-instance :after ((obj pipe-fragment)
                                          &key
                                            (queue-size nil queue-size-bound)
@@ -39,8 +31,7 @@
            ((:slots %queue %thread %sinks %operation %sinks-lock) obj))
       (setf %queue queue)
       (c2mop:set-funcallable-instance-function obj (curry #'add-into-queue obj))
-      (trivial-garbage:finalize obj (make-finalizer %queue))
-      (setf %thread (bt:make-thread (make-worker obj))))))
+      (trivial-garbage:finalize obj (make-finalizer %queue)))))
 
 
 (defgeneric add-sinks (pipe sink &rest sinks)
@@ -57,8 +48,22 @@
   (:method ((pipe pipe-fragment))
     (bind (((:slots %thread %queue) pipe))
       (lparallel.queue:push-queue (cons t nil) %queue)
-      (bt:join-thread %thread))
+      (when (slot-boundp pipe '%thread)
+        (bt:join-thread %thread)))
     pipe))
+
+
+(flet ((make-worker (obj)
+         (bind (((:slots %queue %operation %sinks-lock %sinks) obj))
+           (lambda () (iterate
+                   (for (end . content) = (lparallel.queue:pop-queue %queue))
+                   (until end)
+                   (setf content (funcall %operation content))
+                   (bt:with-lock-held (%sinks-lock)
+                     (map nil (rcurry #'funcall content) %sinks)))))))
+    (defgeneric start-execution (pipe)
+      (:method ((pipe pipe-fragment))
+        (setf (slot-value pipe '%thread) (bt:make-thread (make-worker pipe))))))
 
 
 (defun make-pipe-fragment (operation &key (queue-size nil queue-size-bound) sinks)
