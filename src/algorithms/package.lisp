@@ -20,14 +20,15 @@
    #:group-by-function
    #:hash-join
    #:layer-function
-   #:make-state
    #:make-hash-table-range
+   #:make-state
    #:multi-aggregation-function
    #:multi-aggregation-stages
    #:on-each
    #:proxy-box-range
    #:proxy-range
    #:range-function
+   #:sequence-window
    #:state-result
    #:summary
    #:summary-function

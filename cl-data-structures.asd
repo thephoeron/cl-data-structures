@@ -66,6 +66,7 @@
                              (:file "zip")
                              (:file "sequence-window")
                              (:test-file "hash-join-tests")
+                             (:test-file "sequence-window-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
                (:module "math"

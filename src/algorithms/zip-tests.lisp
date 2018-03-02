@@ -7,8 +7,8 @@
 
 (plan 6)
 
-(let* ((vector1 (vect 1 2 3 4 5 6 7))
-       (vector2 (vect 8 9 10 11 12))
+(let* ((vector1 #(1 2 3 4 5 6 7))
+       (vector2 #(8 9 10 11 12))
        (range (cl-ds.alg:zip
                #'list*
                (cl-ds:whole-range vector1)

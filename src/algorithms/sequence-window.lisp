@@ -9,8 +9,31 @@
    (%content :initarg :content
              :reader read-content)
    (%current-index :initarg :current-index
-                   :reader read-current-index
-                   :initform 0)))
+                   :accessor access-current-index
+                   :initform 0)
+   (%initial-to :accessor access-initial-to)))
+
+
+(defmethod initialize-instance :after ((instance sequence-window)
+                                       &key &allow-other-keys)
+  (bind (((:slots %from %current-index
+                  %initial-to %to)
+          instance))
+    (setf %current-index %from
+          %initial-to %to)))
+
+
+(defmethod reinitialize-instance ((instance sequence-window)
+                                  &key &allow-other-keys)
+  (bind (((:slots %from %current-index
+                  %initial-to %to)
+          instance))
+    (setf %current-index %from
+          %to %initial-to)))
+
+
+(defmethod cl-ds:reset! ((instance sequence-window))
+  (reinitialize-instance instance))
 
 
 (defclass random-access-sequence-window (sequence-window)
@@ -47,7 +70,7 @@
         :content sequence))
 
 
-(defmethod sequence-window :before ((sequence sequence)
+(defmethod sequence-window :before ((sequence cl:sequence)
                                     from to)
   (unless (< from to)
     (error 'cl-ds:argument-out-of-bounds
@@ -66,7 +89,7 @@
 (defmethod sequence-window ((sequence sequence-window)
                             from to)
   (make (type-of sequence)
-        :from (+ from (read-from sequence))
+        :from (+ (read-current-index sequence) from)
         :to (- (read-to sequence) to)
         :content (read-content sequence)))
 
@@ -85,37 +108,71 @@
         :content vector))
 
 
-(defmethod cl-ds:at ((container vector-sequence-window) index)
-  (bind (((:slots %from %to %content) container)
+(defgeneric effective-at (window index)
+  (:method ((window vector-sequence-window) index)
+    (values (aref (read-content window) index)
+            t))
+  (:method ((window random-access-sequence-window) index)
+    (cl-ds:at (read-content window) index))
+  (:method ((window list-sequence-window) index)
+    (values (elt (read-content window) index)
+            t)))
+
+
+(defmethod cl-ds:at ((window sequence-window) index)
+  (bind (((:slots %from %to %current-index) window)
          (effective-index (+ %from index)))
-    (when (< effective-index (length %content))
-      (error 'cl-ds:argument-out-of-bounds
-             :argument 'index
-             :bounds (list 0 (- %to %from))
-             :value index
-             :text "Index out of range."))
-    (values (aref %content effective-index) t)))
+    (if (< (1- %current-index) effective-index %to)
+        (effective-at window effective-index)
+        (values nil nil))))
 
 
-(defmethod cl-ds:at ((container list-sequence-window) index)
-  (bind (((:slots %from %to %content) container)
-         (effective-index (+ %from index)))
-    (when (< effective-index (length %content))
-      (error 'cl-ds:argument-out-of-bounds
-             :argument 'index
-             :bounds (list 0 (- %to %from))
-             :value index
-             :text "Index out of range."))
-    (values (elt %content effective-index) t)))
+(defmethod cl-ds:peek-front ((container sequence-window))
+  (bind (((:slots %from %to %current-index) container))
+    (if (< %current-index %to)
+        (effective-at container %current-index)
+        (values nil nil))))
 
 
-(defmethod cl-ds:at ((container random-access-sequence-window) index)
-  (bind (((:slots %from %to %content) container)
-         (effective-index (+ %from index)))
-    (when (< effective-index (cl-ds:size %content))
-      (error 'cl-ds:argument-out-of-bounds
-             :argument 'index
-             :bounds (list 0 (- %to %from))
-             :value index
-             :text "Index out of range."))
-    (cl-ds:at %content effective-index)))
+(defmethod cl-ds:consume-front ((container sequence-window))
+  (bind (((:slots %from %to %current-index) container))
+    (if (< %current-index %to)
+        (bind (((:values result value) (effective-at container %current-index)))
+          (when value (incf %current-index))
+          (values result value))
+        (values nil nil))))
+
+
+(defmethod cl-ds:peek-back ((container sequence-window))
+  (bind (((:slots %from %to %current-index) container))
+    (if (< %current-index %to)
+        (bind (((:values result value) (effective-at container (1- %to))))
+          (values result value))
+        (values nil nil))))
+
+
+(defmethod cl-ds:consume-back ((container sequence-window))
+  (bind (((:values result value) (cl-ds:peek-back container)))
+    (when value (decf (slot-value container '%to)))
+    (values result value)))
+
+
+(defmethod cl-ds:across (function (container sequence-window))
+  (bind (((:slots %current-index %to %content) container))
+    (iterate
+      (for i from %current-index below %to)
+      (funcall function (effective-at container i)))
+    container))
+
+
+(defmethod cl-ds:traverse (function (container sequence-window))
+  (cl-ds:across function container))
+
+
+(defmethod cl-ds:clone ((container sequence-window))
+  (make (type-of container)
+        :from (read-from container)
+        :to (read-to container)
+        :content (read-content container)
+        :current-index (access-current-index container)
+        :initial-to (access-initial-to container)))
