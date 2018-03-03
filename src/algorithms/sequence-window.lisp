@@ -89,8 +89,8 @@
 (defmethod sequence-window ((sequence sequence-window)
                             from to)
   (make (type-of sequence)
-        :from (+ (read-current-index sequence) from)
-        :to (- (read-to sequence) to)
+        :from (+ (access-current-index sequence) from)
+        :to (+ (access-current-index sequence) to)
         :content (read-content sequence)))
 
 
@@ -176,3 +176,8 @@
         :content (read-content container)
         :current-index (access-current-index container)
         :initial-to (access-initial-to container)))
+
+
+(defmethod cl-ds:size ((range sequence-window))
+  (bind (((:slots %to %current-index) range))
+    (- %to %current-index)))

@@ -29,12 +29,10 @@
 
 (defclass egnat-node ()
   ((%close-range
-    :type (or null cl-ds.utils:distance-matrix)
     :initform nil
     :initarg :close-range
     :reader read-close-range)
    (%distant-range
-    :type (or null cl-ds.utils:distance-matrix)
     :initarg :distant-range
     :initform nil
     :reader read-distant-range)
@@ -57,105 +55,130 @@
   node)
 
 
+(defun splice-content (data count)
+  (let* ((size (cl-ds:size data))
+         (content (cl-ds.alg:sequence-window data 0 count))
+         (new-data (cl-ds.alg:sequence-window data count count)))
+    (assert (> size count))
+    (assert (eql count (cl-ds:size content)))
+    (values
+     content
+     new-data)))
+
+
+(defun select-seeds (branching-factor data-count)
+  (iterate
+    (with generator = (cl-ds.utils:lazy-shuffle 0 data-count))
+    (with result = (make-array branching-factor
+                               :element-type 'fixnum
+                               :fill-pointer 0
+                               :adjustable t))
+    ;; map index of seed to index of children
+    (with reverse-mapping = (make-hash-table :size branching-factor))
+    (for i = (funcall generator))
+    (repeat branching-factor)
+    (while i)
+    (vector-push-extend i result)
+    (for j from 0)
+    (setf (gethash i reverse-mapping) j)
+    (finally (return (values result reverse-mapping)))))
+
+
+(defun make-partitions (seeds-indexes data metric-fn)
+  (let ((result (make-array (cl-ds:size data) :element-type 'fixnum))
+        (index 0))
+    (cl-ds:across
+     (lambda (value)
+       (setf (aref result (finc index))
+             (iterate
+               (for seed-index in-vector seeds-indexes)
+               (for seed = (cl-ds:at data seed-index))
+               (for distance = (funcall metric-fn value seed))
+               (minimize distance into min)
+               (finding seed-index such-that (= distance min)))))
+     data)
+    result))
+
+
+(defun make-contents (seeds-indexes data data-partitions reverse-mapping)
+  (let ((result (make-array (length seeds-indexes))))
+    (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
+    (iterate
+      (for d in-vector data-partitions)
+      (for i from 0)
+      (for element = (cl-ds:at data i))
+      (for partition = (gethash d reverse-mapping))
+      ;; don't assign seeds to partitions because it has been already done
+      ;; in map-into form
+      (unless (eql d i)
+        (vector-push-extend element (aref result partition))))
+    result))
+
+
+(defun make-future-egnat-subtrees (operation container extra-arguments data)
+  (bind (((:slots %metric-fn %metric-type
+                  %content-count-in-node %branching-factor)
+          container)
+         ((:values this-content this-data)
+          (splice-content data %content-count-in-node))
+         ((:values seeds-indexes reverse-mapping)
+          (select-seeds %branching-factor (cl-ds:size this-data)))
+         (data-partitions (make-partitions seeds-indexes this-data %metric-fn))
+         (contents (make-contents seeds-indexes this-data
+                                  data-partitions reverse-mapping))
+         (children (map-into (make-array %branching-factor
+                                         :adjustable t
+                                         :fill-pointer (length contents))
+                             (lambda (content)
+                               (lparallel:future
+                                 (make-future-egnat-nodes operation
+                                                          container
+                                                          extra-arguments
+                                                          content)))
+                             contents))
+         (close-range (make-array `(,%branching-factor ,%branching-factor)
+                                  :element-type %metric-type))
+         (distant-range (make-array `(,%branching-factor ,%branching-factor)
+                                    :element-type %metric-type)))
+    (iterate
+      (for seed from 0 below (length contents))
+      (for head = (aref (aref contents seed) 0))
+      (iterate
+        (for data from 0 below (length contents))
+        (unless (eql seed data)
+          (multiple-value-bind (min max)
+              (cl-ds.utils:optimize-value ((mini <)
+                                           (maxi <))
+                (map nil (lambda (x)
+                           (let ((distance (funcall %metric-fn x head)))
+                             (mini distance)
+                             (maxi distance)))
+                     (aref contents data)))
+            (setf (aref close-range seed data) min
+                  (aref distant-range seed data) max)))))
+    (make 'egnat-node
+          :content (apply #'cl-ds:make-bucket
+                          operation
+                          container
+                          this-content
+                          extra-arguments)
+          :close-range close-range
+          :distant-range distant-range
+          :children children)))
+
+
 (defun make-future-egnat-nodes (operation container extra-arguments data)
-  (bind (((:slots %metric-fn %metric-type %content-count-in-node %branching-factor) container)
-         (length (length data)))
-    (if (<= length %content-count-in-node)
-        (make 'egnat-node :content (apply #'cl-ds:make-bucket
-                                          operation
-                                          container
-                                          data
-                                          extra-arguments))
-        (bind ((this-content (make-array %content-count-in-node :displaced-to data))
-               (this-data (make-array (- length %content-count-in-node)
-                                      :displaced-to data
-                                      :displaced-index-offset %content-count-in-node))
-               (seeds-indexes (iterate
-                                (with generator = (cl-ds.utils:lazy-shuffle 0 (length this-data)))
-                                (with result = (make-array %branching-factor
-                                                           :element-type 'fixnum
-                                                           :fill-pointer 0
-                                                           :adjustable t))
-                                (for i = (funcall generator))
-                                (repeat %branching-factor)
-                                (while i)
-                                (vector-push-extend i result)
-                                (finally (return result))))
-               (reverse-mapping (let ((table (make-hash-table :size (length seeds-indexes))))
-                                  (iterate
-                                    (for i in-vector seeds-indexes)
-                                    (for j from 0)
-                                    (setf (gethash i table) j))
-                                  table))
-               (data-partitions (map '(vector fixnum)
-                                     (lambda (value)
-                                       (iterate
-                                         (for seed-index in-vector seeds-indexes)
-                                         (for seed = (aref this-data seed-index))
-                                         (for distance = (funcall %metric-fn value seed))
-                                         (minimize distance into min)
-                                         (finding seed-index such-that (= distance min))))
-                                     this-data))
-               (contents (let ((result (make-array %branching-factor
-                                                   :adjustable t
-                                                   :fill-pointer (length seeds-indexes))))
-                           (map-into result #'vect)
-                           (iterate
-                             (for d in-vector data-partitions)
-                             (for i from 0)
-                             (for element = (aref this-data i))
-                             (for partition = (gethash d reverse-mapping))
-                             (vector-push-extend element (aref result partition)))
-                           (remove-if #'emptyp result)))
-               (children (map-into
-                          (make-array %branching-factor
-                                      :adjustable t
-                                      :fill-pointer (length contents))
-                          (lambda (content)
-                            (lparallel:future
-                              (make-future-egnat-nodes operation container extra-arguments content)))
-                          contents))
-               (ranges (cl-ds.utils:make-distance-matrix 'list %branching-factor))
-               (close-range (cl-ds.utils:make-distance-matrix %metric-type %branching-factor))
-               (distant-range (cl-ds.utils:make-distance-matrix %metric-type %branching-factor)))
-          (cl-ds.utils:fill-distance-matrix-from-vector
-           ranges
-           (lambda (a b)
-             (multiple-value-call #'list*
-               (cl-ds.utils:optimize-value ((mini <) (maxi >))
-                 (cl-ds.utils:cartesian
-                  (list a b)
-                  (lambda (a b)
-                    (let ((distance (coerce (funcall %metric-fn a b)
-                                            %metric-type)))
-                      (mini distance)
-                      (maxi distance)))))))
-           contents)
-          (cl-ds.utils:mutate-matrix close-range
-                                     (lambda (x)
-                                       (if (listp x)
-                                           (car x)
-                                           (coerce 0 %metric-type)))
-                                     ranges)
-          (cl-ds.utils:mutate-matrix distant-range
-                                     (lambda (x)
-                                       (if (listp x)
-                                           (cdr x)
-                                           (coerce 0 %metric-type)))
-                                     ranges)
-          (make 'egnat-node
-                :content (apply #'cl-ds:make-bucket
-                                operation
-                                container
-                                this-content
-                                extra-arguments)
-                :close-range close-range
-                :distant-range distant-range
-                :children children)))))
+  (if (<= (cl-ds:size data) (read-content-count-in-node container))
+      (make 'egnat-node :content (apply #'cl-ds:make-bucket
+                                        operation
+                                        container
+                                        data
+                                        extra-arguments))
+      (make-future-egnat-subtrees operation container extra-arguments data)))
 
 
 (defun make-egnat-tree (operation container extra-arguments data)
-  (~>> data
+  (~>> (cl-ds.alg:sequence-window data 0 (cl-ds:size data))
        (make-future-egnat-nodes operation container extra-arguments)
        force-tree))
 
@@ -173,9 +196,9 @@
       (iterate
         (for j from 0 below length)
         (unless (or (eql i j) (zerop (aref result j)))
-          (let ((in-range (<= (cl-ds.utils:distance close-range i j)
+          (let ((in-range (<= (aref close-range i j)
                               distance
-                              (cl-ds.utils:distance distant-range i j))))
+                              (aref distant-range i j))))
             (setf (aref result j) (if in-range 1 0))))))
     result))
 

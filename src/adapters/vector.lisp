@@ -106,3 +106,11 @@
 (defmethod cl-ds:at ((range offset-vector-range) location)
   (decf location (read-offset range))
   (call-next-method range location))
+
+
+(defmethod cl-ds:size ((container vector))
+  (length container))
+
+
+(defmethod cl-ds:at ((container vector) index)
+  (elt container index))
