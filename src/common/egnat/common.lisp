@@ -115,6 +115,31 @@
     result))
 
 
+(defun make-ranges (contents branching-factor metric-type metric-fn)
+  (bind ((close-range (make-array `(,branching-factor ,branching-factor)
+                                  :element-type metric-type))
+         (distant-range (make-array `(,branching-factor ,branching-factor)
+                                    :element-type metric-type)))
+    (iterate
+      (for seed from 0 below (length contents))
+      (for head = (aref (aref contents seed) 0))
+      (iterate
+        (for data from 0 below (length contents))
+        (unless (eql seed data)
+          (multiple-value-bind (min max)
+              (cl-ds.utils:optimize-value ((mini <)
+                                           (maxi <))
+                (map nil (lambda (x)
+                           (let ((distance (coerce (funcall metric-fn x head)
+                                                   metric-type)))
+                             (mini distance)
+                             (maxi distance)))
+                     (aref contents data)))
+            (setf (aref close-range seed data) min
+                  (aref distant-range seed data) max)))))
+    (values close-range distant-range)))
+
+
 (defun make-future-egnat-subtrees (operation container extra-arguments data)
   (bind (((:slots %metric-fn %metric-type
                   %content-count-in-node %branching-factor)
@@ -136,26 +161,10 @@
                                                           extra-arguments
                                                           content)))
                              contents))
-         (close-range (make-array `(,%branching-factor ,%branching-factor)
-                                  :element-type %metric-type))
-         (distant-range (make-array `(,%branching-factor ,%branching-factor)
-                                    :element-type %metric-type)))
-    (iterate
-      (for seed from 0 below (length contents))
-      (for head = (aref (aref contents seed) 0))
-      (iterate
-        (for data from 0 below (length contents))
-        (unless (eql seed data)
-          (multiple-value-bind (min max)
-              (cl-ds.utils:optimize-value ((mini <)
-                                           (maxi <))
-                (map nil (lambda (x)
-                           (let ((distance (funcall %metric-fn x head)))
-                             (mini distance)
-                             (maxi distance)))
-                     (aref contents data)))
-            (setf (aref close-range seed data) min
-                  (aref distant-range seed data) max)))))
+         ((:values close-range distant-range) (make-ranges contents
+                                                           %branching-factor
+                                                           %metric-type
+                                                           %metric-fn)))
     (make 'egnat-node
           :content (apply #'cl-ds:make-bucket
                           operation
