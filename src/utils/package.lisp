@@ -6,8 +6,8 @@
   (:nicknames #:cl-ds.utils)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:add-into-queue
    #:add-sinks
+   #:add-into-queue
    #:bind-lambda
    #:cartesian
    #:cases
@@ -23,6 +23,7 @@
    #:fill-distance-matrix-from-vector
    #:import-all-package-symbols
    #:insert-or-replace
+   #:lambda-list-to-bindings
    #:lazy-let
    #:lazy-shuffle
    #:let-generator
@@ -32,6 +33,7 @@
    #:make-distance-matrix-from-vector
    #:make-pipe-fragment
    #:merge-ordered-vectors
+   #:method-lambda-list-to-function-lambda-list
    #:mutate-matrix
    #:on-ordered-intersection
    #:optimize-value

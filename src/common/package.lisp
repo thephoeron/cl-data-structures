@@ -15,6 +15,8 @@
    #:forward-lazy-range
    #:forward-tree-range
    #:hash-content-hash
+   #:defmethod-with-peek-stack
+   #:defmethod-with-stack
    #:hash-content-location
    #:hash-dict-content-value
    #:lazy-bidirectional-range
