@@ -170,16 +170,18 @@
          force-tree)))
 
 
-(defun prune-subtrees (trees close-range distant-range
-                       value margin metric-fn)
+(defun prune-subtrees (container trees
+                       close-range distant-range
+                       value margin)
   (let ((result (make-array (length trees)
                             :element-type 'bit
                             :initial-element 1))
+        (metric-fn (read-metric-fn container))
         (length (length trees)))
     (iterate
       (for i from 0)
       (for tree in-vector trees)
-      (for content = (~> tree read-content (aref 0)))
+      (for content = (~>> tree read-content (bucket-head container)))
       (for distance = (funcall metric-fn value content))
       (iterate
         (for j from 0 below length)

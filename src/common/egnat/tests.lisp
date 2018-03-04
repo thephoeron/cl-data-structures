@@ -47,12 +47,12 @@
            (close-range (cl-ds.common.egnat::read-close-range root))
            (distant-range (cl-ds.common.egnat::read-distant-range root))
            (selection (aref data 10))
-           (subtrees (cl-ds.common.egnat::prune-subtrees children
+           (subtrees (cl-ds.common.egnat::prune-subtrees container
+                                                         children
                                                          close-range
                                                          distant-range
                                                          selection
-                                                         5
-                                                         #'logxor)))
+                                                         5)))
       (labels ((impl (root)
                  (when root
                    (or
