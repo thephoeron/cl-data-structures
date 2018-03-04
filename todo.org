@@ -13,3 +13,7 @@
 * TODO specialized RRB-vector!
 * TODO metric-space dictionary
 * TODO metric-space set
+* TODO egnat range...
+* TODO egnat near function
+* TODO egnat grow functions
+* TODO egnat shrink functions
