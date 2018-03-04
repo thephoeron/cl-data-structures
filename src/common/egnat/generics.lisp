@@ -9,8 +9,7 @@
 
 
 (defgeneric select-children (range subtrees)
-  (:method ((range egnat-range) subtrees)
-    (declare (type vector subtrees))
+  (:method ((range egnat-range) (subtrees cl:sequence))
     (make-array (length subtrees)
                 :element-type 'bit
                 :initial-element 1)))
