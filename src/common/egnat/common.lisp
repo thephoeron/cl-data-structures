@@ -223,3 +223,15 @@
                   node
                   result))
     (finally (return result))))
+
+
+(defun traverse-impl (container function)
+  (labels ((impl (tree)
+             (let ((content (read-content tree)))
+               (when content
+                 (cl-ds:map-bucket container
+                                   content
+                                   function)
+                 (map nil #'impl (read-children tree))))))
+    (impl (read-root container)))
+  container)

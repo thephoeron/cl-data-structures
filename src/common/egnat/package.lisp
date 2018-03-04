@@ -8,4 +8,5 @@
   (:nicknames #:cl-ds.common.egnat)
   (:export
    #:bucket-head
+   #:traverse-impl
    #:fundamental-egnat-container))
