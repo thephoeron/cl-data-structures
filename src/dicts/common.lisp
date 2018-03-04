@@ -458,4 +458,19 @@
 
 (defmethod cl-ds:full-bucket-p ((container fundamental-hashing-dictionary)
                                 bucket)
-  (>= (length bucket) (read-bucket-size container)))
+  (not
+   (iterate
+     (for i from 1)
+     (for e in bucket)
+     (always (< i (read-bucket-size container))))))
+
+
+(defmethod cl-ds:map-bucket ((container fundamental-hashing-dictionary)
+                             bucket
+                             function)
+  (map nil
+       (lambda (x) (funcall function
+                       (cl-ds.common:hash-content-location x)
+                       (cl-ds.common:hash-dict-content-value x)))
+       bucket)
+  bucket)

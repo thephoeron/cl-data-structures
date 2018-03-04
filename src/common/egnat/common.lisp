@@ -160,10 +160,11 @@
                                   data-partitions reverse-mapping))
          (children (map 'vector
                         (lambda (content)
-                          (make-future-egnat-nodes operation
-                                                   container
-                                                   extra-arguments
-                                                   content))
+                          (lparallel:future
+                            (make-future-egnat-nodes operation
+                                                     container
+                                                     extra-arguments
+                                                     content)))
                         contents))
          ((:values close-range distant-range) (make-ranges contents
                                                            %branching-factor

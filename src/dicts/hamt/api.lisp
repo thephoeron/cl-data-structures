@@ -552,11 +552,7 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:across (function (container hamt-dictionary))
   (labels ((impl (node)
              (if (listp node)
-                 (map nil
-                      (lambda (x) (funcall function
-                                      (cl-ds.common:hash-content-location x)
-                                      (cl-ds.common:hash-dict-content-value x)))
-                      node)
+                 (cl-ds:map-bucket container node function)
                  (iterate
                    (with content = (cl-ds.common.hamt:hash-node-content node))
                    (for i from 0 below (cl-ds.common.hamt:hash-node-size node))

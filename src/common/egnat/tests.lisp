@@ -12,7 +12,7 @@
     result))
 
 
-(plan 2)
+(plan 3)
 
 (let ((container (make-instance 'cl-ds.common.egnat::fundamental-egnat
                                 :branching-factor 5
@@ -24,15 +24,21 @@
                       (repeat 50)
                       (collect (funcall generator)))
                     'vector)))
-  (let ((root (cl-ds.common.egnat::make-egnat-tree nil container nil data)))
+  (let ((root (cl-ds.common.egnat::make-egnat-tree nil container nil data))
+        (content (serapeum:vect)))
     (is (length (cl-ds.common.egnat::read-content root)) 5)
     (labels ((impl (root)
+               (unless (null root)
+                 (iterate
+                   (for c in-vector (cl-ds.common.egnat::read-content root))
+                   (vector-push-extend c content)))
                (if (null root)
                    0
                    (+ (length (cl-ds.common.egnat::read-content root))
                       (reduce #'+
                               (cl-ds.common.egnat::read-children root)
                               :key #'impl)))))
-      (is (impl root) 50))))
+      (is (impl root) 50)
+      (is (sort data #'<) (sort content #'<) :test #'serapeum:vector=))))
 
 (finalize)
