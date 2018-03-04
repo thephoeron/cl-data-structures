@@ -54,7 +54,14 @@
 
 
 (defmethod cl-ds:at ((range random-access-chain-of-ranges) location)
-  (cl-ds.utils:todo))
+  (bind (((:slots %content) range))
+    (iterate
+      (for c in-vector %content)
+      (sum (cl-ds:size c) into sum)
+      (while (< sum location))
+      (for total = sum)
+      (for p-total previous total initially 0)
+      (finally (cl-ds:at c (- location p-total))))))
 
 
 (defmethod cl-ds:size ((range random-access-chain-of-ranges))
