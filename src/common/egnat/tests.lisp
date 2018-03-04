@@ -14,7 +14,7 @@
     result))
 
 
-(plan 5)
+(plan 6)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -42,7 +42,31 @@
                               (cl-ds.common.egnat::read-children root)
                               :key #'impl)))))
       (is (impl root) 50)
-      (is (sort data #'<) (sort content #'<) :test #'serapeum:vector=))))
+      (is (sort data #'<) (sort content #'<) :test #'serapeum:vector=))
+    (let* ((children (cl-ds.common.egnat::read-children root))
+           (close-range (cl-ds.common.egnat::read-close-range root))
+           (distant-range (cl-ds.common.egnat::read-distant-range root))
+           (selection (aref data 10))
+           (subtrees (cl-ds.common.egnat::prune-subtrees children
+                                                         close-range
+                                                         distant-range
+                                                         selection
+                                                         5
+                                                         #'logxor)))
+      (labels ((impl (root)
+                 (when root
+                   (or
+                    (find selection
+                          (cl-ds.common.egnat::read-content root))
+                    (some #'impl
+                          (cl-ds.common.egnat::read-children root))))))
+        (ok (iterate
+              (for i in-vector subtrees)
+              (for tree in-vector children)
+              (for result = (impl tree))
+              (count result)))))))
+
+
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
                          :branching-factor 0
                          :content-count-in-node 1)

@@ -170,7 +170,8 @@
          force-tree)))
 
 
-(defun prune-subtrees (trees close-range distant-range value metric-fn)
+(defun prune-subtrees (trees close-range distant-range
+                       value margin metric-fn)
   (let ((result (make-array (length trees)
                             :element-type 'bit
                             :initial-element 1))
@@ -183,9 +184,11 @@
       (iterate
         (for j from 0 below length)
         (unless (or (eql i j) (zerop (aref result j)))
-          (let ((in-range (<= (aref close-range i j)
+          (let ((in-range (<= (- (aref close-range i j)
+                                 margin)
                               distance
-                              (aref distant-range i j))))
+                              (+ (aref distant-range i j)
+                                 margin))))
             (setf (aref result j) (if in-range 1 0))))))
     result))
 
