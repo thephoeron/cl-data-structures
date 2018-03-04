@@ -1,5 +1,6 @@
 * Redesign
-** TODO Currently traverse is designed to not change traversable object. This is strong assumption, and should be removed.
+** DONE Currently traverse is designed to not change traversable object. This is strong assumption, and should be removed.
+   CLOSED: [2018-03-04 nie 18:24]
 ** DONE Aggregate functions should not change range (because it makes things complicated).
    CLOSED: [2018-02-12 pon 10:30]
 *** DONE Add clone-and-traverse (like traverse, but will never alter passed range).
@@ -9,3 +10,6 @@
   CLOSED: [2018-02-14 śro 08:06]
 * DONE turn xpr into correct forward range
   CLOSED: [2018-02-16 pią 13:54]
+* TODO specialized RRB-vector!
+* TODO metric-space dictionary
+* TODO metric-space set

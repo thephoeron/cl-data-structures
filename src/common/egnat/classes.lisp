@@ -58,11 +58,13 @@
       (error 'cl-ds:initialization-out-of-bounds
              :text "Content count in node should be at least 1"
              :value %content-count-in-node
+             :class (type-of container)
              :argument :content-count-in-node
              :bounds '(>= 1)))
     (when (< %branching-factor 2)
       (error 'cl-ds:initialization-out-of-bounds
              :text "Branching factor should be at least 2"
              :value %branching-factor
+             :class (type-of container)
              :argument :branching-factor
-             :bounts '(>= 2)))))
+             :bounds '(>= 2)))))

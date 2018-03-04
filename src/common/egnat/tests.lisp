@@ -14,7 +14,7 @@
     result))
 
 
-(plan 3)
+(plan 5)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -43,5 +43,13 @@
                               :key #'impl)))))
       (is (impl root) 50)
       (is (sort data #'<) (sort content #'<) :test #'serapeum:vector=))))
+(is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+                         :branching-factor 0
+                         :content-count-in-node 1)
+          'cl-ds:initialization-out-of-bounds)
+(is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+                         :branching-factor 1
+                         :content-count-in-node 0)
+          'cl-ds:initialization-out-of-bounds)
 
 (finalize)
