@@ -61,7 +61,7 @@
 
 (defun make-contents (seeds-indexes data data-partitions reverse-mapping)
   (let ((result (make-array (length seeds-indexes))))
-    (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
+    (map-into result #'vect)
     (iterate
       (for d in-vector data-partitions)
       (for i from 0)
@@ -74,32 +74,34 @@
     result))
 
 
-(defun make-ranges (contents branching-factor metric-type metric-fn)
+(defun make-ranges (heads contents branching-factor metric-type metric-fn)
   (bind ((close-range (make-array `(,branching-factor ,branching-factor)
                                   :element-type metric-type))
          (distant-range (make-array `(,branching-factor ,branching-factor)
                                     :element-type metric-type)))
     (iterate
-      (for seed from 0 below (length contents))
-      (for head = (~> contents (aref seed) (aref 0)))
+      (for child from 0 below (length contents))
+      (for head in-vector heads)
       (iterate
         (for data from 0 below (length contents))
-        (unless (eql seed data)
+        (for init = (funcall metric-fn head (aref heads data)))
+        (unless (eql child data)
           (multiple-value-bind (min max)
-              (cl-ds.utils:optimize-value ((mini <)
-                                           (maxi <))
+              (cl-ds.utils:optimize-value ((mini < init)
+                                           (maxi < init))
                 (map nil (lambda (x)
                            (let ((distance (coerce (funcall metric-fn x head)
                                                    metric-type)))
                              (mini distance)
                              (maxi distance)))
                      (aref contents data)))
-            (setf (aref close-range seed data) min
-                  (aref distant-range seed data) max)))))
+            (setf (aref close-range child data) min
+                  (aref distant-range child data) max)))))
     (values close-range distant-range)))
 
 
-(defun make-future-egnat-subtrees (operation container extra-arguments data)
+(defun make-future-egnat-subtrees (operation container
+                                   extra-arguments head data)
   (bind (((:slots %metric-fn %metric-type
                   %content-count-in-node %branching-factor)
           container)
@@ -112,44 +114,57 @@
                                            %metric-fn))
          (contents (make-contents seeds-indexes this-data
                                   data-partitions reverse-mapping))
+         (heads (map 'vector (curry #'cl-ds:at this-data)
+                     seeds-indexes))
          (children (map 'vector
-                        (lambda (content)
+                        (lambda (head content)
                           (lparallel:future
                             (make-future-egnat-nodes operation
                                                      container
                                                      extra-arguments
+                                                     head
                                                      content)))
+                        heads
                         contents))
-         ((:values close-range distant-range) (make-ranges contents
+         ((:values close-range distant-range) (make-ranges heads
+                                                           contents
                                                            %branching-factor
                                                            %metric-type
                                                            %metric-fn)))
-    (assert (= (reduce #'+ contents :key #'length) (cl-ds:size this-data)))
+    (assert (= (reduce #'+ contents
+                       :key #'length
+                       :initial-value (length contents))
+               (cl-ds:size this-data)))
     (make 'egnat-node
           :content (apply #'cl-ds:make-bucket
                           operation
                           container
                           this-content
+                          :head head
                           extra-arguments)
           :close-range close-range
           :distant-range distant-range
           :children children)))
 
 
-(defun make-future-egnat-nodes (operation container extra-arguments data)
-  (if (<= (cl-ds:size data) (read-content-count-in-node container))
+(defun make-future-egnat-nodes (operation container extra-arguments head data)
+  (if (<= (1- (cl-ds:size data)) (read-content-count-in-node container))
       (make 'egnat-node :content (apply #'cl-ds:make-bucket
                                         operation
                                         container
                                         data
+                                        :head head
                                         extra-arguments))
-      (make-future-egnat-subtrees operation container extra-arguments data)))
+      (make-future-egnat-subtrees operation container
+                                  extra-arguments head data)))
 
 
 (defun make-egnat-tree (operation container extra-arguments data)
-  (~>> (cl-ds.alg:sequence-window data 0 (cl-ds:size data))
-       (make-future-egnat-nodes operation container extra-arguments)
-       force-tree))
+  (let ((head (cl-ds:at data 0))
+        (data (cl-ds.alg:sequence-window data 1 (cl-ds:size data))))
+    (~>> (make-future-egnat-nodes operation container extra-arguments
+                                  head data)
+         force-tree)))
 
 
 (defun prune-subtrees (trees close-range distant-range value metric-fn)
@@ -188,13 +203,15 @@
 
 (defun closest-node (container nodes item)
   (iterate
-    (with result = nil)
     (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
     (for head = (bucket-head container content))
     (for distance = (funcall metric-fn head item))
     (minimize distance into min)
-    (when (= distance min)
-      (setf result node))
+    (for result
+         initially node
+         then (if (= distance min)
+                  node
+                  result))
     (finally (return result))))
