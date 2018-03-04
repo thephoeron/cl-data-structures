@@ -103,6 +103,8 @@
                                            (:file "common")))
                              (:module "egnat"
                               :components ((:file "package")
+                                           (:file "classes")
+                                           (:file "generics")
                                            (:file "common")
                                            (:test-file "tests")))))
                (:module "metric-space"

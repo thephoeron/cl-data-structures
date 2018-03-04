@@ -6,4 +6,6 @@
         #:cl-data-structures.common.abstract)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.egnat)
-  (:export))
+  (:export
+   #:bucket-head
+   #:fundamental-egnat-container))

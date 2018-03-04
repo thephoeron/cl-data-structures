@@ -14,11 +14,11 @@
 
 (plan 3)
 
-(let ((container (make-instance 'cl-ds.common.egnat::fundamental-egnat
-                                :branching-factor 5
-                                :metric-fn #'logxor
-                                :metric-type 'fixnum
-                                :content-count-in-node 5))
+(let ((container (make 'cl-ds.common.egnat:fundamental-egnat-container
+                       :branching-factor 5
+                       :metric-fn #'logxor
+                       :metric-type 'fixnum
+                       :content-count-in-node 5))
       (data (coerce (iterate
                       (with generator = (cl-ds.utils:lazy-shuffle 0 5000))
                       (repeat 50)

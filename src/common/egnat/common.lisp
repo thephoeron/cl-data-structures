@@ -1,52 +1,6 @@
 (in-package #:cl-data-structures.common.egnat)
 
 
-(defclass fundamental-egnat ()
-  ((%branching-factor
-    :type non-negative-fixnum
-    :initarg :branching-factor
-    :reader read-branching-factor)
-   (%metric-fn
-    :reader read-metric-fn
-    :initarg :metric-fn)
-   (%metric-type
-    :reader read-metric-type
-    :initform :single-float
-    :initarg :metric-type)
-   (%content-count-in-node
-    :type non-negative-fixnum
-    :reader read-content-count-in-node
-    :initarg :content-count-in-node)
-   (%size
-    :reader read-size
-    :type non-negative-fixnum
-    :initform 0)
-   (%root
-    :reader read-root
-    :initform nil
-    :initarg :root)))
-
-
-(defclass egnat-node ()
-  ((%close-range
-    :initform nil
-    :initarg :close-range
-    :reader read-close-range)
-   (%distant-range
-    :initarg :distant-range
-    :initform nil
-    :reader read-distant-range)
-   (%content
-    :type vector
-    :initarg :content
-    :reader read-content)
-   (%children
-    :type (or null (vector memory-gnat-node))
-    :initform nil
-    :initarg :children
-    :reader read-children)))
-
-
 (defun force-tree (node)
   (bind (((:slots %children) node))
     (unless (null %children)
@@ -234,16 +188,13 @@
 
 (defun closest-node (container nodes item)
   (iterate
+    (with result = nil)
     (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
-    (for distance =
-         (let ((sum 0.0)
-               (count 0))
-           (cl-ds:map-bucket container content
-                             (lambda (x)
-                               (incf count)
-                               (incf sum (funcall metric-fn x item))))
-           (/ sum count)))
+    (for head = (bucket-head container content))
+    (for distance = (funcall metric-fn head item))
     (minimize distance into min)
-    (finding node such-that (= distance min))))
+    (when (= distance min)
+      (setf result node))
+    (finally (return result))))
