@@ -51,6 +51,7 @@
                 :components ((:file "package")
                              (:file "hash-table")
                              (:file "vector")
+                             (:file "list")
                              (:test-file "vector-tests")))
                (:module "algorithms"
                 :components ((:file "package")

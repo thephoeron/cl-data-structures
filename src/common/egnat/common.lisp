@@ -11,8 +11,12 @@
 
 (defun splice-content (data count)
   (let* ((size (cl-ds:size data))
-         (content (cl-ds.alg:sequence-window data 0 count))
-         (new-data (cl-ds.alg:sequence-window data count (cl-ds:size data))))
+         (content (unless (zerop count)
+                    (cl-ds.alg:sequence-window data 0 count)))
+         (new-data (unless (eql count (cl-ds:size data))
+                     (cl-ds.alg:sequence-window data
+                                                count
+                                                (cl-ds:size data)))))
     (assert (> size count))
     (assert (eql count (cl-ds:size content)))
     (values
@@ -106,7 +110,7 @@
                   %content-count-in-node %branching-factor)
           container)
          ((:values this-content this-data)
-          (splice-content data %content-count-in-node))
+          (splice-content data (1- %content-count-in-node)))
          ((:values seeds-indexes reverse-mapping)
           (select-seeds %branching-factor (cl-ds:size this-data)))
          (data-partitions (make-partitions seeds-indexes
@@ -118,12 +122,11 @@
                      seeds-indexes))
          (children (map 'vector
                         (lambda (head content)
-                          (lparallel:future
-                            (make-future-egnat-nodes operation
-                                                     container
-                                                     extra-arguments
-                                                     head
-                                                     content)))
+                          (make-future-egnat-nodes operation
+                                                   container
+                                                   extra-arguments
+                                                   head
+                                                   content))
                         heads
                         contents))
          ((:values close-range distant-range) (make-ranges heads

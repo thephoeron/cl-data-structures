@@ -45,3 +45,24 @@
     :initform nil
     :initarg :children
     :reader read-children)))
+
+
+(defmethod initialize-instance
+    :after ((container fundamental-egnat-container)
+            &rest all)
+  (declare (ignore all))
+  (bind (((:slots %branching-factor %content-count-in-node) container))
+    (check-type %branching-factor integer)
+    (check-type %content-count-in-node integer)
+    (when (zerop %content-count-in-node)
+      (error 'cl-ds:initialization-out-of-bounds
+             :text "Content count in node should be at least 1"
+             :value %content-count-in-node
+             :argument :content-count-in-node
+             :bounds '(>= 1)))
+    (when (< %branching-factor 2)
+      (error 'cl-ds:initialization-out-of-bounds
+             :text "Branching factor should be at least 2"
+             :value %branching-factor
+             :argument :branching-factor
+             :bounts '(>= 2)))))
