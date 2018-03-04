@@ -172,11 +172,11 @@
 
 (defun prune-subtrees (container trees
                        close-range distant-range
-                       value margin)
-  (let ((result (make-array (length trees)
-                            :element-type 'bit
-                            :initial-element 1))
-        (metric-fn (read-metric-fn container))
+                       value margin
+                       &optional (result (make-array (length trees)
+                                                     :element-type 'bit
+                                                     :initial-element 1)))
+  (let ((metric-fn (read-metric-fn container))
         (length (length trees)))
     (iterate
       (for i from 0)

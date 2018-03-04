@@ -106,6 +106,7 @@
                               :components ((:file "package")
                                            (:file "classes")
                                            (:file "generics")
+                                           (:file "methods")
                                            (:file "common")
                                            (:test-file "tests")))))
                (:module "metric-space"

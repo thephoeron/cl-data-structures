@@ -47,6 +47,21 @@
     :reader read-children)))
 
 
+(defclass egnat-range (cl-ds:fundamental-forward-range)
+  ((%stack :initform nil
+           :initarg :stack
+           :accessor access-stack)
+   (%container :initarg :container
+               :reader read-container)))
+
+
+(defclass egnat-range-around (egnat-range)
+  ((%near :initarg :near
+          :reader read-near)
+   (%margin :initarg :margin
+            :reader read-margin)))
+
+
 (defmethod initialize-instance
     :after ((container fundamental-egnat-container)
             &rest all)

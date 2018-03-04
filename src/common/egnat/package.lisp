@@ -8,5 +8,10 @@
   (:nicknames #:cl-ds.common.egnat)
   (:export
    #:bucket-head
-   #:traverse-impl
-   #:fundamental-egnat-container))
+   #:fundamental-egnat-container
+   #:next-bucket-position
+   #:prune-subtrees
+   #:read-margin
+   #:read-near
+   #:select-children
+   #:traverse-impl))
