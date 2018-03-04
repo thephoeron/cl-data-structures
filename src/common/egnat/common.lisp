@@ -58,7 +58,7 @@
 (defun splice-content (data count)
   (let* ((size (cl-ds:size data))
          (content (cl-ds.alg:sequence-window data 0 count))
-         (new-data (cl-ds.alg:sequence-window data count count)))
+         (new-data (cl-ds.alg:sequence-window data count (cl-ds:size data))))
     (assert (> size count))
     (assert (eql count (cl-ds:size content)))
     (values
@@ -95,7 +95,12 @@
                (for seed = (cl-ds:at data seed-index))
                (for distance = (funcall metric-fn value seed))
                (minimize distance into min)
-               (finding seed-index such-that (= distance min)))))
+               (for result
+                    initially 0
+                    then (if (= distance min)
+                             seed-index
+                             result))
+               (finally (return result)))))
      data)
     result))
 
@@ -122,7 +127,7 @@
                                     :element-type metric-type)))
     (iterate
       (for seed from 0 below (length contents))
-      (for head = (aref (aref contents seed) 0))
+      (for head = (~> contents (aref seed) (aref 0)))
       (iterate
         (for data from 0 below (length contents))
         (unless (eql seed data)
@@ -148,23 +153,23 @@
           (splice-content data %content-count-in-node))
          ((:values seeds-indexes reverse-mapping)
           (select-seeds %branching-factor (cl-ds:size this-data)))
-         (data-partitions (make-partitions seeds-indexes this-data %metric-fn))
+         (data-partitions (make-partitions seeds-indexes
+                                           this-data
+                                           %metric-fn))
          (contents (make-contents seeds-indexes this-data
                                   data-partitions reverse-mapping))
-         (children (map-into (make-array %branching-factor
-                                         :adjustable t
-                                         :fill-pointer (length contents))
-                             (lambda (content)
-                               (lparallel:future
-                                 (make-future-egnat-nodes operation
-                                                          container
-                                                          extra-arguments
-                                                          content)))
-                             contents))
+         (children (map 'vector
+                        (lambda (content)
+                          (make-future-egnat-nodes operation
+                                                   container
+                                                   extra-arguments
+                                                   content))
+                        contents))
          ((:values close-range distant-range) (make-ranges contents
                                                            %branching-factor
                                                            %metric-type
                                                            %metric-fn)))
+    (assert (= (reduce #'+ contents :key #'length) (cl-ds:size this-data)))
     (make 'egnat-node
           :content (apply #'cl-ds:make-bucket
                           operation
@@ -231,12 +236,13 @@
     (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
-    (for distance = (let ((sum 0.0)
-                          (count 0))
-                      (cl-ds:map-bucket container content
-                                        (lambda (x)
-                                          (incf count)
-                                          (incf sum (funcall metric-fn x item))))
-                      (/ sum count)))
+    (for distance =
+         (let ((sum 0.0)
+               (count 0))
+           (cl-ds:map-bucket container content
+                             (lambda (x)
+                               (incf count)
+                               (incf sum (funcall metric-fn x item))))
+           (/ sum count)))
     (minimize distance into min)
     (finding node such-that (= distance min))))

@@ -90,7 +90,7 @@
                             from to)
   (make (type-of sequence)
         :from (+ (access-current-index sequence) from)
-        :to (+ (access-current-index sequence) to)
+        :to (+ (read-from sequence) to)
         :content (read-content sequence)))
 
 
@@ -137,7 +137,8 @@
 (defmethod cl-ds:consume-front ((container sequence-window))
   (bind (((:slots %from %to %current-index) container))
     (if (< %current-index %to)
-        (bind (((:values result value) (effective-at container %current-index)))
+        (bind (((:values result value)
+                (effective-at container %current-index)))
           (when value (incf %current-index))
           (values result value))
         (values nil nil))))
