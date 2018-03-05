@@ -65,7 +65,7 @@
 
 (defun make-contents (seeds-indexes data data-partitions reverse-mapping)
   (let ((result (make-array (length seeds-indexes))))
-    (map-into result #'vect)
+    (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
     (iterate
       (for d in-vector data-partitions)
       (for i from 0)
@@ -78,17 +78,17 @@
     result))
 
 
-(defun make-ranges (heads contents branching-factor metric-type metric-fn)
+(defun make-ranges (contents branching-factor metric-type metric-fn)
   (bind ((close-range (make-array `(,branching-factor ,branching-factor)
                                   :element-type metric-type))
          (distant-range (make-array `(,branching-factor ,branching-factor)
                                     :element-type metric-type)))
     (iterate
       (for child from 0 below (length contents))
-      (for head in-vector heads)
+      (for head = (~> contents (aref child) (aref 0)))
       (iterate
         (for data from 0 below (length contents))
-        (for init = (funcall metric-fn head (aref heads data)))
+        (for init = (funcall metric-fn head (~> contents (aref data) (aref 0))))
         (unless (eql child data)
           (multiple-value-bind (min max)
               (cl-ds.utils:optimize-value ((mini < init)
@@ -105,12 +105,12 @@
 
 
 (defun make-future-egnat-subtrees (operation container
-                                   extra-arguments head data)
+                                   extra-arguments data)
   (bind (((:slots %metric-fn %metric-type
                   %content-count-in-node %branching-factor)
           container)
          ((:values this-content this-data)
-          (splice-content data (1- %content-count-in-node)))
+          (splice-content data %content-count-in-node))
          ((:values seeds-indexes reverse-mapping)
           (select-seeds %branching-factor (cl-ds:size this-data)))
          (data-partitions (make-partitions seeds-indexes
@@ -118,56 +118,59 @@
                                            %metric-fn))
          (contents (make-contents seeds-indexes this-data
                                   data-partitions reverse-mapping))
-         (heads (map 'vector (curry #'cl-ds:at this-data)
-                     seeds-indexes))
          (children (map 'vector
-                        (lambda (head content)
+                        (lambda (content)
                           (make-future-egnat-nodes operation
                                                    container
                                                    extra-arguments
-                                                   head
                                                    content))
-                        heads
                         contents))
-         ((:values close-range distant-range) (make-ranges heads
-                                                           contents
+         ((:values close-range distant-range) (make-ranges contents
                                                            %branching-factor
                                                            %metric-type
-                                                           %metric-fn)))
-    (assert (= (reduce #'+ contents
-                       :key #'length
-                       :initial-value (length contents))
+                                                           %metric-fn))
+         (content (make-array %content-count-in-node
+                              :adjustable t
+                              :fill-pointer 0)))
+    (cl-ds:across (lambda (x)
+                    (vector-push-extend (apply #'cl-ds:make-bucket
+                                               operation
+                                               container
+                                               x
+                                               extra-arguments)
+                                        content))
+                  this-content)
+    (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node
-          :content (apply #'cl-ds:make-bucket
-                          operation
-                          container
-                          this-content
-                          :head head
-                          extra-arguments)
+          :content content
           :close-range close-range
           :distant-range distant-range
           :children children)))
 
 
-(defun make-future-egnat-nodes (operation container extra-arguments head data)
-  (if (<= (1- (cl-ds:size data)) (read-content-count-in-node container))
-      (make 'egnat-node :content (apply #'cl-ds:make-bucket
-                                        operation
-                                        container
-                                        data
-                                        :head head
-                                        extra-arguments))
+(defun make-future-egnat-nodes (operation container extra-arguments data)
+  (if (< (cl-ds:size data) (read-content-count-in-node container))
+      (let ((content (make-array (read-content-count-in-node container)
+                                 :adjustable t
+                                 :fill-pointer 0)))
+        (cl-ds:across (lambda (x)
+                        (vector-push-extend (apply #'cl-ds:make-bucket
+                                                   operation
+                                                   container
+                                                   x
+                                                   extra-arguments)
+                                            content))
+                      data)
+        (make 'egnat-node :content content))
       (make-future-egnat-subtrees operation container
-                                  extra-arguments head data)))
+                                  extra-arguments data)))
 
 
 (defun make-egnat-tree (operation container extra-arguments data)
-  (let ((head (cl-ds:at data 0))
-        (data (cl-ds.alg:sequence-window data 1 (cl-ds:size data))))
-    (~>> (make-future-egnat-nodes operation container extra-arguments
-                                  head data)
-         force-tree)))
+  (~>> (make-future-egnat-nodes operation container
+                                extra-arguments data)
+       force-tree))
 
 
 (defun prune-subtrees (container trees
@@ -181,8 +184,8 @@
     (iterate
       (for i from 0)
       (for tree in-vector trees)
-      (for content = (~>> tree read-content (bucket-head container)))
-      (for distance = (funcall metric-fn value content))
+      (for head = (~> tree read-content (aref 0)))
+      (for distance = (funcall metric-fn value head))
       (iterate
         (for j from 0 below length)
         (unless (or (eql i j) (zerop (aref result j)))
@@ -214,7 +217,7 @@
     (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
-    (for head = (bucket-head container content))
+    (for head = (aref content 0))
     (for distance = (funcall metric-fn head item))
     (minimize distance into min)
     (for result

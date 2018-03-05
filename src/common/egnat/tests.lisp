@@ -4,14 +4,9 @@
 
 
 (defmethod cl-ds:make-bucket (operation container content
-                              &rest all &key head)
+                              &rest all)
   (declare (ignore all))
-  (let ((result (make-array (1+ (cl-ds:size content)))))
-    (setf (aref result 0) head)
-    (iterate
-      (for i from 0 below (cl-ds:size content))
-      (setf (aref result (1+ i)) (cl-ds:at content i)))
-    result))
+  content)
 
 
 (plan 6)

@@ -7,9 +7,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.egnat)
   (:export
-   #:bucket-head
    #:fundamental-egnat-container
-   #:next-bucket-position
    #:prune-subtrees
    #:read-margin
    #:read-near
