@@ -99,6 +99,7 @@
 
 
 (defmethod initialize-instance ((obj future-carousel) &key &allow-other-keys)
+  (call-next-method)
   (c2mop:set-funcallable-instance-function
    obj
    (lambda (x)
