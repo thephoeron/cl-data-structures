@@ -16,11 +16,11 @@
 
 (defgeneric add-into-queue (pipe x)
   (:method ((obj pipe-fragment) x)
-    (lparallel.queue:push-queue (read-queue obj) (cons nil x))))
+    (lparallel.queue:push-queue (cons nil x) (read-queue obj))))
 
 
 (flet ((make-finalizer (queue)
-         (lambda () (lparallel.queue:push-queue queue '(t . nil)))))
+         (lambda () (lparallel.queue:push-queue '(t . nil) queue))))
   (defmethod initialize-instance :after ((obj pipe-fragment)
                                          &key
                                            (queue-size nil queue-size-bound)
@@ -40,7 +40,7 @@
       (bt:with-lock-held ((read-sinks-lock pipe))
         (iterate
           (for sink in sinks)
-          (vector-push-extend sink (read-queue pipe)))))
+          (vector-push-extend sink (read-sinks pipe)))))
     pipe))
 
 
@@ -72,5 +72,37 @@
                           :operation operation
                           :queue-size queue-size)
                     (make 'pipe-fragment :operation operation))))
-    (apply #'add-sinks result sinks)
+    (unless (endp sinks)
+      (apply #'add-sinks result sinks))
     result))
+
+
+(defclass future-carousel ()
+  ((%vector :initarg :vector
+            :type vector
+            :reader read-vector)
+   (%index :initform 0
+           :type fixnum
+           :accessor access-index))
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defun make-future-carousel (count)
+  (check-type count fixnum)
+  (assert (> count 0))
+  (make 'future-carousel
+        :vector (make-array count)))
+
+
+(defmethod end-execution ((obj future-carousel))
+  (map nil #'lparallel:force (read-vector obj)))
+
+
+(defmethod initialize-instance ((obj future-carousel) &key &allow-other-keys)
+  (c2mop:set-funcallable-instance-function
+   obj
+   (lambda (x)
+     (bind (((:slots %vector %index) obj))
+       (setf %index (mod (1+ %index) (array-dimension %vector 0)))
+       (lparallel:force (aref %vector %index))
+       (setf (aref %vector %index) (lparallel:future (funcall x)))))))

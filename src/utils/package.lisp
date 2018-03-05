@@ -6,8 +6,8 @@
   (:nicknames #:cl-ds.utils)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:add-sinks
    #:add-into-queue
+   #:add-sinks
    #:bind-lambda
    #:cartesian
    #:cases
@@ -21,6 +21,7 @@
    #:erase-from-vector
    #:extendable-vector
    #:fill-distance-matrix-from-vector
+   #:future-carousel
    #:import-all-package-symbols
    #:insert-or-replace
    #:lambda-list-to-bindings
@@ -32,6 +33,7 @@
    #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
+   #:make-future-carousel
    #:make-pipe-fragment
    #:merge-ordered-vectors
    #:method-lambda-list-to-function-lambda-list
