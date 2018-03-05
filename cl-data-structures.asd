@@ -31,6 +31,7 @@
                              (:file "lazy-shuffle")
                              (:file "bind")
                              (:file "parallel-tools")
+                             (:file "lambda-lists")
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))

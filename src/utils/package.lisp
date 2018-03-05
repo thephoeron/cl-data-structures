@@ -24,6 +24,7 @@
    #:import-all-package-symbols
    #:insert-or-replace
    #:lambda-list-to-bindings
+   #:lambda-list-to-call-form
    #:lazy-let
    #:lazy-shuffle
    #:let-generator
