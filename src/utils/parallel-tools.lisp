@@ -83,15 +83,21 @@
             :reader read-vector)
    (%index :initform 0
            :type fixnum
-           :accessor access-index))
+           :accessor access-index)
+   (%function :initarg :function
+              :reader read-function))
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defun make-future-carousel (count)
+(defun make-future-carousel (function &optional count)
+  (when (null count)
+    (lparallel.kernel:check-kernel)
+    (setf count (* 2 (lparallel.kernel:kernel-worker-count))))
   (check-type count fixnum)
   (assert (> count 0))
   (make 'future-carousel
-        :vector (make-array count)))
+        :vector (make-array count)
+        :function function))
 
 
 (defmethod end-execution ((obj future-carousel))
@@ -102,8 +108,8 @@
   (call-next-method)
   (c2mop:set-funcallable-instance-function
    obj
-   (lambda (x)
-     (bind (((:slots %vector %index) obj))
+   (lambda (&rest all)
+     (bind (((:slots %vector %index %function) obj))
        (setf %index (mod (1+ %index) (array-dimension %vector 0)))
        (lparallel:force (aref %vector %index))
-       (setf (aref %vector %index) (lparallel:future (funcall x)))))))
+       (setf (aref %vector %index) (lparallel:future (apply %function all)))))))
