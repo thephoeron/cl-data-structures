@@ -85,7 +85,9 @@
       (for head = (~> contents (aref child) (aref 0)))
       (iterate
         (for data from 0 below (length contents))
-        (for init = (distance container head (~> contents (aref data) (aref 0))))
+        (for init = (distance container head (~> contents
+                                                 (aref data)
+                                                 (aref 0))))
         (unless (eql child data)
           (multiple-value-bind (min max)
               (cl-ds.utils:optimize-value ((mini < init)
