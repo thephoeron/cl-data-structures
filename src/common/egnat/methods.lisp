@@ -6,10 +6,10 @@
        (values nil nil)
        (bind (((node . index) (pop ,stack))
               (content (read-content node))
-              (value.next-node.index
+              (value.index
                (unless (null content)
                  (next-position ,range content index))))
-         (if (null value.next-node.index)
+         (if (null value.index)
              (bind ((children (read-children node))
                     (children-mask (select-children ,range children)))
                (iterate
@@ -20,8 +20,8 @@
                    (push (cons child 0) stack))
                  (finally (return (cl-ds:consume-front ,range)))))
              (progn
-               (push ,stack (cdr value.next-node.index))
-               (values (car value.next-node.index) t))))))
+               (push (cons node (cdr value.index)) ,stack)
+               (values (car value.index) t))))))
 
 
 (defmacro traverse-body (range stack function)
@@ -29,8 +29,8 @@
      (until (null ,stack))
      (for (node . index) = (pop ,stack))
      (for content = (read-content node))
-     (for next = (next-position ,range content index))
-     (if (null next)
+     (for value.index = (next-position ,range content index))
+     (if (null value.index)
          (bind ((children (read-children node))
                 (children-mask (select-children ,range children)))
            (iterate
@@ -40,8 +40,8 @@
              (when present
                (push (cons child 0) stack))))
          (progn
-           (push ,stack (cdr next))
-           (funcall ,function (car next))))))
+           (push (cons node (cdr value.index)) ,stack)
+           (funcall ,function (car value.index))))))
 
 
 (cl-ds.common:defmethod-with-stack

@@ -68,8 +68,8 @@
       (for i from 0)
       (for element = (cl-ds:at data i))
       (for partition = (gethash d reverse-mapping))
-      ;; don't assign seeds to partitions because it has been already done
-      ;; in map-into form
+      ;; don't assign seeds to partitions because
+      ;; it has been already done in map-into form
       (unless (eql d i)
         (vector-push-extend element (aref result partition))))
     result))
