@@ -16,3 +16,7 @@
               (endp (rest seq)))
              ((vectorp seq)
               (eql (length seq) 1)))))
+
+
+(defstruct dict-content
+  location value)

@@ -19,9 +19,7 @@
                                                 (cl-ds:size data)))))
     (assert (> size count))
     (assert (eql count (cl-ds:size content)))
-    (values
-     content
-     new-data)))
+    (values content new-data)))
 
 
 (defun select-seeds (branching-factor data-count)
@@ -45,21 +43,20 @@
 (defun make-partitions (container seeds-indexes data)
   (let ((result (make-array (cl-ds:size data) :element-type 'fixnum))
         (index 0))
-    (cl-ds:across
-     (lambda (value)
-       (setf (aref result (finc index))
-             (iterate
-               (for seed-index in-vector seeds-indexes)
-               (for seed = (cl-ds:at data seed-index))
-               (for distance = (distance container value seed))
-               (minimize distance into min)
-               (for result
-                    initially 0
-                    then (if (= distance min)
-                             seed-index
-                             result))
-               (finally (return result)))))
-     data)
+    (cl-ds:across (lambda (value)
+                    (setf (aref result (finc index))
+                          (iterate
+                            (for seed-index in-vector seeds-indexes)
+                            (for seed = (cl-ds:at data seed-index))
+                            (for distance = (distance container value seed))
+                            (minimize distance into min)
+                            (for result
+                                 initially 0
+                                 then (if (= distance min)
+                                          seed-index
+                                          result))
+                            (finally (return result)))))
+                  data)
     result))
 
 
