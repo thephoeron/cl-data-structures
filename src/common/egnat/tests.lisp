@@ -22,7 +22,7 @@
                       (repeat 50)
                       (collect (funcall generator)))
                     'vector)))
-  (let ((root (cl-ds.common.egnat::make-egnat-tree nil container nil data))
+  (let ((root (cl-ds.common.egnat::make-egnat-tree container nil nil data))
         (content (serapeum:vect)))
     (is (length (cl-ds.common.egnat::read-content root)) 5)
     (labels ((impl (root)

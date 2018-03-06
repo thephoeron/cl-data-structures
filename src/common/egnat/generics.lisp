@@ -9,3 +9,10 @@
 
 
 (defgeneric next-bucket-position (range bucket index))
+
+
+(defgeneric distance (container bucket element)
+  (:method ((container fundamental-egnat-container)
+            (bucket t)
+            (element t))
+    (funcall (read-metric-fn container) bucket element)))

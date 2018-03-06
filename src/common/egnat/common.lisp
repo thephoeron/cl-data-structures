@@ -42,7 +42,7 @@
     (finally (return (values result reverse-mapping)))))
 
 
-(defun make-partitions (seeds-indexes data metric-fn)
+(defun make-partitions (container seeds-indexes data)
   (let ((result (make-array (cl-ds:size data) :element-type 'fixnum))
         (index 0))
     (cl-ds:across
@@ -51,7 +51,7 @@
              (iterate
                (for seed-index in-vector seeds-indexes)
                (for seed = (cl-ds:at data seed-index))
-               (for distance = (funcall metric-fn value seed))
+               (for distance = (distance container value seed))
                (minimize distance into min)
                (for result
                     initially 0
@@ -78,24 +78,23 @@
     result))
 
 
-(defun make-ranges (contents branching-factor metric-type metric-fn)
+(defun make-ranges (container contents branching-factor)
   (bind ((close-range (make-array `(,branching-factor ,branching-factor)
-                                  :element-type metric-type))
+                                  :element-type (read-metric-type container)))
          (distant-range (make-array `(,branching-factor ,branching-factor)
-                                    :element-type metric-type)))
+                                    :element-type (read-metric-type container))))
     (iterate
       (for child from 0 below (length contents))
       (for head = (~> contents (aref child) (aref 0)))
       (iterate
         (for data from 0 below (length contents))
-        (for init = (funcall metric-fn head (~> contents (aref data) (aref 0))))
+        (for init = (distance container head (~> contents (aref data) (aref 0))))
         (unless (eql child data)
           (multiple-value-bind (min max)
               (cl-ds.utils:optimize-value ((mini < init)
                                            (maxi < init))
                 (map nil (lambda (x)
-                           (let ((distance (coerce (funcall metric-fn x head)
-                                                   metric-type)))
+                           (let ((distance (distance container x head)))
                              (mini distance)
                              (maxi distance)))
                      (aref contents data)))
@@ -104,31 +103,29 @@
     (values close-range distant-range)))
 
 
-(defun make-future-egnat-subtrees (operation container
+(defun make-future-egnat-subtrees (container operation
                                    extra-arguments data)
-  (bind (((:slots %metric-fn %metric-type
-                  %content-count-in-node %branching-factor)
+  (bind (((:slots %content-count-in-node
+                  %branching-factor)
           container)
          ((:values this-content this-data)
           (splice-content data %content-count-in-node))
          ((:values seeds-indexes reverse-mapping)
           (select-seeds %branching-factor (cl-ds:size this-data)))
-         (data-partitions (make-partitions seeds-indexes
-                                           this-data
-                                           %metric-fn))
+         (data-partitions (make-partitions container
+                                           seeds-indexes
+                                           this-data))
          (contents (make-contents seeds-indexes this-data
                                   data-partitions reverse-mapping))
          (children (map 'vector
                         (lambda (content)
-                          (make-future-egnat-nodes operation
-                                                   container
+                          (make-future-egnat-nodes container
+                                                   operation
                                                    extra-arguments
                                                    content))
                         contents))
-         ((:values close-range distant-range) (make-ranges contents
-                                                           %branching-factor
-                                                           %metric-type
-                                                           %metric-fn))
+         ((:values close-range distant-range) (make-ranges container contents
+                                                           %branching-factor))
          (content (make-array %content-count-in-node
                               :adjustable t
                               :fill-pointer 0)))
@@ -149,8 +146,8 @@
           :children children)))
 
 
-(defun make-future-egnat-nodes (operation container extra-arguments data)
-  (if (< (cl-ds:size data) (read-content-count-in-node container))
+(defun make-future-egnat-nodes (container operation extra-arguments data)
+  (if (<= (cl-ds:size data) (read-content-count-in-node container))
       (let ((content (make-array (read-content-count-in-node container)
                                  :adjustable t
                                  :fill-pointer 0)))
@@ -163,12 +160,12 @@
                                             content))
                       data)
         (make 'egnat-node :content content))
-      (make-future-egnat-subtrees operation container
+      (make-future-egnat-subtrees container operation
                                   extra-arguments data)))
 
 
-(defun make-egnat-tree (operation container extra-arguments data)
-  (~>> (make-future-egnat-nodes operation container
+(defun make-egnat-tree (container operation extra-arguments data)
+  (~>> (make-future-egnat-nodes container operation
                                 extra-arguments data)
        force-tree))
 
@@ -179,13 +176,12 @@
                        &optional (result (make-array (length trees)
                                                      :element-type 'bit
                                                      :initial-element 1)))
-  (let ((metric-fn (read-metric-fn container))
-        (length (length trees)))
+  (let ((length (length trees)))
     (iterate
       (for i from 0)
       (for tree in-vector trees)
       (for head = (~> tree read-content (aref 0)))
-      (for distance = (funcall metric-fn value head))
+      (for distance = (distance container value head))
       (iterate
         (for j from 0 below length)
         (unless (or (eql i j) (zerop (aref result j)))
@@ -214,11 +210,10 @@
 
 (defun closest-node (container nodes item)
   (iterate
-    (with metric-fn = (read-metric-fn container))
     (for node in-vector nodes)
     (for content = (read-content node))
     (for head = (aref content 0))
-    (for distance = (funcall metric-fn head item))
+    (for distance = (distance container head item))
     (minimize distance into min)
     (for result
          initially node

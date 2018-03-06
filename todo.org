@@ -17,4 +17,6 @@
 * TODO egnat near function
 * TODO egnat grow functions
 * TODO egnat shrink functions
-* TODO make-bucket should create just single value tuple
+* DONE make-bucket should create just single value tuple
+  CLOSED: [2018-03-05 pon 21:11]
+* TODO Add generic get-location function for egnat

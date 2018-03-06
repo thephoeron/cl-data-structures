@@ -7,7 +7,9 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.egnat)
   (:export
+   #:distance
    #:fundamental-egnat-container
+   #:get-value
    #:prune-subtrees
    #:read-margin
    #:read-near
