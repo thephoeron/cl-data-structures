@@ -604,7 +604,8 @@
 (defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
   (bind (((:slots %tail-size %content) range))
     (if (null %content)
-        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
+        (error 'cl-ds:operation-not-allowed
+               :text "Can't assign into empty range!")
         (setf (aref (~> %content
                         (flexichain:element* (~> %content flexichain:nb-elements 1-)))
                     (1- %tail-size))
@@ -614,7 +615,8 @@
 (defmethod (setf cl-ds:peek-front) (new-value (range mutable-rrb-range))
   (bind (((:slots %start %content) range))
     (if (null %content)
-        (error 'cl-ds:operation-not-allowed :text "Can't assign into empty range!")
+        (error 'cl-ds:operation-not-allowed
+               :text "Can't assign into empty range!")
         (setf (aref (flexichain:element* %content 0)
                     %start)
               new-value))))
