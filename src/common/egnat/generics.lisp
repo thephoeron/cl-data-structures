@@ -8,7 +8,17 @@
                 :initial-element 1)))
 
 
-(defgeneric next-bucket-position (range bucket index))
+(defgeneric next-position (range data index)
+  (:method ((range egnat-range) data index)
+    (when (< index (length data))
+      (cons (aref data index) (1+ index))))
+  (:method ((range egnat-range-around) data index)
+    (bind (((:slots %container %near %margin) range))
+      (iterate
+        (for i from index below (length data))
+        (for content = (aref data i))
+        (for distance = (distance %container %near content))
+        (finding i such-that (< distance %margin))))))
 
 
 (defgeneric distance (container bucket element)
