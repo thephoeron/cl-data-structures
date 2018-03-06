@@ -453,16 +453,19 @@
           %lower-bound 0
           %last-size %tail-size
           %upper-bound to)
-    (labels ((collect-bottom (node depth)
+    (labels ((collect-bottom (node depth &optional (offset 0))
                (if (zerop depth)
                    (flexichain:push-end %content (rrb-node-content node))
-                   (let ((start-range (ash 1 (* +bit-count+ depth)))
-                         (end-range (ash +tail-mask+ (* +bit-count+ depth))))
+                   (let ((start-range offset)
+                         (difference (ash 1 (* +bit-count+ depth)))
+                         (end-range (+ offset (ash +tail-mask+ (* +bit-count+ depth)))))
                      (when (<= start-range from to end-range)
                        (iterate
                          (for i from 0 below +maximum-children-count+)
+                         (for d from difference by difference)
                          (collect-bottom (~> node rrb-node-content (aref i))
-                                         (1- depth))))))))
+                                         (1- depth)
+                                         (+ start-range d))))))))
       (collect-bottom %root %shift))
     (unless (null %tail)
       (when (< %size to)
