@@ -456,9 +456,10 @@
     (labels ((collect-bottom (node depth &optional (offset 0))
                (if (zerop depth)
                    (flexichain:push-end %content (rrb-node-content node))
-                   (let ((start-range offset)
-                         (difference (ash 1 (* +bit-count+ depth)))
-                         (end-range (+ offset (ash +tail-mask+ (* +bit-count+ depth)))))
+                   (let* ((bit-offset (* +bit-count+ (- %shift depth)))
+                          (start-range offset)
+                          (difference (ash 1 bit-offset))
+                          (end-range (+ offset (ash +tail-mask+ bit-offset))))
                      (when (<= start-range from to end-range)
                        (iterate
                          (for i from 0 below +maximum-children-count+)
