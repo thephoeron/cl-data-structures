@@ -420,6 +420,7 @@
    (%lower-bound :type fixnum
                  :accessor access-lower-bound)
    (%upper-bound :initarg :upper-bound
+                 :type fixnum
                  :accessor access-upper-bound)
    (%content :reader read-content)
    (%container :initarg container
@@ -438,7 +439,7 @@
   (make 'mutable-rrb-range :container container))
 
 
-(defun init-rrb (instance container)
+(defun init-rrb (instance container &key (from 0) (to (cl-ds:size container)))
   (bind (((:slots %start %last-size %content %lower-bound %upper-bound) instance)
          ((:slots %root %shift %size %tail-size %tail) container))
     (setf %content (make-instance 'flexichain:standard-flexichain
@@ -451,17 +452,21 @@
           %start 0
           %lower-bound 0
           %last-size %tail-size
-          %upper-bound (cl-ds:size container))
+          %upper-bound to)
     (labels ((collect-bottom (node depth)
                (if (zerop depth)
                    (flexichain:push-end %content (rrb-node-content node))
-                   (iterate
-                     (for i from 0 below +maximum-children-count+)
-                     (collect-bottom (~> node rrb-node-content (aref i))
-                                     (1- depth))))))
+                   (let ((start-range (ash 1 (* +bit-count+ depth)))
+                         (end-range (ash +tail-mask+ (* +bit-count+ depth))))
+                     (when (<= start-range from to end-range)
+                       (iterate
+                         (for i from 0 below +maximum-children-count+)
+                         (collect-bottom (~> node rrb-node-content (aref i))
+                                         (1- depth))))))))
       (collect-bottom %root %shift))
     (unless (null %tail)
-      (flexichain:push-end %content %tail))))
+      (when (< %size to)
+        (flexichain:push-end %content %tail)))))
 
 
 (defmethod initialize-instance :after ((instance rrb-range)
@@ -607,7 +612,9 @@
         (error 'cl-ds:operation-not-allowed
                :text "Can't assign into empty range!")
         (setf (aref (~> %content
-                        (flexichain:element* (~> %content flexichain:nb-elements 1-)))
+                        (flexichain:element* (~> %content
+                                                 flexichain:nb-elements
+                                                 1-)))
                     (1- %tail-size))
               new-value))))
 
