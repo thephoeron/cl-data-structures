@@ -19,4 +19,3 @@
 * TODO egnat shrink functions
 * DONE make-bucket should create just single value tuple
   CLOSED: [2018-03-05 pon 21:11]
-* TODO Add generic get-location function for egnat

@@ -9,6 +9,10 @@
    (%obtain-value :type (-> ((-> () t) (-> (t) t)) (values t boolean))
                   :initarg :obtain-value
                   :reader read-obtain-value)
+   (%initial-stack :type list
+                   :initarg initial-stack
+                   :reader read-initial-stack
+                   :initform nil)
    (%key :type (-> (t) t)
          :initarg :key
          :reader read-key)
@@ -17,8 +21,8 @@
                :reader read-container)))
 
 
-(defclass assignable-forward-tree-range (cl-ds:fundamental-assignable-forward-range
-                                         forward-tree-range)
+(defclass assignable-forward-tree-range
+    (cl-ds:fundamental-assignable-forward-range forward-tree-range)
   ((%store-value :type (-> (t t) t)
                  :initarg :store-value
                  :reader read-store-value)))
@@ -76,7 +80,8 @@
     (values (when found (funcall key result)) found)))
 
 
-(defmethod (setf cl-ds:peek-front) (new-value (range assignable-forward-tree-range))
+(defmethod (setf cl-ds:peek-front)
+    (new-value (range assignable-forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
                       (key read-key)
@@ -111,11 +116,18 @@
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))
-  (make 'forward-tree-range
+  (make (type-of range)
         :container (read-container range)
         :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
+        :initial-stack (mapcar #'cl-ds:clone (read-initial-stack range))
         :obtain-value (read-obtain-value range)
         :key (read-key range)))
+
+
+(defmethod cl-ds:reset! ((range forward-tree-range))
+  (bind (((:slots %initial-stack %forward-stack) range))
+    (setf %forward-stack (mapcar #'cl-ds:clone %initial-stack)))
+  range)
 
 
 (defmacro defmethod-with-stack ((method-name lambda-list stack stack-place)

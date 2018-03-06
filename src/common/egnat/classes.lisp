@@ -51,6 +51,8 @@
   ((%stack :initform nil
            :initarg :stack
            :accessor access-stack)
+   (%initial-stack :reader read-initial-stack
+                   :initarg :initial-stack)
    (%container :initarg :container
                :reader read-container)))
 

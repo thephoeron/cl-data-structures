@@ -70,3 +70,25 @@
      (function (range egnat-range))
      stack (access-stack range))
   (traverse-body range stack function))
+
+
+(defmethod cl-ds:reset! ((range egnat-range))
+  (bind (((:slots %stack %initial-stack) range))
+    (setf %stack %initial-stack))
+  range)
+
+
+(defmethod cl-ds:clone ((range egnat-range))
+  (make-instance (type-of range)
+                 :stack (access-stack range)
+                 :initial-stack (access-stack range)
+                 :container (read-container range)))
+
+
+(defmethod cl-ds:clone ((range egnat-range-around))
+  (make-instance (type-of range)
+                 :stack (access-stack range)
+                 :initial-stack (access-stack range)
+                 :container (read-container range)
+                 :near (read-near range)
+                 :read-margin (read-margin range)))
