@@ -9,7 +9,7 @@
   content)
 
 
-(plan 7)
+(plan 8)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -69,7 +69,18 @@
         (collect value into result)
         (finally (is (serapeum:~> result (sort #'<) (coerce 'vector))
                      data
-                     :test #'serapeum:vector=))))))
+                     :test #'serapeum:vector=))))
+    (let ((range (make-instance 'cl-ds.common.egnat::egnat-range-around
+                                :container container
+                                :margin 5
+                                :near (aref data 10)
+                                :stack (list (cons root 0)))))
+      (iterate
+        (for (values value more) = (cl-ds:consume-front range))
+        (while more)
+        (collect value into result)
+        (finally (ok (every (lambda (x) (<= (logxor x (aref data 10)) 5))
+                            result)))))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
