@@ -76,7 +76,7 @@
 (defmethod initialize-instance :after ((obj egnat-grow-range)
                                        &key &allow-other-keys)
   (bind (((:slots %possible-paths %stack) obj))
-    (vector-push-extend %stack %possible-paths)))
+    (vector-push-extend (caar %stack) %possible-paths)))
 
 
 (defmethod (setf access-stack)
