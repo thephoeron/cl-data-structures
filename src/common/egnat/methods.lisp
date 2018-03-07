@@ -11,7 +11,7 @@
                  (next-position ,range content index))))
          (if (null value.index)
              (bind ((children (read-children node))
-                    (children-mask (select-children ,range children)))
+                    (children-mask (select-children ,range node)))
                (iterate
                  (for child in-vector children)
                  (for present-bit in-vector children-mask)
@@ -32,7 +32,7 @@
      (for value.index = (next-position ,range content index))
      (if (null value.index)
          (bind ((children (read-children node))
-                (children-mask (select-children ,range children)))
+                (children-mask (select-children ,range node)))
            (iterate
              (for child in-vector children)
              (for present-bit in-vector children-mask)

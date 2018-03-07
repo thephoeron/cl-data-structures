@@ -1,11 +1,18 @@
 (in-package #:cl-data-structures.common.egnat)
 
 
-(defgeneric select-children (range subtrees)
-  (:method ((range egnat-range) (subtrees cl:sequence))
-    (make-array (length subtrees)
+(defgeneric select-children (range node)
+  (:method ((range egnat-range) (node egnat-node))
+    (make-array (length (read-children node))
                 :element-type 'bit
-                :initial-element 1)))
+                :initial-element 1))
+  (:method ((range egnat-range-around) (node egnat-node))
+    (prune-subtrees (read-container range)
+                    (read-children node)
+                    (read-close-range node)
+                    (read-distant-range node)
+                    (read-near range)
+                    (read-margin range))))
 
 
 (defgeneric same (container bucket element)

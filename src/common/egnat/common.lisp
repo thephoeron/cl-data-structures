@@ -135,12 +135,13 @@
                   this-content)
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
-    (funcall future-callback children)
-    (make 'egnat-node
-          :content content
-          :close-range close-range
-          :distant-range distant-range
-          :children children)))
+    (let ((result (make 'egnat-node
+                        :content content
+                        :close-range close-range
+                        :distant-range distant-range
+                        :children children)))
+      (funcall future-callback result)
+      result)))
 
 
 (defun make-future-egnat-nodes (container operation
@@ -165,15 +166,21 @@
 
 
 (defun make-egnat-tree (container operation extra-arguments data)
-  (let ((sync-thread (cl-ds.utils:make-pipe-fragment
-                      (lambda (x) (map-into x #'lparallel:force x)))))
+  (let* ((sync-thread (cl-ds.utils:make-pipe-fragment
+                       (lambda (node sync-thread
+                           &aux (children (read-children node)))
+                         (map-into children #'lparallel:force children)
+                         (map nil sync-thread children))
+                       :end-on-empty t))
+         (root (make-future-egnat-nodes container
+                                        operation
+                                        extra-arguments
+                                        data
+                                        sync-thread)))
+    (funcall sync-thread root)
     (cl-ds.utils:start-execution sync-thread)
-    (prog1 (make-future-egnat-nodes container
-                                    operation
-                                    extra-arguments
-                                    data
-                                    sync-thread)
-      (cl-ds.utils:end-execution sync-thread))))
+    (cl-ds.utils:end-execution sync-thread)
+    root))
 
 
 (defun prune-subtrees (container trees

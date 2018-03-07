@@ -67,9 +67,8 @@
             :reader read-margin)))
 
 
-(defclass egnat-grow-range (egnat-around)
-  ((%near :initarg :near
-          :reader read-near)
+(defclass egnat-grow-range (egnat-range-around)
+  ((%margin :initform 0)
    (%possible-paths :initform (vect)
                     :reader read-possible-paths)))
 

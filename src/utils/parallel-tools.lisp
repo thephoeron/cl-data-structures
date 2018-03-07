@@ -10,6 +10,8 @@
                 :reader read-sinks-lock)
    (%operation :initarg :operation
                :reader read-operation)
+   (%end-on-empty :initarg :end-on-empty
+                  :reader read-end-on-empty)
    (%queue :reader read-queue))
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -55,23 +57,41 @@
 
 (flet ((make-worker (obj)
          (bind (((:slots %queue %operation %sinks-lock %sinks) obj))
-           (lambda () (iterate
+           (if (read-end-on-empty obj)
+               (lambda ()
+                 (iterate
+                   (until (lparallel.queue:queue-empty-p %queue))
+                   (for (end . content) = (lparallel.queue:pop-queue %queue))
+                   (unless end
+                     (setf content (funcall %operation content obj))
+                     (bt:with-lock-held (%sinks-lock)
+                       (map nil (rcurry #'funcall content) %sinks)))))
+               (lambda ()
+                 (iterate
                    (for (end . content) = (lparallel.queue:pop-queue %queue))
                    (until end)
                    (setf content (funcall %operation content))
                    (bt:with-lock-held (%sinks-lock)
-                     (map nil (rcurry #'funcall content) %sinks)))))))
+                     (map nil (rcurry #'funcall content) %sinks))))))))
     (defgeneric start-execution (pipe)
       (:method ((pipe pipe-fragment))
-        (setf (slot-value pipe '%thread) (bt:make-thread (make-worker pipe))))))
+        (setf (slot-value pipe '%thread)
+              (bt:make-thread (make-worker pipe))))))
 
 
-(defun make-pipe-fragment (operation &key (queue-size nil queue-size-bound) sinks)
+(defun make-pipe-fragment (operation
+                           &key
+                             (queue-size nil queue-size-bound)
+                             sinks
+                             end-on-empty)
   (let ((result (if queue-size-bound
                     (make 'pipe-fragment
                           :operation operation
-                          :queue-size queue-size)
-                    (make 'pipe-fragment :operation operation))))
+                          :queue-size queue-size
+                          :end-on-empty end-on-empty)
+                    (make 'pipe-fragment
+                          :operation operation
+                          :end-on-empty end-on-empty))))
     (unless (endp sinks)
       (apply #'add-sinks result sinks))
     result))
