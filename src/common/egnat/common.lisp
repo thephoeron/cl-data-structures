@@ -237,3 +237,33 @@
                  (map nil #'impl (read-children tree))))))
     (impl (access-root container)))
   container)
+
+
+(defun egnat-destructive-grow (container item)
+  (bind (((:slots %metric-f %same-fn %content-count-in-node
+                  %size %root %branching-factor)
+          container))
+    (labels ((ímpl (node)
+               (let* ((children (read-children node))
+                      (content (read-content node))
+                      (length (length content)))
+                 (cond ((position item content
+                                  :test (curry #'same container))
+                        cl-ds.utils:todo)
+                       ((eql length %content-count-in-node)
+                        (if (null children)
+                            cl-ds.utils:todo
+                            cl-ds.utils:todo))
+                       ;; actually, we need to check if item is not in the
+                       ;; tree already. This whole function needs to be
+                       ;; different and some sort of linear scan should be
+                       ;; performed. Perhaps I can use already existing
+                       ;; cl-ds:near to get range around item and then,
+                       ;; slowly build all possible paths of nodes,
+                       ;; that may lead to it. Finally, item should be
+                       ;; inserted into first node that has place for it,
+                       ;; or new node should be created if no node like,
+                       ;; this exists.
+                       (t (let ((closest-node cl-ds.utils:todo))
+                            (impl closest-node)))))))
+      (impl %root))))
