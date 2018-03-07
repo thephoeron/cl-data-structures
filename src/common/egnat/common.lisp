@@ -97,8 +97,7 @@
 
 
 (defun make-future-egnat-subtrees (container operation
-                                   extra-arguments data
-                                   future-callback)
+                                   extra-arguments data)
   (bind (((:slots %content-count-in-node
                   %branching-factor)
           container)
@@ -117,8 +116,7 @@
                             (make-future-egnat-nodes container
                                                      operation
                                                      extra-arguments
-                                                     content
-                                                     future-callback)))
+                                                     content)))
                         contents))
          ((:values close-range distant-range) (make-ranges container contents
                                                            %branching-factor))
@@ -135,18 +133,15 @@
                   this-content)
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
-    (let ((result (make 'egnat-node
-                        :content content
-                        :close-range close-range
-                        :distant-range distant-range
-                        :children children)))
-      (funcall future-callback result)
-      result)))
+    (make 'egnat-node
+          :content content
+          :close-range close-range
+          :distant-range distant-range
+          :children children)))
 
 
 (defun make-future-egnat-nodes (container operation
-                                extra-arguments data
-                                future-callback)
+                                extra-arguments data)
   (if (<= (cl-ds:size data) (read-content-count-in-node container))
       (let ((content (make-array (read-content-count-in-node container)
                                  :adjustable t
@@ -161,8 +156,7 @@
                       data)
         (make 'egnat-node :content content))
       (make-future-egnat-subtrees container operation
-                                  extra-arguments data
-                                  future-callback)))
+                                  extra-arguments data)))
 
 
 (defun make-egnat-tree (container operation extra-arguments data)
@@ -175,8 +169,7 @@
          (root (make-future-egnat-nodes container
                                         operation
                                         extra-arguments
-                                        data
-                                        sync-thread)))
+                                        data)))
     (funcall sync-thread root)
     (cl-ds.utils:start-execution sync-thread)
     (cl-ds.utils:end-execution sync-thread)
