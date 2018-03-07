@@ -228,9 +228,7 @@
   (labels ((impl (tree)
              (let ((content (read-content tree)))
                (when content
-                 (cl-ds:map-bucket container
-                                   content
-                                   function)
+                 (map nil function content)
                  (map nil #'impl (read-children tree))))))
-    (impl (read-root container)))
+    (impl (access-root container)))
   container)

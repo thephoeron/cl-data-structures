@@ -9,6 +9,9 @@
    (%metric-fn
     :reader read-metric-fn
     :initarg :metric-fn)
+   (%same-fn
+    :reader read-same-fn
+    :initarg :same-fn)
    (%metric-type
     :reader read-metric-type
     :initform :single-float
@@ -22,7 +25,7 @@
     :type non-negative-fixnum
     :initform 0)
    (%root
-    :reader read-root
+    :accessor access-root
     :initform nil
     :initarg :root)))
 

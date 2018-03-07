@@ -92,3 +92,41 @@
                  :container (read-container range)
                  :near (read-near range)
                  :read-margin (read-margin range)))
+
+
+(defmethod cl-ds:clone ((container fundamental-egnat-container))
+  (bind (((:slots %branching-factor %metric-fn %metric-type
+                  %content-count-in-node %size %root %same-fn)
+          container))
+    (make (type-of container)
+          :branching-factor %branching-factor
+          :metric-fn %metric-fn
+          :same-fn %same-fn
+          :metric-type %metric-type
+          :content-count-in-node %content-count-in-node
+          :size %size
+          :root %root)))
+
+
+(defmethod cl-ds:near ((container fundamental-egnat-container)
+                       item
+                       maximal-distance)
+  (let* ((root (access-root container))
+         (stack (unless (null root)
+                  (list (cons root 0)))))
+    (make 'egnat-range-around
+          :near item
+          :margin maximal-distance
+          :container container
+          :stack stack
+          :initial-stack stack)))
+
+
+(defmethod cl-ds:whole-range ((container fundamental-egnat-container))
+  (let* ((root (access-root container))
+         (stack (unless (null root)
+                  (list (cons root 0)))))
+    (make 'egnat-range
+          :container container
+          :stack stack
+          :initial-stack stack)))
