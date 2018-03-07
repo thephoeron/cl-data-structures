@@ -76,10 +76,12 @@
 
 
 (defun make-ranges (container contents branching-factor)
-  (bind ((close-range (make-array `(,branching-factor ,branching-factor)
-                                  :element-type (read-metric-type container)))
-         (distant-range (make-array `(,branching-factor ,branching-factor)
-                                    :element-type (read-metric-type container))))
+  (bind ((range-size `(,branching-factor ,branching-factor))
+         (metric-type (read-metric-type container))
+         (close-range (make-array range-size
+                                  :element-type metric-type))
+         (distant-range (make-array range-size
+                                    :element-type metric-type)))
     (iterate
       (for child from 0 below (length contents))
       (for head = (~> contents (aref child) (aref 0)))

@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 18657)
+(plan 18556)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -121,25 +121,16 @@
       (for i from 0 below 365)
       (is (cl-ds:at new-container i) i))))
 
-(let ((container (~> (cl-ds:make-from-traversable 'functional-rrb-vector nil
-                                                  (cl-ds:xpr (:i 0)
-                                                    (when (< i 64)
-                                                      (send-recur i :i (1+ i)))))
-                     cl-ds:become-lazy)))
-  (iterate
-    (for i from 0 below 64)
-    (is (cl-ds:at container i) i))
-  (let* ((insert-more (cl-ds:xpr (:container container :i 64)
-                        (when (< i 128)
-                          (send-recur container
-                                      :container (cl-ds:put container i)
-                                      :i (1+ i)))))
-         (all-containers (cl-ds:make-from-traversable 'mutable-rrb-vector nil
-                                                      insert-more)))
+(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
+                                              (cl-ds:xpr (:i 0)
+                                                (when (< i 64)
+                                                  (send-recur i :i (1+ i)))))))
+  (let ((range (cl-ds:whole-range container)))
+    (cl-ds.common.rrb::init-rrb range container :from 5)
     (iterate
-      (for size from 64 below 128)
-      (for index from 0)
-      (for lazy-container = (cl-ds:at all-containers index))
-      (is (cl-ds:size lazy-container) size))))
+      (for (values value more) = (cl-ds:consume-front range))
+      (while more)
+      (for i from 5)
+      (is value i))))
 
 (finalize)

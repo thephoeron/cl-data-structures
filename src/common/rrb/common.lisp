@@ -440,8 +440,11 @@
 
 
 (defun init-rrb (instance container &key (from 0) (to (cl-ds:size container)))
-  (bind (((:slots %start %last-size %content %lower-bound %upper-bound) instance)
-         ((:slots %root %shift %size %tail-size %tail) container))
+  (bind (((:slots %start %last-size %content %lower-bound
+                  %upper-bound %size)
+          instance)
+         ((:slots %root %shift %size %tail-size %tail)
+          container))
     (setf %content (make-instance 'flexichain:standard-flexichain
                                   :min-size (iterate
                                               (repeat %shift)
@@ -449,18 +452,18 @@
                                                    initially 1
                                                    then (ash result +bit-count+))
                                               (finally (return result))))
-          %start 0
-          %lower-bound 0
-          %last-size %tail-size
+          %start (mod from +maximum-children-count+)
+          %lower-bound from
+          %last-size (mod to +maximum-children-count+)
           %upper-bound to)
     (labels ((collect-bottom (node depth &optional (offset 0))
-               (if (zerop depth)
-                   (flexichain:push-end %content (rrb-node-content node))
-                   (let* ((bit-offset (* +bit-count+ (- %shift depth)))
-                          (start-range offset)
-                          (difference (ash 1 bit-offset))
-                          (end-range (+ offset (ash +tail-mask+ bit-offset))))
-                     (when (<= start-range from to end-range)
+               (let* ((bit-offset (* +bit-count+ (- %shift depth)))
+                      (start-range offset)
+                      (difference (ash 1 bit-offset))
+                      (end-range (+ offset (ash +tail-mask+ bit-offset))))
+                 (when (<= start-range from to end-range)
+                   (if (zerop depth)
+                       (flexichain:push-end %content (rrb-node-content node))
                        (iterate
                          (for i from 0 below +maximum-children-count+)
                          (for d from difference by difference)
@@ -519,8 +522,9 @@
 
 
 (defmethod cl-ds:consume-front ((range rrb-range))
-  (bind (((:slots %start %content %last-size %lower-bound) range))
-    (if (null %content)
+  (bind (((:slots %start %content %last-size %lower-bound %upper-bound)
+          range))
+    (if (or (eql %lower-bound %upper-bound) (null %content))
         (values nil nil)
         (let* ((new-start (rem (1+ %start) +maximum-children-count+))
                (old-start %start)
@@ -585,6 +589,7 @@
          (last-position (~> %content flexichain:nb-elements 1-)))
     (iterate
       (for i from 0)
+      (until (eql %lower-bound %upper-bound))
       (until (zerop (flexichain:nb-elements %content)))
       (for array = (flexichain:element* %content 0))
       (iterate
@@ -595,7 +600,8 @@
         (incf %lower-bound)
         (when (eql %start last-index)
           (flexichain:pop-start %content))
-        (funcall function (aref array a)))
+        (funcall function (aref array a))
+        (until (eql %lower-bound %upper-bound)))
       (setf index 0))
     range))
 
