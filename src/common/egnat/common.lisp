@@ -270,7 +270,7 @@
 
 
 (defun find-destination-node (container item)
-  (let* ((root (read-root container))
+  (let* ((root (access-root container))
          (stack (list (cons root 0)))
          (range (make 'egnat-grow-range
                       :near item
@@ -278,7 +278,7 @@
                       :initial-stack stack
                       :container container))
          (existing-item (iterate
-                          (for (values item more) range)
+                          (for (values item more) = (cl-ds:consume-front range))
                           (while more)
                           (finding item such-that item))))
-    (read-possible-paths range)))
+    (read-possible-paths existing-item)))
