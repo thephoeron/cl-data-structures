@@ -8,6 +8,20 @@
                 :initial-element 1)))
 
 
+(defgeneric same (container bucket element)
+  (:method ((container fundamental-egnat-container)
+            (bucket t)
+            (element t))
+    (funcall (read-same-fn container) bucket element)))
+
+
+(defgeneric distance (container bucket element)
+  (:method ((container fundamental-egnat-container)
+            (bucket t)
+            (element t))
+    (funcall (read-metric-fn container) bucket element)))
+
+
 (defgeneric next-position (range data index)
   (:method ((range egnat-range) data index)
     (when (< index (length data))
@@ -20,18 +34,14 @@
                      (for distance = (distance %container %near content))
                      (finding i such-that (<= distance %margin)))))
       (when result
+        (cons (aref data result) (1+ result)))))
+  (:method ((range egnat-grow-range) data index)
+    (bind (((:slots %container %near) range)
+           (result (iterate
+                     (for i from index below (length data))
+                     (for content = (aref data i))
+                     (for same = (same %container content %near))
+                     (finding i such-that same))))
+      (when result
         (cons (aref data result) (1+ result))))))
 
-
-(defgeneric distance (container bucket element)
-  (:method ((container fundamental-egnat-container)
-            (bucket t)
-            (element t))
-    (funcall (read-metric-fn container) bucket element)))
-
-
-(defgeneric same (container bucket element)
-  (:method ((container fundamental-egnat-container)
-            (bucket t)
-            (element t))
-    (funcall (read-same-fn container) bucket element)))

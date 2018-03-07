@@ -67,20 +67,21 @@
             :reader read-margin)))
 
 
-(defclass egnat-grow-internal-range (egnat-range-around)
-  ((%margin :initform 0)
+(defclass egnat-grow-range (egnat-around)
+  ((%near :initarg :near
+          :reader read-near)
    (%possible-paths :initform (vect)
                     :reader read-possible-paths)))
 
 
-(defmethod initialize-instance :after ((obj egnat-grow-internal-range)
+(defmethod initialize-instance :after ((obj egnat-grow-range)
                                        &key &allow-other-keys)
   (bind (((:slots %possible-paths %stack) obj))
     (vector-push-extend %stack %possible-paths)))
 
 
 (defmethod (setf access-stack)
-    :before (new-value (obj egnat-grow-internal-range))
+    :before (new-value (obj egnat-grow-range))
   (bind (((:slots %possible-paths) obj)
          (length (length %possible-paths))
          ((node . _) (aref %possible-paths (1- length)))
