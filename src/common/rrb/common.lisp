@@ -422,8 +422,14 @@
    (%upper-bound :initarg :upper-bound
                  :type fixnum
                  :accessor access-upper-bound)
+   (%initial-lower-bound :initarg :initial-lower-bound
+                         :type fixnum
+                         :reader read-initial-lower-bound)
+   (%initial-upper-bound :initarg :initial-upper-bound
+                         :type fixnum
+                         :reader read-initial-upper-bound)
    (%content :reader read-content)
-   (%container :initarg container
+   (%container :initarg :container
                :accessor access-container)))
 
 
@@ -432,11 +438,15 @@
 
 
 (defmethod cl-ds:whole-range ((container rrb-container))
-  (make 'rrb-range :container container))
+  (make 'rrb-range :container container
+                   :initial-lower-bound 0
+                   :initial-upper-bound (cl-ds:size container)))
 
 
 (defmethod cl-ds:whole-range ((container mutable-rrb-range))
-  (make 'mutable-rrb-range :container container))
+  (make 'mutable-rrb-range :container container
+                           :initial-lower-bound 0
+                           :initial-upper-bound (cl-ds:size container)))
 
 
 (defun init-rrb (instance container &key (from 0) (to (cl-ds:size container)))
@@ -479,11 +489,15 @@
 (defmethod initialize-instance :after ((instance rrb-range)
                                        &key container
                                        &allow-other-keys)
-  (init-rrb instance container))
+  (init-rrb instance container
+            :from (read-initial-lower-bound instance)
+            :to (read-initial-upper-bound instance)))
 
 
 (defmethod reinitialize-instance (instance &key &allow-other-keys)
-  (init-rrb instance (access-container instance)))
+  (init-rrb instance (access-container instance)
+            :from (read-initial-lower-bound instance)
+            :to (read-initial-upper-bound instance)))
 
 
 (defmethod cl-ds:peek-front ((range rrb-range))
@@ -614,6 +628,14 @@
 (defmethod cl-ds:size ((obj rrb-range))
   (bind (((:slots %upper-bound %lower-bound) obj))
     (- %upper-bound %lower-bound)))
+
+
+(defmethod cl-ds:clone ((obj rrb-range))
+  (bind (((:slots %lower-bound %upper-bound %container) obj))
+    (make (type-of obj)
+          :container %container
+          :initial-lower-bound %lower-bound
+          :initial-upper-bound %upper-bound)))
 
 
 (defmethod (setf cl-ds:peek-back) (new-value (range mutable-rrb-range))
