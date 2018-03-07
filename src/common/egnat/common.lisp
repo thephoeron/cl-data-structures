@@ -267,3 +267,18 @@
                        (t (let ((closest-node cl-ds.utils:todo))
                             (impl closest-node)))))))
       (impl %root))))
+
+
+(defun find-destination-node (container item)
+  (let* ((root (read-root container))
+         (stack (list (cons root 0)))
+         (range (make 'egnat-grow-range
+                      :near item
+                      :stack stack
+                      :initial-stack stack
+                      :container container))
+         (existing-item (iterate
+                          (for (values item more) range)
+                          (while more)
+                          (finding item such-that item))))
+    (read-possible-paths range)))

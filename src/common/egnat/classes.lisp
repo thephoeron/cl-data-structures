@@ -86,7 +86,7 @@
          ((node . _) (aref %possible-paths (1- length)))
          ((new-node . _) (first new-value)))
     (unless (eq node new-node)
-      (vector-push-extend new-value %possible-paths))))
+      (vector-push-extend new-node %possible-paths))))
 
 
 (defmethod initialize-instance
