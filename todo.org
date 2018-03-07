@@ -15,9 +15,11 @@
 * TODO metric-space set
 * DONE egnat range...
   CLOSED: [2018-03-06 Tue 15:58]
-* TODO egnat near function
+* DONE egnat near function
+  CLOSED: [2018-03-07 Wed 13:13]
 * TODO egnat grow functions
 * TODO egnat shrink functions
 * DONE make-bucket should create just single value tuple
   CLOSED: [2018-03-05 pon 21:11]
-* TODO fix clone for RRB range
+* DONE fix clone for RRB range
+  CLOSED: [2018-03-07 Wed 13:13]
