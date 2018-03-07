@@ -133,11 +133,10 @@
 (defmacro defmethod-with-stack ((method-name lambda-list stack stack-place)
                                 &body body)
   `(defmethod ,method-name ,lambda-list
-     (let ((,stack ,stack-place))
+     (symbol-macrolet ((,stack ,stack-place))
        (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list lambda-list)
                   ,@body))
-         (multiple-value-prog1 (,method-name ,@(cl-ds.utils:lambda-list-to-bindings lambda-list))
-           (setf ,stack-place ,stack))))))
+         (,method-name ,@(cl-ds.utils:lambda-list-to-bindings lambda-list))))))
 
 
 (defmacro defmethod-with-peek-stack ((method-name lambda-list stack init)
