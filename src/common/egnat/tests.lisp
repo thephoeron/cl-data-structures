@@ -93,7 +93,7 @@
                          :content-count-in-node 1)
           'cl-ds:initialization-out-of-bounds)
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
-                         :branching-factor 1
+                         :branching-factor 5
                          :content-count-in-node 0)
           'cl-ds:initialization-out-of-bounds)
 
