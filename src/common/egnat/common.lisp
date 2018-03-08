@@ -282,5 +282,5 @@
                                (cl-ds:consume-front range))
                           (while more)
                           (finding item such-that item))))
-    (unless (null existing-item)
-      (read-possible-paths range))))
+    (values (read-possible-paths range)
+            (if (null existing-item) nil t))))

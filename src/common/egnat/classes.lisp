@@ -76,15 +76,15 @@
 (defmethod initialize-instance :after ((obj egnat-grow-range)
                                        &key &allow-other-keys)
   (bind (((:slots %possible-paths %stack) obj))
-    (vector-push-extend (caar %stack) %possible-paths)))
+    (vector-push-extend %stack %possible-paths)))
 
 
 (defmethod (setf access-stack)
     :before (new-value (obj egnat-grow-range))
   (bind (((:slots %possible-paths) obj)
-         (new-node.count (first new-value)))
-    (unless (or (null new-node.count))
-      (vector-push-extend (car new-node.count) %possible-paths))))
+         (new-stack (first new-value)))
+    (unless (null new-stack)
+      (vector-push-extend new-stack %possible-paths))))
 
 
 (defmethod initialize-instance
