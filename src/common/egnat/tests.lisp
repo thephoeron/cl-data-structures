@@ -9,12 +9,13 @@
   content)
 
 
-(plan 8)
+(plan 9)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
                   :branching-factor 5
                   :metric-fn #'logxor
+                  :same-fn #'=
                   :metric-type 'fixnum
                   :content-count-in-node 5))
       (data (coerce (iterate
@@ -80,7 +81,11 @@
         (while more)
         (collect value into result)
         (finally (ok (every (lambda (x) (<= (logxor x (aref data 10)) 5))
-                            result)))))))
+                            result)))))
+    (setf (cl-ds.common.egnat::access-root container) root)
+    (let ((possible-paths (cl-ds.common.egnat::find-destination-node
+                           container (aref data 10))))
+      (isnt (length possible-paths) 0))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container

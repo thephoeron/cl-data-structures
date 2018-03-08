@@ -82,11 +82,9 @@
 (defmethod (setf access-stack)
     :before (new-value (obj egnat-grow-range))
   (bind (((:slots %possible-paths) obj)
-         (length (length %possible-paths))
-         ((node . _) (aref %possible-paths (1- length)))
-         ((new-node . _) (first new-value)))
-    (unless (eq node new-node)
-      (vector-push-extend new-node %possible-paths))))
+         (new-node.count (first new-value)))
+    (unless (or (null new-node.count))
+      (vector-push-extend (car new-node.count) %possible-paths))))
 
 
 (defmethod initialize-instance

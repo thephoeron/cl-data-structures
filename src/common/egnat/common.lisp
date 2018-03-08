@@ -85,7 +85,7 @@
         (unless (eql child data)
           (multiple-value-bind (min max)
               (cl-ds.utils:optimize-value ((mini < init)
-                                           (maxi < init))
+                                           (maxi > init))
                 (map nil (lambda (x)
                            (let ((distance (distance container x head)))
                              (mini distance)
@@ -278,7 +278,9 @@
                       :initial-stack stack
                       :container container))
          (existing-item (iterate
-                          (for (values item more) = (cl-ds:consume-front range))
+                          (for (values item more) =
+                               (cl-ds:consume-front range))
                           (while more)
                           (finding item such-that item))))
-    (read-possible-paths existing-item)))
+    (unless (null existing-item)
+      (read-possible-paths range))))
