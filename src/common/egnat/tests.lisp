@@ -85,7 +85,7 @@
     (setf (cl-ds.common.egnat::access-root container) root)
     (let ((possible-paths (cl-ds.common.egnat::find-destination-node
                            container (aref data 10))))
-      (isnt (length possible-paths) 0))))
+      (isnt (hash-table-count possible-paths) 0))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container

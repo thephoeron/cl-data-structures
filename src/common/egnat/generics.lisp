@@ -63,4 +63,3 @@
                      (finding i such-that same))))
       (when result
         (cons (aref data result) (1+ result))))))
-
