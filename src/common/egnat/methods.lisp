@@ -112,8 +112,7 @@
                        item
                        maximal-distance)
   (let* ((root (access-root container))
-         (stack (unless (null root)
-                  (list (cons root 0)))))
+         (stack (unless (null root) (list (cons root 0)))))
     (make 'egnat-range-around
           :near item
           :margin maximal-distance
@@ -124,8 +123,7 @@
 
 (defmethod cl-ds:whole-range ((container fundamental-egnat-container))
   (let* ((root (access-root container))
-         (stack (unless (null root)
-                  (list (cons root 0)))))
+         (stack (unless (null root) (list (cons root 0)))))
     (make 'egnat-range
           :container container
           :stack stack

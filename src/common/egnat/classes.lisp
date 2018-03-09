@@ -69,33 +69,18 @@
 
 (defclass egnat-grow-range (egnat-range-around)
   ((%margin :initform 0)
-   (%possible-paths :initform (vect)
+   (%possible-paths :initform (make-hash-table :test 'eq)
                     :reader read-possible-paths)))
 
 
 (defmethod initialize-instance :after ((obj egnat-grow-range)
                                        &key &allow-other-keys)
   (bind (((:slots %possible-paths %stack) obj))
-    (vector-push-extend (list (first %stack)) %possible-paths)))
-
-
-(defmethod (setf access-stack)
-    :before (new-value (obj egnat-grow-range))
-  (bind (((:slots %possible-paths) obj)
-         (new-stack (first new-value)))
-    (unless (null new-stack)
-      (bind ((parent-index (1- (position (car new-stack) %possible-paths
-                                         :from-end t
-                                         :test (compose #'not #'eq)
-                                         :key #'caar)))
-             (parent (aref %possible-paths parent-index)))
-        (vector-push-extend (cons new-stack parent)
-                            %possible-paths)))))
+    (setf (gethash (caar %stack) %possible-paths) nil)))
 
 
 (defmethod initialize-instance
-    :after ((container fundamental-egnat-container)
-            &rest all)
+    :after ((container fundamental-egnat-container) &rest all)
   (declare (ignore all))
   (bind (((:slots %branching-factor %content-count-in-node) container))
     (check-type %branching-factor integer)

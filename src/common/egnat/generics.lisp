@@ -12,7 +12,19 @@
                     (read-close-range node)
                     (read-distant-range node)
                     (read-near range)
-                    (read-margin range))))
+                    (read-margin range)))
+  (:method ((range egnat-grow-range) (node egnat-node))
+    (let ((result (call-next-method))
+          (children (read-children node))
+          (paths (read-possible-paths range)))
+      (unless (null children)
+        (iterate
+          (for bit in-vector result)
+          (for child in-vector children)
+          (for i from 0)
+          (when (eql 1 bit)
+            (setf (gethash child paths) (cons node i)))))
+      result)))
 
 
 (defgeneric same (container bucket element)
