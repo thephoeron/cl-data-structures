@@ -9,7 +9,7 @@
   content)
 
 
-(plan 9)
+(plan 11)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -83,9 +83,13 @@
         (finally (ok (every (lambda (x) (<= (logxor x (aref data 10)) 5))
                             result)))))
     (setf (cl-ds.common.egnat::access-root container) root)
-    (let ((possible-paths (cl-ds.common.egnat::find-destination-node
-                           container (aref data 10))))
-      (isnt (hash-table-count possible-paths) 0))))
+    (multiple-value-bind (possible-paths found last-node)
+        (cl-ds.common.egnat::find-destination-node container
+                                                   (aref data 10))
+      (isnt (hash-table-count possible-paths) 0)
+      (ok found)
+      (ok (find (aref data 10)
+                (cl-ds.common.egnat::read-content last-node))))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container

@@ -283,4 +283,5 @@
                           (while more)
                           (finding item such-that item))))
     (values (read-possible-paths range)
-            (if (null existing-item) nil t))))
+            (if (null existing-item) nil t)
+            (access-last-node range))))

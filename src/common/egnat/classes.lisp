@@ -69,14 +69,25 @@
 
 (defclass egnat-grow-range (egnat-range-around)
   ((%margin :initform 0)
+   (%last-node :initform nil
+               :accessor access-last-node)
    (%possible-paths :initform (make-hash-table :test 'eq)
                     :reader read-possible-paths)))
 
 
 (defmethod initialize-instance :after ((obj egnat-grow-range)
                                        &key &allow-other-keys)
-  (bind (((:slots %possible-paths %stack) obj))
-    (setf (gethash (caar %stack) %possible-paths) nil)))
+  (bind (((:slots %possible-paths %stack %last-node) obj))
+    (setf (gethash (caar %stack) %possible-paths) nil
+          %last-node (caar %stack))))
+
+
+(defmethod (setf access-stack)
+    :before (new-value (object egnat-grow-range))
+  (bind (((:slots %last-node %stack) object)
+         (poped (eq new-value (rest %stack))))
+    (when poped
+      (setf %last-node (caar %stack)))))
 
 
 (defmethod initialize-instance
