@@ -285,3 +285,12 @@
     (values (read-possible-paths range)
             (if (null existing-item) nil t)
             (access-last-node range))))
+
+
+(defun walk-path (fn node possible-paths)
+  (iterate
+    (for p
+         initially (cons node 0)
+         then (gethash (car p) possible-paths))
+    (until (null p))
+    (funcall fn p)))

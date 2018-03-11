@@ -9,7 +9,7 @@
   content)
 
 
-(plan 11)
+(plan 12)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -89,7 +89,12 @@
       (isnt (hash-table-count possible-paths) 0)
       (ok found)
       (ok (find (aref data 10)
-                (cl-ds.common.egnat::read-content last-node))))))
+                (cl-ds.common.egnat::read-content last-node)))
+      (let ((node nil))
+        (cl-ds.common.egnat::walk-path (lambda (x) (setf node x))
+                                       last-node
+                                       possible-paths)
+        (is (car node) root :test #'eq)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
