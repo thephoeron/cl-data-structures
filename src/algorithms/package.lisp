@@ -2,8 +2,8 @@
 
 
 (defpackage :cl-data-structures.algorithms
-  (:use #:common-lisp #:docstample #:docstample.mechanics #:serapeum
-        #:cl-ds.utils #:alexandria #:iterate #:cl-ds #:bind)
+  (:use #:common-lisp #:serapeum #:cl-ds.utils
+        #:alexandria #:iterate #:cl-ds #:bind)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.alg)
   (:export

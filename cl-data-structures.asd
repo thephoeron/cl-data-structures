@@ -9,7 +9,7 @@
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate         :alexandria
                 :serapeum        :prove
-                :prove-asdf      :docstample
+                :prove-asdf      :docstample :documentation-utils-extensions
                 :more-conditions :closer-mop
                 :lparallel       :flexichain
                 :metabang-bind   :bordeaux-threads
