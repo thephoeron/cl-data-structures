@@ -1,5 +1,5 @@
 (in-package #:cl-data-structures.documentation)
 
-(defun lisp () "Common Lisp")
+(alexandria:define-constant lisp "Common Lisp" :test 'equal)
 
 (def-chunks *cl-data-structures*)
