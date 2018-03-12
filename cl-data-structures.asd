@@ -9,11 +9,12 @@
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate         :alexandria
                 :serapeum        :prove
-                :prove-asdf      :docstample :documentation-utils-extensions
+                :prove-asdf      :documentation-utils-extensions
                 :more-conditions :closer-mop
                 :lparallel       :flexichain
                 :metabang-bind   :bordeaux-threads
-                :trivial-garbage :fare-memoization)
+                :trivial-garbage :fare-memoization
+                :scribble)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"

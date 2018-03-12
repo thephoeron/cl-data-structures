@@ -1,4 +1,7 @@
 (in-package #:cl-data-structures)
+(eval-always
+  (scribble:configure-scribble :package :cl-data-structures)
+  (named-readtables:in-readtable :scribble))
 
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
@@ -41,15 +44,16 @@
      :description
      "Obtain element stored at LOCATION in the CONTAINER."
 
-     :examples "(let ((table (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
-                (prove:diag \"Testing example for AT function.\")
-                (multiple-value-bind (value found) (cl-ds:at table 'a)
-                  (prove:is value nil)
-                  (prove:is found nil))
-                (setf (cl-ds:at table 'a) 1)
-                (multiple-value-bind (value found) (cl-ds:at table 'a)
-                  (prove:is value 1)
-                  (prove:is found t))))"))
+     :examples
+     [(let ((table (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+        (prove:diag "Testing example for AT function.")
+        (multiple-value-bind (value found) (cl-ds:at table 'a)
+          (prove:is value nil)
+          (prove:is found nil))
+        (setf (cl-ds:at table 'a) 1)
+        (multiple-value-bind (value found) (cl-ds:at table 'a)
+          (prove:is value 1)
+          (prove:is found t)))]))
 
   (function add
     (:syntax "add dictionary key value => new-dictionary-instance status"
@@ -57,26 +61,27 @@
                  ("LOCATION" "Place where NEW-VALUE shall be added.")
                  ("NEW-VALUE" "Value that we intend to add into returned instance."))
 
-     :examples "(let ((table (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
-               (prove:diag \"Testing example for add function.\")
-               (multiple-value-bind (value found) (cl-ds:at table 'a)
-                 (prove:is value nil)
-                 (prove:is found nil))
-               (let ((next-table (cl-ds:add table 'a 1)))
-                 (multiple-value-bind (value found) (cl-ds:at table 'a)
-                   (prove:is value nil)
-                   (prove:is found nil))
-                 (multiple-value-bind (value found) (cl-ds:at next-table 'a)
-                   (prove:is value 1)
-                   (prove:is found t))
-                 (cl-ds:mod-bind (next-next-table found value)
-                                 (cl-ds:add next-table 'a 2)
-                   (prove:ok found)
-                   (prove:is value 1)
-                   (prove:is next-next-table next-table)
-                   (multiple-value-bind (value found) (cl-ds:at next-next-table 'a)
-                     (prove:ok found)
-                     (prove:is value 1)))))"
+     :examples
+     [(let ((table (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq))
+            (prove:diag \"Testing example for add function.\"))
+        (multiple-value-bind (value found) (cl-ds:at table 'a)
+          (prove:is value nil)
+          (prove:is found nil))
+        (let ((next-table (cl-ds:add table 'a 1)))
+          (multiple-value-bind (value found) (cl-ds:at table 'a)
+            (prove:is value nil)
+            (prove:is found nil))
+          (multiple-value-bind (value found) (cl-ds:at next-table 'a)
+            (prove:is value 1)
+            (prove:is found t))
+          (cl-ds:mod-bind (next-next-table found value)
+                          (cl-ds:add next-table 'a 2)
+            (prove:ok found)
+            (prove:is value 1)
+            (prove:is next-next-table next-table)
+            (multiple-value-bind (value found) (cl-ds:at next-next-table 'a)
+              (prove:ok found)
+              (prove:is value 1)))))]
 
      :returns ("Instance of the same type as CONTAINER. If add took place it shall contain NEW-VALUE at LOCATION."
                "Modification status object.")
@@ -119,10 +124,10 @@
      :notes "This is the functional counterpart to the (SETF AT) function."
 
      :examples
-     "(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
-          (next-table (cl-ds:insert table 'a 5)))
-          (prove:is (cl-ds:at next-table 'a) 5)
-          (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql)))"))
+     [(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq)))
+        (next-table (cl-ds:insert table 'a 5))
+        (prove:is (cl-ds:at next-table 'a) 5)
+        (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql)))]))
 
   (function erase
     (:syntax "erase container location => new-instance status"
@@ -136,16 +141,16 @@
      :notes "This is the functional counterpart to the ERASE! function."
 
      :examples
-     "(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
-           (next-table (cl-ds:insert table 'a 5)))
-     (prove:diag \"Running example for ERASE\")
-     (prove:is (cl-ds:at next-table 'a) 5)
-     (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
-     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase next-table 'a)
-       (prove:ok found)
-       (prove:is value 5)
-       (prove:is (cl-ds:at erased-table 'a) nil)
-       (prove:is (cl-ds:at next-table 'a) 5)))"
+     [(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+             (next-table (cl-ds:insert table 'a 5)))
+        (prove:diag \"Running example for ERASE\")
+        (prove:is (cl-ds:at next-table 'a) 5)
+        (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
+        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase next-table 'a)
+          (prove:ok found)
+          (prove:is value 5)
+          (prove:is (cl-ds:at erased-table 'a) nil)
+          (prove:is (cl-ds:at next-table 'a) 5)))]
 
      :arguments
      (("CONTAINER" "Container that shall be modified.")
@@ -161,21 +166,24 @@
       "Modification status object.")
 
      :examples
-     "(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
-           (next-table (cl-ds:insert (cl-ds:insert table 'a 5) 'b 6)))
-     (prove:diag \"Running example for ERASE-IF\")
-     (prove:is (cl-ds:at next-table 'a) 5)
-     (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
-     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'a (lambda (location value) (declare (ignore location)) (evenp value)))
-       (prove:ok (null found))
-       (prove:is value nil)
-       (prove:is (cl-ds:at erased-table 'a) 5)
-       (prove:is (cl-ds:at next-table 'a) 5))
-    (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
-       (prove:ok found)
-       (prove:is value 6)
-       (prove:is (cl-ds:at erased-table 'b) nil)
-       (prove:is (cl-ds:at next-table 'b) 6)))"
+     [(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+             (next-table (cl-ds:insert (cl-ds:insert table 'a 5) 'b 6)))
+        (prove:diag "Running example for ERASE-IF")
+        (prove:is (cl-ds:at next-table 'a) 5)
+        (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql))
+        (cl-ds:mod-bind (erased-table found value)
+                        (cl-ds:erase-if next-table 'a
+                                        (lambda (location value) (declare (ignore location))
+                                          (evenp value)))
+          (prove:ok (null found))
+          (prove:is value nil)
+          (prove:is (cl-ds:at erased-table 'a) 5)
+          (prove:is (cl-ds:at next-table 'a) 5))
+        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'b (lambda (location value) (declare (ignore location)) (evenp value))))
+        (prove:ok found)
+        (prove:is value 6)
+        (prove:is (cl-ds:at erased-table 'b) nil)
+        (prove:is (cl-ds:at next-table 'b) 6))]
 
      :arguments
      (("CONTAINER" "Container that shall be modified.")
@@ -194,26 +202,25 @@
       "Modification status object.")
 
      :examples
-     "(let* ((table (cl-ds.dicts.hamt::make-mutable-hamt-dictionary #'sxhash #'eq)))
-     (setf (cl-ds:at table 'a) 5
-           (cl-ds:at table 'b) 6)
-     (prove:diag \"Running example for ERASE-IF!\")
-     (prove:is (cl-ds:at table 'a) 5)
-     (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'a (lambda (location value) (declare (ignore location)) (evenp value)))
-       (prove:ok (null found))
-       (prove:is value nil)
-       (prove:is erased-table table)
-       (prove:is (cl-ds:at erased-table 'a) 5))
-    (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
-       (prove:ok found)
-       (prove:is value 6)
-       (prove:is erased-table table)
-       (prove:is (cl-ds:at erased-table 'b) nil)))"
+     [(let* ((table (cl-ds.dicts.hamt::make-mutable-hamt-dictionary #'sxhash #'eq)))
+        (setf (cl-ds:at table 'a) 5
+              (cl-ds:at table 'b) 6)
+        (prove:diag "Running example for ERASE-IF!")
+        (prove:is (cl-ds:at table 'a) 5)
+        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'a (lambda (location value) (declare (ignore location)) (evenp value)))
+          (prove:ok (null found))
+          (prove:is value nil)
+          (prove:is erased-table table)
+          (prove:is (cl-ds:at erased-table 'a) 5))
+        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if! table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
+          (prove:ok found)
+          (prove:is value 6)
+          (prove:is erased-table table)
+          (prove:is (cl-ds:at erased-table 'b) nil)))]
 
-     :arguments
-     (("CONTAINER" "Container that shall be modified.")
-      ("LOCATION" "Designates place in returned instance that will be changed.")
-      ("CONDITION" "Function of two arguments, should return boolean."))
+     :arguments (("CONTAINER" "Container that shall be modified.")
+                 ("LOCATION" "Designates place in returned instance that will be changed.")
+                 ("CONDITION" "Function of two arguments, should return boolean."))
 
      :notes "This is the destructive counterpart to the ERASE-IF function."))
 
@@ -232,10 +239,11 @@
      :description "How many elements the CONTAINER holds currently?"
      :arguments (("container" "instance that will be checked."))
      :returns "The number of elements in the container."
-     :examples "(let ((container (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
-                (prove:is (cl-ds:size container) 0)
-                (setf (cl-ds:at container 'a) 1)
-                (prove:is (cl-ds:size container) 1))"))
+     :examples
+     [(let ((container (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+        (prove:is (cl-ds:size container) 0)
+        (setf (cl-ds:at container 'a) 1)
+        (prove:is (cl-ds:size container) 1))]))
 
   (function update
     (:description
@@ -356,13 +364,14 @@
                "mutablep functional-container => nil")
      :arguments (("container" "Any subclass of fundamental-container"))
 
-     :examples "(progn (prove:diag \"Running example for mutablep.\")
-                    (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
-                      (prove:ok (cl-ds:mutablep mutable))
-                      (prove:ok (not (cl-ds:functionalp mutable))))
-                    (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
-                      (prove:ok (not (cl-ds:mutablep functional)))
-                      (prove:ok (cl-ds:functionalp functional))))"
+     :examples
+     [(progn (prove:diag "Running example for mutablep.")
+             (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+               (prove:ok (cl-ds:mutablep mutable))
+               (prove:ok (not (cl-ds:functionalp mutable))))
+             (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
+               (prove:ok (not (cl-ds:mutablep functional)))
+               (prove:ok (cl-ds:functionalp functional))))]
 
      :returns "T if CONTAINER exposes mutable API and NIL if not."))
 
@@ -370,22 +379,26 @@
     (:syntax  ("(functionalp mutable-container) -> nil"
                "(functionalp functional-container) -> t")
      :arguments (("container" "Any subclass of fundamental-container"))
-     :examples "(progn (prove:diag \"Running example for functionalp.\")
-                    (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
-                      (prove:ok (cl-ds:mutablep mutable))
-                      (prove:ok (not (cl-ds:functionalp mutable))))
-                    (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
-                      (prove:ok (not (cl-ds:mutablep functional)))
-                      (prove:ok (cl-ds:functionalp functional))))"
+     :examples
+     [(progn
+        (prove:diag "Running example for functionalp.")
+        (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
+          (prove:ok (cl-ds:mutablep mutable))
+          (prove:ok (not (cl-ds:functionalp mutable))))
+        (let ((functional (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq)))
+          (prove:ok (not (cl-ds:mutablep functional)))
+          (prove:ok (cl-ds:functionalp functional))))]
      :returns "T if CONTAINER exposes functional API and NIL if not."))
 
   (function transactionalp
     (:syntax "transactionalp container => boolean"
      :arguments (("container" "Any subclass of fundamental-container"))
-     :examples "(progn (prove:diag \"Running example for transactionalp.\")
-                    (let ((container (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq))))
-                      (prove:ok (cl-ds:mutablep container))
-                      (prove:ok (cl-ds:transactionalp container))))"
+     :examples
+     [(progn
+        (prove:diag "Running example for transactionalp.")
+        (let ((container (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq))))
+          (prove:ok (cl-ds:mutablep container))
+          (prove:ok (cl-ds:transactionalp container))))]
      :returns "T if CONTAINER is transactional and NIL if it is not."))
 
   (function value

@@ -264,3 +264,27 @@
          (progn
            ,@body
            (values ,@values))))))
+
+
+(defmacro macro-with-dynamic-vars (bindings body)
+  `(let* ((original-hook *macroexpand-hook*)
+          (*macroexpand-hook*
+            (lambda (expander form env)
+              (let ,bindings
+                (funcall original-hook expander form env)))))
+     (macroexpand ',body)))
+
+
+(defmacro toggle-vars (bindings &body body)
+  (let ((!vars (mapcar (lambda (x) (gensym)) bindings)))
+    `(progn
+       (let ,(mapcar (lambda (binding symbol)
+                       (list binding (car symbol)))
+                     !vars bindings)
+         (eval-always
+           (setf ,@(apply #'append bindings)))
+         (unwind-protect
+              (progn ,@body)
+           (eval-always
+             (setf ,@(apply #'append (mapcar (lambda (binding symbol) (list (car symbol) binding))
+                                             !vars bindings)))))))))
