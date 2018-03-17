@@ -239,36 +239,6 @@
   container)
 
 
-(defun egnat-destructive-grow (container item)
-  (bind (((:slots %metric-f %same-fn %content-count-in-node
-                  %size %root %branching-factor)
-          container))
-    (labels ((ímpl (node)
-               (let* ((children (read-children node))
-                      (content (read-content node))
-                      (length (length content)))
-                 (cond ((position item content
-                                  :test (curry #'same container))
-                        cl-ds.utils:todo)
-                       ((eql length %content-count-in-node)
-                        (if (null children)
-                            cl-ds.utils:todo
-                            cl-ds.utils:todo))
-                       ;; actually, we need to check if item is not in the
-                       ;; tree already. This whole function needs to be
-                       ;; different and some sort of linear scan should be
-                       ;; performed. Perhaps I can use already existing
-                       ;; cl-ds:near to get range around item and then,
-                       ;; slowly build all possible paths of nodes,
-                       ;; that may lead to it. Finally, item should be
-                       ;; inserted into first node that has place for it,
-                       ;; or new node should be created if no node like,
-                       ;; this exists.
-                       (t (let ((closest-node cl-ds.utils:todo))
-                            (impl closest-node)))))))
-      (impl %root))))
-
-
 (defun find-destination-node (container item)
   (let* ((root (access-root container))
          (stack (list (cons root 0)))
@@ -285,6 +255,27 @@
     (values (read-possible-paths range)
             (if (null existing-item) nil t)
             (access-last-node range))))
+
+
+(defun egnat-destructive-grow (container item operation additional-arguments)
+  (bind (((:slots %metric-f %same-fn %content-count-in-node
+                  %size %root %branching-factor)
+          container)
+         ((:values paths found last-node) (find-destination-node container
+                                                                 item)))
+    #|
+    following cases needs to be considered:
+    1) item already present in the egnat. Simply attempt to change bucket, and roll with result
+    2) item not present in the egnat, but there is a node that we can stick it in, without updating ranges. Do it and be happy.
+    3) item not present in the egnat, and every node in path is already full. Find first node (from the root) that can hold another children.
+       Create node by spliting content of parent in two. Update ranges of parent since new children has been added. Then update ranges of whole path
+       because new item has been added.
+    |#
+    (when found ; case number 1
+        cl-ds.utils:todo)
+    ;; checking if it is the case number 2
+    ))
+
 
 
 (defun walk-path (fn node possible-paths)
