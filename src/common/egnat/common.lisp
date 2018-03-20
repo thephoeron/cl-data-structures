@@ -257,6 +257,10 @@
             (access-last-node range))))
 
 
+(defun splitting-grow! (container item operation additional-arguments)
+  cl-ds.utils:todo)
+
+
 (defun egnat-destructive-grow (container item operation additional-arguments)
   (bind (((:slots %metric-f %same-fn %content-count-in-node
                   %size %root %branching-factor)
@@ -293,7 +297,8 @@
           (finally
            ;; checking if it is the case number 2
            (if (null result)
-               cl-ds.utils:todo ; case 3, it will be messy...
+               ;; case 3, it will be messy...
+               (return (splitting-grow! container item operation additional-arguments))
                ;; the case number 2, just one push-extend and we are done
                (bind ((content (read-content result))
                       ((:values new-bucket status)
