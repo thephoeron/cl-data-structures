@@ -285,11 +285,7 @@
             (setf (aref content position) new-bucket))
           (values container status))
         (iterate
-          (for node
-               initially last-node
-               then (car (gethash last-node paths)))
-          (for p-node previous node initially last-node)
-          (until (null node))
+          (for (node index) in-hashtable paths)
           (for content = (read-content node))
           (finding node
                    such-that (< (fill-pointer content) %content-count-in-node)
@@ -297,9 +293,8 @@
           (finally
            ;; checking if it is the case number 2
            (if (null result)
-               ;; case 3, it will be messy...
-               cl-ds.utils:todo
-               ;; the case number 2, great, this is simple
+               cl-ds.utils:todo ; case 3, it will be messy...
+               ;; the case number 2, just one push-extend and we are done
                (bind ((content (read-content result))
                       ((:values new-bucket status)
                        (apply #'cl-ds:make-bucket
