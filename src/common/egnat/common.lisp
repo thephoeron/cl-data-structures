@@ -271,9 +271,44 @@
        Create node by spliting content of parent in two. Update ranges of parent since new children has been added. Then update ranges of whole path
        because new item has been added.
     |#
-    (when found ; case number 1
-        cl-ds.utils:todo)
-    ;; checking if it is the case number 2
+    (if found ; case number 1, easy to handle
+        (bind ((content (read-content last-node))
+               (position (position item content :test (curry #'same container)))
+               (bucket (aref content position))
+               ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
+                                                           operation
+                                                           container
+                                                           bucket
+                                                           item
+                                                           additional-arguments)))
+          (when changed
+            (setf (aref content position) new-bucket))
+          (values container status))
+        (iterate
+          (for node
+               initially last-node
+               then (car (gethash last-node paths)))
+          (for p-node previous node initially last-node)
+          (until (null node))
+          (for content = (read-content node))
+          (finding node
+                   such-that (< (fill-pointer content) %content-count-in-node)
+                   into result)
+          (finally
+           ;; checking if it is the case number 2
+           (if (null result)
+               ;; case 3, it will be messy...
+               cl-ds.utils:todo
+               ;; the case number 2, great, this is simple
+               (bind ((content (read-content result))
+                      ((:values new-bucket status)
+                       (apply #'cl-ds:make-bucket
+                              operation
+                              container
+                              item
+                              additional-arguments)))
+                 (vector-push-extend new-bucket content)
+                 (return (values container status)))))))
     ))
 
 
