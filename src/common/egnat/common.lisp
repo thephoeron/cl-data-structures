@@ -285,7 +285,7 @@
             (setf (aref content position) new-bucket))
           (values container status))
         (iterate
-          (for (node index) in-hashtable paths)
+          (for (node parent) in-hashtable paths)
           (for content = (read-content node))
           (finding node
                    such-that (< (fill-pointer content) %content-count-in-node)
