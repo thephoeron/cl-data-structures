@@ -341,7 +341,8 @@
                                                   :distant-range distant-range)))
                     (vector-push-extend new-node children)
                     (update-ranges! container node item last)
-                    (reinitialize-ranges! container node))))))))
+                    (reinitialize-ranges! container node))))))
+      (impl (access-root container))))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
 
