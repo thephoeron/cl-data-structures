@@ -257,13 +257,13 @@
             (access-last-node range))))
 
 
-(defun splitting-grow! (container item operation additional-arguments)
+(defun splitting-grow! (container operation item additional-arguments)
   cl-ds.utils:todo)
 
 
 (defun egnat-replace! (container operation
-                                  item last-node
-                                  additional-arguments)
+                       item last-node
+                       additional-arguments)
   (bind ((content (read-content last-node))
          (position (position item content :test (curry #'same container)))
          (bucket (aref content position))
@@ -279,8 +279,8 @@
 
 
 (defun egnat-push! (container operation
-                               item node
-                               additional-arguments)
+                    item node
+                    additional-arguments)
   (bind ((content (read-content node))
          ((:values new-bucket status)
           (apply #'cl-ds:make-bucket
@@ -318,7 +318,7 @@
            ;; checking if it is the case number 2
            (if (null result)
                ;; case 3, it will be messy...
-               (return (splitting-grow! container item operation
+               (return (splitting-grow! container operation item
                                         additional-arguments))
                ;; the case number 2, just one push-extend and we are done
                (return (egnat-push! container operation item result
