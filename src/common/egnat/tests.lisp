@@ -9,7 +9,21 @@
   content)
 
 
-(plan 12)
+(defmethod cl-ds:grow-bucket!
+    ((operation cl-ds:insert-function)
+     (container cl-ds.common.egnat:fundamental-egnat-container)
+     bucket
+     location
+     &rest all)
+  (declare (ignore all))
+  (values location
+          (cl-ds.common:make-eager-modification-operation-status
+           t
+           bucket)
+          t))
+
+
+(plan 14)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -94,7 +108,14 @@
         (cl-ds.common.egnat::walk-path (lambda (x) (setf node x))
                                        last-node
                                        possible-paths)
-        (is (car node) root :test #'eq)))))
+        (is (car node) root :test #'eq)))
+    (multiple-value-bind (container status)
+        (cl-ds.common.egnat::egnat-destructive-grow container
+                                                    (aref data 5)
+                                                    #'(setf cl-ds:at)
+                                                    nil)
+      (is (cl-ds:value status) (aref data 5))
+      (ok (cl-ds:found status)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
