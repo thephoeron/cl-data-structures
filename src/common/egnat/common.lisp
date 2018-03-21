@@ -258,7 +258,40 @@
 
 
 (defun splitting-grow! (container operation item additional-arguments)
-  cl-ds.utils:todo)
+  (fbind ((distance (curry #'distance container)))
+    (bind (((:slots %root %branching-factor) container)
+           ((:dflet closest-index (array))
+            (cl-ds.utils:optimize-value ((mini <))
+              (iterate
+                (with result = 0)
+                (for i from 0 below (fill-pointer array))
+                (for child = (aref array i))
+                (for content = (read-content child))
+                (for head = (aref content 0))
+                (for distance = (distance head item))
+                (mini distance)
+                (when (= mini distance)
+                  (setf result i))
+                (finally (return result)))))
+           ((:dflet update-ranges (node closest-index))
+            cl-ds.utils:todo)
+           ((:labels impl (node))
+            (bind ((children (read-children node))
+                   (full (eql (fill-pointer children) %branching-factor)))
+              (if full
+                  (bind ((closest-index (closest-index children))
+                         (next-node (aref children closest-index)))
+                    (progn
+                      (impl next-node)
+                      (update-ranges node closest-index)))
+                  (bind ((new-bucket (apply #'cl-ds:make-bucket
+                                            operation
+                                            container
+                                            item
+                                            additional-arguments)))
+                    cl-ds.utils:todo)))))))
+  (values container
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defun egnat-replace! (container operation
