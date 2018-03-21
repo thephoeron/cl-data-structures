@@ -261,7 +261,38 @@
   cl-ds.utils:todo)
 
 
-(defun egnat-destructive-grow (container item operation additional-arguments)
+(defun egnat-destructive-replace (container operation
+                                  item last-node
+                                  additional-arguments)
+  (bind ((content (read-content last-node))
+         (position (position item content :test (curry #'same container)))
+         (bucket (aref content position))
+         ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
+                                                     operation
+                                                     container
+                                                     bucket
+                                                     item
+                                                     additional-arguments)))
+    (when changed
+      (setf (aref content position) new-bucket))
+    (values container status)))
+
+
+(defun egnat-destructive-push (container operation
+                               item node
+                               additional-arguments)
+  (bind ((content (read-content node))
+         ((:values new-bucket status)
+          (apply #'cl-ds:make-bucket
+                 operation
+                 container
+                 item
+                 additional-arguments)))
+    (vector-push-extend new-bucket content)
+    (values container status)))
+
+
+(defun egnat-destructive-grow (container operation item additional-arguments)
   (bind (((:slots %metric-f %same-fn %content-count-in-node
                   %size %root %branching-factor)
           container)
@@ -276,18 +307,8 @@
        because new item has been added.
     |#
     (if found ; case number 1, easy to handle
-        (bind ((content (read-content last-node))
-               (position (position item content :test (curry #'same container)))
-               (bucket (aref content position))
-               ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
-                                                           operation
-                                                           container
-                                                           bucket
-                                                           item
-                                                           additional-arguments)))
-          (when changed
-            (setf (aref content position) new-bucket))
-          (values container status))
+        (egnat-destructive-replace container operation item
+                                   last-node additional-arguments)
         (iterate
           (for (node parent) in-hashtable paths)
           (for content = (read-content node))
@@ -300,16 +321,9 @@
                ;; case 3, it will be messy...
                (return (splitting-grow! container item operation additional-arguments))
                ;; the case number 2, just one push-extend and we are done
-               (bind ((content (read-content result))
-                      ((:values new-bucket status)
-                       (apply #'cl-ds:make-bucket
-                              operation
-                              container
-                              item
-                              additional-arguments)))
-                 (vector-push-extend new-bucket content)
-                 (return (values container status)))))))
-    ))
+               (return (egnat-destructive-push container operation
+                                               item result
+                                               additional-arguments))))))))
 
 
 
