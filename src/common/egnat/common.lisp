@@ -279,6 +279,26 @@
             (aref close-range (1- length) i) mini))))
 
 
+(defun update-ranges! (container node item closest-index)
+  (let ((children (read-children node))
+        (close-range (read-close-range node))
+        (distant-range (read-distant-range node)))
+    (iterate
+      (for i from 0 below (length children))
+      (unless (eql i closest-index)
+        (let ((distance (~> node
+                            read-content
+                            (aref 0)
+                            (distance container _ item))))
+          (setf (aref close-range i closest-index)
+                (min (aref close-range i closest-index)
+                     distance)
+
+                (aref distant-range i closest-index)
+                (max (aref distant-range i closest-index)
+                     distance)))))))
+
+
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
     (bind (((:slots %root %branching-factor %metric-type) container)
@@ -295,24 +315,6 @@
                 (when (= mini distance)
                   (setf result i))
                 (finally (return result)))))
-           ((:dflet update-ranges (node closest-index))
-            (let ((children (read-children node))
-                  (close-range (read-close-range node))
-                  (distant-range (read-distant-range node)))
-              (iterate
-                (for i from 0 below (length children))
-                (unless (eql i closest-index)
-                  (let ((distance (~> node
-                                      read-content
-                                      (aref 0)
-                                      (distance item))))
-                    (setf (aref close-range i closest-index)
-                          (min (aref close-range i closest-index)
-                               distance)
-
-                          (aref distant-range i closest-index)
-                          (max (aref distant-range i closest-index)
-                               distance)))))))
            ((:labels impl (node))
             (bind ((children (read-children node))
                    (full (eql (fill-pointer children) %branching-factor)))
@@ -320,7 +322,7 @@
                   (bind ((closest-index (closest-index children))
                          (next-node (aref children closest-index)))
                     (impl next-node)
-                    (update-ranges node closest-index))
+                    (update-ranges! container node item closest-index))
                   (bind ((new-bucket (apply #'cl-ds:make-bucket
                                             operation
                                             container
@@ -338,7 +340,7 @@
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (vector-push-extend new-node children)
-                    (update-ranges node last)
+                    (update-ranges! container node item last)
                     (reinitialize-ranges! container node))))))))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
