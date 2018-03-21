@@ -274,7 +274,29 @@
                   (setf result i))
                 (finally (return result)))))
            ((:dflet update-ranges (node closest-index))
-            cl-ds.utils:todo)
+            (let ((children (read-children node))
+                  (close-range (read-close-range node))
+                  (distant-range (read-distant-range node)))
+              (iterate
+                (for i from 0 below (length children))
+                (unless (eql i closest-index)
+                  (cl-ds.utils:optimize-value ((mini < (aref close-range
+                                                             closest-index
+                                                             i))
+                                               (maxi > (aref distant-range
+                                                             closest-index
+                                                             i)))
+                    (labels ((mini-maxi (node)
+                               (let ((distance (distance item
+                                                         (~> node
+                                                             read-content
+                                                             (aref 0)))))
+                                 (mini distance)
+                                 (maxi distance)
+                                 (map nil #'mini-maxi (read-children node)))))
+                      (scan (aref children i))
+                      (setf (aref close-range closest-index i) mini
+                            (aref distant-range closest-index i) maxi)))))))
            ((:labels impl (node))
             (bind ((children (read-children node))
                    (full (eql (fill-pointer children) %branching-factor)))
@@ -283,7 +305,7 @@
                          (next-node (aref children closest-index)))
                     (progn
                       (impl next-node)
-                      (update-ranges node closest-index)))
+                      (update-ranges node closest-index))) ; this is wasteful
                   (bind ((new-bucket (apply #'cl-ds:make-bucket
                                             operation
                                             container
