@@ -287,14 +287,14 @@
                                                              closest-index
                                                              i)))
                     (labels ((mini-maxi (node)
-                               (let ((distance (distance item
-                                                         (~> node
-                                                             read-content
-                                                             (aref 0)))))
+                               (let ((distance (~> node
+                                                   read-content
+                                                   (aref 0)
+                                                   (distance item))))
                                  (mini distance)
                                  (maxi distance)
                                  (map nil #'mini-maxi (read-children node)))))
-                      (scan (aref children i))
+                      (mini-maxi (aref children i))
                       (setf (aref close-range closest-index i) mini
                             (aref distant-range closest-index i) maxi)))))))
            ((:labels impl (node))
