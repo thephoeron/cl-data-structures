@@ -259,7 +259,7 @@
 
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
-    (bind (((:slots %root %branching-factor) container)
+    (bind (((:slots %root %branching-factor %metric-type) container)
            ((:dflet closest-index (array))
             (cl-ds.utils:optimize-value ((mini <))
               (iterate
@@ -304,15 +304,26 @@
               (if full
                   (bind ((closest-index (closest-index children))
                          (next-node (aref children closest-index)))
-                    (progn
-                      (impl next-node)
-                      (update-ranges node closest-index))) ; this is wasteful
+                    (impl next-node)
+                    (update-ranges node closest-index))
                   (bind ((new-bucket (apply #'cl-ds:make-bucket
                                             operation
                                             container
                                             item
-                                            additional-arguments)))
-                    cl-ds.utils:todo)))))))
+                                            additional-arguments))
+                         (last (fill-pointer children))
+                         (range-size `(,%branching-factor ,%branching-factor))
+                         (close-range (make-array range-size
+                                                  :element-type %metric-type))
+                         (distant-range (make-array range-size
+                                                    :element-type %metric-type))
+                         (new-node (make-instance 'egnat-node
+                                                  :children (vect)
+                                                  :content (vect new-bucket)
+                                                  :close-range close-range
+                                                  :distant-range distant-range)))
+                    (vector-push-extend new-node children)
+                    (update-ranges node last))))))))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
 
