@@ -261,7 +261,7 @@
   cl-ds.utils:todo)
 
 
-(defun egnat-destructive-replace (container operation
+(defun egnat-replace! (container operation
                                   item last-node
                                   additional-arguments)
   (bind ((content (read-content last-node))
@@ -278,7 +278,7 @@
     (values container status)))
 
 
-(defun egnat-destructive-push (container operation
+(defun egnat-push! (container operation
                                item node
                                additional-arguments)
   (bind ((content (read-content node))
@@ -292,7 +292,7 @@
     (values container status)))
 
 
-(defun egnat-destructive-grow (container operation item additional-arguments)
+(defun egnat-grow! (container operation item additional-arguments)
   (bind (((:slots %metric-f %same-fn %content-count-in-node
                   %size %root %branching-factor)
           container)
@@ -307,8 +307,7 @@
        because new item has been added.
     |#
     (if found ; case number 1, easy to handle
-        (egnat-destructive-replace container operation item
-                                   last-node additional-arguments)
+        (egnat-replace! container operation item last-node additional-arguments)
         (iterate
           (for (node parent) in-hashtable paths)
           (for content = (read-content node))
@@ -321,9 +320,8 @@
                ;; case 3, it will be messy...
                (return (splitting-grow! container item operation additional-arguments))
                ;; the case number 2, just one push-extend and we are done
-               (return (egnat-destructive-push container operation
-                                               item result
-                                               additional-arguments))))))))
+               (return (egnat-push! container operation item result
+                                    additional-arguments))))))))
 
 
 

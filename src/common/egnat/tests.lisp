@@ -109,10 +109,10 @@
                                        possible-paths)
         (is (car node) root :test #'eq)))
     (multiple-value-bind (container status)
-        (cl-ds.common.egnat::egnat-destructive-grow container
-                                                    #'(setf cl-ds:at)
-                                                    (aref data 5)
-                                                    nil)
+        (cl-ds.common.egnat::egnat-grow! container
+                                         #'(setf cl-ds:at)
+                                         (aref data 5)
+                                         nil)
       (declare (ignore container))
       (is (cl-ds:value status) (aref data 5))
       (ok (cl-ds:found status)))))
