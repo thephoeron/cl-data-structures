@@ -280,24 +280,17 @@
               (iterate
                 (for i from 0 below (length children))
                 (unless (eql i closest-index)
-                  (cl-ds.utils:optimize-value ((mini < (aref close-range
-                                                             closest-index
-                                                             i))
-                                               (maxi > (aref distant-range
-                                                             closest-index
-                                                             i)))
-                    (labels ((mini-maxi (node)
-                               (let ((distance (~> node
-                                                   read-content
-                                                   (aref 0)
-                                                   (distance item))))
-                                 (mini distance)
-                                 (maxi distance)
-                                 (map nil #'mini-maxi (read-children node)))))
-                      (declare (dynamic-extent #'mini-maxi))
-                      (mini-maxi (aref children i))
-                      (setf (aref close-range closest-index i) mini
-                            (aref distant-range closest-index i) maxi)))))))
+                  (let ((distance (~> node
+                                      read-content
+                                      (aref 0)
+                                      (distance item))))
+                    (setf (aref close-range i closest-index)
+                          (min (aref close-range i closest-index)
+                               distance)
+
+                          (aref distant-range i closest-index)
+                          (max (aref distant-range i closest-index)
+                               distance)))))))
            ((:labels impl (node))
             (bind ((children (read-children node))
                    (full (eql (fill-pointer children) %branching-factor)))
@@ -323,7 +316,7 @@
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (vector-push-extend new-node children)
-                    (update-ranges node last))))))))
+                    cl-ds.utils:todo)))))))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
 
