@@ -318,7 +318,8 @@
            ;; checking if it is the case number 2
            (if (null result)
                ;; case 3, it will be messy...
-               (return (splitting-grow! container item operation additional-arguments))
+               (return (splitting-grow! container item operation
+                                        additional-arguments))
                ;; the case number 2, just one push-extend and we are done
                (return (egnat-push! container operation item result
                                     additional-arguments))))))))
