@@ -257,6 +257,28 @@
             (access-last-node range))))
 
 
+(defun reinitialize-ranges! (container node)
+  (bind ((children (read-children node))
+         (length (length children))
+         (item (~> node read-content (aref 0)))
+         (close-range (read-close-range node))
+         (distant-range (read-distant-range node)))
+    (iterate
+      (for i from 0 below (1- length))
+      (for (values mini maxi) =
+           (cl-ds.utils:optimize-value ((mini <) (maxi >))
+             (labels ((impl (node)
+                        (iterate
+                          (for content in-vector (read-content node))
+                          (for distance = (distance container content item))
+                          (mini distance)
+                          (maxi distance))
+                        (map nil #'impl (read-children node))))
+               (impl (aref children i)))))
+      (setf (aref distant-range (1- length) i) maxi
+            (aref close-range (1- length) i) mini))))
+
+
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
     (bind (((:slots %root %branching-factor %metric-type) container)
@@ -316,7 +338,8 @@
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (vector-push-extend new-node children)
-                    cl-ds.utils:todo)))))))
+                    (update-ranges node last)
+                    (reinitialize-ranges! container node))))))))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
 
