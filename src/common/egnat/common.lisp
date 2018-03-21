@@ -260,11 +260,12 @@
 (defun reinitialize-ranges! (container node)
   (bind ((children (read-children node))
          (length (length children))
+         (last (1- length))
          (item (~> node read-content (aref 0)))
          (close-range (read-close-range node))
          (distant-range (read-distant-range node)))
     (iterate
-      (for i from 0 below (1- length))
+      (for i from 0 below last)
       (for (values mini maxi) =
            (cl-ds.utils:optimize-value ((mini <) (maxi >))
              (labels ((impl (node)
@@ -274,9 +275,10 @@
                           (mini distance)
                           (maxi distance))
                         (map nil #'impl (read-children node))))
+               (declare (dynamic-extent #'impl))
                (impl (aref children i)))))
-      (setf (aref distant-range (1- length) i) maxi
-            (aref close-range (1- length) i) mini))))
+      (setf (aref distant-range last i) maxi
+            (aref close-range last i) mini))))
 
 
 (defun update-ranges! (container node item closest-index)
