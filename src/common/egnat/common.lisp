@@ -294,6 +294,7 @@
                                  (mini distance)
                                  (maxi distance)
                                  (map nil #'mini-maxi (read-children node)))))
+                      (declare (dynamic-extent #'mini-maxi))
                       (mini-maxi (aref children i))
                       (setf (aref close-range closest-index i) mini
                             (aref distant-range closest-index i) maxi)))))))
