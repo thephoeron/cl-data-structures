@@ -22,7 +22,6 @@
            bucket)
           t))
 
-
 (plan 14)
 
 (let ((container (make-instance
@@ -114,6 +113,7 @@
                                                     (aref data 5)
                                                     #'(setf cl-ds:at)
                                                     nil)
+      (declare (ignore container))
       (is (cl-ds:value status) (aref data 5))
       (ok (cl-ds:found status)))))
 
