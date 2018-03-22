@@ -411,7 +411,7 @@
 
 
 (defun egnat-grow! (container operation item additional-arguments)
-  (if (~> container access-root null)
+  (if (~> container access-root null) ; border case. nil is valid value for root
       (initialize-root! container operation item additional-arguments)
       (bind (((:slots %metric-f %same-fn %content-count-in-node
                       %size %root %branching-factor)
@@ -419,12 +419,16 @@
              ((:values paths found last-node) (find-destination-node container
                                                                      item)))
         #|
-    following cases needs to be considered:
-    1) item already present in the egnat. Simply attempt to change bucket, and roll with result
-    2) item not present in the egnat, but there is a node that we can stick it in, without updating ranges. Do it and be happy.
-    3) item not present in the egnat, and every node in path is already full. Find first node (from the root) that can hold another children.
-       Create node by spliting content of parent in two. Update ranges of parent since new children has been added. Then update ranges of whole path
-       because new item has been added.
+following cases needs to be considered:
+1) item already present in the egnat.
+   Simply attempt to change bucket, and roll with result
+2) item not present in the egnat, but there is a node that we can
+   stick it in, without updating ranges. Do it and be happy.
+3) item not present in the egnat, and every node in path is already full.
+   Find first node (from the root) that can hold another children. Create node
+   by spliting content of parent in two. Update ranges of parent since new
+   children has been added. Then update ranges of whole path because new item
+   has been added.
         |#
         (if found ; case number 1, easy to handle
             (egnat-replace! container operation item last-node additional-arguments)
