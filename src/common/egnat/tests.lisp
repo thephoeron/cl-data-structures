@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 18)
+(plan 19)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container

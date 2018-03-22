@@ -89,13 +89,6 @@
                                            (maxi > init))
                 (map nil (lambda (x)
                            (let ((distance (distance container x head)))
-                             (when (zerop distance)
-                               (error
-                                'cl-ds:initialization-error
-                                :text "Detected item duplication in data."
-                                :references
-                                '((fundamental-egnat-container
-                                   "Base class of all egnat containers."))))
                              (mini distance)
                              (maxi distance)))
                      (aref contents data)))
