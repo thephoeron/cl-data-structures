@@ -21,7 +21,8 @@
     :reader read-content-count-in-node
     :initarg :content-count-in-node)
    (%size
-    :reader read-size
+    :accessor access-size
+    :reader cl-ds:size
     :type non-negative-fixnum
     :initform 0)
    (%root

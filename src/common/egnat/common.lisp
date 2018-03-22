@@ -240,21 +240,26 @@
 
 
 (defun find-destination-node (container item)
-  (let* ((root (access-root container))
-         (stack (list (cons root 0)))
-         (range (make 'egnat-grow-range
-                      :near item
-                      :stack stack
-                      :initial-stack stack
-                      :container container))
-         (existing-item (iterate
-                          (for (values item more) =
-                               (cl-ds:consume-front range))
-                          (while more)
-                          (finding item such-that item))))
-    (values (read-possible-paths range)
-            (if (null existing-item) nil t)
-            (access-last-node range))))
+  (let ((root (access-root container)))
+    (if (null root)
+        (values (make-hash-table :test 'eq)
+                nil
+                nil)
+        (bind ((root (access-root container))
+               (stack (list (cons root 0)))
+               (range (make 'egnat-grow-range
+                            :near item
+                            :stack stack
+                            :initial-stack stack
+                            :container container))
+               (existing-item (iterate
+                                (for (values item more) =
+                                     (cl-ds:consume-front range))
+                                (while more)
+                                (finding item such-that item))))
+          (values (read-possible-paths range)
+                  (if (null existing-item) nil t)
+                  (access-last-node range))))))
 
 
 (defun reinitialize-ranges! (container node)
@@ -303,7 +308,7 @@
 
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
-    (bind (((:slots %root %branching-factor %metric-type) container)
+    (bind (((:slots %root %branching-factor %size %metric-type) container)
            ((:dflet closest-index (array))
             (cl-ds.utils:optimize-value ((mini <))
               (iterate
@@ -344,7 +349,24 @@
                     (vector-push-extend new-node children)
                     (update-ranges! container node item last)
                     (reinitialize-ranges! container node))))))
-      (impl (access-root container))))
+      (if (null %root)
+          (bind ((range-size `(,%branching-factor ,%branching-factor))
+                 (close-range (make-array range-size
+                                          :element-type %metric-type))
+                 (distant-range (make-array range-size
+                                            :element-type %metric-type)))
+            (setf %root (make-instance 'egnat-node
+                                       :children (vect)
+                                       :content (vect
+                                                 (apply #'cl-ds:make-bucket
+                                                        operation
+                                                        container
+                                                        item
+                                                        additional-arguments))
+                                       :close-range close-range
+                                       :distant-range distant-range)))
+          (impl (access-root container)))
+      (incf %size)))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
 
@@ -376,6 +398,7 @@
                  container
                  item
                  additional-arguments)))
+    (incf (access-size container))
     (vector-push-extend new-bucket content)
     (values container status)))
 

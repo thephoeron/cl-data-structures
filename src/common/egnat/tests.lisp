@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 14)
+(plan 18)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -115,7 +115,20 @@
                                          nil)
       (declare (ignore container))
       (is (cl-ds:value status) (aref data 5))
-      (ok (cl-ds:found status)))))
+      (ok (cl-ds:found status)))
+    (let ((container (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+                                    :branching-factor 5
+                                    :content-count-in-node 10)))
+      (multiple-value-bind (container status)
+          (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) 1 nil)
+        (is (cl-ds:found status) nil)
+        (is (cl-ds:value status) nil)
+        (is (cl-ds:size container) 1)
+        (is (serapeum:~> container
+                         cl-ds.common.egnat::access-root
+                         cl-ds.common.egnat::read-content
+                         (aref 0))
+            1)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
