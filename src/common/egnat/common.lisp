@@ -67,8 +67,9 @@
     result))
 
 
-(defun make-ranges (container contents branching-factor)
-  (bind ((range-size `(,branching-factor ,branching-factor))
+(defun make-ranges (container contents)
+  (bind ((branching-factor (read-branching-factor container))
+         (range-size `(,branching-factor ,branching-factor))
          (metric-type (read-metric-type container))
          (close-range (make-array range-size
                                   :element-type metric-type))
@@ -88,6 +89,13 @@
                                            (maxi > init))
                 (map nil (lambda (x)
                            (let ((distance (distance container x head)))
+                             (when (zerop distance)
+                               (error
+                                'cl-ds:initialization-error
+                                :text "Detected item duplication in data."
+                                :references
+                                '((fundamental-egnat-container
+                                   "Base class of all egnat containers."))))
                              (mini distance)
                              (maxi distance)))
                      (aref contents data)))
@@ -118,8 +126,7 @@
                                                      extra-arguments
                                                      content)))
                         contents))
-         ((:values close-range distant-range) (make-ranges container contents
-                                                           %branching-factor))
+         ((:values close-range distant-range) (make-ranges container contents))
          (content (make-array %content-count-in-node
                               :adjustable t
                               :fill-pointer 0)))
@@ -419,7 +426,7 @@
              ((:values paths found last-node) (find-destination-node container
                                                                      item)))
         #|
-following cases needs to be considered:
+following cases need to be considered:
 1) item already present in the egnat.
    Simply attempt to change bucket, and roll with result
 2) item not present in the egnat, but there is a node that we can
