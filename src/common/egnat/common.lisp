@@ -307,7 +307,7 @@
 
 
 (defun initialize-root! (container operation item additional-arguments)
-  (bind (((:slots %root %branching-factor %metric-type) container)
+  (bind (((:slots %root %branching-factor %metric-type %size) container)
          (range-size `(,%branching-factor ,%branching-factor))
          (close-range (make-array range-size
                                   :element-type %metric-type))
@@ -318,11 +318,15 @@
                         container
                         item
                         additional-arguments)))
+    (assert (null %root))
     (setf %root (make-instance 'egnat-node
                                :children (vect)
                                :content (vect bucket)
                                :close-range close-range
-                               :distant-range distant-range))))
+                               :distant-range distant-range)
+          %size 1)
+    (values container
+            cl-ds.common:empty-eager-modification-operation-status)))
 
 
 (defun splitting-grow! (container operation item additional-arguments)
@@ -368,9 +372,7 @@
                     (vector-push-extend new-node children)
                     (update-ranges! container node item last)
                     (reinitialize-ranges! container node))))))
-      (if (null %root)
-          (initialize-root! container operation item additional-arguments)
-          (impl (access-root container)))
+      (impl (access-root container))
       (incf %size)))
   (values container
           cl-ds.common:empty-eager-modification-operation-status))
@@ -409,36 +411,38 @@
 
 
 (defun egnat-grow! (container operation item additional-arguments)
-  (bind (((:slots %metric-f %same-fn %content-count-in-node
-                  %size %root %branching-factor)
-          container)
-         ((:values paths found last-node) (find-destination-node container
-                                                                 item)))
-    #|
+  (if (~> container access-root null)
+      (initialize-root! container operation item additional-arguments)
+      (bind (((:slots %metric-f %same-fn %content-count-in-node
+                      %size %root %branching-factor)
+              container)
+             ((:values paths found last-node) (find-destination-node container
+                                                                     item)))
+        #|
     following cases needs to be considered:
     1) item already present in the egnat. Simply attempt to change bucket, and roll with result
     2) item not present in the egnat, but there is a node that we can stick it in, without updating ranges. Do it and be happy.
     3) item not present in the egnat, and every node in path is already full. Find first node (from the root) that can hold another children.
        Create node by spliting content of parent in two. Update ranges of parent since new children has been added. Then update ranges of whole path
        because new item has been added.
-    |#
-    (if found ; case number 1, easy to handle
-        (egnat-replace! container operation item last-node additional-arguments)
-        (iterate
-          (for (node parent) in-hashtable paths)
-          (for content = (read-content node))
-          (finding node
-                   such-that (< (fill-pointer content) %content-count-in-node)
-                   into result)
-          (finally
-           ;; checking if it is the case number 2
-           (if (null result)
-               ;; case 3, it will be messy...
-               (return (splitting-grow! container operation item
-                                        additional-arguments))
-               ;; the case number 2, just one push-extend and we are done
-               (return (egnat-push! container operation item result
-                                    additional-arguments))))))))
+        |#
+        (if found ; case number 1, easy to handle
+            (egnat-replace! container operation item last-node additional-arguments)
+            (iterate
+              (for (node parent) in-hashtable paths)
+              (for content = (read-content node))
+              (finding node
+                       such-that (< (fill-pointer content) %content-count-in-node)
+                       into result)
+              (finally
+               ;; checking if it is the case number 2
+               (if (null result)
+                   ;; case 3, it will be messy...
+                   (return (splitting-grow! container operation item
+                                            additional-arguments))
+                   ;; the case number 2, just one push-extend and we are done
+                   (return (egnat-push! container operation item result
+                                        additional-arguments)))))))))
 
 
 
@@ -448,4 +452,4 @@
          initially (cons node 0)
          then (gethash (car p) possible-paths))
     (until (null p))
-    (funcall fn p)))
+    (funcall fn p))
