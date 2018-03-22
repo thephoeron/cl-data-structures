@@ -306,6 +306,25 @@
                      distance)))))))
 
 
+(defun initialize-root! (container operation item additional-arguments)
+  (bind (((:slots %root %branching-factor %metric-type) container)
+         (range-size `(,%branching-factor ,%branching-factor))
+         (close-range (make-array range-size
+                                  :element-type %metric-type))
+         (distant-range (make-array range-size
+                                    :element-type %metric-type))
+         (bucket (apply #'cl-ds:make-bucket
+                        operation
+                        container
+                        item
+                        additional-arguments)))
+    (setf %root (make-instance 'egnat-node
+                               :children (vect)
+                               :content (vect bucket)
+                               :close-range close-range
+                               :distant-range distant-range))))
+
+
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
     (bind (((:slots %root %branching-factor %size %metric-type) container)
@@ -350,21 +369,7 @@
                     (update-ranges! container node item last)
                     (reinitialize-ranges! container node))))))
       (if (null %root)
-          (bind ((range-size `(,%branching-factor ,%branching-factor))
-                 (close-range (make-array range-size
-                                          :element-type %metric-type))
-                 (distant-range (make-array range-size
-                                            :element-type %metric-type)))
-            (setf %root (make-instance 'egnat-node
-                                       :children (vect)
-                                       :content (vect
-                                                 (apply #'cl-ds:make-bucket
-                                                        operation
-                                                        container
-                                                        item
-                                                        additional-arguments))
-                                       :close-range close-range
-                                       :distant-range distant-range)))
+          (initialize-root! container operation item additional-arguments)
           (impl (access-root container)))
       (incf %size)))
   (values container
