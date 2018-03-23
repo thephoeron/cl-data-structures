@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 20)
+(plan 22)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -131,9 +131,13 @@
                          (aref 0))
             1)))
     (multiple-value-bind (container status)
-        (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) 5005 nil)
+        (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at)
+                                         5005 nil)
       (is (cl-ds:found status) nil)
-      (is (cl-ds:value status) nil))))
+      (is (cl-ds:value status) nil)
+      (let ((generator (cl-ds:near container 5005 0)))
+        (is (cl-ds:consume-front generator) 5005)
+        (is (nth-value 1 (cl-ds:peek-front generator)) nil)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container

@@ -460,7 +460,6 @@ following cases need to be considered:
                                         additional-arguments)))))))))
 
 
-
 (defun walk-path (fn node possible-paths)
   (iterate
     (for p
