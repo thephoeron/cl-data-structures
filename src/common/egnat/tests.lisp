@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 19)
+(plan 20)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -38,6 +38,7 @@
                     'vector)))
   (let ((root (cl-ds.common.egnat::make-egnat-tree container nil nil data))
         (content (serapeum:vect)))
+    (setf (cl-ds.common.egnat::access-root container) root)
     (is (length (cl-ds.common.egnat::read-content root)) 5)
     (labels ((impl (root)
                (unless (null root)
@@ -128,7 +129,11 @@
                          cl-ds.common.egnat::access-root
                          cl-ds.common.egnat::read-content
                          (aref 0))
-            1)))))
+            1)))
+    (multiple-value-bind (container status)
+        (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) 5005 nil)
+      (is (cl-ds:found status) nil)
+      (is (cl-ds:value status) nil))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
@@ -139,10 +144,5 @@
                          :branching-factor 5
                          :content-count-in-node 0)
           'cl-ds:initialization-out-of-bounds)
-(let ((container (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
-                                :branching-factor 5
-                                :metric-fn #'logxor
-                                :content-count-in-node 1)))
-  (is-error (cl-ds.common.egnat::make-ranges container #(1 1))
-            'cl-ds:initialization-out-of-bounds))
+
 (finalize)

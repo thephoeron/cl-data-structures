@@ -45,7 +45,7 @@
     :initarg :content
     :reader read-content)
    (%children
-    :type (or null gnat-node)
+    :type (or null (vector egnat-node))
     :initform nil
     :initarg :children
     :reader read-children)))

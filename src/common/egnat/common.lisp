@@ -111,14 +111,17 @@
                                            this-data))
          (contents (make-contents seeds-indexes this-data
                                   data-partitions reverse-mapping))
-         (children (map 'vector
-                        (lambda (content)
-                          (lparallel:future
-                            (make-future-egnat-nodes container
-                                                     operation
-                                                     extra-arguments
-                                                     content)))
-                        contents))
+         (children (map-into
+                    (make-array (length contents)
+                                :adjustable t
+                                :fill-pointer (length contents))
+                    (lambda (content)
+                      (lparallel:future
+                        (make-future-egnat-nodes container
+                                                 operation
+                                                 extra-arguments
+                                                 content)))
+                    contents))
          ((:values close-range distant-range) (make-ranges container contents))
          (content (make-array %content-count-in-node
                               :adjustable t
@@ -329,36 +332,44 @@
             cl-ds.common:empty-eager-modification-operation-status)))
 
 
+(defun push-children! (node child)
+  (bind (((:slots %children) node))
+    (if (null %children)
+        (setf %children (vect child))
+        (vector-push-extend child %children)))
+  node)
+
+
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
     (bind (((:slots %root %branching-factor %size %metric-type) container)
            ((:dflet closest-index (array))
-            (cl-ds.utils:optimize-value ((mini <))
-              (iterate
-                (with result = 0)
-                (for i from 0 below (fill-pointer array))
-                (for child = (aref array i))
-                (for content = (read-content child))
-                (for head = (aref content 0))
-                (for distance = (distance head item))
-                (mini distance)
-                (when (= mini distance)
-                  (setf result i))
-                (finally (return result)))))
+            (let ((result 0))
+              (cl-ds.utils:optimize-value ((mini <))
+                (iterate
+                  (for i from 0 below (length array))
+                  (for child = (aref array i))
+                  (for content = (read-content child))
+                  (for head = (aref content 0))
+                  (for distance = (distance head item))
+                  (mini distance)
+                  (when (= mini distance)
+                    (setf result i))))
+              result))
            ((:labels impl (node))
             (bind ((children (read-children node))
-                   (full (eql (fill-pointer children) %branching-factor)))
+                   (full (eql (length children) %branching-factor)))
               (if full
-                  (bind ((closest-index (closest-index children))
-                         (next-node (aref children closest-index)))
+                  (bind ((close-index (closest-index children))
+                         (next-node (aref children close-index)))
                     (impl next-node)
-                    (update-ranges! container node item closest-index))
+                    (update-ranges! container node item close-index))
                   (bind ((new-bucket (apply #'cl-ds:make-bucket
                                             operation
                                             container
                                             item
                                             additional-arguments))
-                         (last (fill-pointer children))
+                         (last (length children))
                          (range-size `(,%branching-factor ,%branching-factor))
                          (close-range (make-array range-size
                                                   :element-type %metric-type))
@@ -369,7 +380,7 @@
                                                   :content (vect new-bucket)
                                                   :close-range close-range
                                                   :distant-range distant-range)))
-                    (vector-push-extend new-node children)
+                    (push-children! node new-node)
                     (update-ranges! container node item last)
                     (reinitialize-ranges! container node))))))
       (impl (access-root container))
@@ -456,4 +467,4 @@ following cases need to be considered:
          initially (cons node 0)
          then (gethash (car p) possible-paths))
     (until (null p))
-    (funcall fn p))
+    (funcall fn p)))
