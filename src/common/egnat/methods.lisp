@@ -128,3 +128,10 @@
           :container container
           :stack stack
           :initial-stack stack)))
+
+
+(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
+                                        (container mutable-egnat-container)
+                                        location
+                                        &rest all)
+  (egnat-grow! container operation location all))
