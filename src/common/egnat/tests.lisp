@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 19)
+(plan 18)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:fundamental-egnat-container
@@ -139,10 +139,5 @@
                          :branching-factor 5
                          :content-count-in-node 0)
           'cl-ds:initialization-out-of-bounds)
-(let ((container (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
-                                :branching-factor 5
-                                :metric-fn #'logxor
-                                :content-count-in-node 1)))
-  (is-error (cl-ds.common.egnat::make-ranges container #(1 1))
-            'cl-ds:initialization-out-of-bounds))
+
 (finalize)
