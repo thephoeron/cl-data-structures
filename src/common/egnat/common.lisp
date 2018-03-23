@@ -306,6 +306,9 @@
                      distance)))))))
 
 
+(-> initialize-root! (mutable-egnat-container cl-ds:grow-function t list)
+    (values mutable-egnat-container
+            cl-ds.common:eager-modification-operation-status))
 (defun initialize-root! (container operation item additional-arguments)
   (bind (((:slots %root %branching-factor %metric-type %size) container)
          (range-size `(,%branching-factor ,%branching-factor))
@@ -328,7 +331,9 @@
     (values container
             cl-ds.common:empty-eager-modification-operation-status)))
 
-
+(-> splitting-grow! (mutable-egnat-container cl-ds:grow-function t list)
+    (values mutable-egnat-container
+            cl-ds.common:eager-modification-operation-status))
 (defun splitting-grow! (container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
     (bind (((:slots %root %branching-factor %size %metric-type) container)
@@ -378,6 +383,9 @@
           cl-ds.common:empty-eager-modification-operation-status))
 
 
+(-> egnat-replace! (mutable-egnat-container cl-ds:grow-function t egnat-node list)
+    (values mutable-egnat-container
+            cl-ds.common:eager-modification-operation-status))
 (defun egnat-replace! (container operation
                        item last-node
                        additional-arguments)
@@ -395,6 +403,9 @@
     (values container status)))
 
 
+(-> egnat-push! (mutable-egnat-container cl-ds:grow-function t egnat-node list)
+    (values mutable-egnat-container
+            cl-ds.common:eager-modification-operation-status))
 (defun egnat-push! (container operation
                     item node
                     additional-arguments)
@@ -410,6 +421,9 @@
     (values container status)))
 
 
+(-> egnat-grow! (mutable-egnat-container cl-ds:grow-function t list)
+    (values mutable-egnat-container
+            cl-ds.common:eager-modification-operation-status))
 (defun egnat-grow! (container operation item additional-arguments)
   (if (~> container access-root null) ; border case. nil is valid value for root
       (initialize-root! container operation item additional-arguments)
