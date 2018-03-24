@@ -464,12 +464,15 @@ following cases need to be considered:
    has been added.
         |#
         (if found ; case number 1, easy to handle
-            (egnat-replace! container operation item last-node additional-arguments)
+            (egnat-replace! container operation
+                            item last-node
+                            additional-arguments)
             (iterate
               (for (node parent) in-hashtable paths)
               (for content = (read-content node))
               (finding node
-                       such-that (< (fill-pointer content) %content-count-in-node)
+                       such-that (< (fill-pointer content)
+                                    %content-count-in-node)
                        into result)
               (finally
                ;; checking if it is the case number 2
