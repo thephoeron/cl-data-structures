@@ -11,7 +11,7 @@
 
 (defmethod cl-ds:grow-bucket!
     ((operation cl-ds:insert-function)
-     (container cl-ds.common.egnat:fundamental-egnat-container)
+     (container cl-ds.common.egnat:mutable-egnat-container)
      bucket
      location
      &rest all)
@@ -25,7 +25,7 @@
 (plan 22)
 
 (let ((container (make-instance
-                  'cl-ds.common.egnat:fundamental-egnat-container
+                  'cl-ds.common.egnat:mutable-egnat-container
                   :branching-factor 5
                   :metric-fn #'logxor
                   :same-fn #'=
@@ -117,7 +117,7 @@
       (declare (ignore container))
       (is (cl-ds:value status) (aref data 5))
       (ok (cl-ds:found status)))
-    (let ((container (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+    (let ((container (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                                     :branching-factor 5
                                     :content-count-in-node 10)))
       (multiple-value-bind (container status)
@@ -140,11 +140,11 @@
         (is (nth-value 1 (cl-ds:peek-front generator)) nil)))))
 
 
-(is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+(is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 0
                          :content-count-in-node 1)
           'cl-ds:initialization-out-of-bounds)
-(is-error (make-instance 'cl-ds.common.egnat:fundamental-egnat-container
+(is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 5
                          :content-count-in-node 0)
           'cl-ds:initialization-out-of-bounds)
