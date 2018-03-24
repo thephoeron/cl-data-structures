@@ -265,17 +265,22 @@
                   (access-last-node range))))))
 
 
+(-> reinitialize-ranges! (mutable-egnat-container egnat-node)
+    t)
 (defun reinitialize-ranges! (container node)
+  "Updates existing ranges for new node (last children)."
   (bind ((children (read-children node))
          (length (length children))
          (last (1- length))
-         (item (~> node read-content (aref 0)))
+         (new-node (aref children last))
+         (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
          (distant-range (read-distant-range node)))
     (iterate
       (for i from 0 below last)
       (for (values mini maxi) =
-           (cl-ds.utils:optimize-value ((mini <) (maxi >))
+           (cl-ds.utils:optimize-value ((mini <)
+                                        (maxi >))
              (labels ((impl (node)
                         (iterate
                           (for content in-vector (read-content node))
@@ -289,24 +294,27 @@
             (aref close-range last i) mini))))
 
 
+(-> update-ranges! (mutable-egnat-container egnat-node t fixnum)
+    mutable-egnat-container)
 (defun update-ranges! (container node item closest-index)
   (let ((children (read-children node))
         (close-range (read-close-range node))
         (distant-range (read-distant-range node)))
     (iterate
       (for i from 0 below (length children))
+      (for child = (aref children i))
       (unless (eql i closest-index)
-        (let ((distance (~> node
+        (let ((distance (~> child
                             read-content
                             (aref 0)
                             (distance container _ item))))
-          (setf (aref close-range i closest-index)
-                (min (aref close-range i closest-index)
-                     distance)
-
-                (aref distant-range i closest-index)
-                (max (aref distant-range i closest-index)
-                     distance)))))))
+          (symbol-macrolet ((close (aref close-range i closest-index))
+                            (distant (aref distant-range i closest-index)))
+            (setf close (if (zerop close)
+                            distance
+                            (min close distance))
+                  distant (max distant distance))))))
+    container))
 
 
 (-> initialize-root! (mutable-egnat-container cl-ds:grow-function t list)
@@ -382,13 +390,12 @@
                          (distant-range (make-array range-size
                                                     :element-type %metric-type))
                          (new-node (make-instance 'egnat-node
-                                                  :children (vect)
                                                   :content (vect new-bucket)
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (push-children! node new-node)
-                    (update-ranges! container node item last)
-                    (reinitialize-ranges! container node))))))
+                    (reinitialize-ranges! container node)
+                    (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
   (values container
@@ -422,15 +429,15 @@
                     item node
                     additional-arguments)
   (bind ((content (read-content node))
-         ((:values new-bucket status)
-          (apply #'cl-ds:make-bucket
-                 operation
-                 container
-                 item
-                 additional-arguments)))
+         (new-bucket (apply #'cl-ds:make-bucket
+                            operation
+                            container
+                            item
+                            additional-arguments)))
     (incf (access-size container))
     (vector-push-extend new-bucket content)
-    (values container status)))
+    (values container
+            cl-ds.common:empty-eager-modification-operation-status)))
 
 
 (-> egnat-grow! (mutable-egnat-container cl-ds:grow-function t list)
