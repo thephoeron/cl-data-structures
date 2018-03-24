@@ -31,6 +31,11 @@
     :initarg :root)))
 
 
+(defclass mutable-egnat-container (fundamental-egnat-container
+                                   cl-ds:mutable)
+  ())
+
+
 (defclass egnat-node ()
   ((%close-range
     :initform nil

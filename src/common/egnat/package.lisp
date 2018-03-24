@@ -10,6 +10,7 @@
    #:distance
    #:fundamental-egnat-container
    #:get-value
+   #:mutable-egnat-container
    #:prune-subtrees
    #:read-margin
    #:read-near
