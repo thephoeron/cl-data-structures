@@ -497,7 +497,24 @@ following cases need to be considered:
 
 (-> remove-children! (egnat-node fixnum) t)
 (defun remove-children! (node index)
-  cl-ds.utils:todo)
+  (bind (((:slots %children %close-range %distant-range) node)
+         (length (length %children))
+         (last (1- length)))
+    (cl-ds.utils:swapop %children index)
+    (unless (eql last index)
+      (iterate
+        (for i from 0 below last)
+        (setf (aref %close-range i index)
+              (aref %close-range i last)
+
+              (aref %close-range index i)
+              (aref %close-range last i)
+
+              (aref %distant-range i index)
+              (aref %distant-range i last)
+
+              (aref %distant-range index i)
+              (aref %distant-range last i))))))
 
 
 (-> merging-shrink! (mutable-egnat-container
