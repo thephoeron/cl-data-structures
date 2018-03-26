@@ -495,19 +495,28 @@ following cases need to be considered:
     (funcall fn p)))
 
 
+(-> remove-children! (egnat-node fixnum) t)
+(defun remove-children! (node index)
+  cl-ds.utils:todo)
+
+
 (-> merging-shrink! (mutable-egnat-container
                      egnat-node t
                      hash-table fixnum t)
     t)
 (defun merging-shrink! (container node item paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((eql 1 (~> node read-content length)) cl-ds.utils:todo)
+  (cond ((~> node read-content length (eql 1))
+         (bind ((parent.index (gethash node paths)))
+           (if (null parent.index)
+               (setf (access-root container) nil)
+               (remove-children! (car parent.index) (cdr parent.index)))))
         ((zerop position) cl-ds.utils:todo)
         (t (progn (setf (~> node read-content (aref position)) new-bucket)
                   (iterate
                     (for parent.index
-                         initially (gethash parent paths)
-                         then (gethash node paths))
+                         initially (gethash node paths)
+                         then (gethash parent paths))
                     (until (null parent.index))
                     (for (parent . index) = parent.index)
                     (reinitialize-ranges! container parent index))))))
@@ -551,7 +560,9 @@ following cases need to be considered:
              ((:values paths found last-node) (find-destination-node container
                                                                      item)))
         (if found
-            (remove-from-node! container operation last-node item paths
-                               additional-arguments)
+            (progn
+              (decf (access-size container))
+              (remove-from-node! container operation last-node item paths
+                                 additional-arguments))
             (values container
                     cl-ds.common:empty-eager-modification-operation-status)))))
