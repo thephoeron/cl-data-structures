@@ -50,7 +50,7 @@
     :initarg :content
     :reader read-content)
    (%children
-    :type (or null (vector egnat-node))
+    :type vector
     :initform nil
     :initarg :children
     :reader read-children)))

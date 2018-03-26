@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 25)
+(plan 34)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -143,7 +143,32 @@
           (cl-ds.common.egnat::egnat-shrink! container #'cl-ds:erase! 5008 nil)
         (is (cl-ds:found status) nil)
         (is (cl-ds:value status) nil)
-        (is (cl-ds:size container) size)))))
+        (is (cl-ds:size container) size)))
+    (let* ((close-range (make-array '(4 4) :initial-element 0))
+           (distant-range (make-array '(4 4) :initial-element 0))
+           (fake-node (make-instance 'cl-ds.common.egnat::egnat-node
+                                     :children (serapeum:vect 0 1 2 3)
+                                     :close-range close-range
+                                     :distant-range distant-range)))
+      (iterate
+        (for i from 0 below 4)
+        (setf (aref close-range i 1) 1
+              (aref distant-range i 1) 1
+              (aref close-range 1 i) 2
+              (aref distant-range 1 i) 2)
+        (setf (aref close-range i 3) 3
+              (aref distant-range i 3) 3
+              (aref close-range 3 i) 4
+              (aref distant-range 3 i) 4))
+      (cl-ds.common.egnat::remove-children! fake-node 1)
+      (is (serapeum:~> fake-node cl-ds.common.egnat::read-children length) 3)
+      (iterate
+        (for i from 0 below 3)
+        (when (eql i 1) (next-iteration))
+        (is (aref close-range 1 i) 4)
+        (is (aref distant-range 1 i) 4)
+        (is (aref close-range i 1) 3)
+        (is (aref distant-range i 1) 3)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
