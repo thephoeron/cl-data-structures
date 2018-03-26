@@ -505,7 +505,13 @@ following cases need to be considered:
         ((zerop position) cl-ds.utils:todo)
         (t (progn (setf (~> node read-content (aref position)) new-bucket)
                   ;; also: update ranges
-                  cl-ds.utils:todo))))
+                  (iterate
+                    (for parent.index
+                         initially (gethash parent paths)
+                         then (gethash node paths))
+                    (until (null parent.index))
+                    (for (parent . index) = parent.index)
+                    (reinitialize-ranges! container parent index))))))
 
 
 (-> remove-from-node! (mutable-egnat-container
