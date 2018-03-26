@@ -265,19 +265,19 @@
                   (access-last-node range))))))
 
 
-(-> reinitialize-ranges! (mutable-egnat-container egnat-node)
+(-> reinitialize-ranges! (mutable-egnat-container egnat-node fixnum)
     t)
-(defun reinitialize-ranges! (container node)
-  "Updates existing ranges for new node (last children)."
+(defun reinitialize-ranges! (container node changed-one)
+  "Updates existing ranges for new node (changed-one children)."
   (bind ((children (read-children node))
          (length (length children))
-         (last (1- length))
-         (new-node (aref children last))
+         (new-node (aref children changed-one))
          (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
          (distant-range (read-distant-range node)))
     (iterate
-      (for i from 0 below last)
+      (for i from 0 below length)
+      (when (eql i changed-one) (next-iteration))
       (for (values mini maxi) =
            (cl-ds.utils:optimize-value ((mini <)
                                         (maxi >))
@@ -290,8 +290,8 @@
                         (map nil #'impl (read-children node))))
                (declare (dynamic-extent #'impl))
                (impl (aref children i)))))
-      (setf (aref distant-range last i) maxi
-            (aref close-range last i) mini))))
+      (setf (aref distant-range changed-one i) maxi
+            (aref close-range changed-one i) mini))))
 
 
 (-> update-ranges! (mutable-egnat-container egnat-node t fixnum)
@@ -394,7 +394,8 @@
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (push-children! node new-node)
-                    (reinitialize-ranges! container node)
+                    (reinitialize-ranges! container node
+                                          (~> node read-content length 1-))
                     (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
@@ -502,8 +503,7 @@ following cases need to be considered:
   "Removes element from node. Takes in account potential head change, updates ranges."
   (cond ((eql 1 (~> node read-content length)) cl-ds.utils:todo)
         ((zerop position) cl-ds.utils:todo)
-        (t (progn (setf (~> node read-content (aref position))
-                        new-bucket)
+        (t (progn (setf (~> node read-content (aref position)) new-bucket)
                   ;; also: update ranges
                   cl-ds.utils:todo))))
 
