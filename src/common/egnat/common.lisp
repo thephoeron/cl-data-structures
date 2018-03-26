@@ -495,13 +495,17 @@ following cases need to be considered:
 
 
 (-> merging-shrink! (mutable-egnat-container
-                     egnat-node t hash-table fixnum)
+                     egnat-node t
+                     hash-table fixnum t)
     t)
-(defun merging-shrink! (container node item paths position)
+(defun merging-shrink! (container node item paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
   (cond ((eql 1 (~> node read-content length)) cl-ds.utils:todo)
         ((zerop position) cl-ds.utils:todo)
-        (t cl-ds.utils:todo)))
+        (t (progn (setf (~> node read-content (aref position))
+                        new-bucket)
+                  ;; also: update ranges
+                  cl-ds.utils:todo))))
 
 
 (-> remove-from-node! (mutable-egnat-container
@@ -524,7 +528,7 @@ following cases need to be considered:
     (when changed
         (if (null new-bucket)
             ;; remove from node, update paths, sometimes reinitialize paths...
-            (merging-shrink! container node paths position)
+            (merging-shrink! container node item paths position new-bucket)
             (setf (aref content position) new-bucket)))
     (values container status)))
 
