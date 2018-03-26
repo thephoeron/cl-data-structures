@@ -499,7 +499,9 @@ following cases need to be considered:
     t)
 (defun merging-shrink! (container node item paths position)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  cl-ds.utils:todo)
+  (cond ((eql 1 (~> node read-content length)) cl-ds.utils:todo)
+        ((zerop position) cl-ds.utils:todo)
+        (t cl-ds.utils:todo)))
 
 
 (-> remove-from-node! (mutable-egnat-container
