@@ -170,7 +170,6 @@
         (is (aref close-range i 1) 3)
         (is (aref distant-range i 1) 3)))))
 
-
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 0
                          :content-count-in-node 1)

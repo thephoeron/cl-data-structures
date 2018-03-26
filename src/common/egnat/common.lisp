@@ -274,22 +274,30 @@
          (new-node (aref children changed-one))
          (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
-         (distant-range (read-distant-range node)))
+         (distant-range (read-distant-range node))
+         ((:labels impl (parent mini maxi))
+          (let ((stack (vect)))
+            (vector-push-extend parent stack)
+            (iterate
+              (until (emptyp stack))
+              (for node = (aref stack (~> stack fill-pointer 1-)))
+              (decf (fill-pointer stack))
+              (iterate
+                (for content in-vector (read-content node))
+                (for distance = (distance container content item))
+                (funcall mini distance)
+                (funcall maxi distance))
+              (map nil
+                   (rcurry #'vector-push-extend stack)
+                   (read-children node))))))
+    (declare (dynamic-extent #'impl)
+             (inline impl))
     (iterate
       (for i from 0 below length)
       (when (eql i changed-one) (next-iteration))
       (for (values mini maxi) =
-           (cl-ds.utils:optimize-value ((mini <)
-                                        (maxi >))
-             (labels ((impl (node)
-                        (iterate
-                          (for content in-vector (read-content node))
-                          (for distance = (distance container content item))
-                          (mini distance)
-                          (maxi distance))
-                        (map nil #'impl (read-children node))))
-               (declare (dynamic-extent #'impl))
-               (impl (aref children i)))))
+           (cl-ds.utils:optimize-value ((mini <) (maxi >))
+             (impl (aref children i) #'mini #'maxi)))
       (setf (aref distant-range changed-one i) maxi
             (aref close-range changed-one i) mini))))
 
