@@ -395,7 +395,7 @@
                                                   :distant-range distant-range)))
                     (push-children! node new-node)
                     (reinitialize-ranges! container node
-                                          (~> node read-content length 1-))
+                                          (~> node read-children length 1-))
                     (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
