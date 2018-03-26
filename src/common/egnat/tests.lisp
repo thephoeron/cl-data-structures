@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 22)
+(plan 25)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -137,7 +137,13 @@
       (is (cl-ds:value status) nil)
       (let ((generator (cl-ds:near container 5005 0)))
         (is (cl-ds:consume-front generator) 5005)
-        (is (nth-value 1 (cl-ds:peek-front generator)) nil)))))
+        (is (nth-value 1 (cl-ds:peek-front generator)) nil)))
+    (let ((size (cl-ds:size container)))
+      (multiple-value-bind (container status)
+          (cl-ds.common.egnat::egnat-shrink! container #'cl-ds:erase! 5008 nil)
+        (is (cl-ds:found status) nil)
+        (is (cl-ds:value status) nil)
+        (is (cl-ds:size container) size)))))
 
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
