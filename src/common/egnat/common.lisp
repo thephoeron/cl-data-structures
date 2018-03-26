@@ -504,7 +504,6 @@ following cases need to be considered:
   (cond ((eql 1 (~> node read-content length)) cl-ds.utils:todo)
         ((zerop position) cl-ds.utils:todo)
         (t (progn (setf (~> node read-content (aref position)) new-bucket)
-                  ;; also: update ranges
                   (iterate
                     (for parent.index
                          initially (gethash parent paths)
