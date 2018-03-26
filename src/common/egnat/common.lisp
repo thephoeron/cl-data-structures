@@ -497,7 +497,8 @@ following cases need to be considered:
 (-> merging-shrink! (mutable-egnat-container
                      egnat-node t hash-table fixnum)
     t)
-(defun merging-shrink! (container node paths position)
+(defun merging-shrink! (container node item paths position)
+  "Removes element from node. Takes in account potential head change, updates ranges."
   cl-ds.utils:todo)
 
 
