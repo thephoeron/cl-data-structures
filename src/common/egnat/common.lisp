@@ -576,10 +576,7 @@ following cases need to be considered:
         ((zerop position)
          cl-ds.utils:todo)
 
-        (t (progn (if (null new-bucket)
-                      (cl-ds.utils:swapop (read-content node) position)
-                      (setf (~> node read-content (aref position))
-                            new-bucket))
+        (t (progn (cl-ds.utils:swapop (read-content node) position)
                   (iterate
                     (with stack = (vect))
                     (for parent.index
