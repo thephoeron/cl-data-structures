@@ -544,6 +544,10 @@ following cases need to be considered:
               (aref %distant-range last i))))))
 
 
+(-> rebuild-ranges-after-subtree-replace! (mutable-egnat-container
+                                           egnat-node
+                                           fixnum &optional vector)
+    t)
 (defun rebuild-ranges-after-subtree-replace! (container parent index
                                               &optional (stack (vect)))
   (reinitialize-ranges! container parent index stack)
