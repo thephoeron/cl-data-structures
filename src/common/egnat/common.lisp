@@ -639,7 +639,7 @@ following cases need to be considered:
                                                               p-parent
                                                               p-index
                                                               stack)
-                       (optimize-parents! container p-parent paths stack)))))))
+                       (optimize-parents! container parent paths stack)))))))
 
         (t (progn (cl-ds.utils:swapop (read-content node) position)
                   (optimize-parents! container node paths)))))
