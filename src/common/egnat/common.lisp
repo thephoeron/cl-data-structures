@@ -97,8 +97,16 @@
     (values close-range distant-range)))
 
 
+(defmacro maybe-async (async &body body)
+  `(if ,async
+       (lparallel:future ,@body)
+       (progn
+         ,@body)))
+
+
 (defun make-future-egnat-subtrees (container operation
-                                   extra-arguments data)
+                                   extra-arguments data
+                                   &key (multithread t))
   (bind (((:slots %content-count-in-node
                   %branching-factor)
           container)
@@ -116,11 +124,12 @@
                                 :adjustable t
                                 :fill-pointer (length contents))
                     (lambda (content)
-                      (lparallel:future
+                      (maybe-async multithread
                         (make-future-egnat-nodes container
                                                  operation
                                                  extra-arguments
-                                                 content)))
+                                                 content
+                                                 :multithread multithread)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
          (content (make-array %content-count-in-node
@@ -144,7 +153,8 @@
 
 
 (defun make-future-egnat-nodes (container operation
-                                extra-arguments data)
+                                extra-arguments data
+                                &key (multithread t))
   (if (<= (cl-ds:size data) (read-content-count-in-node container))
       (let ((content (make-array (read-content-count-in-node container)
                                  :adjustable t
@@ -159,23 +169,26 @@
                       data)
         (make 'egnat-node :content content))
       (make-future-egnat-subtrees container operation
-                                  extra-arguments data)))
+                                  extra-arguments data
+                                  :multithread multithread)))
 
 
-(defun make-egnat-tree (container operation extra-arguments data)
-  (let* ((sync-thread (cl-ds.utils:make-pipe-fragment
-                       (lambda (node sync-thread
-                           &aux (children (read-children node)))
-                         (map-into children #'lparallel:force children)
-                         (map nil sync-thread children))
-                       :end-on-empty t))
-         (root (make-future-egnat-nodes container
-                                        operation
-                                        extra-arguments
-                                        data)))
-    (funcall sync-thread root)
-    (cl-ds.utils:start-execution sync-thread)
-    (cl-ds.utils:end-execution sync-thread)
+(defun make-egnat-tree (container operation extra-arguments data &key (multithread t))
+  (let ((root (make-future-egnat-nodes container
+                                       operation
+                                       extra-arguments
+                                       data
+                                       :multithread multithread)))
+    (when multithread
+      (let ((sync-thread (cl-ds.utils:make-pipe-fragment
+                          (lambda (node sync-thread
+                              &aux (children (read-children node)))
+                            (map-into children #'lparallel:force children)
+                            (map nil sync-thread children))
+                          :end-on-empty t)))
+        (funcall sync-thread root)
+        (cl-ds.utils:start-execution sync-thread)
+        (cl-ds.utils:end-execution sync-thread)))
     root))
 
 
@@ -544,6 +557,10 @@ following cases need to be considered:
               (aref %distant-range last i))))))
 
 
+(-> rebuild-ranges-after-subtree-replace! (mutable-egnat-container
+                                           egnat-node
+                                           fixnum &optional vector)
+    t)
 (defun rebuild-ranges-after-subtree-replace! (container parent index
                                               &optional (stack (vect)))
   (reinitialize-ranges! container parent index stack)
