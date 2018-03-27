@@ -544,6 +544,25 @@ following cases need to be considered:
               (aref %distant-range last i))))))
 
 
+(defun rebuild-ranges-after-subtree-replace! (container parent index
+                                              &optional (stack (vect)))
+  (reinitialize-ranges! container parent index stack)
+  (iterate
+    (with children = (read-children parent))
+    (with length = (length children))
+    (with close-range = (read-close-range parent))
+    (with distant-range = (read-distant-range parent))
+    (with item = (~> children (aref index) read-content (aref 0)))
+    (for i from 0 below length)
+    (for child = (aref children i))
+    (for (values mini maxi) = (calculate-distances container
+                                                   item
+                                                   child
+                                                   stack))
+    (setf (aref close-range index i) mini
+          (aref distant-range index i) maxi)))
+
+
 (-> merging-shrink! (mutable-egnat-container
                      egnat-node t
                      hash-table fixnum t)
@@ -569,19 +588,30 @@ following cases need to be considered:
            (cl-ds.utils:cond+ (is-leaf is-root)
              ((t t) (setf (access-root container) nil))
              ((t nil) (remove-children! (car parent.index) (cdr parent.index)))
-             ((nil t) (progn
-                        (setf (access-root container) (reorginize-tree node))
-                        cl-ds.utils:todo; still neeed to fix ranges...
-                        ))
+             ((nil t) (setf (access-root container) (reorginize-tree node)))
              ((nil nil) (bind (((parent . index) parent.index)
                                (children (read-children parent)))
                           (setf (~> node read-content fill-pointer) 0
                                 (aref children index) (reorginize-tree node))
-                          cl-ds.utils:todo; still need to fix ranges
-                          )))))
+                          (rebuild-ranges-after-subtree-replace! container
+                                                                 parent
+                                                                 index))))))
 
         ((zerop position)
-         cl-ds.utils:todo)
+         (bind (((parent . index) (gethash node paths)))
+           (cl-ds.utils:swapop (read-content node) 0)
+           (if (null parent)
+               (setf (access-root container) (reorginize-tree node))
+               (bind (((p-parent . p-index) (gethash parent paths))
+                      (new-tree (reorginize-tree parent)))
+                 (if (null p-parent)
+                     (setf (access-root container) new-tree)
+                     (progn
+                       (setf (~> p-parent read-children (aref p-index))
+                             new-tree)
+                       (rebuild-ranges-after-subtree-replace! container
+                                                              p-parent
+                                                              p-index)))))))
 
         (t (progn (cl-ds.utils:swapop (read-content node) position)
                   (iterate
