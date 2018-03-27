@@ -612,7 +612,9 @@ following cases need to be considered:
                                 (aref children index) (reorginize-tree node))
                           (rebuild-ranges-after-subtree-replace! container
                                                                  parent
-                                                                 index))))))
+                                                                 index)
+                          cl-ds.utils:todo; also, all parents...
+                          )))))
 
         ((zerop position)
          (bind (((parent . index) (gethash node paths)))
@@ -628,7 +630,9 @@ following cases need to be considered:
                              new-tree)
                        (rebuild-ranges-after-subtree-replace! container
                                                               p-parent
-                                                              p-index)))))))
+                                                              p-index)
+                       cl-ds.utils:todo; also, all parents...
+                       ))))))
 
         (t (progn (cl-ds.utils:swapop (read-content node) position)
                   (iterate
