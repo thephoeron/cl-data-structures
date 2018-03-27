@@ -94,6 +94,8 @@
    #:mutablep
    #:near
    #:not-implemented
+   #:null-bucket
+   #:null-bucket-p
    #:operation-not-allowed
    #:out-of-bounds
    #:peek-back

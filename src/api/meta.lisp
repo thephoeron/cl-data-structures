@@ -199,3 +199,7 @@
                                    location
                                    &rest all
                                    &key &allow-other-keys))
+
+
+(defun null-bucket-p (bucket)
+  (eq bucket 'null-bucket))

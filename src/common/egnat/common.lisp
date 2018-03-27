@@ -550,7 +550,19 @@ following cases need to be considered:
     t)
 (defun merging-shrink! (container node item paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((~> node read-content length (eql 1))
+  (cond ((not (null new-bucket))
+         (setf (~> node read-content (aref position))
+               new-bucket)
+         (iterate
+           (with stack = (vect))
+           (for parent.index
+                initially (gethash node paths)
+                then (gethash parent paths))
+           (until (null parent.index))
+           (for (parent . index) = parent.index)
+           (reinitialize-ranges! container parent index stack)))
+
+        ((~> node read-content length (eql 1))
          (bind ((parent.index (gethash node paths))
                 (is-leaf (emptyp (read-children node)))
                 (is-root (null parent.index)))
@@ -560,8 +572,10 @@ following cases need to be considered:
              ((nil t) (setf (access-root container)
                             (reorginize-tree node)))
              ((nil nil) cl-ds.utils:todo))))
+
         ((zerop position)
          cl-ds.utils:todo)
+
         (t (progn (if (null new-bucket)
                       (cl-ds.utils:swapop (read-content node) position)
                       (setf (~> node read-content (aref position))
@@ -594,10 +608,8 @@ following cases need to be considered:
                                                      item
                                                      additional-arguments)))
     (when changed
-        (if (null new-bucket)
-            ;; remove from node, update paths, sometimes reinitialize paths...
-            (merging-shrink! container node item paths position new-bucket)
-            (setf (aref content position) new-bucket)))
+      ;; remove from node, update paths, sometimes reinitialize paths...
+      (merging-shrink! container node item paths position new-bucket))
     (values container status)))
 
 
