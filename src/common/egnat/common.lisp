@@ -580,23 +580,28 @@ following cases need to be considered:
           (aref distant-range index i) maxi)))
 
 
+(defun optimize-parents! (container node paths &optional (stack (vect)))
+  (iterate
+    (for parent.index
+         initially (gethash node paths)
+         then (gethash parent paths))
+    (until (null parent.index))
+    (for (parent . index) = parent.index)
+    (reinitialize-ranges! container parent index stack)))
+
+
 (-> merging-shrink! (mutable-egnat-container
-                     egnat-node t
-                     hash-table fixnum t)
+                     egnat-node
+                     hash-table
+                     fixnum
+                     t)
     t)
-(defun merging-shrink! (container node item paths position new-bucket)
+(defun merging-shrink! (container node paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
   (cond ((not (null new-bucket))
          (setf (~> node read-content (aref position))
                new-bucket)
-         (iterate
-           (with stack = (vect))
-           (for parent.index
-                initially (gethash node paths)
-                then (gethash parent paths))
-           (until (null parent.index))
-           (for (parent . index) = parent.index)
-           (reinitialize-ranges! container parent index stack)))
+         (optimize-parents! container node paths))
 
         ((~> node read-content length (eql 1))
          (bind ((parent.index (gethash node paths))
@@ -604,20 +609,22 @@ following cases need to be considered:
                 (is-root (null parent.index)))
            (cl-ds.utils:cond+ (is-leaf is-root)
              ((t t) (setf (access-root container) nil))
-             ((t nil) (remove-children! (car parent.index) (cdr parent.index)))
-             ((nil t) (setf (access-root container) (reorginize-tree node)))
+             ((t nil) (progn (remove-children! (car parent.index) (cdr parent.index))
+                             (optimize-parents! container node paths)))
+             ((nil t) (setf (access-root container) (reorginize-tree container node)))
              ((nil nil) (bind (((parent . index) parent.index)
-                               (children (read-children parent)))
+                               (children (read-children parent))
+                               (stack (vect)))
                           (setf (~> node read-content fill-pointer) 0
-                                (aref children index) (reorginize-tree node))
+                                (aref children index) (reorginize-tree container node))
                           (rebuild-ranges-after-subtree-replace! container
                                                                  parent
-                                                                 index)
-                          cl-ds.utils:todo; also, all parents...
-                          )))))
+                                                                 index
+                                                                 stack)
+                          (optimize-parents! container node paths stack))))))
 
         ((zerop position)
-         (bind (((parent . index) (gethash node paths)))
+         (bind (((parent . _) (gethash node paths)))
            (cl-ds.utils:swapop (read-content node) 0)
            (if (null parent)
                (setf (access-root container) (reorginize-tree node))
@@ -625,24 +632,17 @@ following cases need to be considered:
                       (new-tree (reorginize-tree parent)))
                  (if (null p-parent)
                      (setf (access-root container) new-tree)
-                     (progn
+                     (let ((stack (vect)))
                        (setf (~> p-parent read-children (aref p-index))
                              new-tree)
                        (rebuild-ranges-after-subtree-replace! container
                                                               p-parent
-                                                              p-index)
-                       cl-ds.utils:todo; also, all parents...
-                       ))))))
+                                                              p-index
+                                                              stack)
+                       (optimize-parents! container p-parent paths stack)))))))
 
         (t (progn (cl-ds.utils:swapop (read-content node) position)
-                  (iterate
-                    (with stack = (vect))
-                    (for parent.index
-                         initially (gethash node paths)
-                         then (gethash parent paths))
-                    (until (null parent.index))
-                    (for (parent . index) = parent.index)
-                    (reinitialize-ranges! container parent index stack))))))
+                  (optimize-parents! container node paths)))))
 
 
 (-> remove-from-node! (mutable-egnat-container
@@ -664,7 +664,7 @@ following cases need to be considered:
                                                      additional-arguments)))
     (when changed
       ;; remove from node, update paths, sometimes reinitialize paths...
-      (merging-shrink! container node item paths position new-bucket))
+      (merging-shrink! container node paths position new-bucket))
     (values container status)))
 
 
