@@ -265,9 +265,10 @@
                   (access-last-node range))))))
 
 
-(-> reinitialize-ranges! (mutable-egnat-container egnat-node fixnum)
+(-> reinitialize-ranges! (mutable-egnat-container egnat-node fixnum
+                                                  &optional vector)
     t)
-(defun reinitialize-ranges! (container node changed-one)
+(defun reinitialize-ranges! (container node changed-one &optional (stack (vect)))
   "Updates existing ranges for new node (changed-one children)."
   (bind ((children (read-children node))
          (length (length children))
@@ -275,7 +276,6 @@
          (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
          (distant-range (read-distant-range node))
-         (stack (vect))
          ((:labels impl (parent mini maxi))
           (setf (fill-pointer stack) 0)
           (vector-push-extend parent stack)
@@ -540,12 +540,13 @@ following cases need to be considered:
         ((zerop position) cl-ds.utils:todo)
         (t (progn (setf (~> node read-content (aref position)) new-bucket)
                   (iterate
+                    (with stack = (vect))
                     (for parent.index
                          initially (gethash node paths)
                          then (gethash parent paths))
                     (until (null parent.index))
                     (for (parent . index) = parent.index)
-                    (reinitialize-ranges! container parent index))))))
+                    (reinitialize-ranges! container parent index stack))))))
 
 
 (-> remove-from-node! (mutable-egnat-container
