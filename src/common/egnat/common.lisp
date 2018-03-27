@@ -292,6 +292,13 @@
                         stack)))
 
 
+(-> collect-buckets (egnat-node) vector)
+(defun collect-buckets (parent)
+  (lret ((result (vect)))
+    (visit-every-bucket (rcurry #'vector-push-extend result)
+                        parent)))
+
+
 (-> reinitialize-ranges! (mutable-egnat-container egnat-node fixnum
                                                   &optional vector)
     t)
@@ -551,7 +558,7 @@ following cases need to be considered:
              ((t t) (setf (access-root container) nil))
              ((t nil) (remove-children! (car parent.index) (cdr parent.index)))
              ((nil t) (setf (access-root container)
-                            (reorginize-tree (read-children node))))
+                            (reorginize-tree node)))
              ((nil nil) cl-ds.utils:todo))))
         ((zerop position)
          cl-ds.utils:todo)
