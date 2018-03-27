@@ -106,7 +106,7 @@
 
 (defun make-future-egnat-subtrees (container operation
                                    extra-arguments data
-                                   &key (multithread t))
+                                   &key (multithread t) bucket-function)
   (bind (((:slots %content-count-in-node
                   %branching-factor)
           container)
@@ -114,6 +114,13 @@
           (splice-content data %content-count-in-node))
          ((:values seeds-indexes reverse-mapping)
           (select-seeds %branching-factor (cl-ds:size this-data)))
+         (bucket-function (or bucket-function
+                              (lambda (x)
+                                (apply #'cl-ds:make-bucket
+                                       operation
+                                       container
+                                       x
+                                       extra-arguments))))
          (data-partitions (make-partitions container
                                            seeds-indexes
                                            this-data))
@@ -129,19 +136,15 @@
                                                  operation
                                                  extra-arguments
                                                  content
-                                                 :multithread multithread)))
+                                                 :multithread multithread
+                                                 :bucket-function bucket-function)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
          (content (make-array %content-count-in-node
                               :adjustable t
                               :fill-pointer 0)))
-    (cl-ds:across (lambda (x)
-                    (vector-push-extend (apply #'cl-ds:make-bucket
-                                               operation
-                                               container
-                                               x
-                                               extra-arguments)
-                                        content))
+    (cl-ds:across (compose (rcurry #'vector-push-extend content)
+                           bucket-function)
                   this-content)
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
@@ -154,31 +157,36 @@
 
 (defun make-future-egnat-nodes (container operation
                                 extra-arguments data
-                                &key (multithread t))
+                                &key (multithread t) bucket-function)
   (if (<= (cl-ds:size data) (read-content-count-in-node container))
       (let ((content (make-array (read-content-count-in-node container)
                                  :adjustable t
-                                 :fill-pointer 0)))
-        (cl-ds:across (lambda (x)
-                        (vector-push-extend (apply #'cl-ds:make-bucket
-                                                   operation
-                                                   container
-                                                   x
-                                                   extra-arguments)
-                                            content))
+                                 :fill-pointer 0))
+            (bucket-function (or bucket-function
+                                 (lambda (x)
+                                   (apply #'cl-ds:make-bucket
+                                          operation
+                                          container
+                                          x
+                                          extra-arguments)))))
+        (cl-ds:across (compose (rcurry #'vector-push-extend content)
+                               bucket-function)
                       data)
         (make 'egnat-node :content content))
       (make-future-egnat-subtrees container operation
                                   extra-arguments data
-                                  :multithread multithread)))
+                                  :multithread multithread
+                                  :bucket-function bucket-function)))
 
 
-(defun make-egnat-tree (container operation extra-arguments data &key (multithread t))
+(defun make-egnat-tree (container operation extra-arguments data
+                        &key (multithread t) bucket-function)
   (let ((root (make-future-egnat-nodes container
                                        operation
                                        extra-arguments
                                        data
-                                       :multithread multithread)))
+                                       :multithread multithread
+                                       :bucket-function bucket-function)))
     (when multithread
       (let ((sync-thread (cl-ds.utils:make-pipe-fragment
                           (lambda (node sync-thread
@@ -588,6 +596,10 @@ following cases need to be considered:
     (until (null parent.index))
     (for (parent . index) = parent.index)
     (reinitialize-ranges! container parent index stack)))
+
+
+(defun reorginize-tree (container parent)
+  )
 
 
 (-> merging-shrink! (mutable-egnat-container
