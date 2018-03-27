@@ -569,9 +569,16 @@ following cases need to be considered:
            (cl-ds.utils:cond+ (is-leaf is-root)
              ((t t) (setf (access-root container) nil))
              ((t nil) (remove-children! (car parent.index) (cdr parent.index)))
-             ((nil t) (setf (access-root container)
-                            (reorginize-tree node)))
-             ((nil nil) cl-ds.utils:todo))))
+             ((nil t) (progn
+                        (setf (access-root container) (reorginize-tree node))
+                        cl-ds.utils:todo; still neeed to fix ranges...
+                        ))
+             ((nil nil) (bind (((parent . index) parent.index)
+                               (children (read-children parent)))
+                          (setf (~> node read-content fill-pointer) 0
+                                (aref children index) (reorginize-tree node))
+                          cl-ds.utils:todo; still need to fix ranges
+                          )))))
 
         ((zerop position)
          cl-ds.utils:todo)
