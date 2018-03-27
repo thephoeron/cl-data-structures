@@ -26,7 +26,7 @@
                                 state
                                 element)
   (bind (((:slots %bits %registers %hash-fn) state)
-         (hash (logand 1 (funcall %hash-fn element)))
+         (hash (funcall %hash-fn element)) ;ensure that there is at least one 1 bit
          (index (ash hash (- (- 32 %bits))))
          (rank (integer-length (ldb (byte 32 0) hash))))
     (when (> rank (aref %registers index))

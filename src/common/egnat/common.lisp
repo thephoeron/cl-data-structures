@@ -253,16 +253,6 @@
     (finally (return result))))
 
 
-(defun traverse-impl (container function)
-  (labels ((impl (tree)
-             (let ((content (read-content tree)))
-               (when content
-                 (map nil function content)
-                 (map nil #'impl (read-children tree))))))
-    (impl (access-root container)))
-  container)
-
-
 (defun find-destination-node (container item)
   (let ((root (access-root container)))
     (if (null root)
@@ -704,3 +694,8 @@ following cases need to be considered:
                                  additional-arguments))
             (values container
                     cl-ds.common:empty-eager-modification-operation-status)))))
+
+
+(defun traverse-impl (container function)
+  (visit-every-bucket function (access-root container))
+  container)
