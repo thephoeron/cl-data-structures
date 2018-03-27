@@ -599,7 +599,12 @@ following cases need to be considered:
 
 
 (defun reorginize-tree (container parent)
-  )
+  (make-egnat-tree container
+                   nil
+                   nil
+                   (collect-buckets parent)
+                   :multithread nil
+                   :bucket-function #'identity))
 
 
 (-> merging-shrink! (mutable-egnat-container
