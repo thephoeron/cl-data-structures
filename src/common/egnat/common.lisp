@@ -265,6 +265,33 @@
                   (access-last-node range))))))
 
 
+(defun visit-every-bucket (function parent &optional (stack (vect)))
+  (setf (fill-pointer stack) 0)
+  (vector-push-extend parent stack)
+  (iterate
+    (until (emptyp stack))
+    (for node = (aref stack (~> stack fill-pointer 1-)))
+    (decf (fill-pointer stack))
+    (iterate
+      (for content in-vector (read-content node))
+      (funcall function content))
+    (map nil
+         (rcurry #'vector-push-extend stack)
+         (read-children node))))
+
+
+(-> calculate-distances (fundamental-egnat-container t egnat-node
+                                                     &optional vector)
+    t)
+(defun calculate-distances (container item parent &optional (stack (vect)))
+  (cl-ds.utils:optimize-value ((mini <) (maxi >))
+    (visit-every-bucket (lambda (x &aux (distance (distance container x item)))
+                          (mini distance)
+                          (maxi distance))
+                        parent
+                        stack)))
+
+
 (-> reinitialize-ranges! (mutable-egnat-container egnat-node fixnum
                                                   &optional vector)
     t)
@@ -275,30 +302,14 @@
          (new-node (aref children changed-one))
          (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
-         (distant-range (read-distant-range node))
-         ((:labels impl (parent mini maxi))
-          (setf (fill-pointer stack) 0)
-          (vector-push-extend parent stack)
-          (iterate
-            (until (emptyp stack))
-            (for node = (aref stack (~> stack fill-pointer 1-)))
-            (decf (fill-pointer stack))
-            (iterate
-              (for content in-vector (read-content node))
-              (for distance = (distance container content item))
-              (funcall mini distance)
-              (funcall maxi distance))
-            (map nil
-                 (rcurry #'vector-push-extend stack)
-                 (read-children node)))))
-    (declare (dynamic-extent #'impl)
-             (inline impl))
+         (distant-range (read-distant-range node)))
     (iterate
       (for i from 0 below length)
       (when (eql i changed-one) (next-iteration))
-      (for (values mini maxi) =
-           (cl-ds.utils:optimize-value ((mini <) (maxi >))
-             (impl (aref children i) #'mini #'maxi)))
+      (for (values mini maxi) = (calculate-distances container
+                                                     item
+                                                     (aref children i)
+                                                     stack))
       (setf (aref distant-range changed-one i) maxi
             (aref close-range changed-one i) mini))))
 
@@ -533,12 +544,21 @@ following cases need to be considered:
 (defun merging-shrink! (container node item paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
   (cond ((~> node read-content length (eql 1))
-         (bind ((parent.index (gethash node paths)))
-           (if (null parent.index)
-               (setf (access-root container) nil)
-               (remove-children! (car parent.index) (cdr parent.index)))))
-        ((zerop position) cl-ds.utils:todo)
-        (t (progn (setf (~> node read-content (aref position)) new-bucket)
+         (bind ((parent.index (gethash node paths))
+                (is-leaf (emptyp (read-children node)))
+                (is-root (null parent.index)))
+           (cl-ds.utils:cond+ (is-leaf is-root)
+             ((t t) (setf (access-root container) nil))
+             ((t nil) (remove-children! (car parent.index) (cdr parent.index)))
+             ((nil t) (setf (access-root container)
+                            (reorginize-tree (read-children node))))
+             ((nil nil) cl-ds.utils:todo))))
+        ((zerop position)
+         cl-ds.utils:todo)
+        (t (progn (if (null new-bucket)
+                      (cl-ds.utils:swapop (read-content node) position)
+                      (setf (~> node read-content (aref position))
+                            new-bucket))
                   (iterate
                     (with stack = (vect))
                     (for parent.index
