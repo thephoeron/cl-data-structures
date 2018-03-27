@@ -26,13 +26,9 @@
                                 state
                                 element)
   (bind (((:slots %bits %registers %hash-fn) state)
-         (hash (funcall %hash-fn element))
+         (hash (logand 1 (funcall %hash-fn element)))
          (index (ash hash (- (- 32 %bits))))
-         (rank (iterate
-                 (for i from 1 to 32)
-                 (for j from 0)
-                 (until (ldb-test (byte 1 j) hash))
-                 (finally (return i)))))
+         (rank (integer-length (ldb (byte 32 0) hash))))
     (when (> rank (aref %registers index))
       (setf (aref %registers index) rank))))
 
