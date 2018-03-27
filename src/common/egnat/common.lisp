@@ -275,21 +275,22 @@
          (item (~> new-node read-content (aref 0)))
          (close-range (read-close-range node))
          (distant-range (read-distant-range node))
+         (stack (vect))
          ((:labels impl (parent mini maxi))
-          (let ((stack (vect)))
-            (vector-push-extend parent stack)
+          (setf (fill-pointer stack) 0)
+          (vector-push-extend parent stack)
+          (iterate
+            (until (emptyp stack))
+            (for node = (aref stack (~> stack fill-pointer 1-)))
+            (decf (fill-pointer stack))
             (iterate
-              (until (emptyp stack))
-              (for node = (aref stack (~> stack fill-pointer 1-)))
-              (decf (fill-pointer stack))
-              (iterate
-                (for content in-vector (read-content node))
-                (for distance = (distance container content item))
-                (funcall mini distance)
-                (funcall maxi distance))
-              (map nil
-                   (rcurry #'vector-push-extend stack)
-                   (read-children node))))))
+              (for content in-vector (read-content node))
+              (for distance = (distance container content item))
+              (funcall mini distance)
+              (funcall maxi distance))
+            (map nil
+                 (rcurry #'vector-push-extend stack)
+                 (read-children node)))))
     (declare (dynamic-extent #'impl)
              (inline impl))
     (iterate
