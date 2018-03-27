@@ -39,6 +39,24 @@
 
 (defmethod cl-ds.alg:state-result ((function estimated-set-cardinality-function)
                                    state)
+  state)
+
+
+(defmethod cl-ds.alg:make-state ((function estimated-set-cardinality-function)
+                                 &key bits hash-fn &allow-other-keys)
+  (unless (< 3 bits 21)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'bits
+           :bounds (list 4 21)
+           :value bits
+           :text "Bits out of range."))
+  (make 'estimated-set-cardinality-state
+        :bits bits
+        :hash-fn hash-fn
+        :registers (make-array (ash 1 bits) :element-type 'unsigned-byte)))
+
+
+(defmethod cl-ds:value ((state estimated-set-cardinality-state))
   (bind (((:slots %bits %registers) state)
          (size (length %registers))
          (alpha-mm (* (cond ((eql 4 %bits) 0.673)
@@ -57,19 +75,6 @@
              (finally (unless (zerop result)
                         (setf estimate (* size (log (/ size result))))))))
           ((> estimate (* (/ 1.0 30.0) 4294967296.0))
-           (setf estimate (* -4294967296.0 (log (- 1.0 (/ estimate 4294967296.0)))))))
+           (setf estimate (* -4294967296.0
+                             (log (- 1.0 (/ estimate 4294967296.0)))))))
     estimate))
-
-
-(defmethod cl-ds.alg:make-state ((function estimated-set-cardinality-function)
-                                 &key bits hash-fn &allow-other-keys)
-  (unless (< 3 bits 21)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'bits
-           :bounds (list 4 21)
-           :value bits
-           :text "Bits out of range."))
-  (make 'estimated-set-cardinality-state
-        :bits bits
-        :hash-fn hash-fn
-        :registers (make-array (ash 1 bits) :element-type 'unsigned-byte)))
