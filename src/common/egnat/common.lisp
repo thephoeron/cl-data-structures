@@ -485,13 +485,11 @@
                             container
                             item
                             additional-arguments))
-         (stack (vect))
          (parent (gethash node paths)))
     (incf (access-size container))
     (vector-push-extend new-bucket content)
-    (optimize-parents-complete! container node paths stack)
-    (unless (null parent)
-      (reinitialize-ranges! container (car parent) (cdr parent)))
+    (update-ranges! container (car parent) item (cdr parent))
+    (optimize-parents-partial! container node paths (cdr parent) item)
     (values container
             cl-ds.common:empty-eager-modification-operation-status)))
 
