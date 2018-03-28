@@ -605,7 +605,7 @@ following cases need to be considered:
     t)
 (defun merging-shrink! (container node paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((not (null new-bucket))
+  (cond ((not (cl-ds:null-bucket-p new-bucket))
          (setf (~> node read-content (aref position))
                new-bucket)
          (optimize-parents! container node paths))

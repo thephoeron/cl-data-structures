@@ -22,7 +22,19 @@
            bucket)
           t))
 
-(plan 35)
+(defmethod cl-ds:shrink-bucket!
+    ((operation cl-ds:erase!-function)
+     (container cl-ds.common.egnat:mutable-egnat-container)
+     bucket
+     location
+     &rest all)
+  (declare (ignore all))
+  (values
+   'cl-ds:null-bucket
+   (cl-ds.common:make-eager-modification-operation-status t bucket)
+   t))
+
+(plan 36)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -175,7 +187,14 @@
              (cl-ds.common.egnat::reorginize-tree container root))
            (restructured-content (sort (cl-ds.common.egnat::collect-buckets restructured)
                                        #'<)))
-      (is restructured-content original-content :test #'equalp))))
+      (is restructured-content original-content :test #'equalp))
+    (cl-ds.common.egnat::egnat-shrink! container #'cl-ds:erase! 5005 nil)
+    (is (sort (serapeum:~> container
+                           cl-ds.common.egnat::access-root
+                           cl-ds.common.egnat::collect-buckets)
+              #'<)
+        (sort data #'<)
+        :test #'equalp)))
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 0
