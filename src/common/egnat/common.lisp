@@ -461,20 +461,27 @@
     (values container status)))
 
 
-(-> egnat-push! (mutable-egnat-container cl-ds:grow-function t egnat-node list)
+(-> egnat-push! (mutable-egnat-container
+                 cl-ds:grow-function t
+                 egnat-node hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-push! (container operation
-                    item node
+                    item node paths
                     additional-arguments)
   (bind ((content (read-content node))
          (new-bucket (apply #'cl-ds:make-bucket
                             operation
                             container
                             item
-                            additional-arguments)))
+                            additional-arguments))
+         (stack (vect))
+         (parent (gethash node paths)))
     (incf (access-size container))
     (vector-push-extend new-bucket content)
+    (optimize-parents! container node paths stack)
+    (unless (null parent)
+      (reinitialize-ranges! container (car parent) (cdr parent)))
     (values container
             cl-ds.common:empty-eager-modification-operation-status)))
 
@@ -503,7 +510,7 @@ following cases need to be considered:
    has been added.
         |#
         (if found ; case number 1, easy to handle
-            (egnat-replace! container operation
+            (egnat-replace! container operation ; TODO: also update parents... and what if position is equal 0?
                             item last-node
                             additional-arguments)
             (iterate
@@ -521,7 +528,7 @@ following cases need to be considered:
                                             additional-arguments))
                    ;; the case number 2, just one push-extend and we are done
                    (return (egnat-push! container operation item result
-                                        additional-arguments)))))))))
+                                        parents additional-arguments)))))))))
 
 
 (defun walk-path (fn node possible-paths)
