@@ -34,7 +34,7 @@
    (cl-ds.common:make-eager-modification-operation-status t bucket)
    t))
 
-(plan 36)
+(plan 86)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -194,7 +194,12 @@
                            cl-ds.common.egnat::collect-buckets)
               #'<)
         (sort data #'<)
-        :test #'equalp)))
+        :test #'equalp)
+    (iterate
+      (for elt in-vector data)
+      (for generator = (cl-ds:near container elt 0))
+      (for value = (cl-ds:consume-front generator))
+      (is elt value))))
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 0
