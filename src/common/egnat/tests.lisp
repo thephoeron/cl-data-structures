@@ -34,7 +34,7 @@
    (cl-ds.common:make-eager-modification-operation-status t bucket)
    t))
 
-(plan 86)
+(plan 136)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -199,6 +199,8 @@
       (for elt in-vector data)
       (for generator = (cl-ds:near container elt 0))
       (for value = (cl-ds:consume-front generator))
+      (for (values nothing more) = (cl-ds:consume-front generator))
+      (is more nil)
       (is elt value))))
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
