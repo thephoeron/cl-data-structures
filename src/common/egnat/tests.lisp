@@ -22,7 +22,7 @@
            bucket)
           t))
 
-(plan 34)
+(plan 35)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -168,7 +168,14 @@
         (is (aref close-range 1 i) 4)
         (is (aref distant-range 1 i) 4)
         (is (aref close-range i 1) 3)
-        (is (aref distant-range i 1) 3)))))
+        (is (aref distant-range i 1) 3)))
+    (let* ((original-content (sort (cl-ds.common.egnat::collect-buckets root)
+                                   #'<))
+           (restructured
+             (cl-ds.common.egnat::reorginize-tree container root))
+           (restructured-content (sort (cl-ds.common.egnat::collect-buckets restructured)
+                                       #'<)))
+      (is restructured-content original-content :test #'equalp))))
 
 (is-error (make-instance 'cl-ds.common.egnat:mutable-egnat-container
                          :branching-factor 0
