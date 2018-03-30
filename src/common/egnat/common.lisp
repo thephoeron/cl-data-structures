@@ -624,9 +624,10 @@ following cases need to be considered:
 (defun merging-shrink! (container node paths position new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
   (cond ((not (cl-ds:null-bucket-p new-bucket))
-         (setf (~> node read-content (aref position))
-               new-bucket)
-         (optimize-parents-complete! container node paths))
+         (progn
+           (setf (~> node read-content (aref position))
+                 new-bucket)
+           (optimize-parents-complete! container node paths)))
 
         ((~> node read-content length (eql 1))
          (bind ((parent.index (gethash node paths))
@@ -652,9 +653,9 @@ following cases need to be considered:
          (bind (((parent . _) (gethash node paths)))
            (cl-ds.utils:swapop (read-content node) 0)
            (if (null parent)
-               (setf (access-root container) (reorginize-tree node))
+               (setf (access-root container) (reorginize-tree container node))
                (bind (((p-parent . p-index) (gethash parent paths))
-                      (new-tree (reorginize-tree parent)))
+                      (new-tree (reorginize-tree container parent)))
                  (if (null p-parent)
                      (setf (access-root container) new-tree)
                      (let ((stack (vect)))
