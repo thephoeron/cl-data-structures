@@ -551,15 +551,6 @@ following cases need to be considered:
                                         parents additional-arguments)))))))))
 
 
-(defun walk-path (fn node possible-paths)
-  (iterate
-    (for p
-         initially (cons node 0)
-         then (gethash (car p) possible-paths))
-    (until (null p))
-    (funcall fn p)))
-
-
 (-> remove-children! (egnat-node fixnum) t)
 (defun remove-children! (node index)
   (bind (((:slots %children %close-range %distant-range) node)
