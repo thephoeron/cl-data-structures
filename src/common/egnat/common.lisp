@@ -432,8 +432,7 @@
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (push-children! node new-node)
-                    (reinitialize-ranges! container node
-                                          (~> node read-children length 1-))
+                    (reinitialize-ranges! container node last)
                     (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
@@ -451,11 +450,17 @@
     (update-ranges! container parent item index)))
 
 
-(-> egnat-replace! (mutable-egnat-container cl-ds:grow-function t egnat-node list)
+(-> egnat-replace! (mutable-egnat-container
+                    cl-ds:grow-function
+                    t
+                    egnat-node
+                    hash-table
+                    list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-replace! (container operation
                        item last-node
+                       paths
                        additional-arguments)
   (bind ((content (read-content last-node))
          (position (position item content :test (curry #'same container)))
@@ -465,9 +470,16 @@
                                                      container
                                                      bucket
                                                      item
-                                                     additional-arguments)))
+                                                     additional-arguments))
+         ((parent . index) (gethash last-node paths)))
     (when changed
       (setf (aref content position) new-bucket))
+    (unless (null parent)
+      (if (zerop position)
+          (progn
+            (reinitialize-ranges! container parent index)
+            (optimize-parents-partial! container parent paths index item))
+          (optimize-parents-partial! container parent paths index item)))
     (values container status)))
 
 
@@ -485,11 +497,10 @@
                             container
                             item
                             additional-arguments))
-         (parent (gethash node paths)))
+         ((parent . index) (gethash node paths)))
     (incf (access-size container))
     (vector-push-extend new-bucket content)
-    (update-ranges! container (car parent) item (cdr parent))
-    (optimize-parents-partial! container node paths (cdr parent) item)
+    (optimize-parents-partial! container parent paths index item)
     (values container
             cl-ds.common:empty-eager-modification-operation-status)))
 
@@ -518,8 +529,9 @@ following cases need to be considered:
    has been added.
         |#
         (if found ; case number 1, easy to handle
-            (egnat-replace! container operation ; TODO: also update parents... and what if position is equal 0?
+            (egnat-replace! container operation
                             item last-node
+                            pats
                             additional-arguments)
             (iterate
               (for (node parent) in-hashtable paths)
