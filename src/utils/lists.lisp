@@ -132,3 +132,9 @@
          (return r)
          (when sm
            (return (< (length av) (length bv))))))))
+
+
+(defun list-of-unique-symbols (count)
+  (iterate
+    (repeat count)
+    (collect (gensym) at start)))

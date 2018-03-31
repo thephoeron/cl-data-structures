@@ -74,7 +74,14 @@
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
                (:module "math"
-                :components ((:file "package")
+                :components ((:module "gradient"
+                              :components ((:file "package")
+                                           (:file "classes")
+                                           (:file "protocol")
+                                           (:file "rules")
+                                           (:file "implementation")
+                                           (:file "documentation")))
+                             (:file "package")
                              (:file "average")
                              (:file "variance")
                              (:file "simple-linear-regression")

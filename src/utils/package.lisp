@@ -30,6 +30,7 @@
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
+   #:list-of-unique-symbols
    #:lower-bound
    #:make-distance-matrix
    #:make-distance-matrix-from-vector
