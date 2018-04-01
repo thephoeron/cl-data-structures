@@ -52,7 +52,7 @@
           (emptyp (tape-node-depends node)))
          ((:flet initialization-form (node))
           (if (pure-symbol node)
-              (tape-node-symbol node)
+              (~> node tape-node-symbol symbol-name intern)
               (cons (tape-node-symbol node)
                     (index-to-value-symbol (tape-node-depends node)))))
          (result-symbol (elt value-symbol-vector (1- length)))
@@ -67,12 +67,12 @@
                                             :initial-element 0.0d0))
          (!addjoints (gensym))
          (adjoint-init-form `(setf (aref ,!addjoints ,(1- length)) 1.0d0))
-         (arguments (~> %variables
-                        hash-table-keys
-                        (sort #'string< :key #'symbol-name))))
+         (arguments (~>> %variables
+                         hash-table-keys
+                         (mapcar (lambda (x) (~> x symbol-name intern))))))
     (let ((*error-output* (make-broadcast-stream)))
       (compile nil
-               `(lambda ,arguments
+               `(lambda (&key ,@arguments)
                   (declare (optimize (speed 3)))
                   (bind (,@value-bindings
                          (,!addjoints ,adjoints-vector-form)
@@ -110,7 +110,8 @@
          (variables (make-hash-table))
          ((:labels impl (tree))
           (if (symbolp tree)
-              (let ((variable-position (gethash tree variables)))
+              (let* ((tree (make-keyword tree))
+                     (variable-position (gethash tree variables)))
                 (if (null variable-position)
                     (let ((position (length nodes)))
                       (setf (gethash tree variables) position)
@@ -151,9 +152,6 @@
   (bind ((nodes (read-nodes tape))
          (variables (read-variables tape))
          (length (length nodes))
-         (variables-list (~> variables
-                             hash-table-keys
-                             (sort #'string< :key #'symbol-name)))
          (adjoints (make-array length
                                :element-type 'double-float
                                :initial-element 0.0d0))
@@ -161,11 +159,14 @@
                              :element-type 'double-float
                              :initial-element 0.0d0)))
     (setf (aref adjoints (1- length)) 1.0d0)
-    (map nil
-         (lambda (symbol val)
-           (setf (aref values (gethash symbol variables)) val))
-         variables-list
-         vals)
+    (iterate
+      (for v
+           initially vals
+           then (cddr v))
+      (until (endp v))
+      (for (symbol value . _) = v)
+      (for index = (gethash symbol variables))
+      (setf (aref values index) value))
     (iterate
       (for i from 0 below length)
       (for node = (aref nodes i))
