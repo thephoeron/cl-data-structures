@@ -73,8 +73,10 @@
     (let ((*error-output* (make-broadcast-stream)))
       (compile nil
                `(lambda (&key ,@arguments)
-                  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
-                           (type double-float ,@arguments))
+                  (declare (optimize (speed 3) (safety 1) (space 0) (debug 0)))
+                  ,@(iterate
+                      (for arg in arguments)
+                      (collect `(check-type ,arg double-float)))
                   (bind (,@value-bindings
                          (,!addjoints ,adjoints-vector-form)
                          ,@weight-forms)
