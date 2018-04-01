@@ -87,7 +87,7 @@
 
 
 
-(defun make-tape (expression)
+(defun make-gradient-expression (expression)
   (bind ((nodes (make-array 8 :adjustable t
                               :element-type 'tape-node
                               :fill-pointer 0))
@@ -117,7 +117,7 @@
                                      nodes)
                  (return (~> nodes length 1-)))))))
     (impl expression)
-    (make 'tape :nodes nodes :variables variables)))
+    (make 'gradient-expression :nodes nodes :variables variables)))
 
 
 (defun evaluate-node (position node values)

@@ -25,4 +25,4 @@
   (apply operation-symbol all))
 
 
-(defgeneric compile-tape (tape))
+(defgeneric compile-gradient-expression (gradient-expression))

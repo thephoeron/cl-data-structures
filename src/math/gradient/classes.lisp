@@ -13,7 +13,7 @@
    :type (simple-array double-float (*))))
 
 
-(defclass tape ()
+(defclass gradient-expression ()
   ((%nodes :initarg :nodes
            :reader read-nodes)
    (%variables :initarg :variables
