@@ -62,11 +62,11 @@
                                       (initialization-form node)))
                               %nodes
                               value-symbol-vector))
-         (adjoints-vector-form `(make-array ,length
+         (addjoints-vector-form `(make-array ,length
                                             :element-type 'double-float
                                             :initial-element 0.0d0))
          (!addjoints (gensym))
-         (adjoint-init-form `(setf (aref ,!addjoints ,(1- length)) 1.0d0))
+         (addjoint-init-form `(setf (aref ,!addjoints ,(1- length)) 1.0d0))
          (arguments (~>> %variables
                          hash-table-keys
                          (mapcar (lambda (x) (~> x symbol-name intern))))))
@@ -78,14 +78,14 @@
                       (for arg in arguments)
                       (collect `(check-type ,arg double-float)))
                   (bind (,@value-bindings
-                         (,!addjoints ,adjoints-vector-form)
+                         (,!addjoints ,addjoints-vector-form)
                          ,@weight-forms)
                     (declare (dynamic-extent ,!addjoints)
                              (type double-float
                                    ,@(mapcar #'first value-bindings)
                                    ,@(mapcar #'first weight-forms))
                              (type (simple-array double-float (,length)) ,!addjoints))
-                    ,adjoint-init-form
+                    ,addjoint-init-form
                     ,@(iterate
                         (for i from (1- length) downto 0)
                         (for node = (aref %nodes i))
