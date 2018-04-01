@@ -76,8 +76,8 @@
                (:module "math"
                 :components ((:module "gradient"
                               :components ((:file "package")
-                                           (:file "classes")
                                            (:file "protocol")
+                                           (:file "classes")
                                            (:file "rules")
                                            (:file "implementation")
                                            (:file "documentation")))

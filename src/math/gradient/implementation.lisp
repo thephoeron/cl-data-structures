@@ -24,7 +24,16 @@
        (return (values result forms))))))
 
 
-(defmethod compile-tape ((tape tape))
+(defun addjoints-vector-to-variable-bindings (variables addjoints)
+  (iterate
+    (for (key value) in-hashtable variables)
+    (with result = nil)
+    (push (aref addjoints value) result)
+    (push key result)
+    (finally (return result))))
+
+
+(defmethod compile-gradient-expression ((tape gradient-expression))
   (bind (((:slots %nodes %variables) tape)
          (length (length %nodes))
          (value-symbol-vector (coerce (cl-ds.utils:list-of-unique-symbols length)
@@ -68,6 +77,7 @@
                   (bind (,@value-bindings
                          (,!addjoints ,adjoints-vector-form)
                          ,@weight-forms)
+                    (declare (dynamic-extent ,!addjoints))
                     ,adjoint-init-form
                     ,@(iterate
                         (for i from (1- length) downto 0)
@@ -83,8 +93,14 @@
                                                  (aref ,!addjoints ,i)))))
                           into result)
                         (finally (return (apply #'append result))))
-                    ,!addjoints))))))
-
+                    (values
+                     ,result-symbol
+                     ,(iterate
+                        (for (key value) in-hashtable %variables)
+                        (with result = nil)
+                        (push `(aref ,!addjoints ,value) result)
+                        (push `(quote ,key) result)
+                        (finally (return (cons 'list result)))))))))))
 
 
 (defun make-gradient-expression (expression)
@@ -135,6 +151,9 @@
   (bind ((nodes (read-nodes tape))
          (variables (read-variables tape))
          (length (length nodes))
+         (variables-list (~> variables
+                             hash-table-keys
+                             (sort #'string< :key #'symbol-name)))
          (adjoints (make-array length
                                :element-type 'double-float
                                :initial-element 0.0d0))
@@ -142,16 +161,11 @@
                              :element-type 'double-float
                              :initial-element 0.0d0)))
     (setf (aref adjoints (1- length)) 1.0d0)
-    (iterate
-      (for v
-           initially vals
-           then (cddr v))
-      (until (endp v))
-      (for symbol = (car v))
-      (for value = (cadr v))
-      (for index = (gethash symbol variables))
-      (assert index)
-      (setf (aref values index) value))
+    (map nil
+         (lambda (symbol val)
+           (setf (aref values (gethash symbol variables)) val))
+         variables-list
+         vals)
     (iterate
       (for i from 0 below length)
       (for node = (aref nodes i))
@@ -168,4 +182,6 @@
         (for weight in-vector weights)
         (for change = (* weight adjoint))
         (incf (aref adjoints dependency) change)))
-    adjoints))
+    (values
+     (aref values (1- length))
+     (addjoints-vector-to-variable-bindings variables adjoints))))

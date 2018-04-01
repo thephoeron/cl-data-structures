@@ -17,4 +17,10 @@
   ((%nodes :initarg :nodes
            :reader read-nodes)
    (%variables :initarg :variables
-               :reader read-variables)))
+               :reader read-variables))
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defmethod initialize-instance :after ((obj gradient-expression) &rest all)
+  (declare (ignore all))
+  (closer-mop:set-funcallable-instance-function obj (curry #'gradient obj)))
