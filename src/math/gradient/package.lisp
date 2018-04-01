@@ -5,6 +5,11 @@
   (:use #:common-lisp #:serapeum #:cl-ds.utils
         #:alexandria #:iterate #:metabang-bind)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
-  (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.math.grad)
-  (:export))
+  (:export
+   #:compile-gradient-expression
+   #:define-tape-backward
+   #:gradient
+   #:gradient-expression
+   #:tape-backward
+   #:tape-forward))
