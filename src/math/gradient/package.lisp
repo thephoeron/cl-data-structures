@@ -12,5 +12,4 @@
    #:gradient
    #:gradient-expression
    #:tape-backward
-   #:tape-backward-form
-   #:tape-forward))
+   #:tape-backward-form))

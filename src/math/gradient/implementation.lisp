@@ -149,7 +149,7 @@
          (weights (tape-node-weights node))
          (symbol (tape-node-symbol node))
          (arguments (map 'list (curry #'aref values) dependency))
-         (value (apply #'tape-forward symbol arguments))
+         (value (apply symbol arguments))
          (weight (apply #'tape-backward symbol arguments)))
     (setf (aref values position) value)
     (map-into weights #'identity weight)))

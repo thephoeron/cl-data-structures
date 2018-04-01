@@ -2,7 +2,6 @@
 
 
 (defgeneric tape-backward (operation-symbol &rest all))
-(defgeneric tape-forward (operation-symbol &rest all))
 (defgeneric tape-backward-form (operation-symbol established-bindings))
 
 
@@ -19,10 +18,6 @@
                      (declare (dynamic-extent ,',argument))
                      ,',@body)))
            (form ,!bindings))))))
-
-
-(defmethod tape-forward (operation-symbol &rest all)
-  (apply operation-symbol all))
 
 
 (defgeneric compile-gradient-expression (gradient-expression))
