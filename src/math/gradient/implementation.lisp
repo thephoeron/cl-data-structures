@@ -73,11 +73,16 @@
     (let ((*error-output* (make-broadcast-stream)))
       (compile nil
                `(lambda (&key ,@arguments)
-                  (declare (optimize (speed 3)))
+                  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
+                           (type double-float ,@arguments))
                   (bind (,@value-bindings
                          (,!addjoints ,adjoints-vector-form)
                          ,@weight-forms)
-                    (declare (dynamic-extent ,!addjoints))
+                    (declare (dynamic-extent ,!addjoints)
+                             (type double-float
+                                   ,@(mapcar #'first value-bindings)
+                                   ,@(mapcar #'first weight-forms))
+                             (type (simple-array double-float (,length)) ,!addjoints))
                     ,adjoint-init-form
                     ,@(iterate
                         (for i from (1- length) downto 0)
@@ -89,7 +94,7 @@
                               (for weight-symbol = (gethash (list node dependency)
                                                             node-weight-table))
                               (collect `(incf (aref ,!addjoints ,dependency)
-                                              (* ,weight-symbol
+                                              (* (the double-float ,weight-symbol)
                                                  (aref ,!addjoints ,i)))))
                           into result)
                         (finally (return (apply #'append result))))
@@ -149,16 +154,17 @@
 
 
 (defun gradient (tape &rest vals)
+  (declare (optimize (speed 3) (safety 1) (space 0)))
   (bind ((nodes (read-nodes tape))
          (variables (read-variables tape))
          (length (length nodes))
-         (adjoints (make-array length
+         (addjoints (make-array length
                                :element-type 'double-float
                                :initial-element 0.0d0))
          (values (make-array length
                              :element-type 'double-float
                              :initial-element 0.0d0)))
-    (setf (aref adjoints (1- length)) 1.0d0)
+    (setf (aref addjoints (1- length)) 1.0d0)
     (iterate
       (for v
            initially vals
@@ -175,14 +181,15 @@
     (iterate
       (for i from (1- length) downto 0)
       (for node = (aref nodes i))
-      (for adjoint = (aref adjoints i))
+      (for addjoint = (aref addjoints i))
       (for deps = (tape-node-depends node))
       (for weights = (tape-node-weights node))
       (iterate
         (for dependency in-vector deps)
         (for weight in-vector weights)
-        (for change = (* weight adjoint))
-        (incf (aref adjoints dependency) change)))
+        (for change = (* (the double-float weight)
+                         (the double-float addjoint)))
+        (incf (aref addjoints dependency) (the double-float change))))
     (values
      (aref values (1- length))
-     (addjoints-vector-to-variable-bindings variables adjoints))))
+     (addjoints-vector-to-variable-bindings variables addjoints))))
