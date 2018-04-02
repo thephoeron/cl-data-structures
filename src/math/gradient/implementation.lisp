@@ -24,11 +24,11 @@
        (return (values result forms))))))
 
 
-(defun addjoints-vector-to-variable-bindings (variables addjoints)
+(defun adjoints-vector-to-variable-bindings (variables adjoints)
   (iterate
     (for (key value) in-hashtable variables)
     (with result = nil)
-    (push (aref addjoints value) result)
+    (push (aref adjoints value) result)
     (push key result)
     (finally (return result))))
 
@@ -62,11 +62,11 @@
                                       (initialization-form node)))
                               %nodes
                               value-symbol-vector))
-         (addjoints-vector-form `(make-array ,length
+         (adjoints-vector-form `(make-array ,length
                                             :element-type 'double-float
                                             :initial-element 0.0d0))
-         (!addjoints (gensym))
-         (addjoint-init-form `(setf (aref ,!addjoints ,(1- length)) 1.0d0))
+         (!adjoints (gensym))
+         (adjoint-init-form `(setf (aref ,!adjoints ,(1- length)) 1.0d0))
          (arguments (~>> %variables
                          hash-table-keys
                          (mapcar (lambda (x) (~> x symbol-name intern))))))
@@ -78,14 +78,14 @@
                       (for arg in arguments)
                       (collect `(check-type ,arg double-float)))
                   (bind (,@value-bindings
-                         (,!addjoints ,addjoints-vector-form)
+                         (,!adjoints ,adjoints-vector-form)
                          ,@weight-forms)
-                    (declare (dynamic-extent ,!addjoints)
+                    (declare (dynamic-extent ,!adjoints)
                              (type double-float
                                    ,@(mapcar #'first value-bindings)
                                    ,@(mapcar #'first weight-forms))
-                             (type (simple-array double-float (,length)) ,!addjoints))
-                    ,addjoint-init-form
+                             (type (simple-array double-float (,length)) ,!adjoints))
+                    ,adjoint-init-form
                     ,@(iterate
                         (for i from (1- length) downto 0)
                         (for node = (aref %nodes i))
@@ -95,9 +95,9 @@
                               (for dependency in-vector depends)
                               (for weight-symbol = (gethash (list node dependency)
                                                             node-weight-table))
-                              (collect `(incf (aref ,!addjoints ,dependency)
-                                              (* (the double-float ,weight-symbol)
-                                                 (aref ,!addjoints ,i)))))
+                              (collect `(incf (aref ,!adjoints ,dependency)
+                                              (* ,weight-symbol
+                                                 (aref ,!adjoints ,i)))))
                           into result)
                         (finally (return (apply #'append result))))
                     (values
@@ -105,7 +105,7 @@
                      ,(iterate
                         (for (key value) in-hashtable %variables)
                         (with result = nil)
-                        (push `(aref ,!addjoints ,value) result)
+                        (push `(aref ,!adjoints ,value) result)
                         (push `(quote ,key) result)
                         (finally (return (cons 'list result)))))))))))
 
@@ -160,13 +160,13 @@
   (bind ((nodes (read-nodes tape))
          (variables (read-variables tape))
          (length (length nodes))
-         (addjoints (make-array length
+         (adjoints (make-array length
                                :element-type 'double-float
                                :initial-element 0.0d0))
          (values (make-array length
                              :element-type 'double-float
                              :initial-element 0.0d0)))
-    (setf (aref addjoints (1- length)) 1.0d0)
+    (setf (aref adjoints (1- length)) 1.0d0)
     (iterate
       (for v
            initially vals
@@ -183,15 +183,15 @@
     (iterate
       (for i from (1- length) downto 0)
       (for node = (aref nodes i))
-      (for addjoint = (aref addjoints i))
+      (for adjoint = (aref adjoints i))
       (for deps = (tape-node-depends node))
       (for weights = (tape-node-weights node))
       (iterate
         (for dependency in-vector deps)
         (for weight in-vector weights)
         (for change = (* (the double-float weight)
-                         (the double-float addjoint)))
-        (incf (aref addjoints dependency) (the double-float change))))
+                         (the double-float adjoint)))
+        (incf (aref adjoints dependency) (the double-float change))))
     (values
      (aref values (1- length))
-     (addjoints-vector-to-variable-bindings variables addjoints))))
+     (adjoints-vector-to-variable-bindings variables adjoints))))

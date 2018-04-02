@@ -7,6 +7,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.math.grad)
   (:export
+   #:make-gradient-expression
    #:compile-gradient-expression
    #:define-tape-backward
    #:gradient

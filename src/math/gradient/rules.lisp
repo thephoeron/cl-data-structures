@@ -13,10 +13,16 @@
   (make-list (length all) :initial-element 1.0d0))
 
 
+(define-tape-backward - all
+  (list 1.0d0 -1.0d0))
+
+
 (define-tape-backward * all
   (reverse all))
 
 
 (define-tape-backward expt all
-  (bind (((x y . _) all))
-    (* y (expt x (1- y)))))
+  (bind ((x (first all))
+         (y (second all)))
+    (list (* y (expt x (1- y)))
+          (* (expt x y) (log y)))))
