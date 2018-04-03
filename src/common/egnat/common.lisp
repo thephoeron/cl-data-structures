@@ -471,15 +471,16 @@
                                                      bucket
                                                      item
                                                      additional-arguments))
-         ((parent . index) (gethash last-node paths)))
+         (parent.index (gethash last-node paths)))
     (when changed
       (setf (aref content position) new-bucket))
-    (unless (null parent)
-      (if (zerop position)
-          (progn
-            (reinitialize-ranges! container parent index)
-            (optimize-parents-partial! container parent paths index item))
-          (optimize-parents-partial! container parent paths index item)))
+    (unless (null parent.index)
+      (bind (((parent . index) parent.index))
+        (if (zerop position)
+            (progn
+              (reinitialize-ranges! container parent index)
+              (optimize-parents-partial! container parent paths index item))
+            (optimize-parents-partial! container parent paths index item))))
     (values container status)))
 
 
@@ -497,10 +498,12 @@
                             container
                             item
                             additional-arguments))
-         ((parent . index) (gethash node paths)))
+         (parent.index (gethash node paths)))
     (incf (access-size container))
     (vector-push-extend new-bucket content)
-    (optimize-parents-partial! container parent paths index item)
+    (unless (null parent.index)
+      (optimize-parents-partial! container (car parent.index)
+                                 paths (cdr parent.index) item))
     (values container
             cl-ds.common:empty-eager-modification-operation-status)))
 
@@ -531,7 +534,7 @@ following cases need to be considered:
         (if found ; case number 1, easy to handle
             (egnat-replace! container operation
                             item last-node
-                            pats
+                            paths
                             additional-arguments)
             (iterate
               (for (node parent) in-hashtable paths)
@@ -548,7 +551,7 @@ following cases need to be considered:
                                             additional-arguments))
                    ;; the case number 2, just one push-extend and we are done
                    (return (egnat-push! container operation item result
-                                        parents additional-arguments)))))))))
+                                        paths additional-arguments)))))))))
 
 
 (-> remove-children! (egnat-node fixnum) t)
@@ -636,18 +639,18 @@ following cases need to be considered:
            (cl-ds.utils:cond+ (is-leaf is-root)
              ((t t) (setf (access-root container) nil))
              ((t nil) (progn (remove-children! (car parent.index) (cdr parent.index))
-                             (optimize-parents-complete! container node paths)))
+                           (optimize-parents-complete! container node paths)))
              ((nil t) (setf (access-root container) (reorginize-tree container node)))
              ((nil nil) (bind (((parent . index) parent.index)
-                               (children (read-children parent))
-                               (stack (vect)))
-                          (setf (~> node read-content fill-pointer) 0
-                                (aref children index) (reorginize-tree container node))
-                          (rebuild-ranges-after-subtree-replace! container
-                                                                 parent
-                                                                 index
-                                                                 stack)
-                          (optimize-parents-complete! container node paths stack))))))
+                           (children (read-children parent))
+                           (stack (vect)))
+                      (setf (~> node read-content fill-pointer) 0
+                            (aref children index) (reorginize-tree container node))
+                      (rebuild-ranges-after-subtree-replace! container
+                                                             parent
+                                                             index
+                                                             stack)
+                      (optimize-parents-complete! container node paths stack))))))
 
         ((zerop position)
          (bind (((parent . _) (gethash node paths)))

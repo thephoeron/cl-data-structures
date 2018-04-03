@@ -34,7 +34,7 @@
    (cl-ds.common:make-eager-modification-operation-status t bucket)
    t))
 
-(plan 136)
+(plan 1460)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -115,12 +115,7 @@
       (isnt (hash-table-count possible-paths) 0)
       (ok found)
       (ok (find (aref data 10)
-                (cl-ds.common.egnat::read-content last-node)))
-      (let ((node nil))
-        (cl-ds.common.egnat::walk-path (lambda (x) (setf node x))
-                                       last-node
-                                       possible-paths)
-        (is (car node) root :test #'eq)))
+                (cl-ds.common.egnat::read-content last-node))))
     (multiple-value-bind (container status)
         (cl-ds.common.egnat::egnat-grow! container
                                          #'(setf cl-ds:at)
@@ -211,5 +206,31 @@
                          :branching-factor 5
                          :content-count-in-node 0)
           'cl-ds:initialization-out-of-bounds)
+
+(let ((container (make-instance
+                  'cl-ds.common.egnat:mutable-egnat-container
+                  :branching-factor 5
+                  :metric-fn #'logxor
+                  :same-fn #'=
+                  :metric-type 'fixnum
+                  :content-count-in-node 5))
+      (data (coerce (iterate
+                      (with generator = (cl-ds.utils:lazy-shuffle 0 5000))
+                      (repeat 50)
+                      (collect (funcall generator)))
+                    'vector)))
+  (setf (cl-ds.common.egnat::access-root container) nil
+        (cl-ds.common.egnat::access-size container) 0)
+  (iterate
+    (for elt in-vector data)
+    (for i from 1)
+    (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) elt nil)
+    (is (cl-ds:size container) i)
+    (iterate
+      (for j from 0 below i)
+      (for d = (elt data j))
+      (for result = (cl-ds:near container d 0))
+      (for (values content more) = (cl-ds:consume-front result))
+      (is content d))))
 
 (finalize)
