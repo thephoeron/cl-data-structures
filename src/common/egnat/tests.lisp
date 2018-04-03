@@ -34,7 +34,7 @@
    (cl-ds.common:make-eager-modification-operation-status t bucket)
    t))
 
-(plan 1460)
+(plan 2735)
 
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
@@ -228,6 +228,18 @@
     (is (cl-ds:size container) i)
     (iterate
       (for j from 0 below i)
+      (for d = (elt data j))
+      (for result = (cl-ds:near container d 0))
+      (for (values content more) = (cl-ds:consume-front result))
+      (is content d)))
+  (iterate
+    (with length = (length data))
+    (for elt in-vector data)
+    (for i from 1)
+    (cl-ds.common.egnat::egnat-shrink! container #'cl-ds:erase! elt nil)
+    (is (cl-ds:size container) (- length i))
+    (iterate
+      (for j from i below length)
       (for d = (elt data j))
       (for result = (cl-ds:near container d 0))
       (for (values content more) = (cl-ds:consume-front result))

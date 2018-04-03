@@ -628,15 +628,16 @@ following cases need to be considered:
 
 
 (defun remove-head-bucket (container node paths)
-  (bind (((parent . _) (gethash node paths)))
+  (bind ((parent (car (gethash node paths))))
     (cl-ds.utils:swapop (read-content node) 0)
     (if (null parent)
         (setf (access-root container) (reorginize-tree container node))
-        (bind (((p-parent . p-index) (gethash parent paths))
+        (bind ((p-parent.p-index (gethash parent paths))
                (new-tree (reorginize-tree container parent)))
-          (if (null p-parent)
+          (if (null p-parent.p-index)
               (setf (access-root container) new-tree)
-              (let ((stack (vect)))
+              (bind ((stack (vect))
+                     ((p-parent . p-index) p-parent.p-index))
                 (setf (~> p-parent read-children (aref p-index))
                       new-tree)
                 (rebuild-ranges-after-subtree-replace! container
