@@ -8,6 +8,7 @@
   (:nicknames #:cl-ds.common.egnat)
   (:export
    #:distance
+   #:same
    #:fundamental-egnat-container
    #:get-value
    #:mutable-egnat-container

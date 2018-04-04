@@ -6,7 +6,7 @@
 (defmethod cl-ds:make-bucket (operation container content
                               &rest all)
   (declare (ignore all))
-  content)
+  (vect content))
 
 
 (defmethod cl-ds:grow-bucket!
@@ -16,11 +16,21 @@
      location
      &rest all)
   (declare (ignore all))
-  (values location
-          (cl-ds.common:make-eager-modification-operation-status
-           t
-           bucket)
-          t))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (progn
+          (vector-push-extend location bucket)
+          (values bucket
+                  cl-ds.common:empty-eager-modification-operation-status
+                  t))
+
+        (let ((old-content (aref bucket position)))
+          (values bucket
+                  (cl-ds.common:make-eager-modification-operation-status t old-content)
+                  t)))))
+
 
 (defmethod cl-ds:shrink-bucket!
     ((operation cl-ds:erase!-function)
@@ -29,10 +39,21 @@
      location
      &rest all)
   (declare (ignore all))
-  (values
-   'cl-ds:null-bucket
-   (cl-ds.common:make-eager-modification-operation-status t bucket)
-   t))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (values
+         bucket
+         cl-ds.common:empty-eager-modification-operation-status
+         nil)
+        (let ((old-content (aref bucket position)))
+          (cl-ds.utils:swapop bucket position)
+          (values (if (alexandria:emptyp bucket)
+                      'cl-ds:null-bucket
+                      bucket)
+                  (cl-ds.common:make-eager-modification-operation-status t old-content)
+                  t)))))
 
 (plan 2735)
 

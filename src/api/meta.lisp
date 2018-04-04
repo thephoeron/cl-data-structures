@@ -176,6 +176,11 @@
                          &key &allow-other-keys))
 
 
+(defgeneric make-bucket-from-multiple (operation container data
+                                       &rest all
+                                       &key &allow-other-keys))
+
+
 (defgeneric grow-bucket! (operation container bucket location
                           &rest all
                           &key &allow-other-keys))

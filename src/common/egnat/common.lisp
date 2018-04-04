@@ -428,7 +428,7 @@
                          (distant-range (make-array range-size
                                                     :element-type %metric-type))
                          (new-node (make-instance 'egnat-node
-                                                  :content (vect new-bucket)
+                                                  :content new-bucket
                                                   :close-range close-range
                                                   :distant-range distant-range)))
                     (push-children! node new-node)
@@ -463,24 +463,22 @@
                        paths
                        additional-arguments)
   (bind ((content (read-content last-node))
-         (position (position item content :test (curry #'same container)))
-         (bucket (aref content position))
          ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
                                                      operation
                                                      container
-                                                     bucket
+                                                     content
                                                      item
                                                      additional-arguments))
          (parent.index (gethash last-node paths)))
     (when changed
-      (setf (aref content position) new-bucket))
-    (unless (null parent.index)
-      (bind (((parent . index) parent.index))
-        (if (zerop position)
-            (progn
-              (reinitialize-ranges! container parent index)
-              (optimize-parents-partial! container parent paths index item))
-            (optimize-parents-partial! container parent paths index item))))
+      (setf (slot-value node '%content) new-bucket)
+      (unless (null parent.index)
+        (bind (((parent . index) parent.index))
+          (if (zerop position)
+              (progn
+                (reinitialize-ranges! container parent index)
+                (optimize-parents-partial! container parent paths index item))
+              (optimize-parents-partial! container parent paths index item)))))
     (values container status)))
 
 
@@ -493,14 +491,14 @@
                     item node paths
                     additional-arguments)
   (bind ((content (read-content node))
-         (new-bucket (apply #'cl-ds:make-bucket
+         (new-bucket (apply #'cl-ds:grow-bucket!
                             operation
                             container
-                            item
+                            content
                             additional-arguments))
          (parent.index (gethash node paths)))
+    (setf (slot-value node '%content) new-bucket)
     (incf (access-size container))
-    (vector-push-extend new-bucket content)
     (unless (null parent.index)
       (optimize-parents-partial! container (car parent.index)
                                  paths (cdr parent.index) item))
@@ -671,22 +669,18 @@ following cases need to be considered:
 (-> merging-shrink! (mutable-egnat-container
                      egnat-node
                      hash-table
-                     fixnum
+                     boolean
                      t)
     t)
-(defun merging-shrink! (container node paths position new-bucket)
+(defun merging-shrink! (container node paths head-was-changed new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((not (cl-ds:null-bucket-p new-bucket))
-         (replace-bucket container node paths position new-bucket))
-
-        ((~> node read-content length (eql 1))
+  (cond ((cl-ds:null-bucket-p new-bucket)
          (remove-whole-node container node paths))
 
-        ((zerop position)
+        (head-was-changed
          (remove-head-bucket container node paths))
 
-        (t (progn (cl-ds.utils:swapop (read-content node) position)
-                  (optimize-parents-complete! container node paths)))))
+        (t (optimize-parents-complete! container node paths))))
 
 
 (-> remove-from-node! (mutable-egnat-container
@@ -698,17 +692,20 @@ following cases need to be considered:
 (defun remove-from-node! (container operation node item paths
                           additional-arguments)
   (bind ((content (read-content node))
-         (position (position item content :test (curry #'same container)))
-         (bucket (aref content position))
+         (old-head (aref content 0))
          ((:values new-bucket status changed) (apply #'cl-ds:shrink-bucket!
                                                      operation
                                                      container
-                                                     bucket
+                                                     content
                                                      item
-                                                     additional-arguments)))
+                                                     additional-arguments))
+         (new-head (aref new-bucket 0))
+         (head-was-changed (or (cl-ds:null-bucket-p new-bucket)
+                               (not (eql new-head old-head)))))
+    (setf (slot-value node '%content) new-bucket)
     (when changed
       ;; remove from node, update paths, sometimes reinitialize paths...
-      (merging-shrink! container node paths position new-bucket))
+      (merging-shrink! container node paths head-was-changed new-bucket))
     (values container status)))
 
 

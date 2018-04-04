@@ -84,6 +84,7 @@
    #:key-value-range
    #:lazy
    #:make-bucket
+   #:make-bucket-from-multiple
    #:make-delay
    #:make-from-traversable
    #:make-state
