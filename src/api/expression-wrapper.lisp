@@ -17,10 +17,14 @@
 
 
 (defmethod clone ((obj expression))
-  (bind (((:slots %construct-function %arguments %closure) obj)
-         (result-closure (apply %construct-function (funcall %closure t)))
+  (bind (((:slots %construct-function %arguments %closure %arguments-closure)
+          obj)
+         ((:values result-closure arguments-closure)
+          (apply %construct-function
+                 (funcall %arguments-closure)))
          (result (make 'expression
                        :construct-function %construct-function
+                       :arguments-closure arguments-closure
                        :arguments %arguments
                        :closure result-closure)))
     result))

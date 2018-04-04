@@ -12,7 +12,7 @@
             &key (key #'identity) (initial-value nil))
     (apply-aggregation-function range #'accumulate
                                 :key key
-                                :value initial-value
+                                :initial-value initial-value
                                 :fn function)))
 
 

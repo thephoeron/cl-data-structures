@@ -17,10 +17,13 @@
   CLOSED: [2018-03-06 Tue 15:58]
 * DONE egnat near function
   CLOSED: [2018-03-07 Wed 13:13]
-* TODO egnat grow functions
-* TODO egnat shrink functions
+* DONE egnat grow functions
+  CLOSED: [2018-04-04 śro 13:42]
+* DONE egnat shrink functions
+  CLOSED: [2018-04-04 śro 13:42]
 * DONE make-bucket should create just single value tuple
   CLOSED: [2018-03-05 pon 21:11]
 * DONE fix clone for RRB range
   CLOSED: [2018-03-07 Wed 13:13]
 * TODO Validate input to make-egnat-tree (scan for duplication)
+* TODO some sort of filter algorithm (aka: without)

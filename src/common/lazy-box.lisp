@@ -46,10 +46,7 @@
 (defclass box-container (cl-ds:fundamental-container)
   ((%content :initarg :content
              :type fundamental-container
-             :accessor access-content)
-   (%frozen :initform nil
-            :type boolean
-            :accessor access-frozen)))
+             :accessor access-content)))
 
 
 (defclass lazy-box-container (cl-ds:lazy box-container)
@@ -63,7 +60,7 @@
 (defun force-version (instance)
   (bind (((:accessors (operations access-operations)
                       (content access-content)
-                      (frozen access-frozen))
+                      (frozen cl-ds::access-frozen))
           instance)
          (transactional-instance (cl-ds:become-transactional content)))
     (execute-changes operations transactional-instance)
@@ -150,14 +147,14 @@
 
 
 (defmethod cl-ds:freeze! ((container lazy-box-container))
-  (prog1 (access-frozen container)
-    (setf (access-frozen container) t)))
+  (prog1 (cl-ds::access-frozen container)
+    (setf (cl-ds::access-frozen container) t)))
 
 
 (defmethod cl-ds:melt! ((container lazy-box-container))
-  (prog1 (access-frozen container)
-    (setf (access-frozen container) nil)))
+  (prog1 (cl-ds::access-frozen container)
+    (setf (cl-ds::access-frozen container) nil)))
 
 
 (defmethod cl-ds:frozenp ((container lazy-box-container))
-  (access-frozen container))
+  (cl-ds::access-frozen container))
