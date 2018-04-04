@@ -114,7 +114,9 @@
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
-                             (:file "common")))
+                             (:file "common")
+                             (:module "egnat"
+                              :components ((:file "api")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
