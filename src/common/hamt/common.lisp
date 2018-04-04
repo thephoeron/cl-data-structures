@@ -54,14 +54,14 @@ Macros
                     (dynamic-extent ,!pos ,index ,count))
            (let ((,!leaf (and ,node (not (hash-node-p ,node)))))
              ,(when on-nil
-                `(when (null ,node)
+                `(when (or (cl-ds:null-bucket-p ,node) (null ,node))
                    (return-from ,!block
                      ,on-nil)))
              ,(when on-leaf
                 `(when ,!leaf
                    (return-from ,!block
                      ,on-leaf)))
-             (when (or ,!leaf (null ,node))
+             (when (or ,!leaf (cl-ds:null-bucket-p ,node) (null ,node))
                (return-from ,!block ,node))
              ,on-every
              (when (eql ,count ,+depth+)
@@ -102,12 +102,12 @@ Macros
                     (for index = (,!indexes i))
                     (for ac
                          initially conflict
-                         then (if ac
-                                  (progn (hash-node-replace! ,node ac index)
-                                         (leave (aref ,!path 0)))
+                         then (if (or (cl-ds:null-bucket-p ac) (null ac))
                                   (if (eql 1 (hash-node-size ,node))
                                       ac
-                                      (hash-node-remove! ,node index))))
+                                      (hash-node-remove! ,node index))
+                                  (progn (hash-node-replace! ,node ac index)
+                                         (leave (aref ,!path 0)))))
                     (finally (return ac))))))
          (declare (dynamic-extent (function ,!rewrite))
                   (inline ,!rewrite))
@@ -501,7 +501,7 @@ Copy nodes and stuff.
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
       (for node = (path i))
       (for index = (indexes i))
-      (for ac initially (if (null conflict)
+      (for ac initially (if (or (cl-ds:null-bucket-p conflict) (null conflict))
                             ;;if we didn't find element or element was found but depth was already maximal,
                             ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                             conflict
@@ -520,9 +520,10 @@ Copy nodes and stuff.
 
 
 (-> transactional-copy-on-write
-    (hamt-container t (vector fixnum) vector fixnum list)
+    (hamt-container t (vector fixnum) vector fixnum (or list symbol))
     t)
-(defun transactional-copy-on-write (ownership-tag
+(defun transactional-copy-on-write (container
+                                    ownership-tag
                                     indexes
                                     path
                                     depth
@@ -547,7 +548,7 @@ Copy nodes and stuff.
       (for index = (indexes i))
       (for parent = (and (not (zerop i)) (path (1- i))))
       (for ac
-           initially (if (null conflict)
+           initially (if (or (cl-ds:null-bucket-p conflict) (null conflict))
            ;;if we didn't find element or element was found but depth was already maximal,
            ;;we will just return element, otherwise attempt to divide (rehash) conflicting node into few more
                          conflict

@@ -65,7 +65,7 @@
                       :test #'location-test)))
     (if removed
         (values
-         list
+         (or list 'cl-ds:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
           (cl-ds.common:hash-dict-content-value value))
@@ -103,7 +103,7 @@
                       :test #'location-test)))
     (if removed
         (values
-         list
+         (or list 'cl-ds:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
           (cl-ds.common:hash-dict-content-value value))
@@ -382,13 +382,13 @@
             (setf bucket (rest cell))
             (setf (cdr p-cell) (cdr cell)))
         (return-from cl-ds:shrink-bucket!
-          (values bucket
+          (values (or bucket 'cl-ds:null-bucket)
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    (cl-ds.common:hash-dict-content-value tuple))
                   t)))
       (finally
-       (return (values bucket
+       (return (values (or bucket 'cl-ds:null-bucket)
                        cl-ds.common:empty-eager-modification-operation-status
                        nil))))))
 
@@ -424,11 +424,11 @@
                    (setf bucket (rest cell))
                    (setf (cdr p-cell) (cdr cell)))
                (return-from cl-ds:shrink-bucket!
-                       (values bucket
-                               (cl-ds.common:make-eager-modification-operation-status
-                                t
-                                (cl-ds.common:hash-dict-content-value tuple))
-                               t)))
+                 (values (or bucket 'cl-ds:null-bucket)
+                         (cl-ds.common:make-eager-modification-operation-status
+                          t
+                          (cl-ds.common:hash-dict-content-value tuple))
+                         t)))
              (finish)))
       (finally
        (return (values bucket

@@ -39,7 +39,7 @@
             (setf result-status status)
             (unless changed
               (return-from cl-ds:position-modification (values container status)))
-            (when (null bucket)
+            (when (cl-ds:null-bucket-p bucket)
               (decf tail-change))
             bucket)))
     (if (zerop tail-size)
@@ -59,7 +59,9 @@
                    (new-bucket (~> new-tail
                                    (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                    shrink-bucket)))
-              (cond ((and (null new-bucket) (zerop (+ tail-change tail-size)))
+              (cond ((and
+                      (cl-ds:null-bucket-p new-bucket)
+                      (zerop (+ tail-change tail-size)))
                      (setf new-tail nil))
                     (new-bucket
                      (setf new-tail (copy-array new-tail)
@@ -73,7 +75,7 @@
                     (cl-ds.common.rrb:access-shift container) new-shift)))
         (let* ((tail (cl-ds.common.rrb:access-tail container))
                (new-bucket (shrink-bucket (aref tail (1- tail-size)))))
-          (unless (null new-bucket)
+          (unless (cl-ds:null-bucket-p new-bucket)
             (setf (aref tail (+ tail-change tail-size)) new-bucket))
           (setf (cl-ds.common.rrb:access-tail-size container)
                 (+ (cl-ds.common.rrb:access-tail-size container)
@@ -102,7 +104,7 @@
             (setf result-status status)
             (unless changed
               (return-from cl-ds:position-modification (values container status)))
-            (when (null bucket)
+            (when (cl-ds:null-bucket-p bucket)
               (decf tail-change))
             bucket)))
     (if (zerop tail-size)
@@ -122,7 +124,7 @@
                    (new-bucket (~> new-tail
                                    (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                    shrink-bucket)))
-              (cond ((and (null new-bucket) (zerop (+ tail-change tail-size)))
+              (cond ((and (cl-ds:null-bucket-p new-bucket) (zerop (+ tail-change tail-size)))
                      (setf new-tail nil))
                     (new-bucket
                      (setf (aref new-tail (+ tail-change tail-size)) new-bucket)))
@@ -339,7 +341,7 @@
             (setf result-status status)
             (unless changed
               (return-from cl-ds:position-modification (values container status)))
-            (when (null bucket)
+            (when (cl-ds:null-bucket-p bucket)
               (decf tail-change))
             bucket)))
     (values
@@ -360,7 +362,9 @@
                     (new-bucket (~> new-tail
                                     (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                     shrink-bucket)))
-               (cond ((and (null new-bucket) (zerop (+ tail-change tail-size)))
+               (cond ((and
+                       (cl-ds:null-bucket-p new-bucket)
+                       (zerop (+ tail-change tail-size)))
                       (setf new-tail nil))
                      (new-bucket
                       (setf new-tail (copy-array new-tail)
@@ -378,7 +382,7 @@
                :root (cl-ds.common.rrb:access-root container)
                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
                             (new-bucket (shrink-bucket (aref tail (1- tail-size)))))
-                       (unless (null new-bucket)
+                       (unless (cl-ds:null-bucket-p new-bucket)
                          (setf tail (copy-array tail)
                                (aref tail (+ tail-change tail-size)) new-bucket))
                        tail)

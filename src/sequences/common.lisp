@@ -30,7 +30,7 @@
                                  location
                                  &rest rest &key &allow-other-keys)
   (declare (ignore rest))
-  (values nil
+  (values 'cl-ds:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket)
           t))
@@ -42,7 +42,7 @@
                                 location
                                 &rest rest &key &allow-other-keys)
   (declare (ignore rest))
-  (values nil
+  (values 'cl-ds:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket)
           t))
