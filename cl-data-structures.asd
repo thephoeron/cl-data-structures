@@ -112,7 +112,9 @@
                                            (:file "methods")
                                            (:test-file "tests")))))
                (:module "metric-space"
-                :components ((:file "packages")))
+                :components ((:file "packages")
+                             (:file "trait-classes")
+                             (:file "common")))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
