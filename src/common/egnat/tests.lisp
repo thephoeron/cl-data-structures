@@ -1,12 +1,22 @@
 (in-package :cl-user)
-(defpackage egnat-tests (:use :prove :cl :iterate))
+(defpackage egnat-tests (:use :prove :cl :iterate :metabang-bind))
 (in-package :egnat-tests)
 
 
 (defmethod cl-ds:make-bucket (operation container content
                               &rest all)
   (declare (ignore all))
-  (vect content))
+  (serapeum:vect content))
+
+
+(defmethod cl-ds:make-bucket-from-multiple (operation container data
+                                            &rest all)
+  (iterate
+    (with result = (serapeum:vect))
+    (for i from 0 below (cl-ds:size data))
+    (for item = (cl-ds:at data i))
+    (vector-push-extend item result)
+    (finally (return result))))
 
 
 (defmethod cl-ds:grow-bucket!
@@ -17,8 +27,9 @@
      &rest all)
   (declare (ignore all))
   (bind ((position (position location bucket
-                             :test (curry #'cl-ds.common.egnat:same
-                                          container))))
+                             :test (alexandria:curry
+                                    #'cl-ds.common.egnat:same
+                                    container))))
     (if (null position)
         (progn
           (vector-push-extend location bucket)
@@ -40,8 +51,9 @@
      &rest all)
   (declare (ignore all))
   (bind ((position (position location bucket
-                             :test (curry #'cl-ds.common.egnat:same
-                                          container))))
+                             :test (alexandria:curry
+                                    #'cl-ds.common.egnat:same
+                                    container))))
     (if (null position)
         (values
          bucket
@@ -253,6 +265,7 @@
       (for result = (cl-ds:near container d 0))
       (for (values content more) = (cl-ds:consume-front result))
       (is content d)))
+  (diag "Testing erasing!")
   (iterate
     (with length = (length data))
     (for elt in-vector data)

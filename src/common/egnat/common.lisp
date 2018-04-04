@@ -52,7 +52,8 @@
     result))
 
 
-(defun make-contents (seeds-indexes data data-partitions reverse-mapping)
+(defun make-contents (operation container seeds-indexes
+                      data data-partitions reverse-mapping)
   (let ((result (make-array (length seeds-indexes))))
     (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
     (iterate
@@ -64,6 +65,9 @@
       ;; it has been already done in map-into form
       (unless (eql d i)
         (vector-push-extend element (aref result partition))))
+    (map-into result
+              (lambda (x) (cl-ds:make-bucket-from-multiple operation container x))
+              result)
     result))
 
 
@@ -124,7 +128,7 @@
          (data-partitions (make-partitions container
                                            seeds-indexes
                                            this-data))
-         (contents (make-contents seeds-indexes this-data
+         (contents (make-contents operation container seeds-indexes this-data
                                   data-partitions reverse-mapping))
          (children (map-into
                     (make-array (length contents)
@@ -140,12 +144,7 @@
                                                  :bucket-function bucket-function)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
-         (content (make-array %content-count-in-node
-                              :adjustable t
-                              :fill-pointer 0)))
-    (cl-ds:across (compose (rcurry #'vector-push-extend content)
-                           bucket-function)
-                  this-content)
+         (content (cl-ds:make-bucket-from-multiple operation container this-content)))
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node
@@ -159,19 +158,7 @@
                                 extra-arguments data
                                 &key (multithread t) bucket-function)
   (if (<= (cl-ds:size data) (read-content-count-in-node container))
-      (let ((content (make-array (read-content-count-in-node container)
-                                 :adjustable t
-                                 :fill-pointer 0))
-            (bucket-function (or bucket-function
-                                 (lambda (x)
-                                   (apply #'cl-ds:make-bucket
-                                          operation
-                                          container
-                                          x
-                                          extra-arguments)))))
-        (cl-ds:across (compose (rcurry #'vector-push-extend content)
-                               bucket-function)
-                      data)
+      (let ((content (cl-ds:make-bucket-from-multiple operation container data)))
         (make 'egnat-node :content content))
       (make-future-egnat-subtrees container operation
                                   extra-arguments data
@@ -373,7 +360,7 @@
     (assert (null %root))
     (setf %root (make-instance 'egnat-node
                                :children (vect)
-                               :content (vect bucket)
+                               :content bucket
                                :close-range close-range
                                :distant-range distant-range)
           %size 1)
@@ -463,18 +450,21 @@
                        paths
                        additional-arguments)
   (bind ((content (read-content last-node))
+         (old-head (aref content 0))
          ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
                                                      operation
                                                      container
                                                      content
                                                      item
                                                      additional-arguments))
+         (new-head (aref new-bucket 0))
+         (head-changed (not (eql old-head new-head)))
          (parent.index (gethash last-node paths)))
     (when changed
-      (setf (slot-value node '%content) new-bucket)
+      (setf (slot-value last-node '%content) new-bucket)
       (unless (null parent.index)
         (bind (((parent . index) parent.index))
-          (if (zerop position)
+          (if head-changed
               (progn
                 (reinitialize-ranges! container parent index)
                 (optimize-parents-partial! container parent paths index item))
@@ -495,6 +485,7 @@
                             operation
                             container
                             content
+                            item
                             additional-arguments))
          (parent.index (gethash node paths)))
     (setf (slot-value node '%content) new-bucket)
@@ -627,7 +618,6 @@ following cases need to be considered:
 
 (defun remove-head-bucket (container node paths)
   (bind ((parent (car (gethash node paths))))
-    (cl-ds.utils:swapop (read-content node) 0)
     (if (null parent)
         (setf (access-root container) (reorginize-tree container node))
         (bind ((p-parent.p-index (gethash parent paths))
@@ -646,17 +636,18 @@ following cases need to be considered:
 
 
 (defun remove-whole-node (container node paths)
+  (declare (optimize (debug 3)))
   (bind ((parent.index (gethash node paths))
          (is-leaf (emptyp (read-children node)))
          (is-root (null parent.index)))
     (cl-ds.utils:cond+ (is-leaf is-root)
       ((t t) (setf (access-root container) nil))
       ((t nil) (progn (remove-children! (car parent.index) (cdr parent.index))
-                    (optimize-parents-complete! container node paths)))
+                      (optimize-parents-complete! container (car parent.index) paths)))
       ((nil t) (setf (access-root container) (reorginize-tree container node)))
       ((nil nil) (bind (((parent . index) parent.index)
-                    (children (read-children parent))
-                    (stack (vect)))
+                        (children (read-children parent))
+                        (stack (vect)))
                (setf (~> node read-content fill-pointer) 0
                      (aref children index) (reorginize-tree container node))
                (rebuild-ranges-after-subtree-replace! container
@@ -699,7 +690,7 @@ following cases need to be considered:
                                                      content
                                                      item
                                                      additional-arguments))
-         (new-head (aref new-bucket 0))
+         (new-head (or (cl-ds:null-bucket-p new-bucket) (aref new-bucket 0)))
          (head-was-changed (or (cl-ds:null-bucket-p new-bucket)
                                (not (eql new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
