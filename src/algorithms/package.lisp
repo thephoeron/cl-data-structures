@@ -34,3 +34,25 @@
    #:summary-function
    #:transformation!-function
    #:zip))
+
+
+(defpackage :cl-data-structures.algorithms.meta
+  (:use #:common-lisp #:serapeum #:cl-ds.utils
+        #:alexandria #:iterate #:cl-ds #:bind)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:nicknames #:cl-ds.alg.meta)
+  (:export
+   #:aggregate
+   #:aggregation-finished-p
+   #:aggregation-function
+   #:apply-aggregation-function
+   #:apply-layer
+   #:apply-range-function
+   #:gather-prior-states
+   #:layer-function
+   #:make-state
+   #:multi-aggregation-function
+   #:multi-aggregation-stages
+   #:range-function
+   #:state-result
+   #:transformation!-function))
