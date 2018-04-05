@@ -168,56 +168,56 @@ Range releated functions.
       (error 'ice-error :text "Can't reset frozen containers."))))
 
 
-(defmethod cl-ds.meta:functional-counterpart ((operation functional-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:functional-function))
   operation)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation erase!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:erase!-function))
   #'erase)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation update-if!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update-if!-function))
   #'update-if)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation erase-if!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:erase-if!-function))
   #'erase-if)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation put!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:put!-function))
   #'put)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation add!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:add!-function))
   #'add)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation insert!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:insert!-function))
   #'insert)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation take-out!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:take-out!-function))
   #'functional-take-out-function)
 
-(defmethod cl-ds.meta:functional-counterpart ((operation update!-function))
+(defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update!-function))
   #'update)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation destructive-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:destructive-function))
   operation)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-erase-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-erase-function))
   #'erase!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-erase-if-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-erase-if-function))
   #'erase-if!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-update-if-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-if-function))
   #'update-if!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-add-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-add-function))
   #'add!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-put-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-function))
   #'put!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-insert-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-insert-function))
   #'(setf at))
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-take-out-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-function))
   #'take-out!)
 
-(defmethod cl-ds.meta:destructive-counterpart ((operation functional-update-function))
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-function))
   #'update!)
