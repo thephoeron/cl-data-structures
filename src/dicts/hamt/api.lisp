@@ -116,9 +116,9 @@ Methods. Those will just call non generic functions.
   (hamt-dictionary-at container location))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
-                                        (container functional-hamt-dictionary)
-                                        location &rest all &key value)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
+                                             (container functional-hamt-dictionary)
+                                             location &rest all &key value)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -129,7 +129,7 @@ Methods. Those will just call non generic functions.
            (hash (hash-fn location))
            ((:dflet grow-bucket (bucket))
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:grow-bucket
+                (apply #'cl-ds.meta:grow-bucket
                        operation
                        container
                        bucket
@@ -148,7 +148,7 @@ Methods. Those will just call non generic functions.
                            conflict))
            ((:dflet make-bucket ())
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:make-bucket
+                (apply #'cl-ds.meta:make-bucket
                        operation
                        container
                        location
@@ -177,9 +177,9 @@ Methods. Those will just call non generic functions.
               status))))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
-                                        (container transactional-hamt-dictionary)
-                                        location &rest all &key value)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
+                                             (container transactional-hamt-dictionary)
+                                             location &rest all &key value)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -189,7 +189,7 @@ Methods. Those will just call non generic functions.
            (changed nil)
            ((:dflet grow-bucket (bucket))
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:grow-bucket
+                (apply #'cl-ds.meta:grow-bucket
                        operation
                        container
                        bucket
@@ -201,7 +201,7 @@ Methods. Those will just call non generic functions.
               (values a b c)))
            ((:dflet make-bucket ())
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:make-bucket
+                (apply #'cl-ds.meta:make-bucket
                        operation
                        container
                        location
@@ -231,11 +231,11 @@ Methods. Those will just call non generic functions.
               status))))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
-                                        (container functional-hamt-dictionary)
-                                        location
-                                        &rest all
-                                        &key)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
+                                             (container functional-hamt-dictionary)
+                                             location
+                                             &rest all
+                                             &key)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -246,7 +246,7 @@ Methods. Those will just call non generic functions.
            (changed nil)
            ((:dflet shrink-bucket (bucket))
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:shrink-bucket
+                (apply #'cl-ds.meta:shrink-bucket
                        operation
                        container
                        bucket
@@ -263,7 +263,7 @@ Methods. Those will just call non generic functions.
                            depth
                            conflict))
            ((:dflet just-return ())
-            (return-from cl-ds:position-modification
+            (return-from cl-ds.meta:position-modification
               (values container
                       cl-ds.common:empty-eager-modification-operation-status)))
            ((:values new-root status)
@@ -283,11 +283,11 @@ Methods. Those will just call non generic functions.
               status))))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
-                                        (container transactional-hamt-dictionary)
-                                        location
-                                        &rest all
-                                        &key)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
+                                             (container transactional-hamt-dictionary)
+                                             location
+                                             &rest all
+                                             &key)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -297,7 +297,7 @@ Methods. Those will just call non generic functions.
            (changed nil)
            ((:dflet shrink-bucket (bucket))
             (multiple-value-bind (a b c)
-                (apply #'cl-ds:shrink-bucket
+                (apply #'cl-ds.meta:shrink-bucket
                        operation
                        container
                        bucket
@@ -306,7 +306,7 @@ Methods. Those will just call non generic functions.
               (setf changed c)
               (values a b c)))
            ((:dflet just-return ())
-            (return-from cl-ds:position-modification
+            (return-from cl-ds.meta:position-modification
               (values container
                       cl-ds.common:empty-eager-modification-operation-status)))
            ((:dflet copy-on-write (indexes path depth conflict))
@@ -329,11 +329,11 @@ Methods. Those will just call non generic functions.
               status))))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:shrink-function)
-                                        (container mutable-hamt-dictionary)
-                                        location
-                                        &rest all
-                                        &key)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
+                                             (container mutable-hamt-dictionary)
+                                             location
+                                             &rest all
+                                             &key)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -345,7 +345,7 @@ Methods. Those will just call non generic functions.
              (with-destructive-erase-hamt node container hash
                :on-leaf
                (multiple-value-bind (bucket status changed)
-                   (apply #'cl-ds:shrink-bucket!
+                   (apply #'cl-ds.meta:shrink-bucket!
                           operation
                           container
                           node
@@ -353,12 +353,12 @@ Methods. Those will just call non generic functions.
                           :hash hash
                           all)
                  (unless changed
-                   (return-from cl-ds:position-modification
+                   (return-from cl-ds.meta:position-modification
                      (values container status)))
                  (setf modification-status status)
                  bucket)
                :on-nil
-               (return-from cl-ds:position-modification
+               (return-from cl-ds.meta:position-modification
                  (values
                   container
                   cl-ds.common:empty-eager-modification-operation-status)))))
@@ -368,11 +368,11 @@ Methods. Those will just call non generic functions.
               modification-status))))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
-                                        (container mutable-hamt-dictionary)
-                                        location
-                                        &rest all
-                                        &key value)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
+                                             (container mutable-hamt-dictionary)
+                                             location
+                                             &rest all
+                                             &key value)
   (declare (optimize (speed 3)
                      (safety 1)
                      (debug 0)
@@ -384,7 +384,7 @@ Methods. Those will just call non generic functions.
                  `(multiple-value-bind (bucket s changed)
                       ,@body
                     (unless changed
-                      (return-from cl-ds:position-modification
+                      (return-from cl-ds.meta:position-modification
                         (values container
                                 s)))
                     (setf status s)
@@ -399,52 +399,52 @@ Methods. Those will just call non generic functions.
                    ((access-root container) hash)
                    :on-every (setf prev-node node prev-index index)
                    :on-nil (if prev-node
-                                 (progn
-                                   (hash-node-insert!
-                                    prev-node
-                                    (rebuild-rehashed-node
-                                     container
-                                     c
-                                     (handle-bucket
-                                      (cl-ds:make-bucket operation
-                                                         container
-                                                         location
-                                                         :hash hash
-                                                         :value value))
-                                     tag)
-                                    prev-index)
-                                   root)
-                                 (handle-bucket
-                                  (cl-ds:make-bucket operation
-                                                     container
-                                                     location
-                                                     :hash hash
-                                                     :value value)))
+                               (progn
+                                 (hash-node-insert!
+                                  prev-node
+                                  (rebuild-rehashed-node
+                                   container
+                                   c
+                                   (handle-bucket
+                                    (cl-ds.meta:make-bucket operation
+                                                            container
+                                                            location
+                                                            :hash hash
+                                                            :value value))
+                                   tag)
+                                  prev-index)
+                                 root)
+                               (handle-bucket
+                                (cl-ds.meta:make-bucket operation
+                                                        container
+                                                        location
+                                                        :hash hash
+                                                        :value value)))
                    :on-leaf (if prev-node
                                 (progn
                                   (hash-node-replace!
                                    prev-node
                                    (rebuild-rehashed-node container c
-                                    (handle-bucket
-                                     (cl-ds:grow-bucket! operation
-                                                         container
-                                                         node
-                                                         location
-                                                         :hash hash
-                                                         :value value))
-                                    tag)
+                                                          (handle-bucket
+                                                           (cl-ds.meta:grow-bucket! operation
+                                                                                    container
+                                                                                    node
+                                                                                    location
+                                                                                    :hash hash
+                                                                                    :value value))
+                                                          tag)
                                    prev-index)
                                   root)
                                 (rebuild-rehashed-node
                                  container
                                  c
                                  (handle-bucket
-                                  (cl-ds:grow-bucket! operation
-                                                      container
-                                                      node
-                                                      location
-                                                      :hash hash
-                                                      :value value))
+                                  (cl-ds.meta:grow-bucket! operation
+                                                           container
+                                                           node
+                                                           location
+                                                           :hash hash
+                                                           :value value))
                                  tag)))))
         (setf (access-root container) result)
         (unless (cl-ds:found status)
@@ -522,7 +522,7 @@ Methods. Those will just call non generic functions.
         :container container))
 
 
-(defmethod cl-ds:transaction ((operation cl-ds:destructive-function)
+(defmethod cl-ds:transaction ((operation cl-ds.meta:destructive-function)
                               (container transactional-hamt-dictionary)
                               &rest args)
   (let ((result (make 'transactional-hamt-dictionary
@@ -535,7 +535,7 @@ Methods. Those will just call non generic functions.
     result))
 
 
-(defmethod cl-ds:transaction ((operation cl-ds:insert!-function)
+(defmethod cl-ds:transaction ((operation cl-ds.meta:insert!-function)
                               (container transactional-hamt-dictionary)
                               &rest args)
   (bind (((location new-value . _) args)
@@ -552,7 +552,7 @@ Methods. Those will just call non generic functions.
 (defmethod cl-ds:across (function (container hamt-dictionary))
   (labels ((impl (node)
              (if (listp node)
-                 (cl-ds:map-bucket container node function)
+                 (cl-ds.meta:map-bucket container node function)
                  (iterate
                    (with content = (cl-ds.common.hamt:hash-node-content node))
                    (for i from 0 below (cl-ds.common.hamt:hash-node-size node))

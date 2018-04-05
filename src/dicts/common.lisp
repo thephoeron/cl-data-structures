@@ -48,12 +48,12 @@
                        ,changed))))))))
 
 
-(defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-function)
-                                (container hashing-dictionary)
-                                (bucket list)
-                                location
-                                &rest all
-                                &key hash)
+(defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
+                                     (container hashing-dictionary)
+                                     (bucket list)
+                                     location
+                                     &rest all
+                                     &key hash)
   (bind ((equal-fn (read-equal-fn container))
          ((:dflet location-test (node location))
           (and (eql hash (cl-ds.common:hash-content-hash node))
@@ -65,7 +65,7 @@
                       :test #'location-test)))
     (if removed
         (values
-         (or list 'cl-ds:null-bucket)
+         (or list 'cl-ds.meta:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
           (cl-ds.common:hash-dict-content-value value))
@@ -76,12 +76,12 @@
          nil))))
 
 
-(defmethod cl-ds:shrink-bucket ((operation cl-ds:erase-if-function)
-                                (container hashing-dictionary)
-                                (bucket list)
-                                location
-                                &rest all
-                                &key hash condition-fn)
+(defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-if-function)
+                                     (container hashing-dictionary)
+                                     (bucket list)
+                                     location
+                                     &rest all
+                                     &key hash condition-fn)
   (bind ((equal-fn (read-equal-fn container))
          ((:dflet location-test (node location))
           (when (and (eql hash (cl-ds.common:hash-content-hash node))
@@ -91,7 +91,7 @@
                                    (cl-ds.common:hash-content-location node)
                                    (cl-ds.common:hash-dict-content-value node))))
               (unless result
-                (return-from cl-ds:shrink-bucket
+                (return-from cl-ds.meta:shrink-bucket
                   (values
                    bucket
                    cl-ds.common:empty-eager-modification-operation-status
@@ -103,7 +103,7 @@
                       :test #'location-test)))
     (if removed
         (values
-         (or list 'cl-ds:null-bucket)
+         (or list 'cl-ds.meta:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
           (cl-ds.common:hash-dict-content-value value))
@@ -114,12 +114,12 @@
          nil))))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:insert-function)
-                              (container hashing-dictionary)
-                              (bucket list)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
+                                   (container hashing-dictionary)
+                                   (bucket list)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -130,12 +130,12 @@
       t))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:add-function)
-                              (container hashing-dictionary)
-                              (bucket list)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
+                                   (container hashing-dictionary)
+                                   (bucket list)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -146,12 +146,12 @@
       (not ^replaced)))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:update-if-function)
-                              (container hashing-dictionary)
-                              (bucket list)
-                              location
-                              &rest all
-                              &key hash value condition-fn)
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
+                                   (container hashing-dictionary)
+                                   (bucket list)
+                                   location
+                                   &rest all
+                                   &key hash value condition-fn)
   (declare (ignore all))
   (bind ((equal-fn (read-equal-fn container))
          (result (iterate
@@ -191,12 +191,12 @@
               t)))))))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:update-if!-function)
-                              (container hashing-dictionary)
-                              (bucket list)
-                              location
-                              &rest all
-                              &key hash value condition-fn)
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if!-function)
+                                   (container hashing-dictionary)
+                                   (bucket list)
+                                   location
+                                   &rest all
+                                   &key hash value condition-fn)
   (declare (ignore all))
   (bind ((equal-fn (read-equal-fn container))
          (result (iterate
@@ -223,12 +223,12 @@
                   t)))))
 
 
-(defmethod cl-ds:grow-bucket ((operation cl-ds:update-function)
-                              (container hashing-dictionary)
-                              (bucket list)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
+                                   (container hashing-dictionary)
+                                   (bucket list)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (bucket-growing-macro
       (container bucket location hash value)
 
@@ -240,22 +240,22 @@
       ^replaced))
 
 
-(defmethod cl-ds:make-bucket ((operation cl-ds:update-function)
-                              (container hashing-dictionary)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:update-function)
+                                   (container hashing-dictionary)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (declare (ignore hash value location))
   (values nil
           cl-ds.common:empty-eager-modification-operation-status
           nil))
 
 
-(defmethod cl-ds:make-bucket ((operation cl-ds:add-function)
-                              (container hashing-dictionary)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
+                                   (container hashing-dictionary)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (values (list (cl-ds.common:make-hash-dict-content
                  :location location
                  :value (cl-ds:force value)
@@ -264,11 +264,11 @@
           t))
 
 
-(defmethod cl-ds:make-bucket ((operation cl-ds:insert-function)
-                              (container hashing-dictionary)
-                              location
-                              &rest all
-                              &key hash value)
+(defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
+                                   (container hashing-dictionary)
+                                   location
+                                   &rest all
+                                   &key hash value)
   (values (list (cl-ds.common:make-hash-dict-content
                  :location location
                  :value (cl-ds:force value)
@@ -291,12 +291,12 @@
                              (comp (cl-ds.common:hash-content-location tuple)
                                    location)))))))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert-function)
-                                 (container hashing-dictionary)
-                                 (bucket list)
-                                 location
-                                 &rest all
-                                 &key hash value)
+  (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert-function)
+                                      (container hashing-dictionary)
+                                      (bucket list)
+                                      location
+                                      &rest all
+                                      &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
@@ -314,12 +314,12 @@
                    t old-value))
               t)))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:update-function)
-                                 (container hashing-dictionary)
-                                 (bucket list)
-                                 location
-                                 &rest all
-                                 &key hash value)
+  (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update-function)
+                                      (container hashing-dictionary)
+                                      (bucket list)
+                                      location
+                                      &rest all
+                                      &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
@@ -334,12 +334,12 @@
                      t old-value)
                     t)))))
 
-  (defmethod cl-ds:grow-bucket! ((operation cl-ds:add-function)
-                                 (container hashing-dictionary)
-                                 (bucket list)
-                                 location
-                                 &rest all
-                                 &key hash value)
+  (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add-function)
+                                      (container hashing-dictionary)
+                                      (bucket list)
+                                      location
+                                      &rest all
+                                      &key hash value)
     (let* ((tuple (locate-tuple container bucket hash location))
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
@@ -359,12 +359,12 @@
                   nil)))))
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-function)
-                                 (container hashing-dictionary)
-                                 (bucket list)
-                                 location
-                                 &rest all
-                                 &key hash)
+(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-function)
+                                      (container hashing-dictionary)
+                                      (bucket list)
+                                      location
+                                      &rest all
+                                      &key hash)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -381,24 +381,24 @@
         (if (null p-cell)
             (setf bucket (rest cell))
             (setf (cdr p-cell) (cdr cell)))
-        (return-from cl-ds:shrink-bucket!
-          (values (or bucket 'cl-ds:null-bucket)
+        (return-from cl-ds.meta:shrink-bucket!
+          (values (or bucket 'cl-ds.meta:null-bucket)
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    (cl-ds.common:hash-dict-content-value tuple))
                   t)))
       (finally
-       (return (values (or bucket 'cl-ds:null-bucket)
+       (return (values (or bucket 'cl-ds.meta:null-bucket)
                        cl-ds.common:empty-eager-modification-operation-status
                        nil))))))
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-if-function)
-                                 (container hashing-dictionary)
-                                 (bucket list)
-                                 location
-                                 &rest all
-                                 &key hash condition-fn)
+(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if-function)
+                                      (container hashing-dictionary)
+                                      (bucket list)
+                                      location
+                                      &rest all
+                                      &key hash condition-fn)
   (declare (optimize (speed 3)
                      (safety 0)
                      (debug 0)
@@ -423,8 +423,8 @@
                (if (null p-cell)
                    (setf bucket (rest cell))
                    (setf (cdr p-cell) (cdr cell)))
-               (return-from cl-ds:shrink-bucket!
-                 (values (or bucket 'cl-ds:null-bucket)
+               (return-from cl-ds.meta:shrink-bucket!
+                 (values (or bucket 'cl-ds.meta:null-bucket)
                          (cl-ds.common:make-eager-modification-operation-status
                           t
                           (cl-ds.common:hash-dict-content-value tuple))
@@ -456,8 +456,8 @@
                                 (cl-ds:whole-range container)))
 
 
-(defmethod cl-ds:full-bucket-p ((container fundamental-hashing-dictionary)
-                                bucket)
+(defmethod cl-ds.meta:full-bucket-p ((container fundamental-hashing-dictionary)
+                                     bucket)
   (not
    (iterate
      (for i from 1)
@@ -465,9 +465,9 @@
      (always (< i (read-bucket-size container))))))
 
 
-(defmethod cl-ds:map-bucket ((container fundamental-hashing-dictionary)
-                             bucket
-                             function)
+(defmethod cl-ds.meta:map-bucket ((container fundamental-hashing-dictionary)
+                                  bucket
+                                  function)
   (map nil
        (lambda (x) (funcall function
                        (cl-ds.common:hash-content-location x)

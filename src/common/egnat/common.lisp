@@ -66,7 +66,7 @@
       (unless (eql d i)
         (vector-push-extend element (aref result partition))))
     (map-into result
-              (lambda (x) (cl-ds:make-bucket-from-multiple operation container x))
+              (lambda (x) (cl-ds.meta:make-bucket-from-multiple operation container x))
               result)
     result))
 
@@ -120,7 +120,7 @@
           (select-seeds %branching-factor (cl-ds:size this-data)))
          (bucket-function (or bucket-function
                               (lambda (x)
-                                (apply #'cl-ds:make-bucket
+                                (apply #'cl-ds.meta:make-bucket
                                        operation
                                        container
                                        x
@@ -144,7 +144,7 @@
                                                  :bucket-function bucket-function)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
-         (content (cl-ds:make-bucket-from-multiple operation container this-content)))
+         (content (cl-ds.meta:make-bucket-from-multiple operation container this-content)))
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node
@@ -158,7 +158,7 @@
                                 extra-arguments data
                                 &key (multithread t) bucket-function)
   (if (<= (cl-ds:size data) (read-content-count-in-node container))
-      (let ((content (cl-ds:make-bucket-from-multiple operation container data)))
+      (let ((content (cl-ds.meta:make-bucket-from-multiple operation container data)))
         (make 'egnat-node :content content))
       (make-future-egnat-subtrees container operation
                                   extra-arguments data
@@ -213,7 +213,7 @@
 
 (defun insert-into-node (operation container node item extra-arguments)
   (bind (((:slots %content) node))
-    (apply #'cl-ds:grow-bucket!
+    (apply #'cl-ds.meta:grow-bucket!
            operation
            container
            node
@@ -222,7 +222,7 @@
 
 
 (defun node-full (container node)
-  (cl-ds:full-bucket-p container (read-content node)))
+  (cl-ds.meta:full-bucket-p container (read-content node)))
 
 
 (defun closest-node (container nodes item)
@@ -342,7 +342,7 @@
     container))
 
 
-(-> initialize-root! (mutable-egnat-container cl-ds:grow-function t list)
+(-> initialize-root! (mutable-egnat-container cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun initialize-root! (container operation item additional-arguments)
@@ -352,7 +352,7 @@
                                   :element-type %metric-type))
          (distant-range (make-array range-size
                                     :element-type %metric-type))
-         (bucket (apply #'cl-ds:make-bucket
+         (bucket (apply #'cl-ds.meta:make-bucket
                         operation
                         container
                         item
@@ -376,7 +376,7 @@
   node)
 
 
-(-> splitting-grow! (mutable-egnat-container cl-ds:grow-function t list)
+(-> splitting-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun splitting-grow! (container operation item additional-arguments)
@@ -403,7 +403,7 @@
                          (next-node (aref children close-index)))
                     (impl next-node)
                     (update-ranges! container node item close-index))
-                  (bind ((new-bucket (apply #'cl-ds:make-bucket
+                  (bind ((new-bucket (apply #'cl-ds.meta:make-bucket
                                             operation
                                             container
                                             item
@@ -438,7 +438,7 @@
 
 
 (-> egnat-replace! (mutable-egnat-container
-                    cl-ds:grow-function
+                    cl-ds.meta:grow-function
                     t
                     egnat-node
                     hash-table
@@ -451,7 +451,7 @@
                        additional-arguments)
   (bind ((content (read-content last-node))
          (old-head (aref content 0))
-         ((:values new-bucket status changed) (apply #'cl-ds:grow-bucket!
+         ((:values new-bucket status changed) (apply #'cl-ds.meta:grow-bucket!
                                                      operation
                                                      container
                                                      content
@@ -473,7 +473,7 @@
 
 
 (-> egnat-push! (mutable-egnat-container
-                 cl-ds:grow-function t
+                 cl-ds.meta:grow-function t
                  egnat-node hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
@@ -481,7 +481,7 @@
                     item node paths
                     additional-arguments)
   (bind ((content (read-content node))
-         (new-bucket (apply #'cl-ds:grow-bucket!
+         (new-bucket (apply #'cl-ds.meta:grow-bucket!
                             operation
                             container
                             content
@@ -497,7 +497,7 @@
             cl-ds.common:empty-eager-modification-operation-status)))
 
 
-(-> egnat-grow! (mutable-egnat-container cl-ds:grow-function t list)
+(-> egnat-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-grow! (container operation item additional-arguments)
@@ -665,7 +665,7 @@ following cases need to be considered:
     t)
 (defun merging-shrink! (container node paths head-was-changed new-bucket)
   "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((cl-ds:null-bucket-p new-bucket)
+  (cond ((cl-ds.meta:null-bucket-p new-bucket)
          (remove-whole-node container node paths))
 
         (head-was-changed
@@ -675,7 +675,7 @@ following cases need to be considered:
 
 
 (-> remove-from-node! (mutable-egnat-container
-                       cl-ds:shrink-function
+                       cl-ds.meta:shrink-function
                        egnat-node t
                        hash-table list)
     (values mutable-egnat-container
@@ -684,14 +684,14 @@ following cases need to be considered:
                           additional-arguments)
   (bind ((content (read-content node))
          (old-head (aref content 0))
-         ((:values new-bucket status changed) (apply #'cl-ds:shrink-bucket!
+         ((:values new-bucket status changed) (apply #'cl-ds.meta:shrink-bucket!
                                                      operation
                                                      container
                                                      content
                                                      item
                                                      additional-arguments))
-         (new-head (or (cl-ds:null-bucket-p new-bucket) (aref new-bucket 0)))
-         (head-was-changed (or (cl-ds:null-bucket-p new-bucket)
+         (new-head (or (cl-ds.meta:null-bucket-p new-bucket) (aref new-bucket 0)))
+         (head-was-changed (or (cl-ds.meta:null-bucket-p new-bucket)
                               (not (same container new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
     (when changed
@@ -700,7 +700,7 @@ following cases need to be considered:
     (values container status)))
 
 
-(-> egnat-shrink! (mutable-egnat-container cl-ds:shrink-function t list)
+(-> egnat-shrink! (mutable-egnat-container cl-ds.meta:shrink-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-shrink! (container operation item additional-arguments)

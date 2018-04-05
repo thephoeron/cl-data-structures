@@ -1,11 +1,11 @@
 (in-package #:cl-data-structures.metric-space)
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase!-function)
-                                 (container mutable-metric-space-set)
-                                 bucket
-                                 location
-                                 &rest all)
+(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase!-function)
+                                      (container mutable-metric-space-set)
+                                      bucket
+                                      location
+                                      &rest all)
   (declare (ignore all))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
@@ -23,12 +23,12 @@
                   t)))))
 
 
-(defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-if!-function)
-                                 (container mutable-metric-space-set)
-                                 bucket
-                                 location
-                                 &rest all
-                                 &key condition-fn)
+(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if!-function)
+                                      (container mutable-metric-space-set)
+                                      bucket
+                                      location
+                                      &rest all
+                                      &key condition-fn)
   (declare (ignore all))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
@@ -54,11 +54,11 @@
                       nil))))))
 
 
-(defmethod cl-ds:grow-bucket! ((operation cl-ds:insert!-function)
-                               (container mutable-metric-space-set)
-                               bucket
-                               location
-                               &rest all)
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert!-function)
+                                    (container mutable-metric-space-set)
+                                    bucket
+                                    location
+                                    &rest all)
   (declare (ignore all))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
@@ -76,11 +76,11 @@
                 t))))
 
 
-(defmethod cl-ds:grow-bucket! ((operation cl-ds:add!-function)
-                               (container mutable-metric-space-set)
-                               bucket
-                               location
-                               &rest all)
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add!-function)
+                                    (container mutable-metric-space-set)
+                                    bucket
+                                    location
+                                    &rest all)
   (declare (ignore all))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
@@ -96,18 +96,18 @@
                 nil))))
 
 
-(defmethod cl-ds:make-bucket ((operation t)
-                              (container metric-space-set)
-                              location
-                              &rest all)
+(defmethod cl-ds.meta:make-bucket ((operation t)
+                                   (container metric-space-set)
+                                   location
+                                   &rest all)
   (declare (ignore all))
   (vect location))
 
 
-(defmethod cl-ds:make-bucket-from-multiple ((operation t)
-                                            (container metric-space-set)
-                                            data
-                                            &rest all)
+(defmethod cl-ds.meta:make-bucket-from-multiple ((operation t)
+                                                 (container metric-space-set)
+                                                 data
+                                                 &rest all)
   (declare (ignore all))
   (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
       data

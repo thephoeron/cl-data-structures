@@ -21,56 +21,56 @@
 (defgeneric at (container location))
 
 (defgeneric (setf at) (new-value container location)
-  (:generic-function-class insert!-function))
+  (:generic-function-class cl-ds.meta:insert!-function))
 
 (defgeneric add (container location new-value)
-  (:generic-function-class functional-add-function))
+  (:generic-function-class cl-ds.meta:functional-add-function))
 
 (defgeneric put (container item)
-  (:generic-function-class functional-put-function))
+  (:generic-function-class cl-ds.meta:functional-put-function))
 
 (defgeneric take-out! (container)
-  (:generic-function-class take-out!-function))
+  (:generic-function-class cl-ds.meta:take-out!-function))
 
 (defgeneric take-out (container)
-  (:generic-function-class functional-take-out-function))
+  (:generic-function-class cl-ds.meta:functional-take-out-function))
 
 (defgeneric near (container item maximal-distance))
 
 (defgeneric add! (container location new-value)
-  (:generic-function-class add!-function))
+  (:generic-function-class cl-ds.meta:add!-function))
 
 (defgeneric insert (container location new-value)
-  (:generic-function-class functional-insert-function))
+  (:generic-function-class cl-ds.meta:functional-insert-function))
 
 (defgeneric erase (container location)
-  (:generic-function-class functional-erase-function))
+  (:generic-function-class cl-ds.meta:functional-erase-function))
 
 (defgeneric erase-if (container location condition-fn)
-  (:generic-function-class functional-erase-if-function))
+  (:generic-function-class cl-ds.meta:functional-erase-if-function))
 
 (defgeneric erase-if! (container location condition-fn)
-  (:generic-function-class erase-if!-function))
+  (:generic-function-class cl-ds.meta:erase-if!-function))
 
 (defgeneric erase! (container location)
-  (:generic-function-class erase!-function))
+  (:generic-function-class cl-ds.meta:erase!-function))
 
 (defgeneric put! (container item)
-  (:generic-function-class put!-function))
+  (:generic-function-class cl-ds.meta:put!-function))
 
 (defgeneric size (container))
 
 (defgeneric update (container location new-value)
-  (:generic-function-class functional-update-function))
+  (:generic-function-class cl-ds.meta:functional-update-function))
 
 (defgeneric update-if (container location new-value condition-fn)
-  (:generic-function-class functional-update-if-function))
+  (:generic-function-class cl-ds.meta:functional-update-if-function))
 
 (defgeneric update! (container location new-value)
-  (:generic-function-class update!-function))
+  (:generic-function-class cl-ds.meta:update!-function))
 
 (defgeneric update-if! (container location new-value condition-fn)
-  (:generic-function-class update-if!-function))
+  (:generic-function-class cl-ds.meta:update-if!-function))
 
 (defgeneric become-functional (container)
   (:method ((container functional)) container))
@@ -97,28 +97,6 @@
 (defgeneric value (status))
 
 (defgeneric found (status))
-
-(defgeneric functional-counterpart (operation)
-  (:method ((operation functional-function)) operation)
-  (:method ((operation erase!-function)) #'erase)
-  (:method ((operation update-if!-function)) #'update-if)
-  (:method ((operation erase-if!-function)) #'erase-if)
-  (:method ((operation put!-function)) #'put)
-  (:method ((operation add!-function)) #'add)
-  (:method ((operation insert!-function)) #'insert)
-  (:method ((operation take-out!-function)) #'functional-take-out-function)
-  (:method ((operation update!-function)) #'update))
-
-(defgeneric destructive-counterpart (operation)
-  (:method ((operation destructive-function)) operation)
-  (:method ((operation functional-erase-function)) #'erase!)
-  (:method ((operation functional-erase-if-function)) #'erase-if!)
-  (:method ((operation functional-update-if-function)) #'update-if!)
-  (:method ((operation functional-add-function)) #'add!)
-  (:method ((operation functional-put-function)) #'put!)
-  (:method ((operation functional-insert-function)) #'(setf at))
-  (:method ((operation functional-take-out-function)) #'take-out!)
-  (:method ((operation functional-update-function)) #'update!))
 
 (defgeneric empty-clone (container))
 
@@ -188,3 +166,58 @@ Range releated functions.
   (:method :before ((obj transactional))
     (when (frozenp obj)
       (error 'ice-error :text "Can't reset frozen containers."))))
+
+
+(defmethod cl-ds.meta:functional-counterpart ((operation functional-function))
+  operation)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation erase!-function))
+  #'erase)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation update-if!-function))
+  #'update-if)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation erase-if!-function))
+  #'erase-if)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation put!-function))
+  #'put)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation add!-function))
+  #'add)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation insert!-function))
+  #'insert)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation take-out!-function))
+  #'functional-take-out-function)
+
+(defmethod cl-ds.meta:functional-counterpart ((operation update!-function))
+  #'update)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation destructive-function))
+  operation)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-erase-function))
+  #'erase!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-erase-if-function))
+  #'erase-if!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-update-if-function))
+  #'update-if!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-add-function))
+  #'add!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-put-function))
+  #'put!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-insert-function))
+  #'(setf at))
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-take-out-function))
+  #'take-out!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation functional-update-function))
+  #'update!)

@@ -130,8 +130,8 @@
           :initial-stack stack)))
 
 
-(defmethod cl-ds:position-modification ((operation cl-ds:grow-function)
-                                        (container mutable-egnat-container)
-                                        location
-                                        &rest all)
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
+                                             (container mutable-egnat-container)
+                                             location
+                                             &rest all)
   (egnat-grow! container operation location all))

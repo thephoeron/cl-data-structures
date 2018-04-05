@@ -76,27 +76,27 @@
            (assert (cl-ds:transactionalp instance))
            (let ((eager-status
                    (nth-value 1
-                              (apply #'cl-ds:position-modification
+                              (apply #'cl-ds.meta:position-modification
                                      t-operation
                                      instance
                                      location
                                      args))))
              (if (slot-boundp lazy-status '%eager-status)
-               (let ((status (access-eager-status lazy-status)))
-                 (assert (eq (read-found eager-status)
-                             (read-found status)))
-                 (assert (eq (read-value eager-status)
-                             (read-value status))))
-               (setf (access-eager-status lazy-status) eager-status))
+                 (let ((status (access-eager-status lazy-status)))
+                   (assert (eq (read-found eager-status)
+                               (read-found status)))
+                   (assert (eq (read-value eager-status)
+                               (read-value status))))
+                 (setf (access-eager-status lazy-status) eager-status))
              eager-status))))
-  (defmethod cl-ds:position-modification (operation (container lazy-box-container)
-                                          location &rest args
-                                          &key &allow-other-keys)
+  (defmethod cl-ds.meta:position-modification (operation (container lazy-box-container)
+                                               location &rest args
+                                               &key &allow-other-keys)
     (bind (((:accessors (operations access-operations)
                         (content access-content))
             container)
            (lazy-status (make 'lazy-modification-operation-status))
-           (t-operation (cl-ds:destructive-counterpart operation))
+           (t-operation (cl-ds.meta:destructive-counterpart operation))
            (next-instance (make (type-of container)
                                 :content content
                                 :operations (add-change operations

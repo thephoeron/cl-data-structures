@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures)
+(in-package #:cl-data-structures.meta)
 
 
 (defclass functional-function ()
@@ -208,3 +208,8 @@
 
 (defun null-bucket-p (bucket)
   (eq bucket 'null-bucket))
+
+
+(defgeneric functional-counterpart (operation))
+
+(defgeneric destructive-counterpart (operation))

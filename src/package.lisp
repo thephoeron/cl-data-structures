@@ -11,8 +11,6 @@
    #:across
    #:add
    #:add!
-   #:add!-function
-   #:add-function
    #:aggregate
    #:apply-layer
    #:argument-out-of-bounds
@@ -26,37 +24,20 @@
    #:consume-front
    #:delay
    #:delayed
-   #:destructive-counterpart
-   #:destructive-function
-   #:destructive-function
    #:drop-back
    #:drop-front
    #:empty-clone
    #:empty-container
    #:erase
    #:erase!
-   #:erase!-function
-   #:erase-function
    #:erase-if
    #:erase-if!
-   #:erase-if!-function
-   #:erase-if-function
    #:expression
    #:force
    #:found
    #:freeze!
    #:frozenp
-   #:full-bucket-p
    #:functional
-   #:functional-add-function
-   #:functional-counterpart
-   #:functional-erase-function
-   #:functional-erase-if-function
-   #:functional-function
-   #:functional-insert-function
-   #:functional-put-function
-   #:functional-take-out-function
-   #:functional-update-function
    #:functionalp
    #:fundamental-assignable-forward-range
    #:fundamental-assignable-range
@@ -67,9 +48,6 @@
    #:fundamental-modification-operation-status
    #:fundamental-random-access-range
    #:fundamental-range
-   #:grow-bucket
-   #:grow-bucket!
-   #:grow-function
    #:hash-content
    #:hash-content-hash
    #:hash-content-location
@@ -77,49 +55,34 @@
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
-   #:insert!-function
-   #:insert-function
    #:invalid-argument
    #:key-value-range
    #:lazy
-   #:make-bucket
-   #:make-bucket-from-multiple
    #:make-delay
    #:make-from-traversable
    #:make-state
-   #:map-bucket
    #:melt!
    #:mod-bind
    #:mutable
    #:mutablep
    #:near
    #:not-implemented
-   #:null-bucket
-   #:null-bucket-p
    #:operation-not-allowed
    #:out-of-bounds
    #:peek-back
    #:peek-front
-   #:position-modification
    #:put
    #:put!
-   #:put!-function
-   #:put-function
    #:read-arguments
    #:read-bounds
    #:read-class
    #:read-value
    #:reset!
    #:send
-   #:shrink-bucket
-   #:shrink-bucket!
-   #:shrink-function
    #:size
    #:special-traverse
    #:take-out
    #:take-out!
-   #:take-out!-function
-   #:take-out-function
    #:textual-error
    #:transaction
    #:transactional
@@ -129,12 +92,8 @@
    #:traverse-through
    #:update
    #:update!
-   #:update!-function
-   #:update-function
    #:update-if
    #:update-if!
-   #:update-if!-function
-   #:update-if-function
    #:value
    #:whole-range
    #:xpr))
@@ -145,4 +104,46 @@
         #:serapeum #:metabang-bind)
   (:nicknames #:cl-ds.meta)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
-  (:export))
+  (:export
+   #:add!-function
+   #:add-function
+   #:destructive-counterpart
+   #:erase!-function
+   #:erase-function
+   #:erase-if!-function
+   #:erase-if-function
+   #:full-bucket-p
+   #:functional-add-function
+   #:functional-counterpart
+   #:functional-erase-function
+   #:functional-erase-if-function
+   #:functional-insert-function
+   #:functional-put-function
+   #:functional-take-out-function
+   #:functional-update-function
+   #:functional-update-if-function
+   #:grow-bucket
+   #:grow-function
+   #:grow-bucket!
+   #:grow-function
+   #:insert!-function
+   #:insert-function
+   #:make-bucket
+   #:make-bucket-from-multiple
+   #:map-bucket
+   #:null-bucket
+   #:null-bucket-p
+   #:position-modification
+   #:put!-function
+   #:put-function
+   #:shrink-bucket
+   #:shrink-bucket!
+   #:shrink-function
+   #:take-out!-function
+   #:take-out-function
+   #:update!-function
+   #:update-function
+   #:update-if!-function
+   #:destructive-function
+   #:functional-function
+   #:update-if-function))
