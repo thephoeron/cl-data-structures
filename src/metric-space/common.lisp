@@ -6,15 +6,52 @@
                                  bucket
                                  location
                                  &rest all)
-  cl-ds.utils:todo)
+  (declare (ignore all))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (values bucket
+                cl-ds.common:empty-eager-modification-operation-status
+                nil)
+        (let ((old-value (aref bucket position)))
+          (cl-ds.utils:swapop bucket position)
+          (values bucket
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t
+                   old-value)
+                  t)))))
 
 
 (defmethod cl-ds:shrink-bucket! ((operation cl-ds:erase-if!-function)
                                  (container mutable-metric-space-set)
                                  bucket
                                  location
-                                 &rest all)
-  cl-ds.utils:todo)
+                                 &rest all
+                                 &key condition-fn)
+  (declare (ignore all))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (values bucket
+                cl-ds.common:empty-eager-modification-operation-status
+                nil)
+        (bind ((old-value (aref bucket position))
+               (test-passed (funcall condition-fn old-value location)))
+          (if test-passed
+              (progn
+                (cl-ds.utils:swapop bucket position)
+                (values bucket
+                        (cl-ds.common:make-eager-modification-operation-status
+                         t
+                         old-value)
+                        t))
+              (values bucket
+                      (cl-ds.common:make-eager-modification-operation-status
+                       t
+                       old-value)
+                      nil))))))
 
 
 (defmethod cl-ds:grow-bucket! ((operation cl-ds:insert!-function)
@@ -22,7 +59,21 @@
                                bucket
                                location
                                &rest all)
-  cl-ds.utils:todo)
+  (declare (ignore all))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (progn
+          (vector-push-extend location bucket)
+          (values bucket
+                  cl-ds.common:empty-eager-modification-operation-status
+                  t))
+        (values bucket
+                (cl-ds.common:make-eager-modification-operation-status
+                 t
+                 (shiftf (aref bucket position) location))
+                t))))
 
 
 (defmethod cl-ds:grow-bucket! ((operation cl-ds:add!-function)
@@ -30,4 +81,35 @@
                                bucket
                                location
                                &rest all)
-  cl-ds.utils:todo)
+  (declare (ignore all))
+  (bind ((position (position location bucket
+                             :test (curry #'cl-ds.common.egnat:same
+                                          container))))
+    (if (null position)
+        (progn
+          (vector-push-extend location bucket)
+          (values bucket
+                  cl-ds.common:empty-eager-modification-operation-status
+                  t))
+        (values bucket
+                cl-ds.common:empty-eager-modification-operation-status
+                nil))))
+
+
+(defmethod cl-ds:make-bucket ((operation t)
+                              (container metric-space-set)
+                              location
+                              &rest all)
+  (declare (ignore all))
+  (vect location))
+
+
+(defmethod cl-ds:make-bucket-from-multiple ((operation t)
+                                            (container metric-space-set)
+                                            data
+                                            &rest all)
+  (declare (ignore all))
+  (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
+      data
+      (lret ((result (vect)))
+        (cl-ds:traverse (curry #'vector-push-extend result) data))))

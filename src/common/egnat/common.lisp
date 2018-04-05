@@ -458,7 +458,7 @@
                                                      item
                                                      additional-arguments))
          (new-head (aref new-bucket 0))
-         (head-changed (not (eql old-head new-head)))
+         (head-changed (not (same container old-head new-head)))
          (parent.index (gethash last-node paths)))
     (when changed
       (setf (slot-value last-node '%content) new-bucket)
@@ -692,7 +692,7 @@ following cases need to be considered:
                                                      additional-arguments))
          (new-head (or (cl-ds:null-bucket-p new-bucket) (aref new-bucket 0)))
          (head-was-changed (or (cl-ds:null-bucket-p new-bucket)
-                               (not (eql new-head old-head)))))
+                              (not (same container new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
     (when changed
       ;; remove from node, update paths, sometimes reinitialize paths...

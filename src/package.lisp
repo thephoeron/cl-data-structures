@@ -7,7 +7,6 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:*documentation*
    #:*traverse-callback*
    #:across
    #:add
@@ -139,3 +138,11 @@
    #:value
    #:whole-range
    #:xpr))
+
+
+(defpackage :cl-data-structures.meta
+  (:use #:common-lisp #:iterate #:alexandria
+        #:serapeum #:metabang-bind)
+  (:nicknames #:cl-ds.meta)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:export))
