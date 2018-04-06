@@ -7,6 +7,8 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.ms)
   (:export
+   #:distance
+   #:same
    #:metric-space-dictionary
    #:metric-space-set
    #:mutable-metric-space-dictionary

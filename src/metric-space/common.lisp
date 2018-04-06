@@ -1,6 +1,20 @@
 (in-package #:cl-data-structures.metric-space)
 
 
+(defgeneric same (container bucket element)
+  (:method ((container metric-space-set)
+            (bucket t)
+            (element t))
+    (funcall (read-same-fn container) bucket element)))
+
+
+(defgeneric distance (container bucket element)
+  (:method ((container metric-space-set)
+            (bucket t)
+            (element t))
+    (funcall (read-metric-fn container) bucket element)))
+
+
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase!-function)
                                       (container mutable-metric-space-set)
                                       bucket
@@ -24,39 +38,7 @@
                   t)))))
 
 
-(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if!-function)
-                                      (container mutable-metric-space-set)
-                                      bucket
-                                      location
-                                      &rest all
-                                      &key condition-fn)
-  (declare (ignore all))
-  (setf location (cl-ds:force location))
-  (bind ((position (position location bucket
-                             :test (curry #'cl-ds.common.egnat:same
-                                          container))))
-    (if (null position)
-        (values bucket
-                cl-ds.common:empty-eager-modification-operation-status
-                nil)
-        (bind ((old-value (aref bucket position))
-               (test-passed (funcall condition-fn old-value location)))
-          (if test-passed
-              (progn
-                (cl-ds.utils:swapop bucket position)
-                (values bucket
-                        (cl-ds.common:make-eager-modification-operation-status
-                         t
-                         old-value)
-                        t))
-              (values bucket
-                      (cl-ds.common:make-eager-modification-operation-status
-                       t
-                       old-value)
-                      nil))))))
-
-
-(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert!-function)
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:put!-function)
                                     (container mutable-metric-space-set)
                                     bucket
                                     location
@@ -77,27 +59,6 @@
                  t
                  (shiftf (aref bucket position) location))
                 t))))
-
-
-(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add!-function)
-                                    (container mutable-metric-space-set)
-                                    bucket
-                                    location
-                                    &rest all)
-  (declare (ignore all))
-  (setf location (cl-ds:force location))
-  (bind ((position (position location bucket
-                             :test (curry #'cl-ds.common.egnat:same
-                                          container))))
-    (if (null position)
-        (progn
-          (vector-push-extend location bucket)
-          (values bucket
-                  cl-ds.common:empty-eager-modification-operation-status
-                  t))
-        (values bucket
-                cl-ds.common:empty-eager-modification-operation-status
-                nil))))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation t)

@@ -27,18 +27,10 @@
       result)))
 
 
-(defgeneric same (container bucket element)
-  (:method ((container fundamental-egnat-container)
-            (bucket t)
-            (element t))
-    (funcall (read-same-fn container) bucket element)))
+(defgeneric same (container bucket element))
 
 
-(defgeneric distance (container bucket element)
-  (:method ((container fundamental-egnat-container)
-            (bucket t)
-            (element t))
-    (funcall (read-metric-fn container) bucket element)))
+(defgeneric distance (container bucket element))
 
 
 (defgeneric next-position (range data index)

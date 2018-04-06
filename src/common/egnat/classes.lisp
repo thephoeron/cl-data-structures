@@ -6,12 +6,6 @@
     :type non-negative-fixnum
     :initarg :branching-factor
     :reader read-branching-factor)
-   (%metric-fn
-    :reader read-metric-fn
-    :initarg :metric-fn)
-   (%same-fn
-    :reader read-same-fn
-    :initarg :same-fn)
    (%metric-type
     :reader read-metric-type
     :initform :single-float
