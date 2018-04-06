@@ -115,6 +115,7 @@
                 :components ((:file "packages")
                              (:file "trait-classes")
                              (:file "common")
+                             (:file "api")
                              (:module "egnat"
                               :components ((:file "api")))))
                (:module "dicts"
