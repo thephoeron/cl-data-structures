@@ -7,6 +7,7 @@
                                       location
                                       &rest all)
   (declare (ignore all))
+  (setf location (cl-ds:force location))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
@@ -30,6 +31,7 @@
                                       &rest all
                                       &key condition-fn)
   (declare (ignore all))
+  (setf location (cl-ds:force location))
   (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
@@ -60,8 +62,8 @@
                                     location
                                     &rest all)
   (declare (ignore all))
-  (bind ((location (cl-ds:force location))
-         (position (position location bucket
+  (setf location (cl-ds:force location))
+  (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
     (if (null position)
@@ -83,8 +85,8 @@
                                     location
                                     &rest all)
   (declare (ignore all))
-  (bind ((location (cl-ds:force location))
-         (position (position location bucket
+  (setf location (cl-ds:force location))
+  (bind ((position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
     (if (null position)
