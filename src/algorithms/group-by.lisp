@@ -5,7 +5,7 @@
   ((%groups :initarg :groups
             :type hash-table
             :reader read-groups)
-   (%key :initarg key
+   (%key :initarg :key
          :type hash-table
          :reader read-key)))
 
@@ -191,3 +191,14 @@
   (make-proxy range 'random-access-group-by-proxy
               :test test
               :key key))
+
+
+(defmethod apply-layer ((range group-by-proxy)
+                        (fn layer-function)
+                        &rest all)
+  (bind ((original-range (read-original-range range))
+         (result-range (apply #'apply-layer original-range fn all)))
+    (make (type-of range)
+          :original-range result-range
+          :key (read-key range)
+          :groups (read-groups range))))
