@@ -19,3 +19,13 @@
 (defmethod cl-ds.common.egnat:distance ((container egnat-metric-set)
                                         bucket item)
   (cl-ds.ms:distance container bucket item))
+
+
+(defun make-mutable-egnat-metric-set (same-function distance-function distance-type
+                                      &key (branching-factor 20) (node-size 50))
+  (make 'egnat-metric-set
+        :metric-fn distance-function
+        :same-fn same-function
+        :distance-type distance-type
+        :branching-factor branching-factor
+        :content-count-in-node node-size))

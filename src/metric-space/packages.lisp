@@ -22,4 +22,5 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:egnat-metric-set
-   #:mutable-egnat-metric-set))
+   #:mutable-egnat-metric-set
+   #:make-mutable-egnat-metric-set))
