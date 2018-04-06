@@ -23,6 +23,7 @@
 
 (defun make-mutable-egnat-metric-set (same-function distance-function distance-type
                                       &key (branching-factor 20) (node-size 50))
+  (ensure-functionf same-function distance-function)
   (make 'egnat-metric-set
         :metric-fn distance-function
         :same-fn same-function
