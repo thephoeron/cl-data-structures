@@ -60,7 +60,8 @@
                                     location
                                     &rest all)
   (declare (ignore all))
-  (bind ((position (position location bucket
+  (bind ((location (cl-ds:force location))
+         (position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
     (if (null position)
@@ -82,7 +83,8 @@
                                     location
                                     &rest all)
   (declare (ignore all))
-  (bind ((position (position location bucket
+  (bind ((location (cl-ds:force location))
+         (position (position location bucket
                              :test (curry #'cl-ds.common.egnat:same
                                           container))))
     (if (null position)
@@ -101,7 +103,7 @@
                                    location
                                    &rest all)
   (declare (ignore all))
-  (vect location))
+  (vect (cl-ds:force location)))
 
 
 (defmethod cl-ds.meta:make-bucket-from-multiple ((operation t)
@@ -109,6 +111,7 @@
                                                  data
                                                  &rest all)
   (declare (ignore all))
+  (setf data (cl-ds:force data))
   (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
       data
       (lret ((result (vect)))
