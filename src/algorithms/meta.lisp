@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.algorithms)
+(in-package #:cl-data-structures.algorithms.meta)
 
 
 (defgeneric apply-layer (range function &rest all &key &allow-other-keys))

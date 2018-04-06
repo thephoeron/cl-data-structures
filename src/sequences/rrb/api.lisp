@@ -271,7 +271,7 @@
                        new-tail)
                :ownership-tag tag
                :tail-size (+ tail-size tail-change)
-               :ownership-tag taggrow-func
+               :ownership-tag tag
                :size (cl-ds.common.rrb:access-size container)
                :shift (cl-ds.common.rrb:access-shift container))
          status))))

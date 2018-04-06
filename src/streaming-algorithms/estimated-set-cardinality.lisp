@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass estimated-set-cardinality-function (cl-ds.alg:aggregation-function)
+(defclass estimated-set-cardinality-function (cl-ds.alg.meta:aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -9,11 +9,11 @@
 (defgeneric estimated-set-cardinality (range bits hash-fn &key key)
   (:generic-function-class estimated-set-cardinality-function)
   (:method (range bits hash-fn &key key)
-    (cl-ds.alg:apply-aggregation-function range
-                                          #'estimated-set-cardinality
-                                          :key key
-                                          :hash-fn hash-fn
-                                          :bits bits)))
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'estimated-set-cardinality
+                                               :key key
+                                               :hash-fn hash-fn
+                                               :bits bits)))
 
 
 (defclass estimated-set-cardinality-state ()
@@ -22,9 +22,9 @@
    (%hash-fn :initarg :hash-fn)))
 
 
-(defmethod cl-ds.alg:aggregate ((function estimated-set-cardinality-function)
-                                state
-                                element)
+(defmethod cl-ds.alg.meta:aggregate ((function estimated-set-cardinality-function)
+                                     state
+                                     element)
   (bind (((:slots %bits %registers %hash-fn) state)
          (hash (ldb (byte 32 0) (funcall %hash-fn element)))
          (index (ash hash (- (- 32 %bits))))
@@ -34,13 +34,13 @@
       (setf (aref %registers index) rank))))
 
 
-(defmethod cl-ds.alg:state-result ((function estimated-set-cardinality-function)
-                                   state)
+(defmethod cl-ds.alg.meta:state-result ((function estimated-set-cardinality-function)
+                                        state)
   state)
 
 
-(defmethod cl-ds.alg:make-state ((function estimated-set-cardinality-function)
-                                 &key bits hash-fn &allow-other-keys)
+(defmethod cl-ds.alg.meta:make-state ((function estimated-set-cardinality-function)
+                                      &key bits hash-fn &allow-other-keys)
   (unless (< 3 bits 21)
     (error 'cl-ds:argument-out-of-bounds
            :argument 'bits

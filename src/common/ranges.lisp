@@ -10,7 +10,7 @@
                   :initarg :obtain-value
                   :reader read-obtain-value)
    (%initial-stack :type list
-                   :initarg initial-stack
+                   :initarg :initial-stack
                    :reader read-initial-stack
                    :initform nil)
    (%key :type (-> (t) t)

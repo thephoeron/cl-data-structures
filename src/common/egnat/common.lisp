@@ -270,9 +270,11 @@
     (until (emptyp stack))
     (for node = (aref stack (~> stack fill-pointer 1-)))
     (decf (fill-pointer stack))
-    (iterate
-      (for content in-vector (read-content node))
-      (funcall function content))
+    (for contents = (read-content node))
+    (unless (cl-ds.meta:null-bucket-p contents)
+      (iterate
+        (for content in-vector contents)
+        (funcall function content)))
     (map nil
          (rcurry #'vector-push-extend stack)
          (read-children node))))
@@ -643,11 +645,11 @@ following cases need to be considered:
     (cl-ds.utils:cond+ (is-leaf is-root)
       ((t t) (setf (access-root container) nil))
       ((t nil) (progn (remove-children! (car parent.index) (cdr parent.index))
-                      (optimize-parents-complete! container (car parent.index) paths)))
+                    (optimize-parents-complete! container (car parent.index) paths)))
       ((nil t) (setf (access-root container) (reorginize-tree container node)))
       ((nil nil) (bind (((parent . index) parent.index)
-                        (children (read-children parent))
-                        (stack (vect)))
+                    (children (read-children parent))
+                    (stack (vect)))
                (setf (~> node read-content fill-pointer) 0
                      (aref children index) (reorginize-tree container node))
                (rebuild-ranges-after-subtree-replace! container

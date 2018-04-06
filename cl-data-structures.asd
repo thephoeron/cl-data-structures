@@ -81,8 +81,8 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
-                             (:test-file "moments-tests.lisp")
-                             (:test-file "statistical-summary-tests.lisp")
+                             (:test-file "moments-tests")
+                             (:test-file "statistical-summary-tests")
                              (:test-file "simple-linear-regression-tests")))
                (:module "streaming-algorithms"
                 :components ((:file "package")

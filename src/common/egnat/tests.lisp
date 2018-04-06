@@ -3,14 +3,14 @@
 (in-package :egnat-tests)
 
 
-(defmethod cl-ds:make-bucket (operation container content
-                              &rest all)
+(defmethod cl-ds.meta:make-bucket (operation container content
+                                   &rest all)
   (declare (ignore all))
   (serapeum:vect content))
 
 
-(defmethod cl-ds:make-bucket-from-multiple (operation container data
-                                            &rest all)
+(defmethod cl-ds.meta:make-bucket-from-multiple (operation container data
+                                                 &rest all)
   (iterate
     (with result = (serapeum:vect))
     (for i from 0 below (cl-ds:size data))
@@ -19,8 +19,8 @@
     (finally (return result))))
 
 
-(defmethod cl-ds:grow-bucket!
-    ((operation cl-ds:insert-function)
+(defmethod cl-ds.meta:grow-bucket!
+    ((operation cl-ds.meta:insert-function)
      (container cl-ds.common.egnat:mutable-egnat-container)
      bucket
      location
@@ -43,8 +43,8 @@
                   t)))))
 
 
-(defmethod cl-ds:shrink-bucket!
-    ((operation cl-ds:erase!-function)
+(defmethod cl-ds.meta:shrink-bucket!
+    ((operation cl-ds.meta:erase!-function)
      (container cl-ds.common.egnat:mutable-egnat-container)
      bucket
      location
@@ -62,7 +62,7 @@
         (let ((old-content (aref bucket position)))
           (cl-ds.utils:swapop bucket position)
           (values (if (alexandria:emptyp bucket)
-                      'cl-ds:null-bucket
+                      'cl-ds.meta:null-bucket
                       bucket)
                   (cl-ds.common:make-eager-modification-operation-status t old-content)
                   t)))))

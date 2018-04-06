@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass moments-function (cl-ds.alg:aggregation-function)
+(defclass moments-function (cl-ds.alg.meta:aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -9,12 +9,12 @@
 (defgeneric moments (range from count about &key key)
   (:generic-function-class moments-function)
   (:method (range from count about &key (key #'identity))
-    (cl-ds.alg:apply-aggregation-function range
-                                          #'moments
-                                          :count count
-                                          :from from
-                                          :about about
-                                          :key key)))
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'moments
+                                               :count count
+                                               :from from
+                                               :about about
+                                               :key key)))
 
 
 (defclass moments-state ()
@@ -28,9 +28,9 @@
              :accessor read-lambdas)))
 
 
-(defmethod cl-ds.alg:make-state ((function moments-function)
-                                 &rest all
-                                 &key count about from)
+(defmethod cl-ds.alg.meta:make-state ((function moments-function)
+                                      &rest all
+                                      &key count about from)
   (declare (ignore all))
   (assert (> from 0))
   (bind ((lambdas (make-array count))
@@ -46,9 +46,9 @@
                          :start from)))
 
 
-(defmethod cl-ds.alg:aggregate ((function moments-function)
-                                state
-                                element)
+(defmethod cl-ds.alg.meta:aggregate ((function moments-function)
+                                     state
+                                     element)
   (check-type state moments-state)
   (bind (((:slots %lambdas %moments %count) state))
     (incf %count)
@@ -57,8 +57,8 @@
       (incf (aref %moments i) (funcall (aref %lambdas i) element)))))
 
 
-(defmethod cl-ds.alg:state-result ((function moments-function)
-                                   state)
+(defmethod cl-ds.alg.meta:state-result ((function moments-function)
+                                        state)
   (check-type state moments-state)
   (let ((moments (read-last-moments state))
         (count (access-count state)))

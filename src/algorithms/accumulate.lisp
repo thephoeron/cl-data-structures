@@ -9,11 +9,15 @@
 (defgeneric accumulate (function range &key key initial-value)
   (:generic-function-class accumulate-function)
   (:method (function range
-            &key (key #'identity) (initial-value nil))
-    (apply-aggregation-function range #'accumulate
-                                :key key
-                                :initial-value initial-value
-                                :fn function)))
+            &key (key #'identity) (initial-value nil initial-value-present))
+    (if initial-value-present
+        (apply-aggregation-function range #'accumulate
+                                    :key key
+                                    :initial-value initial-value
+                                    :fn function)
+        (apply-aggregation-function range #'accumulate
+                                    :key key
+                                    :fn function))))
 
 
 (defclass accumulation-state ()

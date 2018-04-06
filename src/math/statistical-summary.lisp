@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass statistical-summary-function (cl-ds.alg:multi-aggregation-function)
+(defclass statistical-summary-function (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -9,24 +9,26 @@
 (defgeneric statistical-summary (range &key key)
   (:generic-function-class statistical-summary-function)
   (:method (range &key (key #'identity))
-    (cl-ds.alg:apply-aggregation-function range
-                                          #'statistical-summary
-                                          :key key)))
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'statistical-summary
+                                               :key key)))
 
 
-(defmethod cl-ds.alg:make-state ((function statistical-summary-function)
-                                 &rest all &key key moments average)
+(defmethod cl-ds.alg.meta:make-state ((function statistical-summary-function)
+                                      &rest all &key key moments average)
   (declare (ignore all key))
   (list* average moments))
 
 
-(defmethod cl-ds.alg:aggregation-finished-p ((function statistical-summary-function)
-                                             state)
+(defmethod cl-ds.alg.meta:aggregation-finished-p ((function statistical-summary-function)
+                                                  state)
   t)
 
 
-(defmethod cl-ds.alg:multi-aggregation-stages ((fn statistical-summary-function)
-                                               &rest all &key key &allow-other-keys)
+(defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn statistical-summary-function)
+                                                    &rest all
+                                                    &key key
+                                                    &allow-other-keys)
   (declare (ignore all))
   (list (list* :average (lambda (range &rest all)
                           (declare (ignore all))
@@ -38,8 +40,8 @@
                                    :key key)))))
 
 
-(defmethod cl-ds.alg:state-result ((fn statistical-summary-function)
-                                   state)
+(defmethod cl-ds.alg.meta:state-result ((fn statistical-summary-function)
+                                        state)
   (bind (((average . moments) state)
          (variance (cl-ds:at moments 2))
          (sd (sqrt variance))
