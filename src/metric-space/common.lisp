@@ -78,4 +78,4 @@
   (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
       data
       (lret ((result (vect)))
-        (cl-ds:traverse (curry #'vector-push-extend result) data))))
+        (cl-ds:traverse (rcurry #'vector-push-extend result) data))))

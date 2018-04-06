@@ -7,13 +7,16 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.common.egnat)
   (:export
+   #:access-root
+   #:access-size
    #:distance
-   #:same
    #:fundamental-egnat-container
    #:get-value
+   #:make-egnat-tree
    #:mutable-egnat-container
    #:prune-subtrees
    #:read-margin
    #:read-near
+   #:same
    #:select-children
    #:traverse-impl))

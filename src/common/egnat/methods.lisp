@@ -135,3 +135,11 @@
                                              location
                                              &rest all)
   (egnat-grow! container operation location all))
+
+
+(defmethod cl-ds:traverse (function (container fundamental-egnat-container))
+  (traverse-impl container function))
+
+
+(defmethod cl-ds:across (function (container fundamental-egnat-container))
+  (traverse-impl container function))

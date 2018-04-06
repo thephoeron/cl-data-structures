@@ -27,6 +27,21 @@
   (make 'egnat-metric-set
         :metric-fn distance-function
         :same-fn same-function
-        :distance-type distance-type
+        :metric-type distance-type
         :branching-factor branching-factor
         :content-count-in-node node-size))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-egnat-metric-set))
+                                        arguments
+                                        sequence
+                                        &rest all)
+  (declare (ignore all))
+  (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
+         (root (cl-ds.common.egnat:make-egnat-tree container
+                                                   #'cl-ds:put!
+                                                   nil
+                                                   sequence)))
+    (setf (cl-ds.common.egnat:access-root container) root
+          (cl-ds.common.egnat:access-size container) (cl-ds:size sequence))
+    container))
