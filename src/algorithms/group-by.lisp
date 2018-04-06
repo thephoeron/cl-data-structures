@@ -84,7 +84,9 @@
                                       (return-from end)))
                                   (aggregate function
                                              state
-                                             (if (null key) x (funcall key x))))))))
+                                             (if (null key)
+                                                 x
+                                                 (funcall key x))))))))
                     (cl-ds:clone range)))
     (maphash (lambda (key state)
                (push (state-result function state)
