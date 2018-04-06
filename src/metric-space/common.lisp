@@ -57,8 +57,8 @@
         (values bucket
                 (cl-ds.common:make-eager-modification-operation-status
                  t
-                 (shiftf (aref bucket position) location))
-                t))))
+                 (aref bucket position))
+                nil))))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation t)
