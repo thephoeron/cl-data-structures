@@ -55,6 +55,30 @@
                              (:file "vector")
                              (:file "list")
                              (:test-file "vector-tests")))
+               (:module "common"
+                :components ((:file "package")
+                             (:file "modification-operation-status")
+                             (:file "eager-modification-operation-status")
+                             (:file "lazy-box")
+                             (:file "lazy-range")
+                             (:file "content-tuple")
+                             (:file "ranges")
+                             (:module "abstract"
+                              :components ((:file "package")
+                                           (:file "common")))
+                             (:module "hamt"
+                              :components ((:file "package")
+                                           (:file "common")))
+                             (:module "rrb"
+                              :components ((:file "package")
+                                           (:file "common")))
+                             (:module "egnat"
+                              :components ((:file "package")
+                                           (:file "classes")
+                                           (:file "generics")
+                                           (:file "common")
+                                           (:file "methods")
+                                           (:test-file "tests")))))
                (:module "algorithms"
                 :components ((:file "package")
                              (:file "meta")
@@ -87,30 +111,6 @@
                (:module "streaming-algorithms"
                 :components ((:file "package")
                              (:file "estimated-set-cardinality")))
-               (:module "common"
-                :components ((:file "package")
-                             (:file "modification-operation-status")
-                             (:file "eager-modification-operation-status")
-                             (:file "lazy-box")
-                             (:file "lazy-range")
-                             (:file "content-tuple")
-                             (:file "ranges")
-                             (:module "abstract"
-                              :components ((:file "package")
-                                           (:file "common")))
-                             (:module "hamt"
-                              :components ((:file "package")
-                                           (:file "common")))
-                             (:module "rrb"
-                              :components ((:file "package")
-                                           (:file "common")))
-                             (:module "egnat"
-                              :components ((:file "package")
-                                           (:file "classes")
-                                           (:file "generics")
-                                           (:file "common")
-                                           (:file "methods")
-                                           (:test-file "tests")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
