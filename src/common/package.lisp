@@ -9,6 +9,7 @@
    #:access-content
    #:assignable-forward-tree-range
    #:assignable-tree-range
+   #:close-queue
    #:defmethod-with-peek-stack
    #:defmethod-with-stack
    #:dict-content
@@ -30,6 +31,8 @@
    #:make-hash-content
    #:make-hash-dict-content
    #:make-lazy-range
+   #:make-synchronized-queue-range
+   #:put-into-queue
    #:read-found
    #:read-store-value
    #:read-value

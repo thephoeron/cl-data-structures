@@ -146,3 +146,83 @@
        (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list lambda-list)
                   ,@body))
          (,method-name ,@(cl-ds.utils:lambda-list-to-bindings lambda-list))))))
+
+
+(defclass synchronized-queue-range (cl-ds:fundamental-forward-range)
+  ((%queue :initform (lparallel.queue:make-queue)
+           :reader read-queue)
+   (%end-symbol :initform (gensym)
+                :reader read-end-symbol)
+   (%end :initform nil
+         :accessor access-end)))
+
+
+(defmethod cl-ds:consume-front ((range synchronized-queue-range))
+  (bind (((:slots %queue %end %end-symbol) range))
+    (if %end
+        (values nil nil)
+        (bind ((data (lparallel.queue:pop-queue %queue)))
+          (if (eq data %end-symbol)
+              (progn
+                (setf %end t)
+                (values nil nil))
+              (values data t))))))
+
+
+(defmethod cl-ds:peek-front ((range synchronized-queue-range))
+  (bind (((:slots %queue %end %end-symbol) range))
+    (if %end
+        (values nil nil)
+        (let ((data (lparallel.queue:peek-queue %queue)))
+          (if (eq data %end-symbol)
+              (progn
+                (setf %end t)
+                (values nil nil))
+              (values data t))))))
+
+
+(defmethod cl-ds:traverse (function (range synchronized-queue-range))
+  (bind (((:slots %end %end-symbol %queue) range))
+    (iterate
+      (until %end)
+      (for data = (lparallel.queue:pop-queue %queue))
+      (if (eq data %end-symbol)
+          (setf %end t)
+          (funcall function data))))
+  range)
+
+
+(defmethod cl-ds:across (function (range synchronized-queue-range))
+  (unless (access-end range)
+    (bind (((:slots %end %end-symbol %queue) range)
+           (next-queue (lparallel.queue:make-queue)))
+      (iterate
+        (for data = (lparallel.queue:pop-queue %queue))
+        (unless (eq data %end-symbol)
+          (funcall function data))
+        (lparallel.queue:push-queue/no-lock data next-queue)
+        (until (eq data %end-symbol)))
+      (setf %queue next-queue)))
+  range)
+
+
+(defun put-into-queue (container item)
+  (declare (type synchronized-queue-range container))
+  (let ((queue (read-queue container))
+        (end (access-end container)))
+    (when end
+      (error 'cl-ds:operation-not-allowed :text "Can't put-into closed queue."))
+    (lparallel.queue:push-queue item queue))
+  container)
+
+
+(defun close-queue (container)
+  (declare (type synchronized-queue-range container))
+  (let ((queue (read-queue container))
+        (end-symbol (read-end-symbol container)))
+    (lparallel.queue:push-queue end-symbol queue))
+  container)
+
+
+(defun make-synchronized-queue-range ()
+  (make 'synchronized-queue-range))
