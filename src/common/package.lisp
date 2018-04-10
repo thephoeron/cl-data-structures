@@ -31,8 +31,6 @@
    #:make-hash-content
    #:make-hash-dict-content
    #:make-lazy-range
-   #:make-synchronized-queue-range
-   #:put-into-queue
    #:read-found
    #:read-store-value
    #:read-value
