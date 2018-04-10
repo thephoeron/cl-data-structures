@@ -83,7 +83,9 @@
                                 &key
                                   (on-first-missing #'identity)
                                   (on-second-missing #'identity)
-                                  (key #'identity))
+                                  (key #'identity)
+                                  (same #'=)
+                                  (less #'<))
   (with-vectors (first-order second-order)
     (iterate
       (with a = 0)
@@ -92,23 +94,23 @@
       (while (< b (length second-order)))
       (for av = (funcall key (first-order a)))
       (for bv = (funcall key (second-order b)))
-      (cond ((eql av bv)
+      (cond ((funcall same av bv)
              (progn
-               (funcall function a b)
+               (funcall function (first-order a) (second-order b))
                (incf a)
                (incf b)))
-            ((< av bv)
+            ((funcall less av bv)
              (progn
-               (funcall on-first-missing a)
+               (funcall on-first-missing (first-order a))
                (incf a)))
-            ((< bv av)
+            (t
              (progn
-               (funcall on-second-missing b)
+               (funcall on-second-missing (second-order b))
                (incf b))))
       (finally
        (iterate
          (for i from a below (length first-order))
-         (funcall on-first-missing i))
+         (funcall on-first-missing (first-order i)))
        (iterate
          (for i from b below (length second-order))
-         (funcall on-second-missing i))))))
+         (funcall on-second-missing (second-order i)))))))
