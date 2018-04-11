@@ -4,9 +4,9 @@
 (defun splice-content (data count)
   (let* ((size (cl-ds:size data))
          (content (unless (zerop count)
-                    (cl-ds.alg:sequence-window data 0 count)))
+                    (cl-ds.common:sequence-window data 0 count)))
          (new-data (unless (eql count (cl-ds:size data))
-                     (cl-ds.alg:sequence-window data
+                     (cl-ds.common:sequence-window data
                                                 count
                                                 (cl-ds:size data)))))
     (assert (> size count))

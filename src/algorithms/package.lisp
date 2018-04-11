@@ -39,7 +39,6 @@
    #:on-each
    #:proxy-box-range
    #:proxy-range
-   #:sequence-window
    #:summary
    #:summary-function
    #:zip))

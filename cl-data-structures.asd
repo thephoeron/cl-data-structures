@@ -63,6 +63,7 @@
                              (:file "lazy-range")
                              (:file "content-tuple")
                              (:file "ranges")
+                             (:file "sequence-window")
                              (:module "abstract"
                               :components ((:file "package")
                                            (:file "common")))
@@ -92,7 +93,6 @@
                              (:file "hash-join")
                              (:file "chain")
                              (:file "zip")
-                             (:file "sequence-window")
                              (:test-file "hash-join-tests")
                              (:test-file "sequence-window-tests")
                              (:test-file "chain-tests")
