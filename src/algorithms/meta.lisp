@@ -36,10 +36,18 @@
   ((%function :initarg :function
               :reader read-function)
    (%state :initarg :state
-           :reader read-state)))
+           :reader read-state)
+   (%stages :initarg :stages
+            :reader read-stages)))
 
 
 (defgeneric pass-to-aggregation (aggregator element))
+
+
+(defgeneric end-aggregation (aggregator))
+
+
+(defgeneric extract-result (aggregator))
 
 
 (defgeneric multi-aggregation-stages (aggregation-function
