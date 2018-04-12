@@ -28,6 +28,20 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass fundamental-aggregator ()
+  ())
+
+
+(defclass linear-aggregator ()
+  ((%function :initarg :function
+              :reader read-function)
+   (%state :initarg :state
+           :reader read-state)))
+
+
+(defgeneric pass-to-aggregation (aggregator element))
+
+
 (defgeneric multi-aggregation-stages (aggregation-function
                                       &rest all &key &allow-other-keys)
   (:method ((function aggregation-function) &rest all &key &allow-other-keys)
