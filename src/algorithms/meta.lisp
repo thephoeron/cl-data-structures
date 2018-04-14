@@ -91,7 +91,9 @@
 
 
 (defgeneric apply-aggregation-function (range function
-                                        &rest all &key key &allow-other-keys))
+                                        &rest all
+                                        &key key
+                                        &allow-other-keys))
 
 
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
@@ -160,3 +162,28 @@
                                    (if key (funcall key x) x)))
                       range)))
     (state-result function state)))
+
+
+(defmethod extract-result ((aggregator linear-aggregator))
+  (bind (((:slots %state %stages %function) aggregator))
+    (state-result %function %state)))
+
+
+(defmethod apply-aggregation-function ((range linear-aggregator)
+                                       (function aggregation-function)
+                                       &rest all
+                                       &key
+                                       &allow-other-keys)
+  (bind ((state (make-state function all))
+         ((:slots %stages) range))
+    (setf (cdr (first %stages)) (list* function state))))
+
+
+(defmethod pass-to-aggregation ((aggregator linear-aggregator)
+                                element)
+  (bind (((:slots %stages) aggregator)
+         ((function . state) (cdr (first %stages))))
+    (aggregate function state element)))
+
+
+(defmethod end-aggregation ((aggregator linear-aggregator)))

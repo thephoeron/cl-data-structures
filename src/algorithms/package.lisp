@@ -18,6 +18,9 @@
    #:make-state
    #:multi-aggregation-function
    #:multi-aggregation-stages
+   #:extract-result
+   #:end-aggregation
+   #:pass-to-aggregation
    #:range-function
    #:state-result
    #:transformation!-function))
