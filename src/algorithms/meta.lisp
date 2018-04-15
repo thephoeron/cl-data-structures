@@ -37,7 +37,9 @@
             :reader read-stages)
    (%arguments :initarg :arguments
                :initform nil
-               :accessor access-arguments)))
+               :accessor access-arguments)
+   (%range :initarg :range
+           :accessor read-range)))
 
 
 (defgeneric pass-to-aggregation (aggregator element))
@@ -181,7 +183,9 @@
                                        &allow-other-keys)
   (bind (((:slots %stages) range)
          (state (apply #'make-state function all)))
-    (push (list* (caar %stages) (list* function state)) (rest %stages))))
+    (setf %stages
+          (cons (list* (caar %stages) (list* function state))
+                (rest %stages)))))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
@@ -206,8 +210,9 @@
     stage-result))
 
 
-(defun make-linear-aggregator (arguments stages)
+(defun make-linear-aggregator (range arguments stages)
   (make 'linear-aggregator
+        :range range
         :stages stages
         :arguments arguments))
 
@@ -216,21 +221,21 @@
                                  (stages list)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator arguments stages))
+  (make-linear-aggregator range arguments stages))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
                                  (stages list)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator arguments stages))
+  (make-linear-aggregator range arguments stages))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
                                  (stages list)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator arguments stages))
+  (make-linear-aggregator range arguments stages))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -242,8 +247,6 @@
 
 (defmethod begin-aggregation ((aggregator linear-aggregator))
   (bind (((:slots %stages %arguments) aggregator)
-         ((name . construct-function) (first %stages))
-         (rest (rest %stages)))
-    (push (list* name (apply construct-function %arguments))
-          rest)
-    (setf %stages rest)))
+         ((name . construct-function) (first %stages)))
+    (declare (ignore name))
+    (apply construct-function aggregator %arguments)))

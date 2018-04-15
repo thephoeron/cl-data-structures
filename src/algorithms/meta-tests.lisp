@@ -11,16 +11,17 @@
        (aggregator (cl-ds.alg.meta:construct-aggregator
                     vector1
                     (list (list* :result
-                                 (list* #'cl-ds.alg:accumulate
-                                        (cl-ds.alg.meta:make-state #'cl-ds.alg:accumulate
-                                                                   :fn #'+))))
+                                 (lambda (range)
+                                   (cl-ds.alg:accumulate #'+ range))))
                     nil
                     nil)))
+  (cl-ds.alg.meta:begin-aggregation aggregator)
   (iterate
     (for elt in-vector vector1)
     (sum elt into result)
     (cl-ds.alg.meta:pass-to-aggregation aggregator elt)
     (finally
-     (is (cl-ds.alg.meta:extract-result aggregator) result))))
+     (is (cl-ds.alg.meta:extract-result aggregator)
+         result))))
 
 (finalize)
