@@ -13,6 +13,8 @@
    #:apply-aggregation-function
    #:apply-layer
    #:apply-range-function
+   #:begin-aggregation
+   #:construct-aggregator
    #:gather-prior-states
    #:layer-function
    #:make-state

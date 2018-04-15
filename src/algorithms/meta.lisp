@@ -46,6 +46,9 @@
 (defgeneric construct-aggregator (range stages outer-fn arguments))
 
 
+(defgeneric begin-aggregation (aggregator))
+
+
 (defgeneric end-aggregation (aggregator))
 
 
@@ -135,8 +138,7 @@
 (defmethod apply-aggregation-function (range
                                        (function multi-aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore key)
-           (optimize (debug 3)))
+  (declare (ignore key))
   (let ((stages (apply #'multi-aggregation-stages function all)))
     (unless (endp stages)
       (iterate
@@ -167,8 +169,9 @@
 
 
 (defmethod extract-result ((aggregator linear-aggregator))
-  (bind (((:slots %state %stages %function) aggregator))
-    (state-result %function %state)))
+  (bind (((:slots %stages) aggregator)
+         ((name function . state) (first %stages)))
+    (state-result function state)))
 
 
 (defmethod apply-aggregation-function ((range linear-aggregator)
@@ -210,28 +213,37 @@
 
 
 (defmethod construct-aggregator ((range cl:sequence)
-                                 (outer-fn (eql nil))
                                  (stages list)
+                                 (outer-fn (eql nil))
                                  (arguments list))
   (make-linear-aggregator arguments stages))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
-                                 (outer-fn (eql nil))
                                  (stages list)
+                                 (outer-fn (eql nil))
                                  (arguments list))
   (make-linear-aggregator arguments stages))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (outer-fn (eql nil))
                                  (stages list)
+                                 (outer-fn (eql nil))
                                  (arguments list))
   (make-linear-aggregator arguments stages))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
+                                 (stages list)
                                  outer-fn
-                                 (stages list)
                                  (arguments list))
   (funcall outer-fn stages arguments))
+
+
+(defmethod begin-aggregation ((aggregator linear-aggregator))
+  (bind (((:slots %stages %arguments) aggregator)
+         ((name . construct-function) (first %stages))
+         (rest (rest %stages)))
+    (push (list* name (apply construct-function %arguments))
+          rest)
+    (setf %stages rest)))
