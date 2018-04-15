@@ -33,15 +33,17 @@
 
 
 (defclass linear-aggregator ()
-  ((%function :initarg :function
-              :reader read-function)
-   (%state :initarg :state
-           :reader read-state)
-   (%stages :initarg :stages
-            :reader read-stages)))
+  ((%stages :initarg :stages
+            :reader read-stages)
+   (%arguments :initarg :arguments
+               :initform nil
+               :accessor access-arguments)))
 
 
 (defgeneric pass-to-aggregation (aggregator element))
+
+
+(defgeneric construct-aggregator (range stages outer-fn arguments))
 
 
 (defgeneric end-aggregation (aggregator))
@@ -174,9 +176,9 @@
                                        &rest all
                                        &key
                                        &allow-other-keys)
-  (bind ((state (make-state function all))
-         ((:slots %stages) range))
-    (setf (cdr (first %stages)) (list* function state))))
+  (bind (((:slots %stages) range)
+         (state (apply #'make-state function all)))
+    (push (list* (caar %stages) (list* function state)) (rest %stages))))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
@@ -186,4 +188,50 @@
     (aggregate function state element)))
 
 
-(defmethod end-aggregation ((aggregator linear-aggregator)))
+(defmethod end-aggregation ((aggregator linear-aggregator))
+  (bind (((:slots %stages %arguments) aggregator)
+         ((name . (function . state)) (first %stages))
+         (stage-result (state-result function state))
+         (rest (rest %stages)))
+    (push stage-result %arguments)
+    (push name %arguments)
+    (setf %stages rest)
+    (unless (endp (rest %stages))
+      (apply (cdar %stages)
+             aggregator
+             %arguments))
+    stage-result))
+
+
+(defun make-linear-aggregator (arguments stages)
+  (make 'linear-aggregator
+        :stages stages
+        :arguments arguments))
+
+
+(defmethod construct-aggregator ((range cl:sequence)
+                                 (outer-fn (eql nil))
+                                 (stages list)
+                                 (arguments list))
+  (make-linear-aggregator arguments stages))
+
+
+(defmethod construct-aggregator ((range cl:hash-table)
+                                 (outer-fn (eql nil))
+                                 (stages list)
+                                 (arguments list))
+  (make-linear-aggregator arguments stages))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 (outer-fn (eql nil))
+                                 (stages list)
+                                 (arguments list))
+  (make-linear-aggregator arguments stages))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 outer-fn
+                                 (stages list)
+                                 (arguments list))
+  (funcall outer-fn stages arguments))

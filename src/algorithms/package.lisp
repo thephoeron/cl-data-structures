@@ -18,6 +18,8 @@
    #:make-state
    #:multi-aggregation-function
    #:multi-aggregation-stages
+   #:make-linear-aggregator
+   #:linear-aggregator
    #:extract-result
    #:end-aggregation
    #:pass-to-aggregation
