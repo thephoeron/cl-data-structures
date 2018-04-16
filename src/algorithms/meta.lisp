@@ -97,6 +97,9 @@
 (defgeneric extract-result (aggregator))
 
 
+(defgeneric copy-stage (stage))
+
+
 (defgeneric multi-aggregation-stages (aggregation-function
                                       &rest all &key &allow-other-keys)
   (:method ((function aggregation-function) &rest all &key &allow-other-keys)
@@ -292,3 +295,9 @@
 
 (defmethod extract-result ((stage aggregation-stage))
   (state-result (read-function stage) (read-state stage)))
+
+
+(defmethod copy-stage ((stage aggregation-stage))
+  (make (type-of stage)
+        :name (read-name stage)
+        :construct-function (read-construct-function stage)))
