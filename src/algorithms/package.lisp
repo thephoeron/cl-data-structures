@@ -10,22 +10,24 @@
    #:aggregate
    #:aggregation-finished-p
    #:aggregation-function
+   #:aggregation-stage
    #:apply-aggregation-function
    #:apply-layer
    #:apply-range-function
    #:begin-aggregation
    #:construct-aggregator
+   #:end-aggregation
+   #:extract-result
    #:gather-prior-states
    #:layer-function
+   #:linear-aggregator
+   #:make-linear-aggregator
    #:make-state
    #:multi-aggregation-function
    #:multi-aggregation-stages
-   #:make-linear-aggregator
-   #:linear-aggregator
-   #:extract-result
-   #:end-aggregation
    #:pass-to-aggregation
    #:range-function
+   #:stage
    #:state-result
    #:transformation!-function))
 

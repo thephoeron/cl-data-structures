@@ -14,41 +14,27 @@
                                                :key key)))
 
 
-(defmethod cl-ds.alg.meta:make-state ((function statistical-summary-function)
-                                      &rest all &key key moments average)
-  (declare (ignore all key))
-  (list* average moments))
+(flet ((final (range &key average moments)
+         (declare (ignore range))
+         (bind ((variance (cl-ds:at moments 2))
+                (sd (sqrt variance))
+                (skewness (/ (cl-ds:at moments 3) (expt sd 3)))
+                (kurtosis (/ (cl-ds:at moments 4) (expt sd 4))))
+           (cl-ds.alg:make-hash-table-range
+            (dict :average average
+                  :variance variance
+                  :skewness skewness
+                  :kurtosis kurtosis)))))
+  (defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn statistical-summary-function)
+                                                      &rest all
+                                                      &key key
+                                                      &allow-other-keys)
+    (declare (ignore all))
+    (list (cl-ds.alg.meta:stage :average (range &rest all)
+            (declare (ignore all))
+            (average range :key key))
 
+          (cl-ds.alg.meta:stage :moments (range &key average key)
+            (moments range 2 3 average :key key))
 
-(defmethod cl-ds.alg.meta:aggregation-finished-p ((function statistical-summary-function)
-                                                  state)
-  t)
-
-
-(defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn statistical-summary-function)
-                                                    &rest all
-                                                    &key key
-                                                    &allow-other-keys)
-  (declare (ignore all))
-  (list (list* :average (lambda (range &rest all)
-                          (declare (ignore all))
-                          (average range :key key)))
-        (list* :moments (lambda (range &key average key)
-                          (moments range
-                                   2 3
-                                   average
-                                   :key key)))))
-
-
-(defmethod cl-ds.alg.meta:state-result ((fn statistical-summary-function)
-                                        state)
-  (bind (((average . moments) state)
-         (variance (cl-ds:at moments 2))
-         (sd (sqrt variance))
-         (skewness (/ (cl-ds:at moments 3) (expt sd 3)))
-         (kurtosis (/ (cl-ds:at moments 4) (expt sd 4))))
-    (cl-ds.alg:make-hash-table-range
-     (dict :average average
-           :variance variance
-           :skewness skewness
-           :kurtosis kurtosis))))
+          #'final)))

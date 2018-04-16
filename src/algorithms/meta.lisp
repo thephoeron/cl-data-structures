@@ -32,7 +32,28 @@
   ())
 
 
-(defclass linear-aggregator ()
+(defclass aggregation-stage ()
+  ((%name :initarg :name
+          :reader read-name)
+   (%construct-function :reader read-construct-function
+                        :initarg :construct-function)
+   (%function :initarg :function
+              :reader read-function)
+   (%state :reader read-state
+           :initarg :state)))
+
+
+(defun %stage (name construct-function)
+  (make 'aggregation-stage
+        :name name
+        :construct-function construct-function))
+
+
+(defmacro stage (name lambda-list &body body)
+  `(%stage ,name (lambda ,lambda-list ,@body)))
+
+
+(defclass linear-aggregator (fundamental-aggregator)
   ((%stages :initarg :stages
             :reader read-stages)
    (%arguments :initarg :arguments
@@ -40,6 +61,25 @@
                :accessor access-arguments)
    (%range :initarg :range
            :accessor read-range)))
+
+
+(defgeneric aggregate-accross (aggregator range)
+  (:method ((aggregator fundamental-aggregator) range)
+    (bind (((:slots %stages) aggregator)
+           ((name function . state) (first %stages)))
+      (declare (ignore name))
+      (block end
+        (cl-ds:across (lambda (x)
+                        (when (aggregation-finished-p function state)
+                          (return-from end))
+                        (pass-to-aggregation aggregator x))
+                      range)))))
+
+
+(defgeneric initialize-stage (stage arguments))
+
+
+(defgeneric pass-to-stage (stage item))
 
 
 (defgeneric pass-to-aggregation (aggregator element))
@@ -110,48 +150,26 @@
     (apply #'apply-layer clone function all)))
 
 
-(defclass states-collector (cl-ds:traversable)
-  ((%args :initform nil
-          :initarg :args
-          :accessor access-args)
-   (%label :initform nil
-           :accessor access-label)
-   (%original :initarg :original
-              :reader read-original)))
-
-
-(defmethod apply-aggregation-function ((range states-collector)
-                                       (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
-  (let ((state (apply #'make-state function all)))
-    (unless (aggregation-finished-p function state)
-      (block end
-        (cl-ds:across (lambda (x)
-                        (when (aggregation-finished-p function state)
-                          (return-from end))
-                        (aggregate function
-                                   state
-                                   (if key (funcall key x) x)))
-                      (read-original range))))
-    (push (state-result function state) (access-args range))
-    (push (access-label range) (access-args range))))
-
-
 (defmethod apply-aggregation-function (range
                                        (function multi-aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore key))
-  (let ((stages (apply #'multi-aggregation-stages function all)))
-    (unless (endp stages)
-      (iterate
-        (with collector = (make 'states-collector :args all :original range))
-        (for (name . stage) in stages)
-        (setf (access-label collector) name)
-        (apply stage collector (access-args collector))
-        (finally (return (apply #'call-next-method
-                                range
-                                function
-                                (access-args collector))))))))
+  (declare (ignore key)
+           (optimize (debug 3)))
+  (let* ((stages (append (apply #'multi-aggregation-stages function all)
+                         (list (list* :result
+                                      (lambda (range &rest rest)
+                                        (apply #'apply-aggregation-function
+                                               range
+                                               function
+                                               rest))))))
+         (aggregator (construct-aggregator range stages nil all)))
+    (begin-aggregation aggregator)
+    (iterate
+      (for stage on stages)
+      (aggregate-accross aggregator range)
+      (unless (endp (rest stage))
+        (end-aggregation aggregator)))
+    (extract-result aggregator)))
 
 
 (defmethod apply-aggregation-function (range
@@ -174,6 +192,17 @@
   (bind (((:slots %stages) aggregator)
          ((name function . state) (first %stages)))
     (state-result function state)))
+
+
+(defmethod apply-aggregation-function ((stage aggregation-stage)
+                                       (function aggregation-function)
+                                       &rest all
+                                       &key
+                                       &allow-other-keys)
+  (bind (((:slots %name %construct-function %state %function) stage)
+         (state (apply #'make-state function all)))
+    (setf %function function
+          %state state)))
 
 
 (defmethod apply-aggregation-function ((range linear-aggregator)
@@ -203,10 +232,9 @@
     (push stage-result %arguments)
     (push name %arguments)
     (setf %stages rest)
-    (unless (endp (rest %stages))
-      (apply (cdar %stages)
-             aggregator
-             %arguments))
+    (apply (cdar %stages)
+           aggregator
+           %arguments)
     stage-result))
 
 
@@ -250,3 +278,17 @@
          ((name . construct-function) (first %stages)))
     (declare (ignore name))
     (apply construct-function aggregator %arguments)))
+
+
+(defmethod initialize-stage ((stage aggregation-stage) (arguments list))
+  (bind (((:slots %name %construct-function %state) stage))
+    (setf %state (apply %construct-function stage arguments))))
+
+
+(defmethod pass-to-stage ((stage aggregation-stage) item)
+  (bind (((:slots %name %construct-function %state %function) stage))
+    (aggregate %function %state item)))
+
+
+(defmethod extract-result ((stage aggregation-stage))
+  (state-result (read-function stage) (read-state stage)))
