@@ -2,7 +2,7 @@
 
 
 (defpackage :cl-data-structures.metric-space
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
+  (:use #:common-lisp #:serapeum
         #:alexandria #:iterate #:metabang-bind)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.ms)
@@ -16,7 +16,7 @@
 
 
 (defpackage :cl-data-structures.metric-space.egnat
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
+  (:use #:common-lisp #:iterate #:alexandria #:serapeum
         #:metabang-bind #:cl-data-structures.common.hamt)
   (:nicknames #:cl-ds.ms.egnat)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
