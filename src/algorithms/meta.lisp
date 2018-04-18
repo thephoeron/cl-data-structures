@@ -75,10 +75,10 @@
 (defgeneric initialize-stage (stage arguments))
 
 
-(defgeneric pass-to-stage (stage item))
-
-
 (defgeneric pass-to-aggregation (aggregator element))
+
+
+(defgeneric pass-to-aggregation-with-stage (stage aggregator element))
 
 
 (defgeneric construct-aggregator (range stages outer-fn arguments))
@@ -94,6 +94,9 @@
 
 
 (defgeneric extract-result-with-stage (stage aggregator))
+
+
+(defgeneric aggregator-completed-stage (stage aggregator))
 
 
 (defgeneric copy-stage (stage))
@@ -174,7 +177,6 @@
   (let* ((stages (append (apply #'multi-aggregation-stages function all)))
          (aggregator (construct-aggregator range stages nil all)))
     (iterate
-      (for stage on stages)
       (begin-aggregation aggregator)
       (for elt = (first stage))
       (aggregate-accross elt range)
@@ -218,7 +220,7 @@
                                 element)
   (bind (((:slots %stages) aggregator)
          (stage (first %stages))
-         (finished (pass-to-stage stage element)))
+         (finished (pass-to-aggregation-with-stage stage aggregator element)))
     finished))
 
 
@@ -273,14 +275,7 @@
 
 
 (defmethod initialize-stage ((stage cl:function) (arguments list))
-  (apply stage arguments))
-
-
-(defmethod pass-to-stage ((stage aggregation-stage) item)
-  (bind (((:slots %name %construct-function %state %function) stage))
-    (lret ((finished (aggregation-finished-p %function %state)))
-      (unless finished
-        (aggregate %function %state item)))))
+  nil)
 
 
 (defmethod extract-result ((stage aggregation-stage))
@@ -325,3 +320,13 @@
     (push result %arguments)
     (when (slot-boundp stage '%name)
       (push (read-name stage) %arguments))))
+
+
+(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
+                                           (aggregator linear-aggreator)
+                                           element)
+  (nest
+   (bind (((:slots %name %construct-function %state %function) stage)))
+   (lret ((finished (aggregation-finished-p %function %state))))
+   (unless finished)
+   (aggregate %function %state item)))
