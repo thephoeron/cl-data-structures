@@ -96,7 +96,13 @@
 (defgeneric extract-result-with-stage (stage aggregator))
 
 
-(defgeneric aggregator-completed-stage (stage aggregator))
+(defgeneric aggregator-completed-stage (aggregator))
+
+
+(defgeneric aggregator-completed-stage-with-stage (stage aggregator))
+
+
+(defgeneric aggregator-finished (aggregator))
 
 
 (defgeneric copy-stage (stage))
