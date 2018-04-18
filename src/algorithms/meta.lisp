@@ -55,7 +55,7 @@
 
 (defclass linear-aggregator (fundamental-aggregator)
   ((%stages :initarg :stages
-            :reader read-stages)
+            :accessor access-stages)
    (%arguments :initarg :arguments
                :initform nil
                :accessor access-arguments)
@@ -93,7 +93,13 @@
 (defgeneric extract-result (aggregator))
 
 
+(defgeneric extract-result-with-stage (stage aggregator))
+
+
 (defgeneric copy-stage (stage))
+
+
+(defgeneric aggregator-finished-p (aggregator))
 
 
 (defgeneric begin-aggregation-with-stage (stage aggregator))
@@ -217,15 +223,8 @@
 
 
 (defmethod end-aggregation ((aggregator linear-aggregator))
-  (bind (((:slots %accumulator %stages %arguments) aggregator)
-         (stage (first %stages))
-         (stage-result (extract-result stage))
-         (rest (rest %stages)))
-    (setf %stages rest)
-    (push stage-result %arguments)
-    (setf %accumulator stage-result)
-    (when (slot-boundp stage '%name)
-      (push (read-name stage) %arguments))))
+  (end-aggregation-with-stage (~> aggregator read-stages first)
+                              aggregator))
 
 
 (defun make-linear-aggregator (range arguments stages)
@@ -264,9 +263,8 @@
 
 
 (defmethod begin-aggregation ((aggregator linear-aggregator))
-  (bind (((:slots %stages %accumulator %arguments) aggregator)
-         (stage (first %stages)))
-    (setf %accumulator (initialize-stage stage %arguments))))
+  (begin-aggregation-with-stage (first (access-stages aggregator))
+                                aggregator))
 
 
 (defmethod initialize-stage ((stage aggregation-stage) (arguments list))
@@ -297,3 +295,33 @@
 
 (defmethod copy-stage ((stage cl:function))
   stage)
+
+
+(defmethod begin-aggregation-with-stage ((stage cl:function)
+                                         (aggregator linear-aggregator))
+  (bind (((:slots %accumulator %arguments) aggregator))
+    (setf %accumulator (apply stage %arguments))
+    (push %accumulator %arguments)))
+
+
+(defmethod end-aggregation-with-stage ((stage cl:function)
+                                       (aggregator linear-aggregator))
+  (bind (((:slots %stages) aggregator))
+    (pop %stages)))
+
+
+(defmethod begin-aggregation-with-stage ((stage aggregation-stage)
+                                         (aggregator linear-aggregator))
+  (bind (((:slots %accumulator %arguments) aggregator))
+    (initialize-stage stage %arguments)))
+
+
+(defmethod end-aggregation-with-stage ((stage aggregation-stage)
+                                       (aggregator linear-aggregator))
+  (bind (((:slots %stages %arguments %accumulator) aggregator)
+         (result (extract-result stage)))
+    (setf %accumulator result)
+    (pop %stages)
+    (push result %arguments)
+    (when (slot-boundp stage '%name)
+      (push (read-name stage) %arguments))))
