@@ -189,7 +189,7 @@
 
 
 (defmethod apply-aggregation-function (range
-                                       (function multi-aggregation-function)
+                                       (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
   (declare (ignore key))
   (let* ((aggregator (construct-aggregator range function nil all)))
@@ -199,22 +199,6 @@
       (aggregate-accross elt range)
       (end-aggregation aggregator))
     (extract-result aggregator)))
-
-
-(defmethod apply-aggregation-function (range
-                                       (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
-  (let ((state (apply #'make-state function all)))
-    (unless (aggregation-finished-p function state)
-      (block end
-        (cl-ds:across (lambda (x)
-                        (when (aggregation-finished-p function state)
-                          (return-from end))
-                        (aggregate function
-                                   state
-                                   (if key (funcall key x) x)))
-                      range)))
-    (state-result function state)))
 
 
 (defmethod extract-result ((aggregator multi-stage-linear-aggregator))
@@ -376,13 +360,6 @@
            :accessor read-range)))
 
 
-(defun aggregate-accross (stage range)
-  (cl-ds:across (lambda (x)
-                  (when (pass-to-stage stage x)
-                    (return-from aggregate-accross)))
-                range))
-
-
 (defgeneric initialize-stage (stage arguments))
 
 
@@ -414,9 +391,6 @@
 
 
 (defgeneric aggregator-completed-stage-with-stage (stage aggregator))
-
-
-(defgeneric aggregator-finished (aggregator))
 
 
 (defgeneric copy-stage (stage))
@@ -463,23 +437,6 @@
          (push ,!name ,into)))))
 
 
-(defgeneric apply-range-function (range function
-                                  &rest all
-                                  &key &allow-other-keys))
-
-
-(defgeneric apply-aggregation-function (range function
-                                        &rest all
-                                        &key key
-                                        &allow-other-keys))
-
-
-(defgeneric handle-stage (stage range))
-
-
-(defmethod handle-stage ((stage )))
-
-
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
@@ -493,27 +450,13 @@
   (declare (ignore key))
   (let* ((aggregator (construct-aggregator range function nil all)))
     (iterate
+      (until (aggregator-finished-p aggregator))
       (begin-aggregation aggregator)
-      (for elt = (first stage))
-      (aggregate-accross elt range)
+      (cl-ds:accross (lambda (x)
+                       (pass-to-aggregation range x))
+                     range)
       (end-aggregation aggregator))
     (extract-result aggregator)))
-
-
-(defmethod apply-aggregation-function (range
-                                       (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
-  (let ((state (apply #'make-state function all)))
-    (unless (aggregation-finished-p function state)
-      (block end
-        (cl-ds:across (lambda (x)
-                        (when (aggregation-finished-p function state)
-                          (return-from end))
-                        (aggregate function
-                                   state
-                                   (if key (funcall key x) x)))
-                      range)))
-    (state-result function state)))
 
 
 (defmethod extract-result ((aggregator multi-stage-linear-aggregator))
@@ -526,23 +469,18 @@
     (state-result %function %state)))
 
 
-(defmethod apply-aggregation-function ((stage aggregation-stage)
-                                       (function aggregation-function)
-                                       &rest all
-                                       &key
-                                       &allow-other-keys)
-  (bind (((:slots %name %construct-function %state %function) stage)
-         (state (apply #'make-state function all)))
-    (setf %function function
-          %state state)))
-
-
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
                                 element)
   (bind (((:slots %stages) aggregator)
          (stage (first %stages))
          (finished (pass-to-aggregation-with-stage stage aggregator element)))
     finished))
+
+
+(defmethod pass-to-aggregation ((aggregator linear-aggregator)
+                                element)
+  (bind (((:slots %function %state) aggregator))
+    (aggregate %function %state)))
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
