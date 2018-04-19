@@ -54,6 +54,24 @@
 
 
 (defclass linear-aggregator (fundamental-aggregator)
+  ((%function :initarg :function
+              :reader read-function)
+   (%state :initarg :state
+           :accessor read-state)
+   (%arguments :initarg :arguments
+               :initform nil
+               :accessor access-arguments)))
+
+
+(defmethod initialize-instance :after ((object linear-aggregator)
+                                       &key &allow-other-keys &rest all)
+  (declare (ignore all))
+  (bind (((:slots %function %state %arguments) object))
+    (setf %state (make-state %function %arguments)))
+  object)
+
+
+(defclass multi-stage-linear-aggregator (fundamental-aggregator)
   ((%stages :initarg :stages
             :accessor access-stages)
    (%arguments :initarg :arguments
@@ -208,7 +226,7 @@
     (state-result function state)))
 
 
-(defmethod extract-result ((aggregator linear-aggregator))
+(defmethod extract-result ((aggregator multi-stage-linear-aggregator))
   (bind (((:slots %accumulator) aggregator))
     %accumulator))
 
@@ -224,7 +242,7 @@
           %state state)))
 
 
-(defmethod pass-to-aggregation ((aggregator linear-aggregator)
+(defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
                                 element)
   (bind (((:slots %stages) aggregator)
          (stage (first %stages))
@@ -232,40 +250,47 @@
     finished))
 
 
-(defmethod end-aggregation ((aggregator linear-aggregator))
+(defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
   (end-aggregation-with-stage (~> aggregator read-stages first)
                               aggregator))
 
 
-(defun make-linear-aggregator (range arguments stages)
+(defun make-linear-aggregator (range arguments)
   (make 'linear-aggregator
+        :range range
+        :arguments arguments))
+
+
+(defun make-multi-stage-linear-aggregator (range arguments stages)
+  (make 'multi-stage-linear-aggregator
         :range range
         :stages stages
         :arguments arguments))
 
 
 (defmethod construct-aggregator ((range cl:sequence)
-                                 (function aggregation-function)
+                                 (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments
-                          (apply #'multi-aggregation-stages function all)))
+  (make-multi-stage-linear-aggregator
+   range arguments (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
-                                 (function aggregation-function)
+                                 (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments
-                          (apply #'multi-aggregation-stages function all)))
+  (make-multi-stage-linear-aggregator
+   range arguments (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function aggregation-function)
+                                 (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments
-                          (apply #'multi-aggregation-stages function all)))
+  (make-multi-stage-linear-aggregator
+   range arguments
+   (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -275,7 +300,7 @@
   (funcall outer-fn function arguments))
 
 
-(defmethod begin-aggregation ((aggregator linear-aggregator))
+(defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
   (begin-aggregation-with-stage (first (access-stages aggregator))
                                 aggregator))
 
@@ -304,26 +329,26 @@
 
 
 (defmethod begin-aggregation-with-stage ((stage cl:function)
-                                         (aggregator linear-aggregator))
+                                         (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %accumulator %arguments) aggregator))
     (setf %accumulator (apply stage %arguments))
     (push %accumulator %arguments)))
 
 
 (defmethod end-aggregation-with-stage ((stage cl:function)
-                                       (aggregator linear-aggregator))
+                                       (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %stages) aggregator))
     (pop %stages)))
 
 
 (defmethod begin-aggregation-with-stage ((stage aggregation-stage)
-                                         (aggregator linear-aggregator))
+                                         (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %accumulator %arguments) aggregator))
     (initialize-stage stage %arguments)))
 
 
 (defmethod end-aggregation-with-stage ((stage aggregation-stage)
-                                       (aggregator linear-aggregator))
+                                       (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %stages %arguments %accumulator) aggregator)
          (result (extract-result stage)))
     (setf %accumulator result)
@@ -334,7 +359,7 @@
 
 
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator linear-aggreator)
+                                           (aggregator mult-stage-linear-aggreator)
                                            element)
   (nest
    (bind (((:slots %name %construct-function %state %function) stage)))

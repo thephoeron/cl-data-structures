@@ -1,0 +1,11 @@
+* aggregation protocol
+** range layer 
+*** responsible for creating aggregators
+*** responsible for iteration over itself and passing content to aggregator
+** aggregator layer
+*** responsible for constructing and managing stages
+
+* construct-aggregator
+** may call construct-aggregator-with-stages (multi-aggregation-function)
+** will return aggregator
+** outer-fn may be nil, or function that shall construct aggregator
