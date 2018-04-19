@@ -81,7 +81,10 @@
 (defgeneric pass-to-aggregation-with-stage (stage aggregator element))
 
 
-(defgeneric construct-aggregator (range stages outer-fn arguments))
+(defgeneric construct-aggregator (range function outer-fn arguments))
+
+
+(defgeneric construct-aggregator-with-stages (range stages outer-fn arguments))
 
 
 (defgeneric begin-aggregation (aggregator))
@@ -180,8 +183,7 @@
                                        (function multi-aggregation-function)
                                        &rest all &key key &allow-other-keys)
   (declare (ignore key))
-  (let* ((stages (append (apply #'multi-aggregation-stages function all)))
-         (aggregator (construct-aggregator range stages nil all)))
+  (let* ((aggregator (construct-aggregator range function nil all)))
     (iterate
       (begin-aggregation aggregator)
       (for elt = (first stage))
@@ -243,31 +245,34 @@
 
 
 (defmethod construct-aggregator ((range cl:sequence)
-                                 (stages list)
+                                 (function aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments stages))
+  (make-linear-aggregator range arguments
+                          (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
-                                 (stages list)
+                                 (function aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments stages))
+  (make-linear-aggregator range arguments
+                          (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (stages list)
+                                 (function aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
-  (make-linear-aggregator range arguments stages))
+  (make-linear-aggregator range arguments
+                          (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (stages list)
+                                 (function aggregation-function)
                                  outer-fn
                                  (arguments list))
-  (funcall outer-fn stages arguments))
+  (funcall outer-fn function arguments))
 
 
 (defmethod begin-aggregation ((aggregator linear-aggregator))
