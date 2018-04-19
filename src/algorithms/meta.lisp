@@ -664,6 +664,8 @@
 
 
 (defmethod begin-aggregation ((aggregator linear-aggregator))
+  (unless (slot-boundp aggregator '%state)
+    (error "Can't begin-aggregation twice for linear-aggregator"))
   (bind (((:slots %function %state %arguments)))
     (setf %state (apply #'make-state %function %arguments))
     aggregator))
