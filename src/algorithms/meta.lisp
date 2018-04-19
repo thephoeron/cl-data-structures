@@ -60,7 +60,9 @@
            :accessor read-state)
    (%arguments :initarg :arguments
                :initform nil
-               :accessor access-arguments)))
+               :accessor access-arguments)
+   (%ended :initform nil
+           :accessor access-ended)))
 
 
 (defclass multi-stage-linear-aggregator (fundamental-aggregator)
@@ -113,9 +115,6 @@
 
 
 (defgeneric aggregator-completed-stage-with-stage (stage aggregator))
-
-
-(defgeneric aggregator-finished (aggregator))
 
 
 (defgeneric copy-stage (stage))
@@ -423,9 +422,6 @@
 (defgeneric copy-stage (stage))
 
 
-(defgeneric aggregator-finished-p (aggregator))
-
-
 (defgeneric begin-aggregation-with-stage (stage aggregator))
 
 
@@ -667,11 +663,19 @@
    (aggregate %function %state item)))
 
 
-(defmethod begin-aggregation ((aggregator linear-aggregaotr))
+(defmethod begin-aggregation ((aggregator linear-aggregator))
   (bind (((:slots %function %state %arguments)))
     (setf %state (apply #'make-state %function %arguments))
     aggregator))
 
 
 (defmethod end-aggregation ((aggregator linear-aggregaotr))
-  nil)
+  (setf (access-ended aggregator) t))
+
+
+(defmethod aggregator-finished ((aggregator linear-aggregator))
+  (acess-ended aggregator))
+
+
+(defmethod aggregator-finished ((aggregator multi-stage-linear-aggregator))
+  (endp (access-stages aggregator)))
