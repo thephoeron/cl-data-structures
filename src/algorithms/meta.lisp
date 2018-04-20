@@ -117,9 +117,6 @@
 (defgeneric aggregator-completed-stage-with-stage (stage aggregator))
 
 
-(defgeneric copy-stage (stage))
-
-
 (defgeneric aggregator-finished-p (aggregator))
 
 
@@ -173,12 +170,6 @@
                                         &rest all
                                         &key key
                                         &allow-other-keys))
-
-
-(defgeneric handle-stage (stage range))
-
-
-(defmethod handle-stage ((stage )))
 
 
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
@@ -298,16 +289,6 @@
   (state-result (read-function stage) (read-state stage)))
 
 
-(defmethod copy-stage ((stage aggregation-stage))
-  (make (type-of stage)
-        :name (read-name stage)
-        :construct-function (read-construct-function stage)))
-
-
-(defmethod copy-stage ((stage cl:function))
-  stage)
-
-
 (defmethod begin-aggregation-with-stage ((stage cl:function)
                                          (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %accumulator %arguments) aggregator))
@@ -391,9 +372,6 @@
 
 
 (defgeneric aggregator-completed-stage-with-stage (stage aggregator))
-
-
-(defgeneric copy-stage (stage))
 
 
 (defgeneric begin-aggregation-with-stage (stage aggregator))
@@ -549,16 +527,6 @@
 
 (defmethod extract-result ((stage aggregation-stage))
   (state-result (read-function stage) (read-state stage)))
-
-
-(defmethod copy-stage ((stage aggregation-stage))
-  (make (type-of stage)
-        :name (read-name stage)
-        :construct-function (read-construct-function stage)))
-
-
-(defmethod copy-stage ((stage cl:function))
-  stage)
 
 
 (defmethod begin-aggregation-with-stage ((stage cl:function)
