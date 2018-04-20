@@ -8,7 +8,6 @@
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:aggregate
-   #:aggregation-finished-p
    #:aggregation-function
    #:aggregation-stage
    #:apply-aggregation-function

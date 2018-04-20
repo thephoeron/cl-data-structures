@@ -138,11 +138,6 @@
                         &key &allow-other-keys))
 
 
-(defgeneric aggregation-finished-p (aggregation-function state)
-  (:method ((function aggregation-function) state)
-    nil))
-
-
 (defgeneric aggregate (function state element))
 
 
@@ -324,8 +319,6 @@
                                            element)
   (nest
    (bind (((:slots %name %construct-function %state %function) stage)))
-   (lret ((finished (aggregation-finished-p %function %state))))
-   (unless finished)
    (aggregate %function %state item)))
 
 
@@ -341,45 +334,6 @@
            :accessor read-range)))
 
 
-(defgeneric initialize-stage (stage arguments))
-
-
-(defgeneric pass-to-aggregation (aggregator element))
-
-
-(defgeneric pass-to-aggregation-with-stage (stage aggregator element))
-
-
-(defgeneric construct-aggregator (range function outer-fn arguments))
-
-
-(defgeneric construct-aggregator-with-stages (range stages outer-fn arguments))
-
-
-(defgeneric begin-aggregation (aggregator))
-
-
-(defgeneric end-aggregation (aggregator))
-
-
-(defgeneric extract-result (aggregator))
-
-
-(defgeneric extract-result-with-stage (stage aggregator))
-
-
-(defgeneric aggregator-completed-stage (aggregator))
-
-
-(defgeneric aggregator-completed-stage-with-stage (stage aggregator))
-
-
-(defgeneric begin-aggregation-with-stage (stage aggregator))
-
-
-(defgeneric end-aggregation-with-stage (stage aggregator))
-
-
 (defgeneric multi-aggregation-stages (aggregation-function
                                       &rest all &key &allow-other-keys)
   (:method ((function aggregation-function) &rest all &key &allow-other-keys)
@@ -390,11 +344,6 @@
 (defgeneric make-state (aggregation-function
                         &rest all
                         &key &allow-other-keys))
-
-
-(defgeneric aggregation-finished-p (aggregation-function state)
-  (:method ((function aggregation-function) state)
-    nil))
 
 
 (defgeneric aggregate (function state element))
@@ -564,8 +513,6 @@
                                            element)
   (nest
    (bind (((:slots %name %construct-function %state %function) stage)))
-   (lret ((finished (aggregation-finished-p %function %state))))
-   (unless finished)
    (aggregate %function %state item)))
 
 
