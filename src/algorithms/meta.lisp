@@ -341,7 +341,7 @@
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
                                 element)
   (bind (((:slots %function %state) aggregator))
-    (aggregate %function %state)))
+    (aggregate %function %state element)))
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -363,6 +363,27 @@
                                  (arguments list))
   (make-multi-stage-linear-aggregator
    arguments (apply #'multi-aggregation-stages function all)))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments))
+
+
+(defmethod construct-aggregator ((range cl:sequence)
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments))
+
+
+(defmethod construct-aggregator ((range cl:sequence)
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -431,15 +452,14 @@
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
                                            (aggregator multi-stage-linear-aggregator)
                                            element)
-  (nest
-   (bind (((:slots %name %construct-function %state %function) stage)))
-   (aggregate %function %state item)))
+  (bind (((:slots %name %construct-function %state %function) stage))
+    (aggregate %function %state item)))
 
 
 (defmethod begin-aggregation ((aggregator linear-aggregator))
-  (unless (slot-boundp aggregator '%state)
+  (when (slot-boundp aggregator '%state)
     (error "Can't begin-aggregation twice for linear-aggregator"))
-  (bind (((:slots %function %state %arguments)))
+  (bind (((:slots %function %state %arguments) aggregator))
     (setf %state (apply #'make-state %function %arguments))
     aggregator))
 

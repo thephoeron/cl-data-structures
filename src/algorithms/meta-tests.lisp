@@ -10,17 +10,16 @@
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
                     vector1
-                    (list (list* :result
-                                 (lambda (range)
-                                   (cl-ds.alg:accumulate #'+ range))))
+                    #'cl-ds.alg:accumulate
                     nil
-                    nil)))
+                    (list :fn #'+))))
   (cl-ds.alg.meta:begin-aggregation aggregator)
   (iterate
     (for elt in-vector vector1)
     (sum elt into result)
     (cl-ds.alg.meta:pass-to-aggregation aggregator elt)
     (finally
+     (cl-ds.alg.meta:end-aggregation aggregator)
      (is (cl-ds.alg.meta:extract-result aggregator)
          result))))
 
