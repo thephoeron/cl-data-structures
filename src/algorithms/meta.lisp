@@ -190,9 +190,9 @@
                               aggregator))
 
 
-(defun make-linear-aggregator (range arguments)
+(defun make-linear-aggregator (function arguments)
   (make 'linear-aggregator
-        :range range
+        :function function
         :arguments arguments))
 
 
@@ -233,6 +233,13 @@
                                  outer-fn
                                  (arguments list))
   (funcall outer-fn function arguments))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments))
 
 
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
