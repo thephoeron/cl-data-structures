@@ -469,7 +469,7 @@
 
 
 (defmethod aggregator-finished-p ((aggregator linear-aggregator))
-  (acess-ended aggregator))
+  (access-ended aggregator))
 
 
 (defmethod aggregator-finished-p ((aggregator multi-stage-linear-aggregator))

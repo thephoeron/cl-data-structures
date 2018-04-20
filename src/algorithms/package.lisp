@@ -20,6 +20,7 @@
    #:gather-prior-states
    #:layer-function
    #:linear-aggregator
+   #:aggregator-finished-p
    #:make-linear-aggregator
    #:make-state
    #:multi-aggregation-function

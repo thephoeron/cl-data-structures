@@ -5,7 +5,7 @@
 
 (in-package #:alg-meta-tests)
 
-(plan 1)
+(plan 2)
 
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
@@ -20,6 +20,7 @@
     (cl-ds.alg.meta:pass-to-aggregation aggregator elt)
     (finally
      (cl-ds.alg.meta:end-aggregation aggregator)
+     (ok (cl-ds.alg.meta:aggregator-finished-p aggregator))
      (is (cl-ds.alg.meta:extract-result aggregator)
          result))))
 

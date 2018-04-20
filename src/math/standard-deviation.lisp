@@ -20,14 +20,5 @@
                                                     &key key biased
                                                     &allow-other-keys)
   (declare (ignore all))
-  `((:average . ,(lambda (range)
-                   (average range :key key)))
-    (:variance . ,(lambda (range)
-                    (variance range :key key :biased biased)))))
-
-
-(defmethod cl-ds.alg.meta:make-state ((function standard-deviation-function)
-                                 &rest all &key variance
-                                 &allow-other-keys)
-  (declare (ignore all))
-  (sqrt variance))
+  (list (cl-ds.alg.meta:stage :average (range) (average range :key key))
+        #'sqrt))
