@@ -31,7 +31,3 @@
                                  &allow-other-keys)
   (declare (ignore all))
   (sqrt variance))
-
-
-(defmethod cl-ds.alg.meta:aggregation-finished-p ((function standard-deviation-function) state)
-  t)

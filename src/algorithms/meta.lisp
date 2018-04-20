@@ -249,7 +249,7 @@
 
 
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator mult-stage-linear-aggreator)
+                                           (aggregator multi-stage-linear-aggregator)
                                            element)
   (nest
    (bind (((:slots %name %construct-function %state %function) stage)))
@@ -313,9 +313,9 @@
     (iterate
       (until (aggregator-finished-p aggregator))
       (begin-aggregation aggregator)
-      (cl-ds:accross (lambda (x)
-                       (pass-to-aggregation range x))
-                     range)
+      (cl-ds:across (lambda (x)
+                      (pass-to-aggregation range x))
+                    range)
       (end-aggregation aggregator))
     (extract-result aggregator)))
 
@@ -429,7 +429,7 @@
 
 
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator mult-stage-linear-aggreator)
+                                           (aggregator multi-stage-linear-aggregator)
                                            element)
   (nest
    (bind (((:slots %name %construct-function %state %function) stage)))
@@ -444,7 +444,7 @@
     aggregator))
 
 
-(defmethod end-aggregation ((aggregator linear-aggregaotr))
+(defmethod end-aggregation ((aggregator linear-aggregator))
   (setf (access-ended aggregator) t))
 
 
