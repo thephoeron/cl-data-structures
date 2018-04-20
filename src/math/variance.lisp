@@ -20,8 +20,9 @@
                                                     &key key
                                                     &allow-other-keys)
   (declare (ignore all))
-  `((:average . ,(lambda (range)
-                   (average range :key key)))))
+  (list (cl-ds.alg.meta:stage :average (range &rest all)
+          (declare (ignore all))
+          (average range :key key))))
 
 
 (defstruct variance-state average (sum 0) (count 0 :type fixnum))

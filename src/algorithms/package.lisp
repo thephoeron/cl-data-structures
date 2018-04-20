@@ -21,6 +21,7 @@
    #:layer-function
    #:linear-aggregator
    #:aggregator-finished-p
+   #:aggregation-stage
    #:make-linear-aggregator
    #:make-state
    #:multi-aggregation-function
