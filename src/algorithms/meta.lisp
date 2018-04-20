@@ -72,9 +72,7 @@
                :initform nil
                :accessor access-arguments)
    (%accumulator :initform nil
-                 :accessor access-accumulator)
-   (%range :initarg :range
-           :accessor read-range)))
+                 :accessor access-accumulator)))
 
 
 (defgeneric apply-aggregation-function (range function
@@ -196,50 +194,10 @@
         :arguments arguments))
 
 
-(defun make-multi-stage-linear-aggregator (range arguments stages)
+(defun make-multi-stage-linear-aggregator (arguments stages)
   (make 'multi-stage-linear-aggregator
-        :range range
         :stages stages
         :arguments arguments))
-
-
-(defmethod construct-aggregator ((range cl:sequence)
-                                 (function multi-aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-multi-stage-linear-aggregator
-   range arguments (apply #'multi-aggregation-stages function all)))
-
-
-(defmethod construct-aggregator ((range cl:hash-table)
-                                 (function multi-aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-multi-stage-linear-aggregator
-   range arguments (apply #'multi-aggregation-stages function all)))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function multi-aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-multi-stage-linear-aggregator
-   range arguments
-   (apply #'multi-aggregation-stages function all)))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function aggregation-function)
-                                 outer-fn
-                                 (arguments list))
-  (funcall outer-fn function arguments))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments))
 
 
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -391,25 +349,12 @@
                               aggregator))
 
 
-(defun make-linear-aggregator (range arguments)
-  (make 'linear-aggregator
-        :range range
-        :arguments arguments))
-
-
-(defun make-multi-stage-linear-aggregator (range arguments stages)
-  (make 'multi-stage-linear-aggregator
-        :range range
-        :stages stages
-        :arguments arguments))
-
-
 (defmethod construct-aggregator ((range cl:sequence)
                                  (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   range arguments (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
@@ -417,7 +362,7 @@
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   range arguments (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -425,8 +370,7 @@
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   range arguments
-   (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function all)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -504,9 +448,9 @@
   (setf (access-ended aggregator) t))
 
 
-(defmethod aggregator-finished ((aggregator linear-aggregator))
+(defmethod aggregator-finished-p ((aggregator linear-aggregator))
   (acess-ended aggregator))
 
 
-(defmethod aggregator-finished ((aggregator multi-stage-linear-aggregator))
+(defmethod aggregator-finished-p ((aggregator multi-stage-linear-aggregator))
   (endp (access-stages aggregator)))
