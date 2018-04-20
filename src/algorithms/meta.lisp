@@ -77,13 +77,6 @@
            :accessor read-range)))
 
 
-(defun aggregate-accross (stage range)
-  (cl-ds:across (lambda (x)
-                  (when (pass-to-stage stage x)
-                    (return-from aggregate-accross)))
-                range))
-
-
 (defgeneric apply-aggregation-function (range function
                                         &rest all
                                         &key key
