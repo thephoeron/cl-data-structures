@@ -20,5 +20,8 @@
                                                     &key key biased
                                                     &allow-other-keys)
   (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :average (range) (average range :key key))
-        #'sqrt))
+  (list (cl-ds.alg.meta:stage :average (range &rest all)
+          (declare (ignore all))
+          (average range :key key))
+        (lambda (&key average &allow-other-keys)
+          (sqrt average))))

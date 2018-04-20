@@ -184,7 +184,7 @@
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
-  (end-aggregation-with-stage (~> aggregator read-stages first)
+  (end-aggregation-with-stage (~> aggregator access-stages first)
                               aggregator))
 
 
@@ -207,7 +207,7 @@
 
 (defmethod initialize-stage ((stage aggregation-stage) (arguments list))
   (bind (((:slots %name %construct-function %state) stage))
-    (setf %state (apply %construct-function stage arguments))))
+    (apply %construct-function stage arguments)))
 
 
 (defmethod initialize-stage ((stage cl:function) (arguments list))
@@ -313,6 +313,7 @@
     (iterate
       (until (aggregator-finished-p aggregator))
       (begin-aggregation aggregator)
+      (until (aggregator-finished-p aggregator))
       (cl-ds:across (lambda (x)
                       (pass-to-aggregation range x))
                     range)
@@ -333,9 +334,8 @@
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
                                 element)
   (bind (((:slots %stages) aggregator)
-         (stage (first %stages))
-         (finished (pass-to-aggregation-with-stage stage aggregator element)))
-    finished))
+         (stage (first %stages)))
+    (pass-to-aggregation-with-stage stage aggregator element)))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
@@ -345,7 +345,7 @@
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
-  (end-aggregation-with-stage (~> aggregator read-stages first)
+  (end-aggregation-with-stage (~> aggregator access-stages first)
                               aggregator))
 
 
@@ -354,7 +354,7 @@
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function arguments)))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
@@ -362,7 +362,7 @@
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function arguments)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -408,7 +408,7 @@
 
 (defmethod initialize-stage ((stage aggregation-stage) (arguments list))
   (bind (((:slots %name %construct-function %state) stage))
-    (setf %state (apply %construct-function stage arguments))))
+    (apply %construct-function stage arguments)))
 
 
 (defmethod initialize-stage ((stage cl:function) (arguments list))
@@ -421,15 +421,15 @@
 
 (defmethod begin-aggregation-with-stage ((stage cl:function)
                                          (aggregator multi-stage-linear-aggregator))
-  (bind (((:slots %accumulator %arguments) aggregator))
+  (bind (((:slots %stages %accumulator %arguments) aggregator))
     (setf %accumulator (apply stage %arguments))
-    (push %accumulator %arguments)))
+    (push %accumulator %arguments)
+    (pop %stages)))
 
 
 (defmethod end-aggregation-with-stage ((stage cl:function)
                                        (aggregator multi-stage-linear-aggregator))
-  (bind (((:slots %stages) aggregator))
-    (pop %stages)))
+  nil)
 
 
 (defmethod begin-aggregation-with-stage ((stage aggregation-stage)
@@ -451,7 +451,7 @@
 
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
                                            (aggregator multi-stage-linear-aggregator)
-                                           element)
+                                           item)
   (bind (((:slots %name %construct-function %state %function) stage))
     (aggregate %function %state item)))
 
@@ -474,3 +474,13 @@
 
 (defmethod aggregator-finished-p ((aggregator multi-stage-linear-aggregator))
   (endp (access-stages aggregator)))
+
+
+(defmethod apply-aggregation-function ((stage aggregation-stage)
+                                       (function aggregation-function)
+                                       &rest all &key key &allow-other-keys)
+  (declare (ignore key))
+  (bind (((:slots %function %state) stage))
+    (setf %state (apply #'make-state function all)
+          %function function)))
+
