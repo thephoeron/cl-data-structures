@@ -84,6 +84,12 @@
                 range))
 
 
+(defgeneric apply-aggregation-function (range function
+                                        &rest all
+                                        &key key
+                                        &allow-other-keys))
+
+
 (defgeneric initialize-stage (stage arguments))
 
 
@@ -161,30 +167,11 @@
                                   &key &allow-other-keys))
 
 
-(defgeneric apply-aggregation-function (range function
-                                        &rest all
-                                        &key key
-                                        &allow-other-keys))
-
-
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
   (let ((clone (cl-ds:clone range)))
     (apply #'apply-layer clone function all)))
-
-
-(defmethod apply-aggregation-function (range
-                                       (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
-  (declare (ignore key))
-  (let* ((aggregator (construct-aggregator range function nil all)))
-    (iterate
-      (begin-aggregation aggregator)
-      (for elt = (first stage))
-      (aggregate-accross elt range)
-      (end-aggregation aggregator))
-    (extract-result aggregator)))
 
 
 (defmethod extract-result ((aggregator multi-stage-linear-aggregator))
@@ -195,17 +182,6 @@
 (defmethod extract-result ((aggregator linear-aggregator))
   (bind (((:slots %state %function) aggregator))
     (state-result %function %state)))
-
-
-(defmethod apply-aggregation-function ((stage aggregation-stage)
-                                       (function aggregation-function)
-                                       &rest all
-                                       &key
-                                       &allow-other-keys)
-  (bind (((:slots %name %construct-function %state %function) stage)
-         (state (apply #'make-state function all)))
-    (setf %function function
-          %state state)))
 
 
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
