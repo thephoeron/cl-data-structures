@@ -9,6 +9,7 @@
 
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
+                    nil
                     vector1
                     #'cl-ds.alg:accumulate
                     nil
@@ -26,6 +27,7 @@
 
 (let* ((vector1 #(1 1 1 1 1 1 1))
        (aggregator (cl-ds.alg.meta:construct-aggregator
+                    nil
                     vector1
                     #'cl-ds.math:standard-deviation
                     nil

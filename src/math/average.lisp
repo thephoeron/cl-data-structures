@@ -9,7 +9,7 @@
 (defgeneric average (range &key key)
   (:generic-function-class average-function)
   (:method (range
-            &key key)
+            &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function range #'average
                                                :key key)))
 
@@ -31,6 +31,5 @@
 (defmethod cl-ds.alg.meta:aggregate ((function average-function)
                                      state
                                      element)
-  (declare (type list state))
   (incf (cdr state))
   (incf (car state) element))

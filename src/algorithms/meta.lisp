@@ -31,11 +31,16 @@
 (defclass fundamental-aggregator ()
   ((%arguments :initarg :arguments
                :accessor access-arguments
-               :initform nil)))
+               :initform nil)
+   (%key :initarg :key
+         :reader read-key
+         :initform #'identity)))
 
 
 (defclass fundamental-aggregation-stage ()
-  ())
+  ((%key :initarg :key
+         :initform #'identity
+         :reader read-key)))
 
 
 (defclass aggregation-stage (fundamental-aggregation-stage)
@@ -118,10 +123,7 @@
 (defgeneric pass-to-aggregation-with-stage (stage aggregator element))
 
 
-(defgeneric construct-aggregator (range function outer-fn arguments))
-
-
-(defgeneric construct-aggregator-with-stages (range stages outer-fn arguments))
+(defgeneric construct-aggregator (range key function outer-fn arguments))
 
 
 (defgeneric begin-aggregation (aggregator))
@@ -195,9 +197,10 @@
 
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
                                 element)
-  (bind (((:slots %stages) aggregator)
+  (bind (((:slots %stages %key) aggregator)
          (stage (first %stages))
-         (finished (pass-to-aggregation-with-stage stage aggregator element)))
+         (finished (pass-to-aggregation-with-stage stage aggregator
+                                                   (funcall %key element))))
     finished))
 
 
@@ -206,14 +209,16 @@
                               aggregator))
 
 
-(defun make-linear-aggregator (function arguments)
+(defun make-linear-aggregator (function arguments key)
   (make 'linear-aggregator
+        :key key
         :function function
         :arguments arguments))
 
 
-(defun make-multi-stage-linear-aggregator (arguments stages)
+(defun make-multi-stage-linear-aggregator (arguments key stages)
   (make 'multi-stage-linear-aggregator
+        :key key
         :stages stages
         :arguments arguments))
 
@@ -269,9 +274,8 @@
 (defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
                                            (aggregator multi-stage-linear-aggregator)
                                            element)
-  (nest
-   (bind (((:slots %name %construct-function %state %function) stage)))
-   (aggregate %function %state item)))
+  (bind (((:slots %name %key %construct-function %state %function) stage))
+    (aggregate %function %state (funcall %key element))))
 
 
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
@@ -284,15 +288,15 @@
 (defmethod apply-aggregation-function (range
                                        (function multi-aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore key))
-  (let* ((aggregator (construct-aggregator range function nil all)))
+  (let* ((aggregator (construct-aggregator range key function nil all)))
     (iterate
       (until (aggregator-finished-p aggregator))
       (begin-aggregation aggregator)
       (until (aggregator-finished-p aggregator))
       (when (cl-ds.alg.meta:expects-content aggregator)
         (cl-ds:across (lambda (x)
-                        (pass-to-aggregation range x))
+                        (pass-to-aggregation aggregator
+                                             x))
                       range))
       (end-aggregation aggregator))
     (extract-result aggregator)))
@@ -327,55 +331,65 @@
 
 
 (defmethod construct-aggregator ((range cl:sequence)
+                                 key
                                  (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
+  (setf key (or key #'identity))
   (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function arguments)))
+   arguments key (apply #'multi-aggregation-stages function arguments)))
 
 
 (defmethod construct-aggregator ((range cl:hash-table)
+                                 key
+                                 (function multi-aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (setf key (or key #'identity))
+  (make-multi-stage-linear-aggregator
+   arguments key (apply #'multi-aggregation-stages function arguments)))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 key
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments key))
+
+
+(defmethod construct-aggregator ((range cl:sequence)
+                                 key
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments key))
+
+
+(defmethod construct-aggregator ((range cl:sequence)
+                                 key
+                                 (function aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-linear-aggregator function arguments key))
+
+
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 key
                                  (function multi-aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function arguments)))
+   arguments key (apply #'multi-aggregation-stages function arguments)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments))
-
-
-(defmethod construct-aggregator ((range cl:sequence)
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments))
-
-
-(defmethod construct-aggregator ((range cl:sequence)
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
-                                 (function multi-aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function arguments)))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 key
                                  (function aggregation-function)
                                  outer-fn
                                  (arguments list))
-  (funcall outer-fn function arguments))
+  (lret ((result (funcall outer-fn function arguments)))
+    (setf (slot-value result '%key) key)))
 
 
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -426,13 +440,6 @@
       (push (read-name stage) %arguments))))
 
 
-(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator multi-stage-linear-aggregator)
-                                           item)
-  (bind (((:slots %name %construct-function %state %function) stage))
-    (aggregate %function %state item)))
-
-
 (defmethod begin-aggregation ((aggregator linear-aggregator))
   (when (slot-boundp aggregator '%state)
     (error "Can't begin-aggregation twice for linear-aggregator"))
@@ -456,10 +463,10 @@
 (defmethod apply-aggregation-function ((stage aggregation-stage)
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (declare (ignore key))
-  (bind (((:slots %function %state) stage))
+  (bind (((:slots %key %function %state) stage))
     (setf %state (apply #'make-state function all)
-          %function function)))
+          %function function
+          %key key)))
 
 
 (defmethod begin-aggregation-with-stage ((stage reduce-stage)
@@ -484,9 +491,9 @@
 (defmethod pass-to-aggregation-with-stage ((stage reduce-stage)
                                            (aggregator multi-stage-linear-aggregator)
                                            item)
-  (bind (((:slots %state %function %arguments) stage))
+  (bind (((:slots %state %function %arguments %key) stage))
     (setf %state (apply %function %state
-                        item %arguments))))
+                        (funcall %key item) %arguments))))
 
 
 (defmethod expects-content ((aggregator linear-aggregator))
