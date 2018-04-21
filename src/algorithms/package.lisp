@@ -10,6 +10,10 @@
    #:aggregate
    #:aggregation-function
    #:aggregation-stage
+   #:fundamental-aggregation-stage
+   #:reduce-stage
+   #:expects-content
+   #:expects-content-with-stage
    #:apply-aggregation-function
    #:apply-layer
    #:apply-range-function

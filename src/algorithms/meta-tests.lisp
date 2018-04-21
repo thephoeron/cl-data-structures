@@ -34,12 +34,13 @@
     (until (cl-ds.alg.meta:aggregator-finished-p aggregator))
     (cl-ds.alg.meta:begin-aggregation aggregator)
     (until (cl-ds.alg.meta:aggregator-finished-p aggregator))
-    (iterate
-      (for elt in-vector vector1)
-      (cl-ds.alg.meta:pass-to-aggregation aggregator elt))
+    (when (cl-ds.alg.meta:expects-content aggregator)
+      (iterate
+        (for elt in-vector vector1)
+        (cl-ds.alg.meta:pass-to-aggregation aggregator elt)))
     (cl-ds.alg.meta:end-aggregation aggregator)
     (finally
      (is (cl-ds.alg.meta:extract-result aggregator)
-         1.0))))
+         0.0))))
 
 (finalize)

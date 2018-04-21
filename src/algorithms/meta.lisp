@@ -29,10 +29,16 @@
 
 
 (defclass fundamental-aggregator ()
+  ((%arguments :initarg :arguments
+               :accessor access-arguments
+               :initform nil)))
+
+
+(defclass fundamental-aggregation-stage ()
   ())
 
 
-(defclass aggregation-stage ()
+(defclass aggregation-stage (fundamental-aggregation-stage)
   ((%name :initarg :name
           :reader read-name)
    (%construct-function :reader read-construct-function
@@ -43,14 +49,36 @@
            :initarg :state)))
 
 
+(defclass reduce-stage (fundamental-aggregation-stage)
+  ((%name :initarg :name
+          :reader read-name)
+   (%function :initarg :function
+              :reader read-function)
+   (%arguments :initform nil
+               :accessor access-arguments)
+   (%state :reader read-state
+           :initarg :state)))
+
+
 (defun %stage (name construct-function)
   (make 'aggregation-stage
         :name name
         :construct-function construct-function))
 
 
+(defun %reduce-stage (name state-init function)
+  (make 'reduce-stage
+        :name name
+        :function function
+        :state state-init))
+
+
 (defmacro stage (name lambda-list &body body)
   `(%stage ,name (lambda ,lambda-list ,@body)))
+
+
+(defmacro reduce-stage (name init-form lambda-list &body body)
+  `(%reduce-stage ,name ,init-form (lambda ,lambda-list ,@body)))
 
 
 (defclass linear-aggregator (fundamental-aggregator)
@@ -58,9 +86,6 @@
               :reader read-function)
    (%state :initarg :state
            :accessor read-state)
-   (%arguments :initarg :arguments
-               :initform nil
-               :accessor access-arguments)
    (%ended :initform nil
            :accessor access-ended)))
 
@@ -68,9 +93,6 @@
 (defclass multi-stage-linear-aggregator (fundamental-aggregator)
   ((%stages :initarg :stages
             :accessor access-stages)
-   (%arguments :initarg :arguments
-               :initform nil
-               :accessor access-arguments)
    (%accumulator :initform nil
                  :accessor access-accumulator)))
 
@@ -79,6 +101,12 @@
                                         &rest all
                                         &key key
                                         &allow-other-keys))
+
+
+(defgeneric expects-content (aggregator))
+
+
+(defgeneric expects-content-with-stage (stage aggregator))
 
 
 (defgeneric initialize-stage (stage arguments))
@@ -141,16 +169,6 @@
 (defgeneric state-result (function state)
   (:method ((function aggregation-function) state)
     state))
-
-
-(defmacro gather-prior-states (fn range into)
-  (with-gensyms (!result !name !stage)
-    (once-only (fn range)
-      `(iterate
-         (for (,!name . ,!stage) in (multi-aggregation-stages ,fn ,into))
-         (for ,!result = (funcall ,!stage ,range))
-         (push ,!result ,into)
-         (push ,!name ,into)))))
 
 
 (defgeneric apply-range-function (range function
@@ -256,48 +274,6 @@
    (aggregate %function %state item)))
 
 
-(defclass multi-stage-linear-aggregator (fundamental-aggregator)
-  ((%stages :initarg :stages
-            :accessor access-stages)
-   (%arguments :initarg :arguments
-               :initform nil
-               :accessor access-arguments)
-   (%accumulator :initform nil
-                 :accessor access-accumulator)
-   (%range :initarg :range
-           :accessor read-range)))
-
-
-(defgeneric multi-aggregation-stages (aggregation-function
-                                      &rest all &key &allow-other-keys)
-  (:method ((function aggregation-function) &rest all &key &allow-other-keys)
-    (declare (ignore all))
-    nil))
-
-
-(defgeneric make-state (aggregation-function
-                        &rest all
-                        &key &allow-other-keys))
-
-
-(defgeneric aggregate (function state element))
-
-
-(defgeneric state-result (function state)
-  (:method ((function aggregation-function) state)
-    state))
-
-
-(defmacro gather-prior-states (fn range into)
-  (with-gensyms (!result !name !stage)
-    (once-only (fn range)
-      `(iterate
-         (for (,!name . ,!stage) in (multi-aggregation-stages ,fn ,into))
-         (for ,!result = (funcall ,!stage ,range))
-         (push ,!result ,into)
-         (push ,!name ,into)))))
-
-
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
@@ -314,9 +290,10 @@
       (until (aggregator-finished-p aggregator))
       (begin-aggregation aggregator)
       (until (aggregator-finished-p aggregator))
-      (cl-ds:across (lambda (x)
-                      (pass-to-aggregation range x))
-                    range)
+      (when (cl-ds.alg.meta:expects-content aggregator)
+        (cl-ds:across (lambda (x)
+                        (pass-to-aggregation range x))
+                      range))
       (end-aggregation aggregator))
     (extract-result aggregator)))
 
@@ -391,7 +368,7 @@
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-multi-stage-linear-aggregator
-   arguments (apply #'multi-aggregation-stages function all)))
+   arguments (apply #'multi-aggregation-stages function arguments)))
 
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
@@ -484,3 +461,47 @@
     (setf %state (apply #'make-state function all)
           %function function)))
 
+
+(defmethod begin-aggregation-with-stage ((stage reduce-stage)
+                                         (aggregator multi-stage-linear-aggregator))
+  (setf (access-arguments stage) (access-arguments aggregator)))
+
+
+(defmethod extract-result ((stage reduce-stage))
+  (read-state stage))
+
+
+(defmethod end-aggregation-with-stage ((stage reduce-stage)
+                                       (aggregator multi-stage-linear-aggregator))
+  (bind (((:slots %stages %arguments %accumulator) aggregator))
+    (setf %accumulator (extract-result stage))
+    (pop %stages)
+    (push %accumulator %arguments)
+    (when (slot-boundp stage '%name)
+      (push (read-name stage) %arguments))))
+
+
+(defmethod pass-to-aggregation-with-stage ((stage reduce-stage)
+                                           (aggregator multi-stage-linear-aggregator)
+                                           item)
+  (bind (((:slots %state %function %arguments) stage))
+    (setf %state (apply %function %state
+                        item %arguments))))
+
+
+(defmethod expects-content ((aggregator linear-aggregator))
+  t)
+
+
+(defmethod expects-content ((aggregator multi-stage-linear-aggregator))
+  (expects-content-with-stage (first (access-stages aggregator))
+                              aggregator))
+
+
+(defmethod expects-content-with-stage ((stage fundamental-aggregation-stage)
+                                       (aggregator multi-stage-linear-aggregator))
+  t)
+
+(defmethod expects-content-with-stage ((stage cl:function)
+                                       (aggregator multi-stage-linear-aggregator))
+  nil)

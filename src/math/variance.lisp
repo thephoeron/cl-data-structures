@@ -17,29 +17,19 @@
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn variance-function)
                                                     &rest all
-                                                    &key key
+                                                    &key key biased
                                                     &allow-other-keys)
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :average (range &rest all)
           (declare (ignore all))
-          (average range :key key))))
-
-
-(defstruct variance-state average (sum 0) (count 0 :type fixnum))
-
-
-(defmethod cl-ds.alg.meta:make-state ((function variance-function)
-                                      &rest all &key biased average
-                                      &allow-other-keys)
-  (declare (ignore all))
-  (make-variance-state :average average :count (if biased 0 -1)))
-
-
-(defmethod cl-ds.alg.meta:state-result ((function variance-function) state)
-  (/ (variance-state-sum state)
-     (variance-state-count state)))
-
-
-(defmethod cl-ds.alg.meta:aggregate ((function variance-function) state element)
-  (incf (variance-state-count state))
-  (incf (variance-state-sum state) (expt (- element (variance-state-average state)) 2)))
+          (average range :key key))
+        (cl-ds.alg.meta:reduce-stage :variance (list* (if biased 0 -1) 0)
+            (prev next &key average &allow-other-keys)
+          (symbol-macrolet ((count (car prev))
+                            (sum (cdr prev)))
+            (incf count)
+            (incf sum (expt (- next average) 2))
+            prev))
+        (lambda (&key variance &allow-other-keys)
+          (/ (cdr variance)
+             (car variance)))))

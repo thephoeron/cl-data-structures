@@ -17,11 +17,12 @@
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn standard-deviation-function)
                                                     &rest all
-                                                    &key key biased
+                                                    &key
                                                     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :average (range &rest all)
-          (declare (ignore all))
-          (average range :key key))
-        (lambda (&key average &allow-other-keys)
-          (sqrt average))))
+  (let ((variance-stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                                #'variance
+                                all)))
+    (setf (rest (last variance-stages))
+          (list (lambda (x &key &allow-other-keys)
+                  (sqrt x))))
+    variance-stages))
