@@ -366,14 +366,6 @@
   (make-linear-aggregator function arguments key))
 
 
-(defmethod construct-aggregator ((range cl:sequence)
-                                 key
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments key))
-
-
 (defmethod construct-aggregator ((range fundamental-forward-range)
                                  key
                                  (function multi-aggregation-function)

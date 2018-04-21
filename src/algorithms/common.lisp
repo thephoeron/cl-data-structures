@@ -24,6 +24,19 @@
   (cl-ds:across function (read-original-range range)))
 
 
+(defmethod cl-ds.alg.meta:construct-aggregator
+    ((range proxy-range)
+     key
+     function
+     outer-fn
+     (arguments list))
+  (cl-ds.alg.meta:construct-aggregator (read-original-range range)
+                                       key
+                                       function
+                                       outer-fn
+                                       arguments))
+
+
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
   ())
 

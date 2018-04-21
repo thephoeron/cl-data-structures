@@ -23,6 +23,7 @@
   (list (cl-ds.alg.meta:stage :average (range &rest all)
           (declare (ignore all))
           (average range :key key))
+
         (cl-ds.alg.meta:reduce-stage :variance (list* (if biased 0 -1) 0)
             (prev next &key average &allow-other-keys)
           (symbol-macrolet ((count (car prev))
@@ -30,6 +31,7 @@
             (incf count)
             (incf sum (expt (- next average) 2))
             prev))
+
         (lambda (&key variance &allow-other-keys)
           (/ (cdr variance)
              (car variance)))))

@@ -27,9 +27,11 @@
   (list (cl-ds.alg.meta:stage :average-y (range &rest all)
           (declare (ignore all))
           (average range :key y-key))
+
         (cl-ds.alg.meta:stage :average-x (range &rest all)
           (declare (ignore all))
           (average range :key x-key))
+
         (cl-ds.alg.meta:reduce-stage :stats (make-linear-regression-state)
             (state element &key average-x average-y &allow-other-keys)
           (bind (((:slots xx yy xy) state)
@@ -39,6 +41,7 @@
             (incf xy (* (- y average-y) (- x average-x)))
             (incf xx (expt (- x average-x) 2))
             state))
+
         (lambda (&key stats average-y average-x &allow-other-keys)
           (bind (((:slots xx yy xy) stats)
                  (beta1 (/ xy xx))
