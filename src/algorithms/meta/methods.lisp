@@ -301,7 +301,10 @@
 (defmethod end-aggregation-with-stage ((stage reduce-stage)
                                        (aggregator multi-stage-linear-aggregator))
   (setf (access-accumulator aggregator) (access-state stage)
-        (access-stages aggregator) (~> aggregator access-stages rest)))
+        (access-stages aggregator) (~> aggregator access-stages rest))
+  (push (access-state stage) (access-arguments aggregator))
+  (when (slot-boundp stage '%name)
+    (push (read-name stage) (access-arguments aggregator))))
 
 
 (defmethod pass-to-aggregation-with-stage ((stage reduce-stage)
@@ -311,4 +314,3 @@
          (access-state stage)
          element
          (access-arguments aggregator)))
-

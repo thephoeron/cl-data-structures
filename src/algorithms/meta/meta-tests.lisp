@@ -5,7 +5,7 @@
 
 (in-package #:alg-meta-tests)
 
-(plan 5)
+(plan 7)
 
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
@@ -61,7 +61,7 @@
                   (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'car)
                                       :test #'eq)
                   (cl-ds.math:standard-deviation :key #'car))))
-  (is (cl-ds:at proxy t) 0)
-  (is (cl-ds:at proxy nil) 0))
+  (is (cl-ds:at proxy t) 0 :test #'=)
+  (is (cl-ds:at proxy nil) 0 :test #'=))
 
 (finalize)
