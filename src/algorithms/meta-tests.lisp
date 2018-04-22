@@ -56,4 +56,13 @@
   (is (cl-ds:at proxy nil) 1))
 
 
+(let* ((vector1 #((1) (2) (1) (2) (1) (2) (1)))
+       (proxy (~> vector1
+                  cl-ds:whole-range
+                  (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'car)
+                                      :test #'eq)
+                  (cl-ds.math:standard-deviation :key #'car))))
+  (is (cl-ds:at proxy t) 0)
+  (is (cl-ds:at proxy nil) 0))
+
 (finalize)

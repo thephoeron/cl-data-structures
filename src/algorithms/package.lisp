@@ -29,6 +29,7 @@
    #:linear-aggregator
    #:make-linear-aggregator
    #:make-state
+   #:multi-aggregator
    #:multi-aggregation-function
    #:multi-aggregation-stages
    #:pass-to-aggregation

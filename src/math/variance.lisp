@@ -29,7 +29,7 @@
           (symbol-macrolet ((count (car prev))
                             (sum (cdr prev)))
             (incf count)
-            (incf sum (expt (- next average) 2))
+            (incf sum (expt (- (funcall key next) average) 2))
             prev))
 
         (lambda (&key variance &allow-other-keys)

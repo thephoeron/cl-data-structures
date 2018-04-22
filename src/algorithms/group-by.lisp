@@ -45,8 +45,8 @@
             :reader read-groups)
    (%outer-fn :initarg :outer-fn
               :reader read-outer-fn)
-   (%key :initarg :key
-         :reader read-key)))
+   (%group-by-key :initarg :group-by-key
+                  :reader read-key)))
 
 
 (defclass linear-group-by-aggregator (group-by-aggregator)
@@ -55,14 +55,29 @@
               :accessor access-finished)))
 
 
+(defclass multi-group-by-aggregator (group-by-aggregator
+                                     multi-aggregator)
+  ((%stages :initarg :stages
+            :accessor access-stages)))
+
+
 (defmethod cl-ds.alg.meta:begin-aggregation ((aggregator group-by-aggregator))
-  nil)
+  (iterate
+    (for (key value) in-hashtable (read-groups aggregator))
+    (begin-aggregation value)))
 
 
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator group-by-aggregator))
+  (declare (optimize (debug 3)))
   (iterate
     (for (key value) in-hashtable (read-groups aggregator))
     (end-aggregation value)))
+
+
+(defmethod cl-ds.alg.meta:end-aggregation ((aggregator multi-group-by-aggregator))
+  (assert (access-stages aggregator))
+  (call-next-method)
+  (pop (access-stages aggregator)))
 
 
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-group-by-aggregator))
@@ -70,18 +85,23 @@
   (call-next-method))
 
 
+(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator multi-group-by-aggregator))
+  (~> aggregator access-stages endp))
+
+
 (defmethod cl-ds.alg.meta:expects-content ((aggregator linear-group-by-aggregator))
   t)
 
 
-(defclass multi-group-by-aggregator (group-by-aggregator)
-  ())
+(defmethod cl-ds.alg.meta:expects-content ((aggregator multi-group-by-aggregator))
+  (cl-ds.alg.meta:expects-content-with-stage (~> aggregator access-stages first)
+                                             aggregator))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)
                                                element)
-  (bind (((:slots %key %groups %outer-fn) aggregator)
-         (selected (~>> element (funcall %key)))
+  (bind (((:slots %group-by-key %groups %outer-fn) aggregator)
+         (selected (~>> element (funcall %group-by-key)))
          (group (gethash selected %groups)))
     (when (null group)
       (setf group (funcall %outer-fn)
@@ -117,11 +137,22 @@
    (bind (((:slots %groups) range)
           (groups (copy-hash-table %groups))
           (outer-fn (or outer-fn (lambda () (call-next-method)))))
-     (lambda ()
-       (make 'linear-group-by-aggregator
-             :groups groups
-             :outer-fn outer-fn
-             :key (read-key range))))
+     (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+         (lambda ()
+           (make 'multi-group-by-aggregator
+                 :groups groups
+                 :outer-fn outer-fn
+                 :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                                function
+                                arguments)
+                 :group-by-key (read-key range)
+                 :key key))
+         (lambda ()
+           (make 'linear-group-by-aggregator
+                 :groups groups
+                 :outer-fn outer-fn
+                 :key key
+                 :group-by-key (read-key range)))))
    arguments))
 
 

@@ -95,7 +95,11 @@
            :accessor access-ended)))
 
 
-(defclass multi-stage-linear-aggregator (fundamental-aggregator)
+(defclass multi-aggregator (fundamental-aggregator)
+  ())
+
+
+(defclass multi-stage-linear-aggregator (multi-aggregator)
   ((%stages :initarg :stages
             :accessor access-stages)
    (%accumulator :initform nil
@@ -207,7 +211,7 @@
   (bind (((:slots %stages %key) aggregator)
          (stage (first %stages))
          (finished (pass-to-aggregation-with-stage stage aggregator
-                                                   (funcall %key element))))
+                                                   element)))
     finished))
 
 
@@ -514,7 +518,7 @@
   (bind (((:slots %stages %key) aggregator)
          (stage (first %stages))
          (finished (pass-to-aggregation-with-stage stage aggregator
-                                                   (funcall %key element))))
+                                                   element)))
     finished))
 
 
@@ -637,9 +641,10 @@
 
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
                                 element)
-  (bind (((:slots %stages) aggregator)
+  (bind (((:slots %stages %key) aggregator)
          (stage (first %stages)))
-    (pass-to-aggregation-with-stage stage aggregator element)))
+    (pass-to-aggregation-with-stage stage aggregator
+                                    element)))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
@@ -830,23 +835,12 @@
 
 
 (defmethod expects-content-with-stage ((stage fundamental-aggregation-stage)
-                                       (aggregator multi-stage-linear-aggregator))
+                                       (aggregator multi-aggregator))
   t)
 
 (defmethod expects-content-with-stage ((stage cl:function)
-                                       (aggregator multi-stage-linear-aggregator))
+                                       (aggregator multi-aggregator))
   nil)
-(iterate
-    (until (aggregator-finished-p aggregator))
-    (begin-aggregation aggregator)
-    (until (aggregator-finished-p aggregator))
-    (when (cl-ds.alg.meta:expects-content aggregator)
-      (cl-ds:across (lambda (x)
-                      (pass-to-aggregation aggregator
-                                           x))
-                    range))
-    (end-aggregation aggregator)
-  (extract-result aggregator))
 
 
 (defmethod extract-result ((aggregator multi-stage-linear-aggregator))
@@ -857,19 +851,6 @@
 (defmethod extract-result ((aggregator linear-aggregator))
   (bind (((:slots %state %function) aggregator))
     (state-result %function %state)))
-
-
-(defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
-                                element)
-  (bind (((:slots %stages) aggregator)
-         (stage (first %stages)))
-    (pass-to-aggregation-with-stage stage aggregator element)))
-
-
-(defmethod pass-to-aggregation ((aggregator linear-aggregator)
-                                element)
-  (bind (((:slots %function %state) aggregator))
-    (aggregate %function %state element)))
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
