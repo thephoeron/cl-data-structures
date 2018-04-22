@@ -19,19 +19,63 @@
          :reader read-key)))
 
 
-(defclass forward-proxy-box-range (forward-proxy-range
-                                   proxy-box-range)
+(defclass forward-proxy-box-range (proxy-box-range forward-proxy-range)
   ())
 
 
-(defclass bidirectional-proxy-box-range (bidirectional-proxy-range
-                                         proxy-box-range)
+(defclass bidirectional-proxy-box-range (proxy-box-range bidirectional-proxy-range)
   ())
 
 
-(defclass random-access-proxy-box-range (random-access-proxy-range
-                                         proxy-box-range)
+(defclass random-access-proxy-box-range (proxy-box-range random-access-proxy-range)
   ())
+
+
+(defclass proxy-box-aggregator (cl-ds.alg.meta:fundamental-aggregator)
+  ((%function :initarg :function
+              :reader read-function)
+   (%key :initarg :key
+         :reader read-key)
+   (%outer :initarg :outer
+           :reader read-outer)))
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator proxy-box-aggregator)
+                                               element)
+  (bind (((:slots %key %outer %function) aggregator)
+         (element (~>> element (funcall %key) (funcall %function))))
+    (cl-ds.alg.meta:pass-to-aggregation %outer)))
+
+
+(defmethod cl-ds.alg.meta:extract-result ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:extract-result (read-outer aggregator)))
+
+
+(defun decorate-aggregator (range outer-fn)
+  (bind (((:slots %key %function) range))
+    (lambda ()
+      (let ((outer (funcall outer-fn)))
+        (make 'proxy-box-aggregator
+              :function %function
+              :key %key
+              :outer outer)))))
+
+
+(defmethod cl-ds.alg.meta:construct-aggregator
+    ((range proxy-box-range)
+     key
+     (function cl-ds.alg.meta:aggregation-function)
+     outer-fn
+     (arguments list))
+  (cl-ds.alg.meta:construct-aggregator
+   (read-original-range range)
+   key
+   function
+   (decorate-aggregator range
+                        (or outer-fn
+                            (lambda ()
+                              (call-next-method))))
+   arguments))
 
 
 (defmethod cl-ds:clone ((range forward-proxy-box-range))

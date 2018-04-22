@@ -37,6 +37,16 @@
                                        arguments))
 
 
+(defmethod cl-ds.alg.meta:apply-aggregation-function-with-aggregator
+    ((aggregator cl-ds.alg.meta:fundamental-aggregator)
+     (range proxy-range)
+     function
+     &rest all)
+  (apply #'cl-ds.alg.meta:apply-aggregation-function-with-aggregator
+   aggregator (read-original-range range)
+   function all))
+
+
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
   ())
 

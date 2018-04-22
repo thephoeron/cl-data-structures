@@ -5,7 +5,7 @@
 
 (in-package #:alg-meta-tests)
 
-(plan 3)
+(plan 5)
 
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
@@ -44,5 +44,16 @@
     (finally
      (is (cl-ds.alg.meta:extract-result aggregator)
          0.0))))
+
+
+(let* ((vector1 #((1) (2) (1) (2) (1) (2) (1)))
+       (proxy (~> vector1
+                  cl-ds:whole-range
+                  (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'car)
+                                      :test #'eq)
+                  (cl-ds.alg:accumulate #'max _ :key #'car))))
+  (is (cl-ds:at proxy t) 2)
+  (is (cl-ds:at proxy nil) 1))
+
 
 (finalize)
