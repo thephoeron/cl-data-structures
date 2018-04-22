@@ -77,7 +77,7 @@
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator multi-group-by-aggregator))
   (assert (access-stages aggregator))
   (call-next-method)
-  (pop (access-stages aggregator)))
+  (setf (access-stages aggregator) (rest (access-stages aggregator))))
 
 
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-group-by-aggregator))

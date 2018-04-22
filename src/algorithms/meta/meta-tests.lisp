@@ -10,7 +10,7 @@
 (let* ((vector1 #(1 2 3 4 5 6 7))
        (aggregator (cl-ds.alg.meta:construct-aggregator
                     nil
-                    vector1
+                    #'identity
                     #'cl-ds.alg:accumulate
                     nil
                     (list :fn #'+))))
@@ -28,7 +28,7 @@
 (let* ((vector1 #(1 1 1 1 1 1 1))
        (aggregator (cl-ds.alg.meta:construct-aggregator
                     nil
-                    vector1
+                    #'identity
                     #'cl-ds.math:standard-deviation
                     nil
                     (list :key #'identity))))
@@ -44,7 +44,6 @@
     (finally
      (is (cl-ds.alg.meta:extract-result aggregator)
          0.0))))
-
 
 (let* ((vector1 #((1) (2) (1) (2) (1) (2) (1)))
        (proxy (~> vector1

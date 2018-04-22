@@ -82,7 +82,11 @@
                                            (:test-file "tests")))))
                (:module "algorithms"
                 :components ((:file "package")
-                             (:file "meta")
+                             (:module "meta"
+                              :components ((:file "classes")
+                                           (:file "generics")
+                                           (:file "methods")
+                                           (:test-file "meta-tests")))
                              (:file "common")
                              (:file "on-each")
                              (:file "summary")
@@ -96,7 +100,6 @@
                              (:test-file "hash-join-tests")
                              (:test-file "sequence-window-tests")
                              (:test-file "chain-tests")
-                             (:test-file "meta-tests")
                              (:test-file "zip-tests")))
                (:module "math"
                 :components ((:file "package")
