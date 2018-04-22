@@ -31,6 +31,8 @@
    #:make-state
    #:multi-aggregator
    #:make-multi-stage-linear-aggregator
+   #:read-key
+   #:%key
    #:multi-aggregation-function
    #:multi-aggregation-stages
    #:pass-to-aggregation

@@ -34,17 +34,15 @@
 (defclass proxy-box-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%function :initarg :function
               :reader read-function)
-   (%key :initarg :key
-         :reader read-key)
    (%outer :initarg :outer
            :reader read-outer)))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator proxy-box-aggregator)
                                                element)
-  (bind (((:slots %key %outer %function) aggregator)
+  (bind (((:slots (%key cl-ds.alg.meta:%key) %outer %function) aggregator)
          (element (~>> element (funcall %key) (funcall %function))))
-    (cl-ds.alg.meta:pass-to-aggregation %outer)))
+    (cl-ds.alg.meta:pass-to-aggregation %outer element)))
 
 
 (defmethod cl-ds.alg.meta:extract-result ((aggregator proxy-box-aggregator))
@@ -52,7 +50,7 @@
 
 
 (defun decorate-aggregator (range outer-fn)
-  (bind (((:slots %key %function) range))
+  (bind (((:slots (%key cl-ds.alg.meta:%key) %function) range))
     (lambda ()
       (let ((outer (funcall outer-fn)))
         (make 'proxy-box-aggregator
