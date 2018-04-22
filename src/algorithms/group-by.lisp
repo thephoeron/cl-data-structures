@@ -24,7 +24,7 @@
 (defmethod clone ((range group-by-proxy))
   (make-instance (type-of range)
                  :original-range (clone (read-original-range range))
-                 :groups (copy-hash-table (read-groups range))
+                 :test (~> range read-groups hash-table-test)
                  :key (read-key range)))
 
 
@@ -68,7 +68,6 @@
 
 
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator group-by-aggregator))
-  (declare (optimize (debug 3)))
   (iterate
     (for (key value) in-hashtable (read-groups aggregator))
     (end-aggregation value)))
@@ -136,11 +135,24 @@
    function
    (bind (((:slots %groups) range)
           (groups (copy-hash-table %groups))
-          (outer-fn (or outer-fn (lambda () (call-next-method)))))
+          (outer-fn (or outer-fn
+                        (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+                            (lambda ()
+                              (cl-ds.alg.meta:make-multi-stage-linear-aggregator
+                               arguments
+                               key
+                               (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                                      function
+                                      arguments)))
+                            (lambda ()
+                              (cl-ds.alg.meta:make-linear-aggregator
+                               function
+                               arguments
+                               key))))))
      (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
          (lambda ()
            (make 'multi-group-by-aggregator
-                 :groups groups
+                 :groups (copy-hash-table groups)
                  :outer-fn outer-fn
                  :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
                                 function
@@ -149,22 +161,11 @@
                  :key key))
          (lambda ()
            (make 'linear-group-by-aggregator
-                 :groups groups
+                 :groups (copy-hash-table groups)
                  :outer-fn outer-fn
                  :key key
                  :group-by-key (read-key range)))))
    arguments))
-
-
-(defmethod make-proxy ((range group-by-proxy)
-                       class &rest all &key &allow-other-keys)
-  (let ((original-range (read-original-range range))
-        (original-groups (read-groups range)))
-    (apply #'make-instance
-           (type-of range)
-           :original-range (apply #'make-proxy original-range class all)
-           :groups (copy-hash-table original-groups)
-           :key (read-key range))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
