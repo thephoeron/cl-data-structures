@@ -124,31 +124,14 @@
     (apply-range-function range #'group-by :test test :key key)))
 
 
-(defmethod cl-ds.alg.meta:construct-aggregator ((range group-by-proxy)
-                                                key
-                                                (function cl-ds.alg.meta:aggregation-function)
-                                                outer-fn
-                                                (arguments list))
-  (cl-ds.alg.meta:construct-aggregator
-   (read-original-range range)
-   key
-   function
-   (bind (((:slots %groups) range)
+(defmethod proxy-range-aggregator-outer-fn ((range group-by-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (bind (((:slots %groups) range)
           (groups (copy-hash-table %groups))
-          (outer-fn (or outer-fn
-                        (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-                            (lambda ()
-                              (cl-ds.alg.meta:make-multi-stage-linear-aggregator
-                               arguments
-                               key
-                               (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                                      function
-                                      arguments)))
-                            (lambda ()
-                              (cl-ds.alg.meta:make-linear-aggregator
-                               function
-                               arguments
-                               key))))))
+          (outer-fn (call-next-method)))
      (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
          (lambda ()
            (make 'multi-group-by-aggregator
@@ -164,8 +147,7 @@
                  :groups (copy-hash-table groups)
                  :outer-fn outer-fn
                  :key key
-                 :group-by-key (read-key range)))))
-   arguments))
+                 :group-by-key (read-key range))))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)

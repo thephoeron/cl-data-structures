@@ -24,6 +24,24 @@
   (cl-ds:across function (read-original-range range)))
 
 
+(defgeneric proxy-range-aggregator-outer-fn (range key function outer-fn arguments)
+  (:method ((range proxy-range) key function outer-fn arguments)
+    (or outer-fn
+        (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+            (lambda ()
+              (cl-ds.alg.meta:make-multi-stage-linear-aggregator
+               arguments
+               key
+               (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                      function
+                      arguments)))
+            (lambda ()
+              (cl-ds.alg.meta:make-linear-aggregator
+               function
+               arguments
+               key))))))
+
+
 (defmethod cl-ds.alg.meta:construct-aggregator
     ((range proxy-range)
      key
@@ -33,7 +51,11 @@
   (cl-ds.alg.meta:construct-aggregator (read-original-range range)
                                        key
                                        function
-                                       outer-fn
+                                       (proxy-range-aggregator-outer-fn range
+                                                                        key
+                                                                        function
+                                                                        outer-fn
+                                                                        arguments)
                                        arguments))
 
 

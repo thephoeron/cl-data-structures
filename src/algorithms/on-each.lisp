@@ -65,8 +65,13 @@
   (cl-ds.alg.meta:extract-result (read-outer aggregator)))
 
 
-(defun decorate-aggregator (range outer-fn)
-  (bind (((:slots (%key cl-ds.alg.meta:%key) %function) range))
+(defmethod proxy-range-aggregator-outer-fn ((range proxy-box-range)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (bind (((:slots (%key cl-ds.alg.meta:%key) %function) range)
+         (outer-fn (call-next-method)))
     (lambda ()
       (let ((outer (funcall outer-fn)))
         (make 'proxy-box-aggregator
@@ -85,21 +90,11 @@
    (read-original-range range)
    (read-key range)
    function
-   (decorate-aggregator range
-                        (or outer-fn
-                            (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-                                (lambda ()
-                                  (cl-ds.alg.meta:make-multi-stage-linear-aggregator
-                                   arguments
-                                   key
-                                   (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                                          function
-                                          arguments)))
-                                (lambda ()
-                                  (cl-ds.alg.meta:make-linear-aggregator
-                                   function
-                                   arguments
-                                   key)))))
+   (proxy-range-aggregator-outer-fn range
+                                    key
+                                    function
+                                    outer-fn
+                                    arguments)
    arguments))
 
 
