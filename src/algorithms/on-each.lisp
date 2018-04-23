@@ -87,8 +87,19 @@
    function
    (decorate-aggregator range
                         (or outer-fn
-                            (lambda ()
-                              (call-next-method))))
+                            (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+                                (lambda ()
+                                  (cl-ds.alg.meta:make-multi-stage-linear-aggregator
+                                   arguments
+                                   key
+                                   (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                                          function
+                                          arguments)))
+                                (lambda ()
+                                  (cl-ds.alg.meta:make-linear-aggregator
+                                   function
+                                   arguments
+                                   key)))))
    arguments))
 
 

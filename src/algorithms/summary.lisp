@@ -9,7 +9,7 @@
 (defgeneric summary (range &rest forms)
   (:generic-function-class summary-function)
   (:method (range &rest forms)
-    (apply-aggregation-function range #'summary :forms forms)))
+    (apply-aggregation-function range #'summary :forms forms :key #'identity)))
 
 
 (defclass state-extractor ()
