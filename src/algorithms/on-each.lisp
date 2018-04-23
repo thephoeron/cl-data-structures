@@ -8,7 +8,7 @@
 
 (defgeneric on-each (function range &key key)
   (:generic-function-class on-each-function)
-  (:method (function (range fundamental-range) &key key)
+  (:method (function (range fundamental-range) &key (key #'identity))
     (apply-range-function range #'on-each :function function :key key)))
 
 
@@ -36,6 +36,22 @@
               :reader read-function)
    (%outer :initarg :outer
            :reader read-outer)))
+
+
+(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:aggregator-finished-p (read-outer aggregator)))
+
+
+(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:begin-aggregation (read-outer aggregator)))
+
+
+(defmethod cl-ds.alg.meta:end-aggregation ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:end-aggregation (read-outer aggregator)))
+
+
+(defmethod cl-ds.alg.meta:expects-content ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:expects-content (read-outer aggregator)))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator proxy-box-aggregator)
@@ -67,7 +83,7 @@
      (arguments list))
   (cl-ds.alg.meta:construct-aggregator
    (read-original-range range)
-   key
+   (read-key range)
    function
    (decorate-aggregator range
                         (or outer-fn

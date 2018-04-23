@@ -250,8 +250,6 @@
 (let ((container (make-instance
                   'cl-ds.common.egnat:mutable-egnat-container
                   :branching-factor 5
-                  :metric-fn #'logxor
-                  :same-fn #'=
                   :metric-type 'fixnum
                   :content-count-in-node 5))
       (data (coerce (iterate

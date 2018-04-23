@@ -14,8 +14,7 @@
                                                :key key)))
 
 
-(flet ((final (range &key average moments &allow-other-keys)
-         (declare (ignore range))
+(flet ((final (&key average moments &allow-other-keys)
          (bind ((variance (cl-ds:at moments 2))
                 (sd (sqrt variance))
                 (skewness (/ (cl-ds:at moments 3) (expt sd 3)))

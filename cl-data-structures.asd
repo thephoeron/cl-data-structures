@@ -64,6 +64,7 @@
                              (:file "content-tuple")
                              (:file "ranges")
                              (:file "sequence-window")
+                             (:test-file "sequence-window-tests")
                              (:module "abstract"
                               :components ((:file "package")
                                            (:file "common")))
@@ -98,7 +99,6 @@
                              (:file "chain")
                              (:file "zip")
                              (:test-file "hash-join-tests")
-                             (:test-file "sequence-window-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
                (:module "math"

@@ -10,7 +10,7 @@
                        &key test join-function key)
   (:generic-function-class hash-join-function)
   (:method (primary-range primary-key secondary-range-forms
-            &key (test 'eql) (join-function #'list) key)
+            &key (test 'eql) (join-function #'list) (key #'identity))
     (apply-aggregation-function primary-range #'hash-join
                                 :key key
                                 :test test
