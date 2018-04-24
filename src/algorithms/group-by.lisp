@@ -88,13 +88,13 @@
   (~> aggregator access-stages endp))
 
 
-(defmethod cl-ds.alg.meta:expects-content ((aggregator linear-group-by-aggregator))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-group-by-aggregator))
   t)
 
 
-(defmethod cl-ds.alg.meta:expects-content ((aggregator multi-group-by-aggregator))
-  (cl-ds.alg.meta:expects-content-with-stage (~> aggregator access-stages first)
-                                             aggregator))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-group-by-aggregator))
+  (cl-ds.alg.meta:expects-content-with-stage-p (~> aggregator access-stages first)
+                                               aggregator))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)

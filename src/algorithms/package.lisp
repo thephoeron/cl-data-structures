@@ -7,6 +7,7 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.alg.meta)
   (:export
+   #:%key
    #:aggregate
    #:aggregation-function
    #:aggregation-stage
@@ -19,8 +20,8 @@
    #:begin-aggregation
    #:construct-aggregator
    #:end-aggregation
-   #:expects-content
-   #:expects-content-with-stage
+   #:expects-content-p
+   #:expects-content-with-stage-p
    #:extract-result
    #:fundamental-aggregation-stage
    #:fundamental-aggregator
@@ -28,20 +29,18 @@
    #:layer-function
    #:linear-aggregator
    #:make-linear-aggregator
-   #:make-state
-   #:multi-aggregator
    #:make-multi-stage-linear-aggregator
-   #:read-key
-   #:%key
+   #:make-state
    #:multi-aggregation-function
    #:multi-aggregation-stages
+   #:multi-aggregator
    #:pass-to-aggregation
    #:range-function
+   #:read-key
    #:reduce-stage
    #:stage
    #:state-result
    #:transformation!-function))
-
 
 (defpackage :cl-data-structures.algorithms
   (:use #:common-lisp #:serapeum #:cl-ds.utils

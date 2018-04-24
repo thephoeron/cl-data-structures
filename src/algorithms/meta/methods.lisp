@@ -123,13 +123,13 @@ Top level aggregator protocol.
     (setf (slot-value result '%key) key)))
 
 
-(defmethod expects-content ((aggregator linear-aggregator))
+(defmethod expects-content-p ((aggregator linear-aggregator))
   t)
 
 
-(defmethod expects-content ((aggregator multi-stage-linear-aggregator))
-  (expects-content-with-stage (first (access-stages aggregator))
-                              aggregator))
+(defmethod expects-content-p ((aggregator multi-stage-linear-aggregator))
+  (expects-content-with-stage-p (first (access-stages aggregator))
+                                aggregator))
 
 #|
 Stage level aggregator protocol.
@@ -233,12 +233,12 @@ Stage level aggregator protocol.
   nil)
 
 
-(defmethod expects-content-with-stage ((stage fundamental-aggregation-stage)
+(defmethod expects-content-with-stage-p ((stage fundamental-aggregation-stage)
                                        (aggregator multi-aggregator))
   t)
 
 
-(defmethod expects-content-with-stage ((stage cl:function)
+(defmethod expects-content-with-stage-p ((stage cl:function)
                                        (aggregator multi-aggregator))
   nil)
 
