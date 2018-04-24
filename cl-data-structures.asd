@@ -87,6 +87,7 @@
                               :components ((:file "classes")
                                            (:file "generics")
                                            (:file "methods")
+                                           (:file "docstrings")
                                            (:test-file "meta-tests")))
                              (:file "common")
                              (:file "on-each")
