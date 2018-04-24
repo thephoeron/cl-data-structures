@@ -9,15 +9,18 @@
          :reader read-key)))
 
 
-(defclass forward-group-by-proxy (group-by-proxy fundamental-forward-range)
+(defclass forward-group-by-proxy (group-by-proxy
+                                  fundamental-forward-range)
   ())
 
 
-(defclass bidirectional-group-by-proxy (forward-group-by-proxy fundamental-bidirectional-range)
+(defclass bidirectional-group-by-proxy (forward-group-by-proxy
+                                        fundamental-bidirectional-range)
   ())
 
 
-(defclass random-access-group-by-proxy (bidirectional-group-by-proxy fundamental-random-access-range)
+(defclass random-access-group-by-proxy (bidirectional-group-by-proxy
+                                        fundamental-random-access-range)
   ())
 
 
