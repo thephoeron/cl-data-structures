@@ -7,7 +7,11 @@
           :initarg :size)
    (%content :type simple-array
              :reader read-content
-             :initarg :content)))
+             :initarg :content)
+   (%key :type function
+         :reader read-key
+         :initarg :key
+         :initform #'identity)))
 
 
 (defgeneric mutate-matrix (destination fn m1 &rest more)
@@ -82,6 +86,7 @@
                                                vector
                                                &key
                                                (:key (-> (t) t))
+                                               (:query-key (-> (t) t))
                                                (:key-context (-> (t) t))
                                                (:function-context (-> (t) t)))
     distance-matrix)
@@ -89,13 +94,15 @@
                                                   &key
                                                     (key #'identity)
                                                     (key-context #'identity)
-                                                    (function-context #'identity))
+                                                    (function-context #'identity)
+                                                    (query-key #'identity))
   (declare (optimize (speed 3)))
   (let ((result (make-distance-matrix type (length sequence))))
     (parallel-fill-distance-matrix-from-vector result function sequence
                                                :key key
                                                :key-context key-context
                                                :function-context function-context)
+    (setf (slot-value result '%key) query-key)
     result))
 
 
@@ -122,14 +129,19 @@
 (-> make-distance-matrix-from-vector ((or list symbol)
                                       (-> (t t) single-float)
                                       vector
-                                      &key (:key (-> (t) t)))
+                                      &key
+                                      (:key (-> (t) t))
+                                      (:query-key (-> (t) t)))
     distance-matrix)
 (defun make-distance-matrix-from-vector (type function sequence
-                                         &key (key #'identity))
+                                         &key
+                                           (key #'identity)
+                                           (query-key #'identity))
   (when (< (length sequence) 2)
     (error "Can't create distance matrix for vector of size ~a" (length sequence)))
   (let ((result (make-distance-matrix type (length sequence))))
     (fill-distance-matrix-from-vector result function sequence :key key)
+    (setf (slot-value result '%key) query-key)
     result))
 
 
@@ -137,7 +149,10 @@
   (:method ((matrix distance-matrix) from to)
     (declare (type index from to)
              (optimize (speed 3)))
-    (let ((size (slot-value matrix '%size)))
+    (let* ((size (slot-value matrix '%size))
+           (key (slot-value matrix '%key))
+           (to (funcall key to))
+           (from (funcall key from)))
       (declare (type index size))
       (cond
         ((or (>= from size) (>= to size))
@@ -147,16 +162,17 @@
                  (from (min from to))
                  (to (max from to)))
              (declare (type simple-array content))
-             (aref content (index-in-content-of-distance-matrix size
-                                                                from
-                                                                to))))))))
+             (aref content (index-in-content-of-distance-matrix size from to))))))))
 
 
 (defgeneric (setf distance) (value matrix from to)
   (:method (value (matrix distance-matrix) from to)
     (declare (type index from to)
              (optimize (speed 3)))
-    (let ((size (slot-value matrix '%size)))
+    (let* ((size (slot-value matrix '%size))
+           (key (slot-value matrix '%key))
+           (to (funcall key to))
+           (from (funcall key from)))
       (declare (type index size))
       (cond ((or (>= from size) (>= to size))
              (error "No such position in the matrix!"))
@@ -168,8 +184,8 @@
                  (declare (type simple-array content))
                  (setf
                   (aref content (index-in-content-of-distance-matrix size
-                                                                     from
-                                                                     to))
+                                                                     (funcall key from)
+                                                                     (funcall key to)))
                   value)))))))
 
 
