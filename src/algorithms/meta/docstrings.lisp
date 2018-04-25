@@ -12,7 +12,11 @@
     (:description "Passes ELEMENT to the AGGREGATOR."
      :arguments (("AGGREGATOR" "Instance of aggregator.")
                  ("ELEMENT" "Element that is supposed to be aggregated."))
-     :exceptional-situations "Will signal operation-not-allowed when aggregation cannot be performed."))
+     :exceptional-situations "Will signal operation-not-allowed when aggregation cannot be performed (for instance because aggregator-finished-p)."))
 
   (function expects-content-p
-    (:description "Informs caller if aggregator expects elements passed on this stage.")))
+    (:description "Informs caller if aggregator expects elements passed on this stage."))
+
+  (function extract-result
+    (:description "Extract final result of aggregation."
+     :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished.")))
