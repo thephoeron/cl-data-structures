@@ -54,6 +54,13 @@ Top level aggregator protocol.
                                     element)))
 
 
+(defmethod pass-to-aggregation :before ((aggregator fundamental-aggregator)
+                                        element)
+  (when (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't pass element to aggregator that is already finished.")))
+
+
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
                                 element)
   (bind (((:slots %function %state %key) aggregator))
@@ -270,7 +277,7 @@ Range function invokaction protocol.
     (until (aggregator-finished-p aggregator))
     (begin-aggregation aggregator)
     (until (aggregator-finished-p aggregator))
-    (when (cl-ds.alg.meta:expects-content aggregator)
+    (when (cl-ds.alg.meta:expects-content-p aggregator)
       (cl-ds:across (lambda (x)
                       (pass-to-aggregation aggregator
                                            x))

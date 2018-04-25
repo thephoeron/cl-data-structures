@@ -36,7 +36,7 @@
     (until (cl-ds.alg.meta:aggregator-finished-p aggregator))
     (cl-ds.alg.meta:begin-aggregation aggregator)
     (until (cl-ds.alg.meta:aggregator-finished-p aggregator))
-    (when (cl-ds.alg.meta:expects-content aggregator)
+    (when (cl-ds.alg.meta:expects-content-p aggregator)
       (iterate
         (for elt in-vector vector1)
         (cl-ds.alg.meta:pass-to-aggregation aggregator elt)))
