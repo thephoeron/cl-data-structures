@@ -23,4 +23,19 @@
 
   (function begin-aggregation
     (:description "Signal that you are about to pass content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
-     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished, or aggregation already has began).")))
+     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished, or aggregation already has began)."))
+
+  (function apply-layer
+    (:description "Entry point to common layer function logic."))
+
+  (function apply-aggregation-function
+    (:description "Entry point to common aggregation function logic."))
+
+  (function expects-content-with-stage-p
+    (:description "Informs caller if aggregation stage expects element passed."))
+
+  (function aggregate
+    (:description "Mutate function state."))
+
+  (function make-state
+    (:description "Construct state of aggregation function.")))
