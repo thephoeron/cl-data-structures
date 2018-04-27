@@ -38,17 +38,20 @@
     (:description "Entry point to common aggregation function logic."))
 
   (function expects-content-with-stage-p
-    (:description "Informs caller if aggregation stage expects element passed."))
+    (:description "Informs caller if aggregation stage expects element passed."
+     :notes "This function is called from expects-content as it's implementation on multistage-aggregator."))
 
   (function aggregate
-    (:description "Mutate function state."))
+    (:description "Mutate function state."
+     :notes "Specialization for this generic function is required for each aggregation-function."))
 
   (function initialize-stage
-    (:description "Called with all key arguments from apply-aggregation-function and stage to initialize stage.")
-    (:arguments ((stage "fundamental-aggregation-stage instance")
+    (:description "Called with all key arguments from apply-aggregation-function and stage to initialize stage."
+     :arguments ((stage "fundamental-aggregation-stage instance")
                  (arguments "All key arguments passed to apply-aggregation-function."))))
 
   (function make-state
-    (:description "Construct state of aggregation function. All key arguments passed to apply-aggregation-function are forwarded to make-state.")
-    (:arguments ((aggregation-function "aggergation-function instance")
+    (:description "Construct state of aggregation function. All key arguments passed to apply-aggregation-function are forwarded to make-state."
+     :notes "Specialization for this generic function is required for each aggregation-function."
+     :arguments ((aggregation-function "aggergation-function instance")
                  (all "All key arguments passed to apply-aggregation-function.")))))
