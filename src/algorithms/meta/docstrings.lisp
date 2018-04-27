@@ -19,4 +19,8 @@
 
   (function extract-result
     (:description "Extract final result of aggregation."
-     :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished.")))
+     :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished."))
+
+  (function begin-aggregation
+    (:description "Signal that you are about to pass content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
+     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished, or aggregation already has began).")))

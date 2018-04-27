@@ -24,6 +24,12 @@ Top level aggregator protocol.
   (state-result (read-function stage) (read-state stage)))
 
 
+(defmethod begin-aggregation :before ((aggregator fundamental-aggregator))
+  (when (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't extract result from unfinished aggregator")))
+
+
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
   (begin-aggregation-with-stage (first (access-stages aggregator))
                                 aggregator))
