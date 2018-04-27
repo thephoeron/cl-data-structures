@@ -23,7 +23,13 @@
 
   (function begin-aggregation
     (:description "Signal that you are about to pass content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
+     :arguments ((aggregator "Instance of aggregator."))
      :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished, or aggregation already has began)."))
+
+  (function end-aggregation
+    (:description "Signal that you finished passing content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
+     :arguments ((aggregator "Instance of aggregator."))
+     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished)."))
 
   (function apply-layer
     (:description "Entry point to common layer function logic."))

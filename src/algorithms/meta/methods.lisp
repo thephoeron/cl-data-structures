@@ -41,6 +41,12 @@ Top level aggregator protocol.
   nil)
 
 
+(defmethod end-aggregation :before ((aggregator fundamental-aggregator))
+  (when (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't end-aggregation on finished aggregator")))
+
+
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
   (end-aggregation-with-stage (~> aggregator access-stages first)
                               aggregator))
