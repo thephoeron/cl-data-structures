@@ -43,6 +43,11 @@
   (function aggregate
     (:description "Mutate function state."))
 
+  (function initialize-stage
+    (:description "Called with all key arguments from apply-aggregation-function and stage to initialize stage.")
+    (:arguments ((stage "fundamental-aggregation-stage instance")
+                 (arguments "All key arguments passed to apply-aggregation-function."))))
+
   (function make-state
     (:description "Construct state of aggregation function. All key arguments passed to apply-aggregation-function are forwarded to make-state.")
     (:arguments ((aggregation-function "aggergation-function instance")
