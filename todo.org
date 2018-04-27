@@ -12,7 +12,8 @@
   CLOSED: [2018-02-16 pią 13:54]
 * TODO specialized RRB-vector!
 * TODO metric-space dictionary
-* TODO metric-space set
+* DONE metric-space set
+  CLOSED: [2018-04-27 pią 17:49]
 * DONE egnat range...
   CLOSED: [2018-03-06 Tue 15:58]
 * DONE egnat near function
@@ -29,4 +30,6 @@
 * TODO some sort of filter algorithm (aka: without)
 * DONE Use whole content of node as bucket for egnat
   CLOSED: [2018-04-05 czw 06:49]
-* TODO Programmable layer symbols should be in separate package from API
+* DONE Programmable layer symbols should be in separate package from API
+  CLOSED: [2018-04-27 pią 17:49]
+* TODO Remove apply-range-function.

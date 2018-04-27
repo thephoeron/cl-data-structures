@@ -5,7 +5,7 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function aggregator-finished-p
-    (:description "Informs caller if aggregator finished aggregation and result can be obtained."
+    (:description "Predicate. Informs caller if aggregator finished aggregation and result can be obtained."
      :returns "T if aggregator finished and result can be obtained. NIL otherwise."))
 
   (function pass-to-aggregation
