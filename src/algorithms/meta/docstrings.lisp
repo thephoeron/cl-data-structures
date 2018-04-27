@@ -38,4 +38,6 @@
     (:description "Mutate function state."))
 
   (function make-state
-    (:description "Construct state of aggregation function.")))
+    (:description "Construct state of aggregation function. All key arguments passed to apply-aggregation-function are forwarded to make-state.")
+    (:arguments ((aggregation-function "aggergation-function instance")
+                 (all "All key arguments passed to apply-aggregation-function.")))))
