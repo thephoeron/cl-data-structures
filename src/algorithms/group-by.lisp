@@ -9,15 +9,18 @@
          :reader read-key)))
 
 
-(defclass forward-group-by-proxy (group-by-proxy fundamental-forward-range)
+(defclass forward-group-by-proxy (group-by-proxy
+                                  fundamental-forward-range)
   ())
 
 
-(defclass bidirectional-group-by-proxy (forward-group-by-proxy fundamental-bidirectional-range)
+(defclass bidirectional-group-by-proxy (forward-group-by-proxy
+                                        fundamental-bidirectional-range)
   ())
 
 
-(defclass random-access-group-by-proxy (bidirectional-group-by-proxy fundamental-random-access-range)
+(defclass random-access-group-by-proxy (bidirectional-group-by-proxy
+                                        fundamental-random-access-range)
   ())
 
 
@@ -88,13 +91,13 @@
   (~> aggregator access-stages endp))
 
 
-(defmethod cl-ds.alg.meta:expects-content ((aggregator linear-group-by-aggregator))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-group-by-aggregator))
   t)
 
 
-(defmethod cl-ds.alg.meta:expects-content ((aggregator multi-group-by-aggregator))
-  (cl-ds.alg.meta:expects-content-with-stage (~> aggregator access-stages first)
-                                             aggregator))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-group-by-aggregator))
+  (cl-ds.alg.meta:expects-content-with-stage-p (~> aggregator access-stages first)
+                                               aggregator))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)

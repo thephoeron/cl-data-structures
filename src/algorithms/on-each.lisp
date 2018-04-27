@@ -50,8 +50,8 @@
   (cl-ds.alg.meta:end-aggregation (read-outer aggregator)))
 
 
-(defmethod cl-ds.alg.meta:expects-content ((aggregator proxy-box-aggregator))
-  (cl-ds.alg.meta:expects-content (read-outer aggregator)))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator proxy-box-aggregator))
+  (cl-ds.alg.meta:expects-content-p (read-outer aggregator)))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator proxy-box-aggregator)

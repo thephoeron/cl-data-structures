@@ -14,23 +14,20 @@ Top level aggregator protocol.
     (state-result %function %state)))
 
 
+(defmethod extract-result :before ((aggregator fundamental-aggregator))
+  (unless (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't extract result from unfinished aggregator")))
+
+
 (defmethod extract-result ((stage aggregation-stage))
   (state-result (read-function stage) (read-state stage)))
 
 
-(defmethod extract-result ((aggregator linear-aggregator))
-  (bind (((:slots %state %function) aggregator))
-    (state-result %function %state)))
-
-
-(defmethod extract-result ((aggregator multi-stage-linear-aggregator))
-  (bind (((:slots %accumulator) aggregator))
-    %accumulator))
-
-
-(defmethod extract-result ((aggregator linear-aggregator))
-  (bind (((:slots %state %function) aggregator))
-    (state-result %function %state)))
+(defmethod begin-aggregation :before ((aggregator fundamental-aggregator))
+  (when (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't extract result from unfinished aggregator")))
 
 
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -38,9 +35,27 @@ Top level aggregator protocol.
                                 aggregator))
 
 
+(defmethod begin-aggregation ((aggregator linear-aggregator))
+  (bind (((:slots %state %arguments %function) aggregator))
+    (setf %state (apply #'make-state %function %arguments)))
+  nil)
+
+
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
   (end-aggregation-with-stage (~> aggregator access-stages first)
                               aggregator))
+
+
+(defmethod end-aggregation ((aggregator linear-aggregator))
+  (setf (access-ended aggregator) t))
+
+
+(defmethod aggregator-finished-p ((aggregator linear-aggregator))
+  (access-ended aggregator))
+
+
+(defmethod aggregator-finished-p ((aggregator multi-stage-linear-aggregator))
+  (~> aggregator access-stages endp))
 
 
 (defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
@@ -49,6 +64,13 @@ Top level aggregator protocol.
          (stage (first %stages)))
     (pass-to-aggregation-with-stage stage aggregator
                                     element)))
+
+
+(defmethod pass-to-aggregation :before ((aggregator fundamental-aggregator)
+                                        element)
+  (when (aggregator-finished-p aggregator)
+    (error 'cl-ds:operation-not-allowed
+           :text "Can't pass element to aggregator that is already finished.")))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
@@ -120,24 +142,13 @@ Top level aggregator protocol.
     (setf (slot-value result '%key) key)))
 
 
-(defmethod begin-aggregation ((aggregator linear-aggregator))
-  (bind (((:slots %state %arguments %function) aggregator))
-    (setf %state (apply #'make-state %function %arguments)))
-  nil)
-
-
-(defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
-  (begin-aggregation-with-stage (first (access-stages aggregator))
-                                aggregator))
-
-
-(defmethod expects-content ((aggregator linear-aggregator))
+(defmethod expects-content-p ((aggregator linear-aggregator))
   t)
 
 
-(defmethod expects-content ((aggregator multi-stage-linear-aggregator))
-  (expects-content-with-stage (first (access-stages aggregator))
-                              aggregator))
+(defmethod expects-content-p ((aggregator multi-stage-linear-aggregator))
+  (expects-content-with-stage-p (first (access-stages aggregator))
+                                aggregator))
 
 #|
 Stage level aggregator protocol.
@@ -178,22 +189,15 @@ Stage level aggregator protocol.
     (initialize-stage stage %arguments)))
 
 
+(defmethod begin-aggregation-with-stage ((stage reduce-stage)
+                                         (aggregator multi-stage-linear-aggregator))
+  nil)
+
+
 (defmethod end-aggregation-with-stage ((stage cl:function)
                                        (aggregator multi-stage-linear-aggregator))
   (bind (((:slots %stages) aggregator))
     (pop %stages)))
-
-
-(defmethod end-aggregation ((aggregator linear-aggregator))
-  (setf (access-ended aggregator) t))
-
-
-(defmethod aggregator-finished-p ((aggregator linear-aggregator))
-  (access-ended aggregator))
-
-
-(defmethod aggregator-finished-p ((aggregator multi-stage-linear-aggregator))
-  (~> aggregator access-stages endp))
 
 
 (defmethod end-aggregation-with-stage ((stage aggregation-stage)
@@ -207,34 +211,6 @@ Stage level aggregator protocol.
       (push (read-name stage) %arguments))))
 
 
-(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator multi-stage-linear-aggregator)
-                                           element)
-  (bind (((:slots %name %key %construct-function %state %function) stage))
-    (aggregate %function %state (funcall %key element))))
-
-
-(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
-                                           (aggregator multi-stage-linear-aggregator)
-                                           element)
-  (bind (((:slots %name %key %construct-function %state %function) stage))
-    (aggregate %function %state (funcall %key element))))
-
-
-(defmethod initialize-stage ((stage aggregation-stage) (arguments list))
-  (bind (((:slots %name %construct-function %state) stage))
-    (apply %construct-function stage arguments)))
-
-
-(defmethod initialize-stage ((stage cl:function) (arguments list))
-  nil)
-
-
-(defmethod begin-aggregation-with-stage ((stage reduce-stage)
-                                         (aggregator multi-stage-linear-aggregator))
-  nil)
-
-
 (defmethod end-aggregation-with-stage ((stage reduce-stage)
                                        (aggregator multi-stage-linear-aggregator))
   (setf (access-accumulator aggregator) (access-state stage)
@@ -242,6 +218,20 @@ Stage level aggregator protocol.
   (push (access-state stage) (access-arguments aggregator))
   (when (slot-boundp stage '%name)
     (push (read-name stage) (access-arguments aggregator))))
+
+
+(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
+                                           (aggregator multi-stage-linear-aggregator)
+                                           element)
+  (bind (((:slots %name %key %construct-function %state %function) stage))
+    (aggregate %function %state (funcall %key element))))
+
+
+(defmethod pass-to-aggregation-with-stage ((stage aggregation-stage)
+                                           (aggregator multi-stage-linear-aggregator)
+                                           element)
+  (bind (((:slots %name %key %construct-function %state %function) stage))
+    (aggregate %function %state (funcall %key element))))
 
 
 (defmethod pass-to-aggregation-with-stage ((stage reduce-stage)
@@ -253,13 +243,21 @@ Stage level aggregator protocol.
          (access-arguments aggregator)))
 
 
+(defmethod initialize-stage ((stage aggregation-stage) (arguments list))
+  (bind (((:slots %name %construct-function %state) stage))
+    (apply %construct-function stage arguments)))
 
-(defmethod expects-content-with-stage ((stage fundamental-aggregation-stage)
+
+(defmethod initialize-stage ((stage cl:function) (arguments list))
+  nil)
+
+
+(defmethod expects-content-with-stage-p ((stage fundamental-aggregation-stage)
                                        (aggregator multi-aggregator))
   t)
 
 
-(defmethod expects-content-with-stage ((stage cl:function)
+(defmethod expects-content-with-stage-p ((stage cl:function)
                                        (aggregator multi-aggregator))
   nil)
 
@@ -291,7 +289,7 @@ Range function invokaction protocol.
     (until (aggregator-finished-p aggregator))
     (begin-aggregation aggregator)
     (until (aggregator-finished-p aggregator))
-    (when (cl-ds.alg.meta:expects-content aggregator)
+    (when (cl-ds.alg.meta:expects-content-p aggregator)
       (cl-ds:across (lambda (x)
                       (pass-to-aggregation aggregator
                                            x))

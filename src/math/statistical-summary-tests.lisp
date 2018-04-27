@@ -6,7 +6,7 @@
 (in-package #:statistical-summary-tests)
 
 
-(plan 4)
+(plan 5)
 
 
 (bind ((data #(1 3 5))

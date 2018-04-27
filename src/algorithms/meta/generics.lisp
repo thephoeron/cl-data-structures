@@ -4,7 +4,7 @@
 Top level aggregator protocol.
 |#
 
-(defgeneric expects-content (aggregator))
+(defgeneric expects-content-p (aggregator))
 
 (defgeneric pass-to-aggregation (aggregator element))
 
@@ -22,7 +22,7 @@ Top level aggregator protocol.
 Stage level aggregator protocol.
 |#
 
-(defgeneric expects-content-with-stage (stage aggregator))
+(defgeneric expects-content-with-stage-p (stage aggregator))
 
 (defgeneric initialize-stage (stage arguments))
 

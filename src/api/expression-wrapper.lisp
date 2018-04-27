@@ -34,9 +34,7 @@
                                        &key &allow-other-keys)
   (declare (ignore all))
   (if (slot-boundp obj '%closure)
-      (let ((function (access-closure obj)))
-        (c2mop:set-funcallable-instance-function obj
-                                                 (lambda () (funcall function))))
+      (c2mop:set-funcallable-instance-function obj (access-closure obj))
       (reset! obj)))
 
 
@@ -99,10 +97,10 @@
 
 (defmethod drop-front ((obj expression) count)
   (check-type count non-negative-fixnum)
-  (let ((function (access-closure obj)))
-    (iterate
-      (repeat count)
-      (for i from 0)
-      (for (values value more) = (funcall function))
-      (while more)
-      (finally (return i)))))
+  (iterate
+    (with function = (access-closure obj))
+    (repeat count)
+    (for i from 0)
+    (for (values value more) = (funcall function))
+    (while more)
+    (finally (return i))))
