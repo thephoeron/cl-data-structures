@@ -21,6 +21,10 @@
     (:description "Extract final result of aggregation."
      :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished."))
 
+  (function extract-result-with-stage
+    (:description "Extract result of stage."
+     :notes "This function is called from extract-result on multistage-aggregator."))
+
   (function begin-aggregation
     (:description "Signal that you are about to pass content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
      :arguments ((aggregator "Instance of aggregator."))
