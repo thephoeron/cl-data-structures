@@ -9,7 +9,7 @@
 (defgeneric count-elements (range)
   (:generic-function-class count-elements-function)
   (:method (range)
-    (apply-aggregation-function #'count-elements range)))
+    (apply-aggregation-function range #'count-elements :key #'identity)))
 
 
 (defmethod cl-ds.alg.meta:make-state ((function count-elements-function) &rest all)
@@ -23,5 +23,3 @@
 
 (defmethod state-result ((function count-elements-function) state)
   (car state))
-
-
