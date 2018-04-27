@@ -91,6 +91,7 @@
                                            (:test-file "meta-tests")))
                              (:file "common")
                              (:file "on-each")
+                             (:file "count")
                              (:file "summary")
                              (:file "common-range-category")
                              (:file "change-each!")

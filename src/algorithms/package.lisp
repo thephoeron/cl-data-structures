@@ -50,6 +50,8 @@
   (:export
    #:accumulate
    #:chain
+   #:count-elements
+   #:count-elements-function
    #:gather-prior-states
    #:group-by
    #:group-by-function
