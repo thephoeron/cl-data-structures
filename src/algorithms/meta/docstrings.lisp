@@ -12,6 +12,19 @@
      :notes "Aggregation-function is part of moderatly complex user aggregation protocol."
      :see-also (make-state aggregate state-result)))
 
+  (type fundamental-aggregation-stage
+    (:description "Fundamental class of aggregation stages."
+     :notes "cl:function is acceptable stage as well."))
+
+  (type linear-aggregator
+    (:description "Simple, low level aggregator."))
+
+  (function make-linear-aggregator
+    (:description "Construct LINEAR-AGGREGATOR."
+     :arguments ((function "Instance of AGGREGATION-FUNCTION.")
+                 (arguments "List of arguments passed to APPLY-AGGREGATION-FUNCTION.")
+                 (key "Monoid function used akin to :KEY in CL:REDUCE."))))
+
   (function aggregator-finished-p
     (:description "Predicate. Informs caller if aggregator finished aggregation and result can be obtained."
      :arguments (aggregator "Instance of FUNDAMENTAL-AGGREGATOR.")
@@ -81,8 +94,24 @@
   (function apply-aggregation-function
     (:description "Entry point to common aggregation function logic."
      :arguments ((range "Varies. Sometimes actually range, sometimes object of different class (for instance: aggregation-stage).")
-                 (function "Instance of AGGREGATION-FUNCTION class."))
+                 (function "Instance of AGGREGATION-FUNCTION class.")
+                 (key "Key used on each element to obtain object passed to aggregation.")
+                 (all "Gathers all options required by make-state."))
+     :see-also (apply-aggregation-function-with-aggregator)
+     :affected-by "Class of range."
+     :notes ("Always pass KEY."
+             "This function is a little bit hairy. In multistage aggregation it is used to intercept function state of individiual aggregation stage.")
      :affected-by "Class of RANGE."))
+
+  (function apply-aggregation-function-with-aggregator
+    (:description "Perform aggregation with constructed aggregator."
+     :arguments ((aggregator "Instance of FUNDAMENTAL-AGGREGATOR.")
+                 (range "Instance of FUNDAMENTAL-RANGE.")
+                 (function "Instance of AGGREGATION-FUNCTION class.")
+                 (key "Key used on each element to obtain object passed to aggregation.")
+                 (all "Gathers all options required by make-state."))
+     :notes "Always pass KEY."
+     :affected-by "Class of AGGREGATOR and class of RANGE."))
 
   (function expects-content-with-stage-p
     (:description "Informs caller if aggregation stage expects element passed."
