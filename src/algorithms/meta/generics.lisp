@@ -30,8 +30,6 @@ Stage level aggregator protocol.
 
 (defgeneric extract-result-with-stage (stage aggregator))
 
-(defgeneric aggregator-completed-stage-with-stage (stage aggregator))
-
 (defgeneric begin-aggregation-with-stage (stage aggregator))
 
 (defgeneric end-aggregation-with-stage (stage aggregator))
