@@ -5,4 +5,4 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function group-by
-    (:description "Groups RANGE into partitions according to TEST. This does not change content of RANGE, but it will force aggregation to be performed for every group independly.")))
+    (:description "Groups RANGE into partitions according to TEST. This does not change content of RANGE, but it will force aggregation to be performed on every group independently.")))
