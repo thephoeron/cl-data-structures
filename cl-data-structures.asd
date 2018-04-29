@@ -100,6 +100,7 @@
                              (:file "hash-join")
                              (:file "chain")
                              (:file "zip")
+                             (:file "docstrings")
                              (:test-file "hash-join-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
