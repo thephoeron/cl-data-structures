@@ -97,6 +97,7 @@
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")
+                             (:file "without")
                              (:file "hash-join")
                              (:file "chain")
                              (:file "zip")

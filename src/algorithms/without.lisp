@@ -51,6 +51,56 @@
   (cl-ds.alg.meta:extract-result (read-outer aggregator)))
 
 
+(defmethod cl-ds:peek-front ((aggregator forward-without-proxy))
+  (fbind ((key (read-key aggregator))
+          (predicate (read-predicate aggregator)))
+    (iterate
+      (with outer = (read-outer aggregator))
+      (for (values value more) = (cl-ds:peek-front outer))
+      (when (null more)
+        (return (values nil nil)))
+      (if (predicate (key value))
+          (cl-ds:consume-front outer)
+          (leave (values value more))))))
+
+
+(defmethod cl-ds:consume-front ((aggregator forward-without-proxy))
+  (fbind ((key (read-key aggregator))
+          (predicate (read-predicate aggregator)))
+    (iterate
+      (with outer = (read-outer aggregator))
+      (for (values value more) = (cl-ds:consume-front outer))
+      (when (null more)
+        (return (values nil nil)))
+      (unless (predicate (key value))
+        (leave (values value more))))))
+
+
+(defmethod cl-ds:peek-back ((aggregator forward-without-proxy))
+  (fbind ((key (read-key aggregator))
+          (predicate (read-predicate aggregator)))
+    (iterate
+      (with outer = (read-outer aggregator))
+      (for (values value more) = (cl-ds:peek-back outer))
+      (when (null more)
+        (return (values nil nil)))
+      (if (predicate (key value))
+          (cl-ds:consume-back outer)
+          (leave (values value more))))))
+
+
+(defmethod cl-ds:consume-back ((aggregator bidirectional-without-proxy))
+  (fbind ((key (read-key aggregator))
+          (predicate (read-predicate aggregator)))
+    (iterate
+      (with outer = (read-outer aggregator))
+      (for (values value more) = (cl-ds:consume-back outer))
+      (when (null more)
+        (return (values nil nil)))
+      (unless (predicate (key value))
+        (leave (values value more))))))
+
+
 (defmethod cl-ds.alg.meta:construct-aggregator ((range without-proxy)
                                                 key
                                                 (function cl-ds.alg.meta:aggregation-function)

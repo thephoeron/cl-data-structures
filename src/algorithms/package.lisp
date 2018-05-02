@@ -62,4 +62,6 @@
    #:proxy-range
    #:summary
    #:summary-function
+   #:without
+   #:without-function
    #:zip))
