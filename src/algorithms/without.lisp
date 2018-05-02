@@ -18,11 +18,6 @@
   ())
 
 
-(defclass random-access-without-proxy (bidirectional-without-proxy
-                                       fundamental-random-access-range)
-  ())
-
-
 (defclass without-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%key :initarg :key
          :reader read-key)
@@ -104,6 +99,26 @@
 
 
 (defgeneric without (predicate range &key key)
-  (:generic-function without-function)
+  (:generic-function-class without-function)
   (:method (predicate range &key (key #'identity))
-    (apply-range-function range #'without :key key)))
+    (apply-range-function range #'without :key key :predicate predicate)))
+
+
+(defmethod apply-layer ((range fundamental-bidirectional-range)
+                        (function without-function)
+                        &rest all &key predicate key)
+  (declare (ignore all))
+  (make 'bidirectional-without-proxy
+        :predicate predicate
+        :key key
+        :original-range range))
+
+
+(defmethod apply-layer ((range fundamental-forward-range)
+                        (function without-function)
+                        &rest all &key predicate key)
+  (declare (ignore all))
+  (make 'forward-without-proxy
+        :predicate predicate
+        :key key
+        :original-range range))
