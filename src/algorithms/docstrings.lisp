@@ -4,6 +4,9 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (type aggregation-function
+    (:description "Base class of all aggregation functions. Aggregation functions work by applying destructive change to the state for each element in range."))
+
   (function accumulate
     (:description "Like CL:REDUCE but works on all traversable objects."))
 
