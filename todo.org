@@ -27,9 +27,9 @@
 * DONE fix clone for RRB range
   CLOSED: [2018-03-07 Wed 13:13]
 * TODO Validate input to make-egnat-tree (scan for duplication)
-* TODO some sort of filter algorithm (aka: without)
+* DONE some sort of filter algorithm (aka: without)
+  CLOSED: [2018-05-03 czw 12:26]
 * DONE Use whole content of node as bucket for egnat
   CLOSED: [2018-04-05 czw 06:49]
 * DONE Programmable layer symbols should be in separate package from API
   CLOSED: [2018-04-27 pią 17:49]
-* TODO Remove apply-range-function.
