@@ -278,6 +278,12 @@ Range function invokaction protocol.
     (apply #'apply-layer clone function all)))
 
 
+(defmethod apply-range-function ((range cl:sequence)
+                                 (function layer-function)
+                                 &rest all &key &allow-other-keys)
+  (apply #'apply-layer (cl-ds:whole-range range) function all))
+
+
 (defmethod apply-aggregation-function (range
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)

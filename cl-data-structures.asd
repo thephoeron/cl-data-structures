@@ -103,6 +103,7 @@
                              (:file "zip")
                              (:file "docstrings")
                              (:test-file "hash-join-tests")
+                             (:test-file "without-test")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
                (:module "math"
