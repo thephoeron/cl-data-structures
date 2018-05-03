@@ -30,12 +30,13 @@
    #:make-node-content
    #:make-rrb-node
    #:node-content
+   #:read-element-type
    #:remove-tail
-   #:rrb-node
-   #:rrb-node-push!
    #:rrb-at
    #:rrb-container
+   #:rrb-node
    #:rrb-node-content
+   #:rrb-node-push!
    #:rrb-node-push-into-copy
    #:rrb-range
    #:transactional-copy-on-write

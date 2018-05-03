@@ -204,7 +204,9 @@
     (unless changed
       (return-from cl-ds.meta:position-modification (values container status)))
     (if (eql tail-size +maximum-children-count+)
-        (bind ((new-tail (cl-ds.common.rrb:make-node-content))
+        (bind ((new-tail (~> container
+                             cl-ds.common.rrb:read-element-type
+                             cl-ds.common.rrb:make-node-content))
                ((:values new-root shift-increased)
                 (cl-ds.common.rrb:insert-tail container
                                               (cl-ds.common.abstract:read-ownership-tag container)
@@ -242,7 +244,9 @@
     (unless changed
       (return-from cl-ds.meta:position-modification (values container status)))
     (if (eql tail-size +maximum-children-count+)
-        (bind ((new-tail (cl-ds.common.rrb:make-node-content))
+        (bind ((new-tail (~> container
+                             cl-ds.common.rrb:read-element-type
+                             cl-ds.common.rrb:make-node-content))
                ((:values new-root shift-increased)
                 (cl-ds.common.rrb:insert-tail container
                                               tag
@@ -265,7 +269,9 @@
                :root (cl-ds.common.rrb:access-root container)
                :tail (let* ((tail (cl-ds.common.rrb:access-tail container))
                             (new-tail (if (null tail)
-                                          (cl-ds.common.rrb:make-node-content)
+                                          (~> container
+                                              cl-ds.common.rrb:read-element-type
+                                              cl-ds.common.rrb:make-node-content)
                                           (copy-array tail))))
                        (setf (aref new-tail tail-size) new-bucket)
                        new-tail)
@@ -293,7 +299,9 @@
     (unless changed
       (return-from cl-ds.meta:position-modification (values container status)))
     (if (eql tail-size +maximum-children-count+)
-        (bind ((new-tail (cl-ds.common.rrb:make-node-content))
+        (bind ((new-tail (~> container
+                             cl-ds.common.rrb:read-element-type
+                             cl-ds.common.rrb:make-node-content))
                ((:values new-root shift-increased)
                 (cl-ds.common.rrb:insert-tail container
                                               tag
@@ -310,7 +318,10 @@
                                                               (cl-ds.common.rrb:access-shift container))))
         (setf (cl-ds.common.rrb:access-tail container)
               (let* ((tail (cl-ds.common.rrb:access-tail container))
-                     (new-tail (or tail (cl-ds.common.rrb:make-node-content))))
+                     (new-tail (or tail
+                                   (~> container
+                                       cl-ds.common.rrb:read-element-type
+                                       cl-ds.common.rrb:make-node-content))))
                 (setf (aref new-tail tail-size) new-bucket)
                 new-tail)
 

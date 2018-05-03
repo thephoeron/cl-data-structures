@@ -26,8 +26,9 @@
 (deftype rrb-path ()
   `(simple-array * (,+maximal-shift+)))
 
-(defun make-node-content ()
-  (make-array +maximum-children-count+ :initial-element nil))
+(defun make-node-content (&optional (element-type t))
+  (make-array +maximum-children-count+ :initial-element nil
+                                       :element-type element-type))
 
 
 (defstruct (rrb-node (:include tagged-node))
@@ -59,9 +60,8 @@
 
 
 (defun rrb-node-push-into-copy (node position element ownership-tag)
-  (let ((result-content (make-array +maximum-children-count+
-                                    :initial-element nil))
-        (source-content (rrb-node-content node)))
+  (let* ((source-content (rrb-node-content node))
+         (result-content (make-node-content (array-element-type source-content))))
     (setf (aref result-content position) element)
     (iterate
       (for i from 0 below position)
@@ -100,6 +100,9 @@
           :initform 0
           :type non-negative-fixnum
           :accessor access-size)
+   (%element-type :initarg :element-type
+                  :initform t
+                  :reader read-element-type)
    (%tail-size :initform 0
                :initarg :tail-size
                :type node-size
@@ -308,7 +311,8 @@
          initially (make-rrb-node :content tail
                                   :ownership-tag ownership-tag)
          then (if (null old-node)
-                  (let ((n (make-rrb-node :ownership-tag ownership-tag)))
+                  (bind ((content (make-node-content (array-element-type tail)))
+                         (n (make-rrb-node :content content :ownership-tag ownership-tag)))
                     (setf (~> n rrb-node-content (aref position)) node)
                     n)
                   (if (< i acquired)
@@ -337,7 +341,8 @@
          initially (make-rrb-node :content tail
                                   :ownership-tag ownership-tag)
          then (if (null old-node)
-                  (let ((n (make-rrb-node :ownership-tag ownership-tag)))
+                  (let ((n (make-rrb-node :content (make-node-content (array-element-type tail))
+                                          :ownership-tag ownership-tag)))
                     (setf (~> n rrb-node-content (aref position)) node)
                     n)
                   (rrb-node-push! old-node position node)))
