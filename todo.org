@@ -33,3 +33,5 @@
   CLOSED: [2018-04-05 czw 06:49]
 * DONE Programmable layer symbols should be in separate package from API
   CLOSED: [2018-04-27 pią 17:49]
+* TODO Add having function (for use with group-by).
+* TODO Add function for changing final result of aggregation.
