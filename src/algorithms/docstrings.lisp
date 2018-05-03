@@ -5,11 +5,17 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function accumulate
-    (:description "Like CL:REDUCE but works on all traversable containers."))
+    (:description "Like CL:REDUCE but works on all traversable objects."))
 
   (function count
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
      :see-also (group-by)))
+
+  (function without
+    (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
+     :arguments ((predicate "Test used to check if element should be skipped.")
+                 (key "Key function used to extract value for predicate.")
+                 (range "Range argument."))))
 
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change content of RANGE, but it will force aggregation to be performed on every group independently."

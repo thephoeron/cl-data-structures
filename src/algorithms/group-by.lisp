@@ -133,24 +133,24 @@
                                             outer-fn
                                             arguments)
   (bind (((:slots %groups) range)
-          (groups (copy-hash-table %groups))
-          (outer-fn (call-next-method)))
-     (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-         (lambda ()
-           (make 'multi-group-by-aggregator
-                 :groups (copy-hash-table groups)
-                 :outer-fn outer-fn
-                 :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                                function
-                                arguments)
-                 :group-by-key (read-key range)
-                 :key key))
-         (lambda ()
-           (make 'linear-group-by-aggregator
-                 :groups (copy-hash-table groups)
-                 :outer-fn outer-fn
-                 :key key
-                 :group-by-key (read-key range))))))
+         (groups (copy-hash-table %groups))
+         (outer-fn (call-next-method)))
+    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+        (lambda ()
+          (make 'multi-group-by-aggregator
+                :groups (copy-hash-table groups)
+                :outer-fn outer-fn
+                :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
+                               function
+                               arguments)
+                :group-by-key (read-key range)
+                :key key))
+        (lambda ()
+          (make 'linear-group-by-aggregator
+                :groups (copy-hash-table groups)
+                :outer-fn outer-fn
+                :key key
+                :group-by-key (read-key range))))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)

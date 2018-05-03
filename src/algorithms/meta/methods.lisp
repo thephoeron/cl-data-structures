@@ -274,11 +274,22 @@ Range function invokaction protocol.
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
-  (let ((clone (cl-ds:clone range)))
-    (apply #'apply-layer clone function all)))
+  (apply #'apply-layer (cl-ds:clone range) function all))
+
+
+(defmethod apply-range-function ((range cl:hash-table)
+                                 (function layer-function)
+                                 &rest all &key &allow-other-keys)
+  (apply #'apply-layer (cl-ds:whole-range range) function all))
 
 
 (defmethod apply-range-function ((range cl:sequence)
+                                 (function layer-function)
+                                 &rest all &key &allow-other-keys)
+  (apply #'apply-layer (cl-ds:whole-range range) function all))
+
+
+(defmethod apply-range-function ((range cl-ds:fundamental-container)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
   (apply #'apply-layer (cl-ds:whole-range range) function all))
