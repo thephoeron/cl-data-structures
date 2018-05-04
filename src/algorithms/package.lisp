@@ -62,6 +62,7 @@
    #:proxy-range
    #:summary
    #:summary-function
+   #:to-vector
    #:without
    #:without-function
    #:zip))
