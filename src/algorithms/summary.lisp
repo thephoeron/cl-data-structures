@@ -33,9 +33,12 @@
         (for form in forms)
         (for (label fn . args) = form)
         (for fn-obj = (if (functionp fn) fn (symbol-function fn)))
-        (for (values state key-function) = (apply fn-obj (substitute extractor :range args)))
-        (setf (gethash label result)
-              (make-summary-state :key key-function :effective-state state :fn fn-obj)))
+        (for (values state key-function) = (apply fn-obj
+                                                  (substitute extractor
+                                                              :range args)))
+        (setf (gethash label result) (make-summary-state :key key-function
+                                                         :effective-state state
+                                                         :fn fn-obj)))
       result)))
 
 

@@ -38,7 +38,7 @@
 
   (function find-content
     (:description "Attempts to find element under LOCATION in the the bucket."
-     :notes "This function accepts other keys. In case of hashing dictionaries, one will be :hash that is expected to be fixnum."
+     :notes "This function accepts additional key arguments. In case of hashing dictionaries, one will be :hash that is expected to be a fixnum."
      :arguments ((container "Container that owns bucket. Acts as passed interface for method dispatch.")
                  (bucket "Bucket that will be searched.")
                  (location "Location that will be searched."))

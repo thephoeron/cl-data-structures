@@ -114,6 +114,7 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
+                             (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "statistical-summary-tests")
                              (:test-file "simple-linear-regression-tests")))
