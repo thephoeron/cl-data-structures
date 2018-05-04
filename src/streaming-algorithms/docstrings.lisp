@@ -5,4 +5,7 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function estimated-set-cardinality
-    (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory.")))
+    (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory."
+     :arguments ((range "Object to aggregate.")
+                 (bits "How many bits per register should be used?")
+                 (hash-fn "Hashing function. SXHASH will do for strings.")))))
