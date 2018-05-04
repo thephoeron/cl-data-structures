@@ -22,6 +22,7 @@
    #:extendable-vector
    #:fill-distance-matrix-from-vector
    #:future-carousel
+   #:if-else
    #:import-all-package-symbols
    #:insert-or-replace
    #:lambda-list-to-bindings
