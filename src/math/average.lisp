@@ -31,5 +31,6 @@
 (defmethod cl-ds.alg.meta:aggregate ((function average-function)
                                      state
                                      element)
+  (check-type element number)
   (incf (cdr state))
   (incf (car state) element))
