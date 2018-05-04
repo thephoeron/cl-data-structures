@@ -10,6 +10,12 @@
   (function hash-join
     (:description "Joins multiple ranges into one using JOIN-FUNCTION."))
 
+  (function to-vector
+    (:description "Collects all elements into cl:vector."
+     :arguments-and-values ((range "Object to aggregate accross.")
+                            (key "Key function used to extract value for vector.")
+                            (element-type ":element-type for result vector."))))
+
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE.")
     (:notes "Works almost like cl:map-and-friends, but it is lazy evaluated. FUNCTION is called only when required."))
