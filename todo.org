@@ -10,7 +10,8 @@
   CLOSED: [2018-02-14 śro 08:06]
 * DONE turn xpr into correct forward range
   CLOSED: [2018-02-16 pią 13:54]
-* TODO specialized RRB-vector!
+* DONE specialized RRB-vector!
+  CLOSED: [2018-05-04 pią 11:26]
 * TODO metric-space dictionary
 * DONE metric-space set
   CLOSED: [2018-04-27 pią 17:49]
