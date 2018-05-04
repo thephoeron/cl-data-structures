@@ -32,18 +32,9 @@
                                       &rest all
                                       &key count about from)
   (declare (ignore all))
-  (unless (> from 0)
-    (error 'cl-ds:argument-out-of-bounds
-           :text "FROM is supposed to be positive."
-           :argument 'from
-           :bounds '(> 0 from)
-           :value from))
-  (unless (> count 0)
-    (error 'cl-ds:argument-out-of-bounds
-           :text "COUNT is supposed to be positive."
-           :argument 'count
-           :bounds '(> 0 count)
-           :value count))
+  (check-type count positive-fixnum)
+  (check-type from positive-fixnum)
+  (check-type about real)
   (bind ((lambdas (make-array count))
          (result (make-array count :element-type 'number)))
     (iterate
