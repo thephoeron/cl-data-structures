@@ -112,6 +112,7 @@
                              (:file "average")
                              (:file "variance")
                              (:file "simple-linear-regression")
+                             (:file "median-absolute-deviation")
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")

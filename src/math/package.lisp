@@ -9,6 +9,7 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:average
+   #:median-absolute-deviation
    #:moments
    #:simple-linear-regression
    #:standard-deviation

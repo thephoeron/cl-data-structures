@@ -9,6 +9,11 @@
      :arguments ((range "Object to aggregate.")
                  (key "Function used to extract value from element that shall be passed to average function."))))
 
+  (function median-absolute-deviation
+    (:description "Calculates MAD estimator for range."
+     :arguments ((range "Object to aggregate")
+                 (key "Function used to extract value from element."))))
+
   (function moments
     (:description "Calculate statistical moments in the range."
      :arguments ((range "Object to aggregate.")
