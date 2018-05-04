@@ -35,3 +35,5 @@
   CLOSED: [2018-04-27 pią 17:49]
 * TODO Add having function (for use with group-by).
 * TODO Add function for changing final result of aggregation.
+* TODO Add batches function (divides range into partitions of fixed size for aggregation)
+* TODO Add some sort of data frame.
