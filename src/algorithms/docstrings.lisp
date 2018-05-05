@@ -10,6 +10,9 @@
   (function hash-join
     (:description "Joins multiple ranges into one using JOIN-FUNCTION."))
 
+  (function split-into-chunks
+    (:description "Divides aggregation process into partitions upto size."))
+
   (function to-vector
     (:description "Collects all elements into cl:vector."
      :arguments-and-values ((range "Object to aggregate accross.")

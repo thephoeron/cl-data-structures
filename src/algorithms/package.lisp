@@ -60,6 +60,7 @@
    #:on-each
    #:proxy-box-range
    #:proxy-range
+   #:split-into-chunks
    #:summary
    #:summary-function
    #:to-vector
