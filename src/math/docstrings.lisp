@@ -19,6 +19,9 @@
      :arguments ((range "Object to aggregate")
                  (key "Function used to extract value from element."))))
 
+  (function simple-linear-regression
+    (:description "Matches linear function to RANGE using least squares method."))
+
   (function moments
     (:description "Calculate statistical moments in the range."
      :arguments ((range "Object to aggregate.")
