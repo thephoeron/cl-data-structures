@@ -22,6 +22,9 @@
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."))
 
+  (function statistical-summary
+    (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."))
+
   (function moments
     (:description "Calculate statistical moments in the range."
      :arguments ((range "Object to aggregate.")
