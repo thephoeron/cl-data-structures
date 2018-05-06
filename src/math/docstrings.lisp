@@ -14,6 +14,11 @@
      :arguments ((range "Object to aggregate")
                  (key "Function used to extract value from element."))))
 
+  (function hodges-lehman-estimator
+    (:description "Calculates hodges-lehman estimator for range."
+     :arguments ((range "Object to aggregate")
+                 (key "Function used to extract value from element."))))
+
   (function moments
     (:description "Calculate statistical moments in the range."
      :arguments ((range "Object to aggregate.")

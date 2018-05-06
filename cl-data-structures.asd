@@ -115,6 +115,7 @@
                              (:file "variance")
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
+                             (:file "hodges-lehman-estimator")
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")

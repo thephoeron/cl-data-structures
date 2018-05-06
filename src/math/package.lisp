@@ -9,6 +9,7 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:average
+   #:hodges-lehman-estimator
    #:median-absolute-deviation
    #:moments
    #:simple-linear-regression
