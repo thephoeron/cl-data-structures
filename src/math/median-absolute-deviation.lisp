@@ -21,7 +21,7 @@
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key))
+          (cl-ds.alg:to-vector range :key key :element-type 'real))
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
@@ -30,9 +30,10 @@
                  (middle (truncate length 2))
                  (median (if (oddp length)
                              (aref vector middle)
-                             (/ (+ (aref vector middle)
-                                   (aref vector (1- middle)))
-                                2))))
+                             (coerce (/ (+ (aref vector middle)
+                                           (aref vector (1- middle)))
+                                        2)
+                                     'single-float))))
             (declare (type real median))
             (map-into vector
                       (lambda (x)
