@@ -38,6 +38,7 @@
                              (:test-file "lazy-shuffle-tests")))
                (:module "api"
                 :components ((:file "meta")
+                             (:file "meta-docstrings")
                              (:file "variables")
                              (:file "functions")
                              (:file "fundamental-classes")
@@ -115,7 +116,7 @@
                              (:file "variance")
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
-                             (:file "hodges-lehman-estimator")
+                             (:file "hodges-lehman")
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")

@@ -11,6 +11,7 @@
  cl-lore.extensions.documentation.api
  cl-lore.extensions.sequence-graphs.api)
 
+(def-chunks *cl-data-structures*)
 (cl-lore.api.syntax:define-save-output-function
     build-docs
     (:cl-data-structures.documentation
