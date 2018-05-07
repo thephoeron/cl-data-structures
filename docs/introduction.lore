@@ -7,7 +7,7 @@
 @begin{section}
 @label{cl-ds intro}
 @title{Overview}
-@text{Cl-data-structures is a portable collection of data structures. The design goals of this library are the following:}
+@text{Cl-data-structures is a portable collection of data structures and algorithms. The design goals of this library are the following:}
 
 (level [list]
   @item{Uniform -- Data structures that are used for a specific task should have a common interface. The user should just know how to use a dictionary, and not some specific implementation of it.}

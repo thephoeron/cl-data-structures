@@ -51,7 +51,9 @@
    #:accumulate
    #:chain
    #:count-elements
+   #:count-elements-if
    #:count-elements-function
+   #:count-elements-if-function
    #:gather-prior-states
    #:group-by
    #:group-by-function

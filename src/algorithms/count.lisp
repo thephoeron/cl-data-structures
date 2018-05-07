@@ -23,3 +23,32 @@
 
 (defmethod state-result ((function count-elements-function) state)
   (car state))
+
+
+(defclass count-elements-if-function (aggregation-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric count-elements-if (range predicate &key key)
+  (:generic-function-class count-elements-if-function)
+  (:method (range predicate &key (key #'identity))
+    (apply-aggregation-function range #'count-elements-if
+                                :key key :predicate predicate)))
+
+
+(defmethod cl-ds.alg.meta:make-state ((function count-elements-if-function) &key predicate
+                                      &allow-other-keys)
+  (list* predicate 0))
+
+
+(defmethod aggregate ((function count-elements-if-function) state element)
+  (bind (((predicate . count) state)
+         (should-count (funcall predicate element)))
+    (if should-count
+        (incf (cdr state))))
+  state)
+
+
+(defmethod state-result ((function count-elements-if-function) state)
+  (cdr state))
