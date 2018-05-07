@@ -1,0 +1,25 @@
+(in-package #:cl-data-structures.documentation)
+(cl-lore.api.syntax:syntax
+ cl-lore.extensions.documentation.api
+ cl-lore.extensions.sequence-graphs.api)
+
+
+@begin{section}
+@label{cl-ds intro}
+@title{Overview}
+@text{Cl-data-structures is a portable collection of data structures. The design goals of this library are the following:}
+
+(level [list]
+  @item{Uniform -- Data structures that are used for a specific task should have a common interface. The user should just know how to use a dictionary, and not some specific implementation of it.}
+  @item{Complete -- This package intends to be the definitive Common Lisp data structures collection, containing both functional and mutable structures, for every use case possible.}
+  @item{Universal -- There should be no limitations on when this library is useful.}
+  @item{Stable -- The API should be backward compatible. Breaking existing software is not acceptable.})
+
+@text{To achieve these goals, the package cl-data-structures contains the common API. Various implementations of that API have their own, separate packages. Implementations are divided into few categories:}
+
+(level [list]
+  @item{Dicts (short for dictionaries) -- Data structures that map keys to values. All in the package cl-ds.dicts.})
+
+@include{Conventions}
+@include{Key concepts}
+@end{section}

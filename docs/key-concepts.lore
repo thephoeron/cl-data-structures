@@ -1,0 +1,55 @@
+(in-package #:cl-data-structures.documentation)
+(cl-lore.api.syntax:syntax
+ cl-lore.extensions.documentation.api
+ cl-lore.extensions.sequence-graphs.api)
+
+
+@begin{section}
+@title{Signaling errors}
+@label{Signaling errors}
+@text{The Cl-data-structures approach to signaling errors can be summarized with two points:}
+ @begin{list}
+ @item{Signal an error, only if without a doubt, error has occurred.}
+ @item{Signal only the well structured and documented errors.}
+ @end{list}
+@text{To fulfill those requirements, the library defines it's own hierarchy of conditions, with each error signaled only in a very specific scenario. For instance, there is the INITIALIZATION-OUT-OF-BOUNDS error, that will be signaled only if the user attempts to initialize the class with a value that exceeds accepted bounds, as described in a relevant reference. Such error also usually points to documentation that describes why this error was signaled and provides information on what argument triggered signaling error, and what are an accepted bounds. This is done such way primarily to make both learning and debugging as easy as possible. In addition, it also makes automatic handling of errors actually possible. The user of this library is encouraged to take a look at the error hierarchies, as laid out in this manual API reference section.}
+@text{It is also important to point out, that CL-DATA-STRUCTURES attempts to explicitly document every possible error that can be raised by every function. If an unexpected error occurs, it may and should be considered bug of manual itself, and treated as such (namely: @emph{reported and fixed}).}
+@end{section}
+
+
+@begin{section}
+@title{Trait classes}
+@label{Trait classes}
+@text{The class hierarchy of CL-DATA-STRUCTURES objects may appear to be complex, and somewhat convoluted, but there is a reason for that. CL-DATA-STRUCTURES defines multiple slotless classes, like the FUNCTIONAL. Those classes are used as a way to attach a set of information about the container contract. In case of functional containers, that would be: do not allow any sort of mutable operations, in case of dictionaries: mapping keys to values. Thanks to this programmer may write code that dispatches logic according to the behavior of the container. This manual contains a description of each trait, and container class documentation contains information about inherited classes.}
+@text{Some of the trait classes are used to represents variants.}
+@end{section}
+
+
+@begin{section}
+@title{Variants}
+@label{Variants}
+@text{Most of the cl-data-structures containers are available in few variants. The purpose of those is to aid the programmer in avoiding errors that may occur when mixing functional and destructive operations, while still providing access to both. To understand the motivation behind this decision, consider other possible approaches that could be taken instead.}
+@text{You can just allow arbitrary changes happening on any level. This usually gives you the best raw performance, but at the high cost: a state that you are mutating can be shared in an arbitrary way. If execution of your code is interrupted, changes made in the container are preserved, even if they represent incoherent or invalid data. You need to clean it up yourself. Changes are also shared between threads, which means that you will need to also share some mutex to protect your data from races. This kind of containers are called @emph{mutable} in this library.}
+@text{@emph{Functional} containers do not suffer from the same problems. Every operation that would change the existing state in a mutable container will instead return new container, with changes visible only there. This, however, has another limitation: copying is costly. Although copying the whole structure is usually not required, we still need to copy at least parts of it.}
+@text{@emph{Transactional} containers represent a compromise between those two opposite approaches. Transactional containers implement mutable API in a distinct way: instead of performing destructive operations in an arbitrary way, we are trying to isolate changes so they will be visible only in the instance that we passed into the method. This allows us to achieve a compromise between safety, simplicity, and speed.}
+@text{All containers with transactional variant available can be also used as functional, lazy containers. Those containers reduce consing that troubles functional containers by grouping all modification operations and performing hidden, destructive modification of transactional containers in the last possible moment. Since all those fancy functional data structures are just trees with the copy on write semantics it improves performance a little bit.}
+@text{A container can be converted between @emph{functional}, @emph{transactional} and @emph{mutable} variant using become methods. However, not every container is available in all three variants. It is also important to remember that become methods have a limited set of guarantees. For instance: BECOME-TRANSACTIONAL guaranties that changes in the returned instance won't leak outside of that instance, but not that destructive changes in the original instance can't leak into it. Same applies for the BECOME-FUNCTIONAL method. Be careful and keep this in mind.}
+@end{section}
+
+
+@begin{section}
+@title{Modification Status}
+@label{Modification Status}
+@text{@lisp standard says that GETHASH function returns two values: the first being value itself (or NIL if the key was not found in the hashtable), while the second is a boolean that is T if the key was found. This is reasonable approach also taken by the AT function. However, (SETF GETHASH) returns just one value. This is problematic because information about previous value is lost. To counter this problem, all modification functions return a MODIFICATION-STATUS object as a second value. This object grants access to information on container state (if previous value was found if a container has been changed) using reader functions. It also may be implemented in different ways, which is beneficial in situations when obtaining value in a strict way is not ideal (think about lazy evaluation). To simplify using this object, the MOD-BIND macro is introduced (syntactic sugar that mimics MULTIPLE-VALUE-BIND syntax).}
+@end{section}
+
+
+@begin{section}
+@title{Key concepts}
+@label{Key concepts}
+@text{Inspection of the CL-DATA-STRUCTURE source code may reveal a few interesting patterns. These patterns are listed below in their own sections.}
+@include{Signaling errors}
+@include{Modification Status}
+@include{Trait classes}
+@include{Variants}
+@end{section}

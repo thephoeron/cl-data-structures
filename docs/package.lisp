@@ -21,8 +21,12 @@
     (:output-options (:css cl-lore.mechanics:*mechanics-html-style*))
 
   ("vars.lisp"
-   "manual.lisp"
-   "in-depth.lisp")
+   "key-concepts.lore"
+   "conventions.lore"
+   "introduction.lore"
+   "dicts.lore"
+   "manual.lore"
+   "in-depth.lore")
 
   @title{CL-DATA-STRUCTURES}
   @include{cl-ds intro}

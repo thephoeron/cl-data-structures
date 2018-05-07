@@ -1,0 +1,104 @@
+(in-package #:cl-data-structures.documentation)
+(cl-lore.api.syntax:syntax
+ cl-lore.extensions.documentation.api
+ cl-lore.extensions.sequence-graphs.api)
+
+
+@begin{section} @label{cl-ds API}
+@title{API Reference}
+@text{This section contains reference of all the functions, classes and macros provided by this library to the user.}
+
+@begin{section}
+@title{Common API}
+
+@begin{section}
+@title{Generic Functions}
+@text{The following set contains generic functions that can be used to query or manipulate containers. Not all containers can be manipulated with entieriety of those functions. However, applicable functions are defined in the category of container, and thus, this manual lists functions applicable for instances of containers in each category.}
+
+(level [section]
+  @title{Query Functions}
+  @text{Following generic functions check state of the container and are not allowed to change it.}
+
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docgeneric['cl-ds:at]
+  @docgeneric['cl-ds:size]
+  @docgeneric['cl-ds:mutablep]
+  @docgeneric['cl-ds:transactionalp]
+  @docgeneric['cl-ds:functionalp]
+  @end{documentation})
+
+(level [section]
+  @title{Functional modification API}
+
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docgeneric['cl-ds:insert]
+  @docgeneric['cl-ds:add]
+  @docgeneric['cl-ds:update]
+  @docgeneric['cl-ds:erase]
+  @docgeneric['cl-ds:erase-if]
+  @end{documentation})
+
+(level [section]
+  @title{Mutable modification API}
+
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docgeneric['(setf cl-ds:at)]
+  @docgeneric['cl-ds:add!]
+  @docgeneric['cl-ds:update!]
+  @docgeneric['cl-ds:erase!]
+  @docgeneric['cl-ds:erase-if!]
+  @end{documentation})
+
+(level [section]
+  @title{Variants API}
+
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docgeneric['cl-ds:become-functional]
+  @docgeneric['cl-ds:become-mutable]
+  @docgeneric['cl-ds:become-transactional]
+  @docgeneric['cl-ds:become-lazy]
+  @end{documentation})
+
+@end{section}
+
+(level [section]
+  @title{Macros}
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docmacro['cl-ds:mod-bind]
+  @end{documentation})
+
+(level [section]
+  @title{Classes}
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docclass['cl-ds:fundamental-container]
+  @docclass['cl-ds:fundamental-modification-operation-status]
+  @docclass['cl-ds:functional]
+  @docclass['cl-ds:mutable]
+  @docclass['cl-ds:transactional]
+  @docclass['cl-ds:lazy]
+  @end{documentation})
+
+(level [section]
+  @title{Conditions}
+  @text{Cl-data-structures tries to signal only the well structured errors that are possible to interpret. In order to achieve this, the hierarchy of condition classes is introduced. Below there is documentation explaining it.}
+
+  @begin{documentation}
+  @pack{CL-DATA-STRUCTURES}
+  @docerror['cl-ds:textual-error]
+  @docerror['cl-ds:invalid-argument]
+  @docerror['cl-ds:initialization-error]
+  @docerror['cl-ds:out-of-bounds]
+  @docerror['cl-ds:argument-out-of-bounds]
+  @docerror['cl-ds:initialization-out-of-bounds]
+  @docerror['cl-ds:not-implemented]
+  @end{documentation})
+
+@end{section}
+
+@end{section}
