@@ -11,10 +11,10 @@
       (result nil))
   (cl-ds:traverse (lambda (x)
                     (push x result))
-                  (cl-ds.alg:without #'evenp vector))
+                  (cl-ds.alg:without vector #'evenp))
   (is (sort result #'<) '(1 3 5 7 9 11) :test #'equal)
   (setf result (~> vector
-                   (cl-ds.alg:without #'evenp _)
+                   (cl-ds.alg:without #'evenp)
                    (cl-ds.alg:group-by :key (lambda (x) (mod x 3)))
                    (cl-ds.alg:accumulate (flip #'cons) _ :initial-value nil)))
   (is (cl-ds:at result 0) '(9 3) :test #'equal)

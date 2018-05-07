@@ -152,9 +152,9 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric without (predicate range &key key)
+(defgeneric without (range predicate &key key)
   (:generic-function-class without-function)
-  (:method (predicate range &key (key #'identity))
+  (:method (range predicate &key (key #'identity))
     (apply-range-function range #'without :key key :predicate predicate)))
 
 
