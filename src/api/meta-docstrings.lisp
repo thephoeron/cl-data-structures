@@ -96,6 +96,9 @@
   (type erase-if-function
     (:description "Class of ERASE-IF and ERASE-IF!."))
 
+  (type update-if-function
+    (:description "Class of UPDATE-IF and UPDATE-IF!."))
+
   (type functional-insert-function
     (:description "Class of INSERT."))
 
@@ -108,6 +111,9 @@
   (type functional-erase-function
     (:description "Class of ERASE."))
 
+  (type functional-update-if-function
+    (:description "Class of UPDATE-IF."))
+
   (type insert!-function
     (:description "Class of INSERT."))
 
@@ -119,6 +125,9 @@
 
   (type erase!-function
     (:description "Class of ERASE."))
+
+  (type update-if!-function
+    (:description "Class of UPDATE-IF!."))
 
   (type erase-if!-function
     (:description "Class of ERASE-IF!."))
