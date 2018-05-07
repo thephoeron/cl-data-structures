@@ -85,7 +85,8 @@
                (:module "algorithms"
                 :components ((:file "package")
                              (:module "meta"
-                              :components ((:file "classes")
+                              :components ((:file "macros")
+                                           (:file "classes")
                                            (:file "generics")
                                            (:file "methods")
                                            (:file "docstrings")
