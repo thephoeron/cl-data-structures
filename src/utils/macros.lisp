@@ -97,10 +97,10 @@
 (eval-always
   (defun generate-if-else (conditions forms)
     (flet ((without-test (x)
-             (destructuring-bind (tests form) x
-               (list (cdr tests) form)))
+             (destructuring-bind (tests . form) x
+               (list* (cdr tests) form)))
            (check-test (x)
-             (destructuring-bind ((b . w) form) x
+             (destructuring-bind ((b . w) . form) x
                (declare (ignore w form))
                b)))
       (if conditions

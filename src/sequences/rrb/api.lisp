@@ -56,16 +56,18 @@
                    (tail-size (if (null new-root)
                                   (cl-ds.common.rrb:access-size container)
                                   cl-ds.common.rrb:+maximum-children-count+))
+                   (new-last-index (1- (+ tail-change tail-size)))
                    (new-bucket (~> new-tail
                                    (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                    shrink-bucket)))
-              (cond ((and
-                      (cl-ds.meta:null-bucket-p new-bucket)
-                      (zerop (+ tail-change tail-size)))
+              (cond ((and (cl-ds.meta:null-bucket-p new-bucket)
+                          (zerop (+ tail-change tail-size)))
                      (setf new-tail nil))
-                    (new-bucket
+                    ((~> new-bucket cl-ds.meta:null-bucket-p not)
                      (setf new-tail (copy-array new-tail)
-                           (aref new-tail (+ tail-change tail-size)) new-bucket)))
+                           (aref new-tail new-last-index) new-bucket))
+                    (t (setf new-tail (copy-array new-tail)
+                             (aref new-tail new-last-index) nil)))
               (assert (or new-root new-tail (zerop new-size)))
               (assert (<= 0 tail-size +maximum-children-count+))
               (setf (cl-ds.common.rrb:access-root container) new-root
@@ -119,13 +121,15 @@
                    (tail-size (if (null new-root)
                                   (cl-ds.common.rrb:access-size container)
                                   cl-ds.common.rrb:+maximum-children-count+))
+                   (last-index (1- (+ tail-change tail-size)))
                    (new-bucket (~> new-tail
                                    (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                    shrink-bucket)))
               (cond ((and (cl-ds.meta:null-bucket-p new-bucket) (zerop (+ tail-change tail-size)))
                      (setf new-tail nil))
-                    (new-bucket
-                     (setf (aref new-tail (+ tail-change tail-size)) new-bucket)))
+                    ((~> new-bucket cl-ds.meta:null-bucket-p not)
+                     (setf (aref new-tail last-index) new-bucket))
+                    (t (setf (aref new-tail last-index) nil)))
               (assert (or new-root new-tail (zerop new-size)))
               (assert (<= 0 tail-size +maximum-children-count+))
               (setf (cl-ds.common.rrb:access-size container) new-size
@@ -367,16 +371,18 @@
                     (tail-size (if (null new-root)
                                    (cl-ds.common.rrb:access-size container)
                                    cl-ds.common.rrb:+maximum-children-count+))
+                    (new-last-index (1- (+ tail-size tail-change)))
                     (new-bucket (~> new-tail
                                     (aref (1- cl-ds.common.rrb:+maximum-children-count+))
                                     shrink-bucket)))
-               (cond ((and
-                       (cl-ds.meta:null-bucket-p new-bucket)
-                       (zerop (+ tail-change tail-size)))
+               (cond ((and (cl-ds.meta:null-bucket-p new-bucket)
+                           (zerop (+ tail-change tail-size)))
                       (setf new-tail nil))
-                     (new-bucket
+                     ((~> new-bucket cl-ds.meta:null-bucket-p not)
                       (setf new-tail (copy-array new-tail)
-                            (aref new-tail (+ tail-change tail-size)) new-bucket)))
+                            (aref new-tail new-last-index) new-bucket))
+                     (t (setf new-tail (copy-array new-tail)
+                              (aref new-tail new-last-index) nil)))
                (assert (or new-root new-tail (zerop new-size)))
                (assert (<= 0 tail-size +maximum-children-count+))
                (make 'functional-rrb-vector
