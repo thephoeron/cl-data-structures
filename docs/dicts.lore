@@ -8,9 +8,9 @@
 @label{Dicts API}
 @title{API}
 @text{To obtain value under key use following functions:}
-@begin{list}
-@item{AT}
-@end{list}
+ @begin{list}
+ @item{AT}
+ @end{list}
 @text{To change mapping use following purely functional functions:}
  @begin{list}
  @item{INSERT}
