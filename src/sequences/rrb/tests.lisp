@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 18816)
+(plan 19076)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -89,7 +89,9 @@
     (for i from 130 downto 1)
     (is (cl-ds:size container) i)
     (is (cl-ds:at container (1- i)) (+ 129 (1- i)))
-    (cl-ds:take-out! container)))
+    (for (values c status) = (cl-ds:take-out! container))
+    (ok (cl-ds:found status))
+    (is (cl-ds:value status) (+ 129 (1- i)))))
 
 (let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
                                               (cl-ds:xpr (:i 0)

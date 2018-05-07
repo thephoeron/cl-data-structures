@@ -141,10 +141,12 @@
         (bind ((tail (cl-ds.common.rrb:access-tail container))
                (last-index (1- tail-size))
                (new-bucket (shrink-bucket (aref tail last-index))))
+          (setf (cl-ds.common.rrb:access-tail-size container) (+ tail-size tail-change))
           (if (cl-ds.meta:null-bucket-p new-bucket)
-              (setf (aref tail last-index) nil
-                    (cl-ds.common.rrb:access-tail-size container) last-index)
-              (setf (aref tail last-index) new-bucket))))
+              (setf (aref tail last-index) nil)
+              (setf (aref tail last-index) new-bucket))
+          (when (zerop (+ tail-size tail-change))
+            (setf (cl-ds.common.rrb:access-tail container) nil))))
     (values container result-status)))
 
 
