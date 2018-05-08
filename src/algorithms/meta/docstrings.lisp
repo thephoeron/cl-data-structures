@@ -40,6 +40,9 @@
      :notes "MULTI-STAGE-AGGREGATOR will forward this logic to pass-to-aggregation-with-stage."
      :exceptional-situations "Will signal operation-not-allowed when aggregation cannot be performed (for instance because aggregator-finished-p returns T, which indicates finished aggregation)."))
 
+  (function define-aggregation-function
+    (:description "Defines all required methods and classes for aggregation functions."))
+
   (function multi-aggregation-stages
     (:description "Extracts aggregation stages of multi-aggregation-function."
      :returns "List of stages."
