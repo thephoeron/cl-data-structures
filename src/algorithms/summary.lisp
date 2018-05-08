@@ -8,8 +8,10 @@
 (defstruct summary-state key effective-state fn)
 
 
-(defmethod apply-aggregation-function ((range state-extractor) (function aggregation-function)
-                                       &rest args &key (key #'identity) &allow-other-keys)
+(defmethod apply-aggregation-function ((range state-extractor)
+                                       (function aggregation-function)
+                                       &rest args
+                                       &key (key #'identity) &allow-other-keys)
   (values
    (apply #'make-state function args)
    key))
