@@ -9,7 +9,8 @@
 (defgeneric median-absolute-deviation (range &key key)
   (:generic-function-class median-absolute-deviation-function)
   (:method (range &key (key #'identity))
-    (cl-ds.alg.meta:apply-aggregation-function range #'median-absolute-deviation-function
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'median-absolute-deviation-function
                                                :key key)))
 
 

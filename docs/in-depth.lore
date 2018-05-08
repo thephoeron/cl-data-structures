@@ -72,6 +72,13 @@
 
 
 @begin{section}
+@label{Aggregation algorithms metaprotocol}
+@title{Aggregation algorithms metaprotocol}
+@text{Just like position-modification metaprotocol, there is set of functions and classes used to construct aggregation algorithms. Purpose of those is to separate algorithms from obtaining data, so it will become possible to aggregate per group, without any modifications or memory allocations. In future, I hope to implement SERIES style stream fusion compilation to inline aggregation logic whenever possible which should improve performance.}
+@end{section}
+
+
+@begin{section}
 @label{Lazy evaluation}
 @title{Lazy evaluation}
 @text{This system offers the lazy-evaluated containers. Lazy evaluation is useful primarily because eager functional data structures may have somewhat sluggish performance if multiple, full copy-on-write operations have to be performed when inserting or erasing a large number of records from the container. Lazy evaluation allows to hide destructive operations behind the functional interface, and therefore help to counter this issue. The effectiveness of this technique varies greatly, and depends on both internal structures of the container, as well it's current content. However, what remains constant is the approach used in the implementation of lazy evaluation in this library.}
@@ -85,7 +92,8 @@
 @begin{section}
 @label{cl-ds internals}
 @title{Internal details}
-@text{This section explains parts of system design and low-level elements that shouldn't bother user of the library.  However, they are critical for contributors, and some people just want to know and so shall be delivered.}
+@text{This section explains parts of system design and low-level elements that shouldn't bother user of the library. However, they are critical for contributors, and some people just want to know and so shall be delivered.}
 @include{POSITION-MODIFICATION metaprotocol}
 @include{Lazy evaluation}
+@include{Aggregation algorithms metaprotocol}
 @end{section}
