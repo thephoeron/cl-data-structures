@@ -1,26 +1,19 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass to-vector-function (cl-ds.alg.meta:aggregation-function)
-  ()
-  (:metaclass c2mop:funcallable-standard-class))
+(cl-ds.alg.meta:define-aggregation-function
+    to-vector to-vector-function
 
+  (:range &key key element-type)
+  (:range &key (key #'identity) (element-type t))
 
-(defgeneric to-vector (range &key key element-type)
-  (:generic-function-class to-vector-function)
-  (:method (range &key (key #'identity) (element-type t))
-    (apply-aggregation-function range #'to-vector
-                                :key key
+  (%vector)
+
+  ((&key element-type &allow-other-keys)
+   (setf %vector (make-array 16 :adjustable t
+                                :fill-pointer 0
                                 :element-type element-type)))
+  ((element)
+   (vector-push-extend element %vector))
 
-
-(defmethod make-state ((function to-vector-function) &key element-type &allow-other-keys)
-  (make-array 16 :adjustable t :fill-pointer 0 :element-type element-type))
-
-
-(defmethod state-result ((function to-vector-function) state)
-  (adjust-array state (fill-pointer state)))
-
-
-(defmethod aggregate ((function to-vector-function) state element)
-  (vector-push-extend element state))
+  (%vector))
