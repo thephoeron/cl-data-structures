@@ -39,7 +39,7 @@
    #:range-function
    #:read-key
    #:reduce-stage
-   #:stage
+   #:stag
    #:state-result
    #:transformation!-function))
 
