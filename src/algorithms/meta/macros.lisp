@@ -2,7 +2,7 @@
 
 
 (eval-always
-  (defun required-parameters-to-key-arguments (parsed-lambda-list)
+  (defun extract-parameters-as-key-arguments (parsed-lambda-list)
     (let ((mandatory nil)
           (optional nil))
       (iterate
@@ -101,7 +101,7 @@
         method-lambda-list (substitute 'range :range method-lambda-list))
   (bind ((parsed-lambda-list (multiple-value-call #'vect (parse-ordinary-lambda-list method-lambda-list)))
          (rest-argument (aref parsed-lambda-list 2))
-         ((:values required-arguments optional-arguments) (required-parameters-to-key-arguments parsed-lambda-list)))
+         ((:values required-arguments optional-arguments) (extract-parameters-as-key-arguments parsed-lambda-list)))
     `(progn
        ,(aggregation-function-class-form function-class)
        ,(aggregation-function-defgeneric-form function-name

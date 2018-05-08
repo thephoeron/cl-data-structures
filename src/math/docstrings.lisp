@@ -17,7 +17,8 @@
   (function hodges-lehman-estimator
     (:description "Calculates hodges-lehman estimator for range."
      :arguments ((range "Object to aggregate")
-                 (key "Function used to extract value from element."))))
+                 (key "Function used to extract value from element."))
+     :notes "This estimator has high breakdown point."))
 
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."))
