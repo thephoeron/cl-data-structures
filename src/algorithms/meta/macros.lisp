@@ -99,9 +99,11 @@
   (assert (find :range method-lambda-list))
   (setf generic-lambda-list (substitute 'range :range generic-lambda-list)
         method-lambda-list (substitute 'range :range method-lambda-list))
-  (bind ((parsed-lambda-list (multiple-value-call #'vect (parse-ordinary-lambda-list method-lambda-list)))
+  (bind ((parsed-lambda-list (multiple-value-call #'vect
+                               (parse-ordinary-lambda-list method-lambda-list)))
          (rest-argument (aref parsed-lambda-list 2))
-         ((:values required-arguments optional-arguments) (extract-parameters-as-key-arguments parsed-lambda-list)))
+         ((:values required-arguments optional-arguments)
+          (extract-parameters-as-key-arguments parsed-lambda-list)))
     `(progn
        ,(aggregation-function-class-form function-class)
        ,(aggregation-function-defgeneric-form function-name
