@@ -1,59 +1,12 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass estimated-set-cardinality-function (cl-ds.alg.meta:aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defgeneric estimated-set-cardinality (range bits hash-fn &key key)
-  (:generic-function-class estimated-set-cardinality-function)
-  (:method (range bits hash-fn &key key)
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'estimated-set-cardinality
-                                               :key key
-                                               :hash-fn hash-fn
-                                               :bits bits)))
-
-
-(defclass estimated-set-cardinality-state ()
+(defclass estimated-set-cardinality-result ()
   ((%bits :initarg :bits)
-   (%registers :initarg :registers)
-   (%hash-fn :initarg :hash-fn)))
+   (%registers :initarg :registers)))
 
 
-(defmethod cl-ds.alg.meta:aggregate ((function estimated-set-cardinality-function)
-                                     state
-                                     element)
-  (bind (((:slots %bits %registers %hash-fn) state)
-         (hash (ldb (byte 32 0) (funcall %hash-fn element)))
-         (index (ash hash (- (- 32 %bits))))
-         (hash-length (integer-length hash))
-         (rank (if (zerop hash-length) 31 (1- hash-length))))
-    (when (> rank (aref %registers index))
-      (setf (aref %registers index) rank))))
-
-
-(defmethod cl-ds.alg.meta:state-result ((function estimated-set-cardinality-function)
-                                        state)
-  state)
-
-
-(defmethod cl-ds.alg.meta:make-state ((function estimated-set-cardinality-function)
-                                      &key bits hash-fn &allow-other-keys)
-  (unless (< 3 bits 21)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'bits
-           :bounds (list 4 21)
-           :value bits
-           :text "Bits out of range."))
-  (make 'estimated-set-cardinality-state
-        :bits bits
-        :hash-fn hash-fn
-        :registers (make-array (ash 1 bits) :element-type 'unsigned-byte)))
-
-
-(defmethod cl-ds:value ((state estimated-set-cardinality-state))
+(defmethod cl-ds:value ((state estimated-set-cardinality-result))
   (bind (((:slots %bits %registers) state)
          (size (length %registers))
          (alpha-mm (* (cond ((eql 4 %bits) 0.673)
@@ -75,3 +28,36 @@
            (setf estimate (* -4294967296.0
                              (log (- 1.0 (/ estimate 4294967296.0)))))))
     estimate))
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    estimated-set-cardinality estimated-set-cardinality-function
+
+  (:range bits hash-fn &key key)
+  (:range bits hash-fn &key (key #'identity))
+
+  (%bits %registers %hash-fn)
+
+  ((&key bits hash-fn &allow-other-keys)
+   (unless (< 3 bits 21)
+     (error 'cl-ds:argument-out-of-bounds
+            :argument 'bits
+            :bounds (list 4 21)
+            :value bits
+            :text "Bits out of range."))
+   (setf %bits bits
+         %hash-fn hash-fn
+         %registers (make-array (ash 1 bits)
+                                :element-type 'unsigned-byte)))
+
+  ((element)
+   (bind ((hash (ldb (byte 32 0) (funcall %hash-fn element)))
+          (index (ash hash (- (- 32 %bits))))
+          (hash-length (integer-length hash))
+          (rank (if (zerop hash-length) 31 (1- hash-length))))
+     (when (> rank (aref %registers index))
+       (setf (aref %registers index) rank))))
+
+  ((make 'estimated-set-cardinality-result
+         :bits %bits
+         :registers %registers)))
