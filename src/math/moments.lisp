@@ -14,7 +14,7 @@
    (setf %lambdas (make-array count)
          %moments (make-array count :initial-element 0.0
                                     :element-type 'single-float)
-         %count 0
+         %count count
          %start from)
    (iterate
      (for i from from)
