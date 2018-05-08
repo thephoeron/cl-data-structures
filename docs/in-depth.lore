@@ -93,7 +93,7 @@
 @label{cl-ds internals}
 @title{Internal details}
 @text{This section explains parts of system design and low-level elements that shouldn't bother user of the library. However, they are critical for contributors, and some people just want to know and so shall be delivered.}
-@include{POSITION-MODIFICATION metaprotocol}
 @include{Lazy evaluation}
+@include{POSITION-MODIFICATION metaprotocol}
 @include{Aggregation algorithms metaprotocol}
 @end{section}
