@@ -156,4 +156,6 @@
                              (:file "common")
                              (:module "rrb"
                               :components ((:file "api")
-                                           (:test-file "tests")))))))
+                                           (:test-file "tests")))))
+               (:module "data-frame"
+                :components ((:file "packages")))))

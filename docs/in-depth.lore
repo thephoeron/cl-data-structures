@@ -74,7 +74,7 @@
 @begin{section}
 @label{Aggregation algorithms metaprotocol}
 @title{Aggregation algorithms metaprotocol}
-@text{Just like position-modification metaprotocol, there is set of functions and classes used to construct aggregation algorithms. Purpose of those is to separate algorithms from obtaining data, so it will become possible to aggregate per group, without any modifications or memory allocations. In future, I hope to implement SERIES style stream fusion compilation to inline aggregation logic whenever possible which should improve performance.}
+@text{Just like position-modification metaprotocol, there is set of functions and classes used to construct aggregation algorithms. Purpose of those is to separate algorithms from obtaining data, so it will become possible to aggregate per group, without any modifications or memory allocations. In future, I hope to implement SERIES style stream fusion compilation to inline aggregation logic whenever possible which should improve performance, but for now it simply uses generic functions dispatched at runtime.}
 @end{section}
 
 
