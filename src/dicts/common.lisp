@@ -440,7 +440,8 @@
   ())
 
 
-(defmethod cl-ds:at ((container lazy-box-dictionary) location)
+(defmethod cl-ds:at ((container lazy-box-dictionary) location &rest more-locations)
+  (assert (null more-locations))
   (cl-ds.common:force-version container)
   (cl-ds:at (cl-ds.common:access-content container) location))
 

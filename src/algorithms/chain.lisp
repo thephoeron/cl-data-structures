@@ -53,7 +53,8 @@
   range)
 
 
-(defmethod cl-ds:at ((range random-access-chain-of-ranges) location)
+(defmethod cl-ds:at ((range random-access-chain-of-ranges) location &rest more-locations)
+  (assert (null more-locations))
   (bind (((:slots %content) range))
     (iterate
       (for c in-vector %content)

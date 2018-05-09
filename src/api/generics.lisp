@@ -18,9 +18,9 @@
   (declare (ignore operation location all))
   (ensure-not-frozen container))
 
-(defgeneric at (container location))
+(defgeneric at (container location &rest more-locations))
 
-(defgeneric (setf at) (new-value container location)
+(defgeneric (setf at) (new-value container location &rest more-locations)
   (:generic-function-class cl-ds.meta:insert!-function))
 
 (defgeneric add (container location new-value)

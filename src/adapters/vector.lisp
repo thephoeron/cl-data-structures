@@ -42,7 +42,8 @@
   (make 'vector-range :vector obj))
 
 
-(defmethod cl-ds:at ((range vector-range) location)
+(defmethod cl-ds:at ((range vector-range) location &rest more)
+  (assert (null more))
   (bind (((:slots %vector %lower-bound %upper-bound) range))
     (if (and (>= location %lower-bound) (< location %upper-bound))
         (values (elt %vector location) t)
@@ -103,7 +104,8 @@
     (- %upper-bound %lower-bound)))
 
 
-(defmethod cl-ds:at ((range offset-vector-range) location)
+(defmethod cl-ds:at ((range offset-vector-range) location &rest more-locations)
+  (assert (null more-locations))
   (decf location (read-offset range))
   (call-next-method range location))
 
@@ -112,5 +114,6 @@
   (length container))
 
 
-(defmethod cl-ds:at ((container vector) index)
+(defmethod cl-ds:at ((container vector) index &rest more-locations)
+  (assert (null more-locations))
   (elt container index))

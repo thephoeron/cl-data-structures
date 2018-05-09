@@ -101,7 +101,8 @@
               t))))
 
 
-(defmethod cl-ds:at ((range random-access-zipped-ranges) location)
+(defmethod cl-ds:at ((range random-access-zipped-ranges) location &rest more-locations)
+  (assert (null more-locations))
   (block nil
     (bind (((:slots %function %ranges) range))
       (values (apply %function

@@ -129,7 +129,9 @@
                                     :condition-fn condition-fn))
 
 
-(defmethod (setf cl-ds:at) (new-value (container mutable-sequence) location)
+(defmethod (setf cl-ds:at) (new-value (container mutable-sequence)
+                            location &rest more-locations)
+  (assert (null more-locations))
   (cl-ds.meta:position-modification #'(setf cl-ds:at)
                                     container location :value new-value)
   new-value)
@@ -140,7 +142,8 @@
   ())
 
 
-(defmethod cl-ds:at ((container lazy-box-sequence) location)
+(defmethod cl-ds:at ((container lazy-box-sequence) location &rest more-locations)
+  (assert (null more-locations))
   (cl-ds.common:force-version container)
   (cl-ds:at (cl-ds.common:access-content container) location))
 

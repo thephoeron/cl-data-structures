@@ -49,7 +49,8 @@
                                     :condition-fn condition-fn))
 
 
-(defmethod (setf cl-ds:at) (new-value (container mutable-dictionary) location)
+(defmethod (setf cl-ds:at) (new-value (container mutable-dictionary) location
+                            &rest more-locations)
   (let ((status (nth-value
                  1
                  (cl-ds.meta:position-modification #'(setf cl-ds:at)

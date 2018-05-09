@@ -112,7 +112,8 @@ Methods. Those will just call non generic functions.
   (hamt-dictionary-size container))
 
 
-(defmethod cl-ds:at ((container hamt-dictionary) location)
+(defmethod cl-ds:at ((container hamt-dictionary) location &rest more-locations)
+  (assert (null more-locations))
   (hamt-dictionary-at container location))
 
 

@@ -119,7 +119,8 @@
             t)))
 
 
-(defmethod cl-ds:at ((window sequence-window) index)
+(defmethod cl-ds:at ((window sequence-window) index &rest more-indexes)
+  (declare (ignore more-indexes))
   (bind (((:slots %from %to %current-index) window)
          (effective-index (+ %from index)))
     (if (< (1- %current-index) effective-index %to)
