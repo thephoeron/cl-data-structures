@@ -24,6 +24,7 @@
    #:consume-front
    #:delay
    #:delayed
+   #:dimensionality-error
    #:drop-back
    #:drop-front
    #:empty-clone
@@ -84,6 +85,7 @@
    #:take-out
    #:take-out!
    #:textual-error
+   #:too-many-dimensions
    #:transaction
    #:transactional
    #:transactionalp
