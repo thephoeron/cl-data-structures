@@ -21,7 +21,9 @@
                                    (container fundamental-sequence)
                                    location
                                    &key value &allow-other-keys)
-  (values (cl-ds:force value) cl-ds.common:empty-eager-modification-operation-status t))
+  (values (cl-ds:force value)
+          cl-ds.common:empty-eager-modification-operation-status
+          t))
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:shrink-function)
