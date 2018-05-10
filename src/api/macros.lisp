@@ -43,3 +43,9 @@
     (declare (ignore bindings))
     `(mod-bind ,metabang.bind::variables ,values
        (declare (ignore ,@ignores)))))
+
+
+(defmacro assert-one-dimension (more)
+  `(unless (endp ,more)
+     (error 'cl-ds:too-many-dimensions
+            :text "Can't pass more then one dimension into one dimensional data structures.")))

@@ -258,7 +258,7 @@
 
 
 (defmethod cl-ds:at ((container rrb-container) index &rest more)
-  (assert (null more))
+  (cl-ds:assert-one-dimension more)
   (check-type index rrb-index)
   (rrb-at container index))
 
@@ -524,7 +524,7 @@
 
 
 (defmethod cl-ds:at ((range rrb-range) index &rest more)
-  (assert (null more))
+  (cl-ds:assert-one-dimension more)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
       (error 'cl-ds:argument-out-of-bounds
@@ -667,6 +667,7 @@
 
 
 (defmethod (setf cl-ds:at) (new-value (range mutable-rrb-range) index &rest more)
+  (cl-ds:assert-one-dimension more)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
       (error 'cl-ds:argument-out-of-bounds

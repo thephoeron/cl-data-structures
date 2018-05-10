@@ -120,7 +120,7 @@
 
 
 (defmethod cl-ds:at ((window sequence-window) index &rest more)
-  (assert (null more))
+  (cl-ds:assert-one-dimension more)
   (bind (((:slots %from %to %current-index) window)
          (effective-index (+ %from index)))
     (if (< (1- %current-index) effective-index %to)

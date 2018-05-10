@@ -14,6 +14,7 @@
    #:aggregate
    #:apply-layer
    #:argument-out-of-bounds
+   #:assert-one-dimension
    #:at
    #:become-functional
    #:become-lazy

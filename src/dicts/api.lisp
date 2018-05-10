@@ -51,6 +51,7 @@
 
 (defmethod (setf cl-ds:at) (new-value (container mutable-dictionary) location
                             &rest more-locations)
+  (cl-ds:assert-one-dimension more-locations)
   (let ((status (nth-value
                  1
                  (cl-ds.meta:position-modification #'(setf cl-ds:at)

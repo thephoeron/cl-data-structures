@@ -184,7 +184,7 @@
 
 
 (defmethod cl-ds:at ((range bidirectional-proxy-box-range) location &rest more-locations)
-  (assert (null more-locations))
+  (cl-ds:assert-one-dimension more-locations)
   (bind (((:values elt found) (cl-ds:at (read-original-range range) location)))
     (if found
         (values (~>> elt
