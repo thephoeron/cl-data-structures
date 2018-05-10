@@ -152,8 +152,8 @@
   (peek-back (read-original-range)))
 
 
-(defmethod at ((range random-access-proxy-range) location)
-  (at (read-original-range range) location))
+(defmethod at ((range random-access-proxy-range) location &rest more)
+  (apply #'at (read-original-range range) location more))
 
 
 (defmethod consume-front ((range hash-table-range))
@@ -205,7 +205,8 @@
   range)
 
 
-(defmethod at ((range hash-table-range) location)
+(defmethod at ((range hash-table-range) location &rest more)
+  (assert (null more))
   (bind (((:slots (ht %hash-table)) range)
          ((:hash-table (result location)) ht)
          (test (hash-table-test ht))
