@@ -43,6 +43,8 @@
    #:optimize-value
    #:ordered-p
    #:parallel-fill-distance-matrix-from-vector
+   #:define-list-of-slots
+   #:with-slots-for
    #:parallel-make-distance-matrix-from-vector
    #:pipe-fragment
    #:pop-last

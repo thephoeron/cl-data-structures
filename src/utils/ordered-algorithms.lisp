@@ -62,8 +62,8 @@
 
 
 (declaim (inline lower-bound))
-(-> lower-bound (vector t (-> (t t) boolean)) index)
-(defun lower-bound (vector element comparsion)
+(-> lower-bound (vector t (-> (t t) boolean) &key (:key function)) index)
+(defun lower-bound (vector element comparsion &key (key #'identity))
   (declare (optimize (speed 3)))
   (let ((length (length vector)))
     (iterate
@@ -72,7 +72,7 @@
       (for current = (truncate (/ (+ end start) 2)))
       (until (eql end start))
       (if (funcall comparsion
-                   (aref vector current)
+                   (funcall key (aref vector current))
                    element)
           (setf start (1+ current))
           (setf end current))

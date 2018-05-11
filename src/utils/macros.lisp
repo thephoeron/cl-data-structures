@@ -288,3 +288,19 @@
            (eval-always
              (setf ,@(apply #'append (mapcar (lambda (binding symbol) (list (car symbol) binding))
                                              !vars bindings)))))))))
+
+
+(eval-always
+  (defgeneric list-of-slots (symbol)))
+
+
+(defmacro define-list-of-slots (id &body slots)
+  `(eval-always
+     (defmethod list-of-slots ((class (eql ,id)))
+       '(,@slots))))
+
+
+(defmacro with-slots-for ((object id) &body body)
+  (once-only (object)
+    `(with-slots ,(list-of-slots id) ,object
+       ,@body)))
