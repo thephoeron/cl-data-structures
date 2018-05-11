@@ -33,6 +33,12 @@
                              (:file "bind")
                              (:file "parallel-tools")
                              (:file "lambda-lists")
+                             (:module "clustering"
+                              :components ((:file "package")
+                                           (:file "types")
+                                           (:file "internal-functions")
+                                           (:file "external-functions")
+                                           (:test-file "tests")))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))

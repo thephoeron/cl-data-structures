@@ -296,7 +296,7 @@
 
 (defmacro define-list-of-slots (id &body slots)
   `(eval-always
-     (defmethod list-of-slots ((class (eql ,id)))
+     (defmethod list-of-slots ((class (eql ',id)))
        '(,@slots))))
 
 

@@ -22,19 +22,13 @@
                               :split-merge-attempts-count attempts
                               :split-threshold split
                               :merge-threshold merge)))
-    (choose-initial-medoids state)
-    (iterate
-      (assign-data-points-to-medoids state)
-      (choose-effective-medoids state)
-      (while (improved-clusters-p state))
-      (clear-cluster-contents state)
-      (clear-improvements state))
+    (build-pam-clusters state)
     (unless (null %split-merge-attempts-count)
-      (clear-improvements state)
+      (clear-unfinished-clusters state)
       (iterate
         (repeat %split-merge-attempts-count)
         (attempt-to-split-clusters-above-threshold state)
         (attempt-to-merge-clusters-below-threshold state)
-        (while (improved-clusters-p state))
+        (while (unfinished-clusters-p state))
         (clear-improvements state)))
     (obtain-result state)))
