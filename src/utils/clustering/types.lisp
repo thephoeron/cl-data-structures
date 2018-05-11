@@ -80,7 +80,10 @@
         (setf %indexes (coerce (~> %input-data length iota)
                                '(vector non-negative-fixnum))))
       (let ((length (length %indexes)))
-        (setf %number-of-medoids (min %number-of-medoids length))
+        (setf %number-of-medoids
+              (if (slot-initialized-p %number-of-medoids)
+                  (min %number-of-medoids length)
+                  length))
         (if (slot-initialized-p %cluster-size)
             (assert (< 0 %cluster-size))
             (setf %cluster-size (max 2 (round-to (/ length %number-of-medoids)
@@ -115,12 +118,11 @@
                                      :element-type 'non-negative-fixnum))))
 
 
-(defun clone-state (state &rest more)
+(defun clone-state (state &key indexes)
   (lret ((result (make 'pam-algorithm-state
                        :input-data (read-input-data state)
-                       :indexes (read-indexes state)
-                       :number-of-medoids (read-number-of-medoids state)
+                       :indexes indexes
+                       :clusters nil
+                       :unfinished-clusters nil
                        :distance-matrix (read-distance-matrix state))))
-    (apply #'reinitialize-instance
-           result more)
     (assert (not (emptyp (read-indexes state))))))

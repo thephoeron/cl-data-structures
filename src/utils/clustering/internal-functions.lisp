@@ -16,7 +16,8 @@
 
 (defun clear-cluster-contents (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)))
+    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
+    (setf (fill-pointer %cluster-contents) %number-of-medoids)))
 
 
 (defun order-medoids (state)
@@ -177,27 +178,28 @@
 
 
 (defun build-pam-clusters (state)
-  (let ((clusters-ok
-          (iterate
-            (with attempts = (read-select-medoids-attempts-count state))
-            (for i from 0)
-            (unless (null attempts)
-              (when (eql i attempts)
-                (finish)))
-            (when (zerop (rem i 5))
-              (choose-initial-medoids state))
-            (assign-data-points-to-medoids state)
-            (choose-effective-medoids state)
-            (never (unfinished-clusters-p state))
-            (clear-cluster-contents state)
-            (clear-unfinished-clusters state))))
-    (unless clusters-ok
-      (warn "Could not find optimal clusters, continue with suboptimal clusters")
-      (clear-cluster-contents state)
-      (order-medoids state)
-      (assign-data-points-to-medoids state)
-      (choose-effective-medoids state)
-      (clear-unfinished-clusters state))))
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (let ((clusters-ok
+            (iterate
+              (with attempts = (read-select-medoids-attempts-count state))
+              (for i from 0)
+              (unless (null attempts)
+                (when (eql i attempts)
+                  (finish)))
+              (when (zerop (rem i 5))
+                (choose-initial-medoids state))
+              (assign-data-points-to-medoids state)
+              (choose-effective-medoids state)
+              (never (unfinished-clusters-p state))
+              (clear-cluster-contents state)
+              (clear-unfinished-clusters state))))
+      (unless clusters-ok
+        (warn "Could not find optimal clusters, continue with suboptimal clusters")
+        (clear-cluster-contents state)
+        (order-medoids state)
+        (assign-data-points-to-medoids state)
+        (choose-effective-medoids state)
+        (clear-unfinished-clusters state)))))
 
 
 (defun scan-for-clusters-of-invalid-size (state)
@@ -223,9 +225,7 @@
       (repeat count-of-splitted)
       (for cluster = (aref %cluster-contents index))
       (for fresh-state = (clone-state state
-                                      :indexes cluster
-                                      :unfinished-clusters nil
-                                      :clusters nil))
+                                      :indexes cluster))
       (build-pam-clusters fresh-state)
       (map nil (lambda (x) (collect x into splitted-clusters at start))
            (read-cluster-contents fresh-state))
@@ -235,7 +235,6 @@
 
 
 (defun attempt-to-merge-clusters-below-threshold (state)
-  (declare (optimize (debug 3)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (bind ((count-of-merged (cl-ds.utils:swap-if %cluster-contents
                                                  (curry #'>
@@ -262,9 +261,7 @@
             (incf index))
           (finally
            (let ((fresh-state (clone-state state
-                                           :indexes indexes
-                                           :unfinished-clusters nil
-                                           :clusters nil)))
+                                           :indexes indexes)))
              (build-pam-clusters fresh-state)
              (decf (fill-pointer %cluster-contents) count-of-merged)
              (map nil
@@ -325,14 +322,14 @@
     (let* ((silhouette (silhouette state))
            (mean-silhouette (mean silhouette)))
       (when (> mean-silhouette %mean-silhouette)
-        (setf %silhouette %silhouette
+        (setf %silhouette silhouette
               %mean-silhouette mean-silhouette
               %result-cluster-contents (map 'vector #'copy-array %cluster-contents))))))
 
 
 (defun assign-clara-data-to-medoids (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (clear-cluster-contents state)
+    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
     (order-medoids state)
     (iterate
       (for index in-vector %all-indexes)

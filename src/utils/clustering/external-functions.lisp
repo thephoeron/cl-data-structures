@@ -68,6 +68,7 @@
                 (attempts 0)
                 split
                 merge)
+  (declare (optimize (debug 3)))
   (when (or (zerop (length input-data)))
     (error "Can't cluster because there is no data"))
   (let ((state (make 'clara-algorithm-state
@@ -99,6 +100,7 @@
       (setf %cluster-contents %result-cluster-contents)
       (assign-clara-data-to-medoids state)
       (replace-indexes-in-clusters-with-data state)
+      (assert %silhouette)
       (obtain-result state %silhouette))))
 
 
@@ -114,6 +116,7 @@
                                            (attempts 0)
                                            split
                                            merge)
+  (declare (optimize (debug 3)))
   (assert (< 0 from to))
   (iterate
     (with final = nil)
