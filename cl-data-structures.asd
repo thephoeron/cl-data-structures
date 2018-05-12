@@ -38,6 +38,7 @@
                                            (:file "types")
                                            (:file "internal-functions")
                                            (:file "external-functions")
+                                           (:file "docstrings")
                                            (:test-file "tests")))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
