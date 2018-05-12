@@ -32,7 +32,6 @@
        (total (apply #'concatenate 'vector (coerce cluster-contents 'list)))
        (clara-total (apply #'concatenate 'vector
                            (coerce clara-cluster-contents 'list))))
-  (print clara-cluster-contents)
   (is (sort total #'<)
       (sort data #'<)
       :test #'serapeum:vector=)
