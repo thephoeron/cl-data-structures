@@ -33,7 +33,8 @@
    (%metric-fn :initarg :metric-fn)
    (%sample-count :initarg :sample-count)
    (%key :initarg :key)
-   (%index-mapping :initform nil)
+   (%index-mapping :initform nil
+                   :reader read-index-mapping)
    (%sample-size :initarg :sample-size)
    (%mean-silhouette :initform -10 ;silhouette is bound by definition in -1 to +1
                      :accessor access-mean-silhouette)
@@ -94,7 +95,7 @@
                                               :fill-pointer %number-of-medoids))
           (map-into %cluster-contents
                     (lambda () (make-array %cluster-size :adjustable t
-                                                    :fill-pointer 1))))
+                                                         :fill-pointer 1))))
         (unless (slot-initialized-p %unfinished-clusters)
           (setf %unfinished-clusters
                 (make-array %number-of-medoids
@@ -115,7 +116,7 @@
     (setf %all-indexes %indexes)
     (setf %sample-size (min (length %indexes) %sample-size))
     (setf %index-mapping (make-array (length %indexes)
-                                     :element-type 'non-negative-fixnum))))
+                                     :element-type 'fixnum))))
 
 
 (defun clone-state (state &key indexes)

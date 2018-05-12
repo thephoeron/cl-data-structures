@@ -51,6 +51,7 @@
 
 
 (defun closest-medoid (state index)
+  (declare (optimize (speed 3)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (unless (medoid-p state index)
       (iterate
@@ -79,6 +80,7 @@
         (vector-push-extend i (aref %cluster-contents assignment))))))
 
 
+(-> intra-cluster-distances (pam-algorithm-state vector) single-float)
 (defun intra-cluster-distances (state cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (iterate
@@ -93,30 +95,37 @@
               into sum)
          (finally (return (/ sum (length cluster))))) ; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
        into sum)
-      (finally (return (/ sum (length cluster)))))))
+      (finally (return (coerce (/ sum (length cluster))
+                               'single-float))))))
+
+(-> sum-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
+    single-float)
+(defun sum-distance-to-element (state element cluster)
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (iterate
+      (for c in-vector cluster)
+      (for distance = (cl-ds.utils:distance %distance-matrix
+                                            c element))
+      (assert distance)
+      (sum distance into sum)
+      (finally (return (coerce (/ sum (length cluster))
+                               'single-float))))))
 
 
+(-> inter-cluster-distances (pam-algorithm-state vector) single-float)
 (defun inter-cluster-distances (state cluster)
-  (declare (optimize (debug 3)))
-  (if (~> cluster length zerop)
-      0.0
-      (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-        (iterate
-          (for other-cluster in-vector %cluster-contents)
-          (when (eq other-cluster cluster)
-            (next-iteration))
-          (minimize
-           (iterate
-             (for k in-vector cluster)
-             (sum (iterate
-                    (for c in-vector other-cluster)
-                    (for distance = (cl-ds.utils:distance %distance-matrix
-                                                          c k))
-                    (assert distance)
-                    (sum distance into sum)
-                    (finally (return (/ sum (length other-cluster)))))
-                  into sum)
-             (finally (return (/ sum (length cluster))))))))))
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (cl-ds.utils:optimize-value ((mini < 0.0))
+      (iterate
+        (for other-cluster in-vector %cluster-contents)
+        (when (eq other-cluster cluster)
+          (next-iteration))
+        (mini (iterate
+                (for k in-vector cluster)
+                (sum (sum-distance-to-element state k other-cluster)
+                     into sum)
+                (finally (return (coerce (/ sum (length cluster))
+                                         'single-float)))))))))
 
 
 (defun silhouette (state)
@@ -144,10 +153,11 @@
            ((:dflet total-distance-to-medoid (&optional old-cost))
             (iterate
               (for i from 1 below (length cluster))
-              (sum (cl-ds.utils:distance %distance-matrix
-                                         (aref cluster 0)
-                                         (aref cluster 1))
-                   into sum)
+              (for distance = (cl-ds.utils:distance %distance-matrix
+                                                    (aref cluster 0)
+                                                    (aref cluster i)))
+              (assert distance)
+              (sum distance into sum)
               (unless (null old-cost)
                 (while (< sum old-cost)))
               (finally (return sum))))
@@ -171,6 +181,8 @@
 
 (defun choose-effective-medoids (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (assert (eql (length %unfinished-clusters)
+                 (length %cluster-contents)))
     (lparallel:pmap-into %unfinished-clusters
                          (curry #'choose-effective-medoid state)
                          %cluster-contents)
@@ -178,23 +190,25 @@
 
 
 (defun build-pam-clusters (state)
+  (declare (optimize (speed 3)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (let ((clusters-ok
+    (let ((expired-attempts-limits
             (iterate
               (with attempts = (read-select-medoids-attempts-count state))
               (for i from 0)
               (unless (null attempts)
                 (when (eql i attempts)
-                  (finish)))
+                  (leave t)))
               (when (zerop (rem i 5))
-                (choose-initial-medoids state))
+                (clear-cluster-contents state)
+                (choose-initial-medoids state)
+                (clear-unfinished-clusters state))
               (assign-data-points-to-medoids state)
               (choose-effective-medoids state)
-              (never (unfinished-clusters-p state))
+              (always (unfinished-clusters-p state))
               (clear-cluster-contents state)
               (clear-unfinished-clusters state))))
-      (unless clusters-ok
-        (warn "Could not find optimal clusters, continue with suboptimal clusters")
+      (when expired-attempts-limits
         (clear-cluster-contents state)
         (order-medoids state)
         (assign-data-points-to-medoids state)
@@ -213,60 +227,82 @@
               %cluster-contents)))
 
 
-(defun attempt-to-split-clusters-above-threshold (state)
+(defun fill-reclustering-index-vector (state indexes count-of-eliminated)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (iterate
-      (with count-of-splitted = (cl-ds.utils:swap-if %cluster-contents
-                                                     (curry #'<
-                                                            %split-threshold)
-                                                     :key #'length))
-      (with cluster-count = (length %cluster-contents))
-      (for index from (1- cluster-count) downto 0)
-      (repeat count-of-splitted)
-      (for cluster = (aref %cluster-contents index))
-      (for fresh-state = (clone-state state
-                                      :indexes cluster))
-      (build-pam-clusters fresh-state)
-      (map nil (lambda (x) (collect x into splitted-clusters at start))
-           (read-cluster-contents fresh-state))
-      (finally (decf (fill-pointer %cluster-contents) count-of-splitted)
-               (map nil (rcurry #'vector-push-extend %cluster-contents)
-                    splitted-clusters)))))
+      (with index = 0)
+      (for i from (~> %cluster-contents length 1-) downto 0)
+      (repeat count-of-eliminated)
+      (for cluster = (aref %cluster-contents i))
+      (iterate
+        (for value in-vector cluster)
+        (setf (aref indexes index) value)
+        (incf index))
+      (finally
+       (assert (eql index (length indexes)))))
+    indexes))
 
 
-(defun attempt-to-merge-clusters-below-threshold (state)
+(defun prepare-reclustering-index-vector (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (bind ((count-of-merged (cl-ds.utils:swap-if %cluster-contents
-                                                 (curry #'>
-                                                        %merge-threshold)
-                                                 :key #'length))
-           (cluster-count (length %cluster-contents))
-           (count-for-merging (iterate
-                                (for i from (1- cluster-count) downto 0)
-                                (repeat count-of-merged)
+    (bind ((count-of-eliminated (cl-ds.utils:swap-if
+                                  %cluster-contents
+                                  (lambda (x)
+                                    (~> x
+                                        (clamp %merge-threshold
+                                               %split-threshold)
+                                        (= x)
+                                        not))
+                                  :key #'length))
+           (count-of-elements (iterate
+                                (for i
+                                     from (~> %cluster-contents length 1-)
+                                     downto 0)
+                                (repeat count-of-eliminated)
                                 (sum (~> %cluster-contents
                                          (aref i)
-                                         length)))))
-      (unless (zerop count-for-merging)
-        (iterate
-          (with index = 0)
-          (with indexes = (make-array count-for-merging
-                                      :element-type 'non-negative-fixnum))
-          (for i from (1- cluster-count) downto 0)
-          (repeat count-of-merged)
-          (for cluster = (aref %cluster-contents i))
-          (iterate
-            (for value in-vector cluster)
-            (setf (aref indexes index) value)
-            (incf index))
-          (finally
-           (let ((fresh-state (clone-state state
-                                           :indexes indexes)))
-             (build-pam-clusters fresh-state)
-             (decf (fill-pointer %cluster-contents) count-of-merged)
-             (map nil
-                  (rcurry #'vector-push-extend %cluster-contents)
-                  (read-cluster-contents fresh-state)))))))))
+                                         length))))
+           ((:dflet expected-cluster-count ())
+            (round (/ count-of-elements
+                      (/ (+ %split-threshold %merge-threshold)
+                         2)))))
+      (iterate
+        (while (zerop (expected-cluster-count)))
+        (until (eql count-of-eliminated (length %cluster-contents)))
+        (incf count-of-eliminated)
+        (incf count-of-elements (~>> (length %cluster-contents)
+                                     (- _ count-of-eliminated)
+                                     (aref %cluster-contents)
+                                     length)))
+      (values
+       (fill-reclustering-index-vector
+        state
+        (make-array count-of-elements :element-type 'non-negative-fixnum)
+        count-of-eliminated)
+       count-of-eliminated
+       (expected-cluster-count)))))
+
+
+(defun recluster-clusters-with-invalid-size (state)
+  (declare (optimize (speed 1)))
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (bind (((:values indexes count-of-eliminated expected-cluster-count)
+            (prepare-reclustering-index-vector state))
+           (fresh-state (make
+                         'pam-algorithm-state
+                         :indexes indexes
+                         :distance-matrix %distance-matrix
+                         :split-threshold %split-threshold
+                         :number-of-medoids expected-cluster-count
+                         :select-medoids-attempts-count %select-medoids-attempts-count
+                         :merge-threshold %merge-threshold
+                         :split-merge-attempts-count %split-merge-attempts-count
+                         :input-data %input-data)))
+      (build-pam-clusters fresh-state)
+      (decf (fill-pointer %cluster-contents) count-of-eliminated)
+      (map nil
+           (rcurry #'vector-push-extend %cluster-contents)
+           (read-cluster-contents fresh-state)))))
 
 
 (defun replace-indexes-in-cluster-with-data (state cluster)
@@ -291,6 +327,17 @@
         :silhouette silhouette))
 
 
+(defun index-mapping-function (state)
+  (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+    (let ((index-mapping %index-mapping))
+      (declare (type (simple-array fixnum *) %index-mapping))
+      (lambda (x)
+        (declare (optimize (speed 3)
+                           (safety 0)
+                           (debug 0)))
+        (aref index-mapping x)))))
+
+
 (defun initialize-distance-matrix (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (setf %distance-matrix
@@ -301,13 +348,15 @@
                       (funcall %key (aref %input-data a))
                       (funcall %key (aref %input-data b))))
            %indexes
-           :query-key (curry #'aref %index-mapping)))))
+           :query-key (index-mapping-function state)))))
 
 
 (defun draw-clara-sample (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (setf %all-indexes (shuffle %all-indexes))
-    (setf %indexes (take %sample-size %all-indexes))
+    (setf %all-indexes (shuffle %all-indexes)
+          %indexes (take %sample-size %all-indexes))
+    (assert (<= (length %indexes)
+                (length %index-mapping)))
     (iterate
       (for k from 0)
       (for i in-vector %indexes)
@@ -324,7 +373,9 @@
       (when (> mean-silhouette %mean-silhouette)
         (setf %silhouette silhouette
               %mean-silhouette mean-silhouette
-              %result-cluster-contents (map 'vector #'copy-array %cluster-contents))))))
+              %result-cluster-contents (map 'vector
+                                            #'copy-array
+                                            %cluster-contents))))))
 
 
 (defun assign-clara-data-to-medoids (state)

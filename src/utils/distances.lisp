@@ -154,10 +154,10 @@
            (to (funcall key to))
            (from (funcall key from)))
       (declare (type index size))
+      (assert (not (eql from to)))
       (cond
         ((or (>= from size) (>= to size))
          (error "No such position in the matrix."))
-        ((eql from to) nil)
         (t (let ((content (slot-value matrix '%content))
                  (from (min from to))
                  (to (max from to)))
