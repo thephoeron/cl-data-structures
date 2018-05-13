@@ -98,6 +98,7 @@
       (finally (return (coerce (/ sum (length cluster))
                                'single-float))))))
 
+
 (-> sum-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
     single-float)
 (defun sum-distance-to-element (state element cluster)
