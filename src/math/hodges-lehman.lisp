@@ -1,17 +1,20 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass hodges-lehman-estimator-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass hodges-lehman-estimator-function
+    (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass approximated-hodges-lehman-estimator-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass approximated-hodges-lehman-estimator-function
+    (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric approximated-hodges-lehman-estimator (range sample-size sample-count &key key)
+(defgeneric approximated-hodges-lehman-estimator
+    (range sample-size sample-count &key key)
   (:generic-function-class approximated-hodges-lehman-estimator-function)
   (:method (range sample-size sample-count &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function range
@@ -29,7 +32,8 @@
                                                :key key)))
 
 
-(defun calculate-hodges-lehman-estimator (&key vector &allow-other-keys)
+(defun calculate-hodges-lehman-estimator
+    (&key vector &allow-other-keys)
   (declare (type (vector real) vector))
   (bind ((length (length vector))
          (median-length (/ (* length (1+ length)) 2))
