@@ -49,5 +49,7 @@
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :element-type 'real))
+          (cl-ds.alg:to-vector range :key key
+                                     :element-type 'real
+                                     :force-copy nil))
         #'calculate-hodges-lehman-estimator))
