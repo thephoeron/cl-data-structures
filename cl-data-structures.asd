@@ -123,7 +123,6 @@
                              (:file "clara")))
                (:module "math"
                 :components ((:file "package")
-                             (:file "common")
                              (:file "average")
                              (:file "variance")
                              (:file "simple-linear-regression")
@@ -132,6 +131,7 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
+                             (:file "bootstrap")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "statistical-summary-tests")

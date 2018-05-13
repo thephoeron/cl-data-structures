@@ -8,8 +8,8 @@
   (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.math)
   (:export
-   #:approximated-hodges-lehman-estimator
    #:average
+   #:bootstrap
    #:hodges-lehman-estimator
    #:median-absolute-deviation
    #:moments

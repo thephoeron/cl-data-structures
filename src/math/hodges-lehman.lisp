@@ -7,23 +7,6 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass approximated-hodges-lehman-estimator-function
-    (cl-ds.alg.meta:multi-aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defgeneric approximated-hodges-lehman-estimator
-    (range sample-size samples-count &key key)
-  (:generic-function-class approximated-hodges-lehman-estimator-function)
-  (:method (range sample-size samples-count &key (key #'identity))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'approximated-hodges-lehman-estimator
-                                               :key key
-                                               :sample-size sample-size
-                                               :samples-count samples-count)))
-
-
 (defgeneric hodges-lehman-estimator (range &key key)
   (:generic-function-class hodges-lehman-estimator-function)
   (:method (range &key (key #'identity))
@@ -67,23 +50,4 @@
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
           (cl-ds.alg:to-vector range :key key :element-type 'real))
-
         #'calculate-hodges-lehman-estimator))
-
-
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function approximated-hodges-lehman-estimator-function)
-     &rest all
-     &key key samples-count sample-size
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :element-type 'real))
-
-        (bootstrap (&key vector &allow-other-keys)
-                   vector
-                   data
-                   (calculate-hodges-lehman-estimator :vector data)
-                   samples-count
-                   sample-size)))

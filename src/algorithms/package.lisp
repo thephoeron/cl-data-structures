@@ -62,6 +62,8 @@
    #:make-hash-table-range
    #:on-each
    #:proxy-box-range
+   #:proxy-range-aggregator-outer-fn
+   #:make-proxy
    #:proxy-range
    #:split-into-chunks
    #:summary

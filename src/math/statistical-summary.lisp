@@ -17,8 +17,12 @@
 (flet ((final (&key average moments &allow-other-keys)
          (bind ((variance (cl-ds:at moments 2))
                 (sd (sqrt variance))
-                (skewness (/ (cl-ds:at moments 3) (expt sd 3)))
-                (kurtosis (/ (cl-ds:at moments 4) (expt sd 4))))
+                (skewness (if (zerop sd)
+                              0.0
+                              (/ (cl-ds:at moments 3) (expt sd 3))))
+                (kurtosis (if (zerop sd)
+                              0.0
+                              (/ (cl-ds:at moments 4) (expt sd 4)))))
            (cl-ds.alg:make-hash-table-range
             (dict :average average
                   :variance variance
