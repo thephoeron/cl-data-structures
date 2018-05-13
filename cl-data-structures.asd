@@ -137,7 +137,7 @@
                              (:test-file "simple-linear-regression-tests")))
                (:module "streaming-algorithms"
                 :components ((:file "package")
-                             (:file "estimated-set-cardinality")
+                             (:file "approximated-set-cardinality")
                              (:file "docstrings")))
                (:module "metric-space"
                 :components ((:file "packages")

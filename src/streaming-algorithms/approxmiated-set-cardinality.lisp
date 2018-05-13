@@ -1,12 +1,12 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass estimated-set-cardinality-result ()
+(defclass approximated-set-cardinality-result ()
   ((%bits :initarg :bits)
    (%registers :initarg :registers)))
 
 
-(defmethod cl-ds:value ((state estimated-set-cardinality-result))
+(defmethod cl-ds:value ((state approximated-set-cardinality-result))
   (bind (((:slots %bits %registers) state)
          (size (length %registers))
          (alpha-mm (* (cond ((eql 4 %bits) 0.673)
@@ -31,7 +31,7 @@
 
 
 (cl-ds.alg.meta:define-aggregation-function
-    estimated-set-cardinality estimated-set-cardinality-function
+    approximated-set-cardinality approximated-set-cardinality-function
 
   (:range bits hash-fn &key key)
   (:range bits hash-fn &key (key #'identity))
@@ -58,6 +58,6 @@
      (when (> rank (aref %registers index))
        (setf (aref %registers index) rank))))
 
-  ((make 'estimated-set-cardinality-result
+  ((make 'approximated-set-cardinality-result
          :bits %bits
          :registers %registers)))

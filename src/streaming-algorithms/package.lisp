@@ -8,4 +8,4 @@
   (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.sa)
   (:export
-   #:estimated-set-cardinality))
+   #:approxmiated-set-cardinality))
