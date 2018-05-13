@@ -146,16 +146,17 @@
 
 (-> choose-effective-medoid (pam-algorithm-state (vector t)) boolean)
 (defun choose-effective-medoid (state cluster)
-  (declare (optimize (speed 1)))
+  (declare (optimize (speed 3) (space 0) (safety 0) (debug 0)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (bind (((:dflet swap-medoid (i))
+            (declare (type non-negative-fixnum i))
             (rotatef (aref cluster i) (aref cluster 0)))
            ((:dflet total-distance-to-medoid (&optional old-cost))
             (iterate
               (for i from 1 below (length cluster))
               (for distance = (cl-ds.utils:distance %distance-matrix
-                                                    (aref cluster 0)
-                                                    (aref cluster i)))
+                                                    (the fixnum (aref cluster 0))
+                                                    (the fixnum (aref cluster i))))
               (assert distance)
               (sum distance into sum)
               (unless (null old-cost)
