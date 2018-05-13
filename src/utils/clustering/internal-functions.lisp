@@ -102,11 +102,12 @@
     single-float)
 (defun sum-distance-to-element (state element cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
     (iterate
       (for c in-vector cluster)
       (for distance = (cl-ds.utils:distance %distance-matrix
-                                            c element))
-      (assert distance)
+                                            (the fixnum c)
+                                            (the fixnum element)))
       (sum distance into sum)
       (finally (return (coerce (/ sum (length cluster))
                                'single-float))))))
