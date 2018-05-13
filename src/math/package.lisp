@@ -10,7 +10,7 @@
   (:export
    #:average
    #:bootstrap
-   #:hodges-lehman-estimator
+   #:hodges-lehmann-estimator
    #:median-absolute-deviation
    #:moments
    #:simple-linear-regression

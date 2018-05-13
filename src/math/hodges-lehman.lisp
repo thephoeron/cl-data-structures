@@ -1,17 +1,17 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass hodges-lehman-estimator-function
+(defclass hodges-lehmann-estimator-function
     (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric hodges-lehman-estimator (range &key key)
-  (:generic-function-class hodges-lehman-estimator-function)
+(defgeneric hodges-lehmann-estimator (range &key key)
+  (:generic-function-class hodges-lehmann-estimator-function)
   (:method (range &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'hodges-lehman-estimator
+                                               #'hodges-lehmann-estimator
                                                :key key)))
 
 
@@ -42,7 +42,7 @@
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function hodges-lehman-estimator-function)
+    ((function hodges-lehmann-estimator-function)
      &rest all
      &key key
      &allow-other-keys)
