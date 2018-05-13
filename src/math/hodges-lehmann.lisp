@@ -15,7 +15,7 @@
                                                :key key)))
 
 
-(defun calculate-hodges-lehman-estimator
+(defun calculate-hodges-lehmann-estimator
     (&key vector &allow-other-keys)
   (declare (type (vector real) vector))
   (bind ((length (length vector))
@@ -23,17 +23,18 @@
          (middle (truncate median-length 2))
          (median-buffer (make-array median-length
                                     :element-type 'single-float))
-         (position 0))
-    (iterate
-      (for i from 0 below length)
-      (iterate
-        (for j from i below length)
-        (setf (aref median-buffer (finc position))
-              (coerce (/ (+ (aref vector i)
-                            (aref vector j))
-                         2)
-                      'single-float))))
-    (setf median-buffer (sort median-buffer #'<))
+         (position 0)
+         (indexes (~> length iota (coerce '(vector fixnum))))
+         ((:dflet average-of-pairs (i))
+          (iterate
+            (for j from i below length)
+            (setf (aref median-buffer (finc position))
+                  (coerce (/ (+ (aref vector i)
+                                (aref vector j))
+                             2)
+                          'single-float)))))
+    (lparallel:pmap nil #'average-of-pairs indexes)
+    (setf median-buffer (lparallel:psort median-buffer #'<))
     (if (oddp median-length)
         (aref median-buffer middle)
         (/ (+ (aref median-buffer middle)
@@ -52,4 +53,4 @@
           (cl-ds.alg:to-vector range :key key
                                      :element-type 'real
                                      :force-copy nil))
-        #'calculate-hodges-lehman-estimator))
+        #'calculate-hodges-lehmann-estimator))

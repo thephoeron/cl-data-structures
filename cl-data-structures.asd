@@ -127,7 +127,7 @@
                              (:file "variance")
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
-                             (:file "hodges-lehman")
+                             (:file "hodges-lehmann")
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
