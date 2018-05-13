@@ -14,14 +14,14 @@
 
 
 (defgeneric approximated-hodges-lehman-estimator
-    (range sample-size sample-count &key key)
+    (range sample-size samples-count &key key)
   (:generic-function-class approximated-hodges-lehman-estimator-function)
-  (:method (range sample-size sample-count &key (key #'identity))
+  (:method (range sample-size samples-count &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function range
                                                #'approximated-hodges-lehman-estimator
                                                :key key
                                                :sample-size sample-size
-                                               :sample-count sample-count)))
+                                               :samples-count samples-count)))
 
 
 (defgeneric hodges-lehman-estimator (range &key key)
@@ -74,7 +74,7 @@
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
     ((function approximated-hodges-lehman-estimator-function)
      &rest all
-     &key key sample-count sample-size
+     &key key samples-count sample-size
      &allow-other-keys)
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
@@ -83,8 +83,8 @@
 
         (lambda (&key vector &allow-other-keys)
           (iterate
-            (repeat sample-count)
+            (repeat samples-count)
             (sum (calculate-hodges-lehman-estimator
                   :vector (cl-ds.utils:draw-sample-vector vector sample-size))
                  into sum)
-            (finally (return (/ sum sample-count)))))))
+            (finally (return (/ sum samples-count)))))))
