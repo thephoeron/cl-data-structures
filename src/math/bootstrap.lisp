@@ -122,15 +122,17 @@
 
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator bootstrap-aggregator))
   (setf (access-finished aggregator) t)
-  (iterate
-    (with samples-vector = (make-array (read-samples-count aggregator)
-                                       :element-type 'real))
-    (for i from 0 below (read-samples-count aggregator))
-    (for sample = (cl-ds.utils:draw-sample-vector (read-whole-content aggregator)
-                                                  (read-samples-count aggregator)))
-    (for fresh-aggregator = (funcall (read-outer-fn aggregator)))
-    (for result = (bootstrap-sample fresh-aggregator
-                                    sample
-                                    (access-function aggregator)))
-    (setf (aref samples-vector i) result)
-    (finally (setf (access-final-result aggregator) (statistical-summary samples-vector)))))
+  (let ((samples-vector (make-array (read-samples-count aggregator) :element-type t))
+        (whole-content (read-whole-content aggregator))
+        (samples-count (read-samples-count aggregator))
+        (outer-fn (read-outer-fn aggregator))
+        (function (access-function aggregator)))
+    (map-into samples-vector
+              (lambda ()
+                (let* ((sample (cl-ds.utils:draw-sample-vector whole-content
+                                                               samples-count))
+                       (fresh-aggregator (funcall outer-fn)))
+                  (lparallel:future (bootstrap-sample fresh-aggregator sample function)))))
+    (map-into samples-vector #'lparallel:force samples-vector)
+    (setf (access-final-result aggregator)
+          (statistical-summary samples-vector))))

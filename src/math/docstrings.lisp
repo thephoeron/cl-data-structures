@@ -23,17 +23,12 @@
                 (key "Function used to extract value from element."))
     :notes ("This estimator has high breakdown point."
             "Time complexity greater then cubic. Memory complexity quadratic."
-            "Use approximated version of this function for more scalable solution.")
-    :see-also (approximated-hodges-lehman-estimator)))
+            "Use bootstrapping for more scalable solution.")
+    :see-also (bootstrap)))
 
   (function
-   approximated-hodges-lehman-estimator
-   (:description "Estimates Hodges-Lehman estimator for range as average from samples."
-    :arguments ((range "Object to aggregate")
-                (sample-size "Size of the sample to draw for calculation.")
-                (samples-count "How many samples should be drawn?")
-                (key "Function used to extract value from element."))
-    :notes ("This estimator has high breakdown point.")))
+   bootstrap
+   (:description "Changes aggregation into bootstrapping schema. Draws multiple samples, applies aggregation to each of those, and finally uses statistical-summary on the result. Reduces time needed to calculate functions with expensive complexity."))
 
   (function
    simple-linear-regression
