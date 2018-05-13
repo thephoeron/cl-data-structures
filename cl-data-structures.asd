@@ -118,6 +118,9 @@
                              (:test-file "without-test")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
+               (:module "clustering"
+                :components ((:file "package")
+                             (:file "clara")))
                (:module "math"
                 :components ((:file "package")
                              (:file "average")

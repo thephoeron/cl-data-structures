@@ -4,8 +4,8 @@
 (cl-ds.alg.meta:define-aggregation-function
     to-vector to-vector-function
 
-  (:range &key key element-type)
-  (:range &key (key #'identity) (element-type t))
+  (:range &key key element-type force-copy)
+  (:range &key (key #'identity) (element-type t) (force-copy t))
 
   (%vector)
 
@@ -17,3 +17,15 @@
    (vector-push-extend element %vector))
 
   (%vector))
+
+
+(defmethod to-vector ((range vector)
+                      &key
+                        (key #'identity)
+                        (element-type t)
+                        (force-copy t))
+  (if (and (not force-copy)
+           (subtypep element-type (array-element-type range))
+           (eq key #'identity))
+      range
+      (call-next-method)))
