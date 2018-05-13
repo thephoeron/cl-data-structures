@@ -123,6 +123,7 @@
                              (:file "clara")))
                (:module "math"
                 :components ((:file "package")
+                             (:file "common")
                              (:file "average")
                              (:file "variance")
                              (:file "simple-linear-regression")

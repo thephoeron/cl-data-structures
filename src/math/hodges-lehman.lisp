@@ -81,10 +81,9 @@
           (declare (ignore all))
           (cl-ds.alg:to-vector range :key key :element-type 'real))
 
-        (lambda (&key vector &allow-other-keys)
-          (iterate
-            (repeat samples-count)
-            (sum (calculate-hodges-lehman-estimator
-                  :vector (cl-ds.utils:draw-sample-vector vector sample-size))
-                 into sum)
-            (finally (return (/ sum samples-count)))))))
+        (bootstrap (&key vector &allow-other-keys)
+                   vector
+                   data
+                   (calculate-hodges-lehman-estimator :vector data)
+                   samples-count
+                   sample-size)))
