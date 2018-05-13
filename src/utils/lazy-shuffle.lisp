@@ -17,3 +17,15 @@
                         (gethash next-random table))
                (gethash (finc index) table)))
             (t nil)))))
+
+
+(-> draw-sample-vector (vector positive-fixnum) vector)
+(defun draw-sample-vector (input size)
+  (iterate
+    (with generator = (lazy-shuffle 0 (length input)))
+    (with size = (min size (length input)))
+    (with result = (make-array size
+                               :element-type (array-element-type input)))
+    (for i from 0 below size)
+    (setf (aref result i) (aref input (funcall generator)))
+    (finally (return result))))

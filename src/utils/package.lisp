@@ -16,6 +16,7 @@
    #:copy-without
    #:distance
    #:distance-matrix
+   #:draw-sample-vector
    #:each-in-matrix
    #:end-execution
    #:erase-from-vector
