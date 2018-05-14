@@ -7,16 +7,17 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric hodges-lehmann-estimator (range &key key)
+(defgeneric hodges-lehmann-estimator (range &key key parallel)
   (:generic-function-class hodges-lehmann-estimator-function)
-  (:method (range &key (key #'identity))
+  (:method (range &key (key #'identity) (parallel nil))
     (cl-ds.alg.meta:apply-aggregation-function range
                                                #'hodges-lehmann-estimator
+                                               :parallel parallel
                                                :key key)))
 
 
 (defun calculate-hodges-lehmann-estimator
-    (&key vector &allow-other-keys)
+    (parallel &key vector &allow-other-keys)
   (declare (type (vector real) vector))
   (bind ((length (length vector))
          ((:dflet index (i j))
@@ -36,8 +37,10 @@
                   (/ (+ (aref vector i)
                         (aref vector j))
                      2)))))
-    (map nil #'average-of-pairs indexes)
-    (setf median-buffer (sort median-buffer #'<))
+    (funcall (if parallel #'lparallel:pmap #'map)
+             nil #'average-of-pairs indexes)
+    (setf median-buffer (funcall (if parallel #'lparallel:psort #'sort)
+                                 median-buffer #'<))
     (if (oddp median-length)
         (aref median-buffer middle)
         (/ (+ (aref median-buffer middle)
@@ -56,4 +59,4 @@
           (cl-ds.alg:to-vector range :key key
                                      :element-type 'real
                                      :force-copy nil))
-        #'calculate-hodges-lehmann-estimator))
+        (curry #'calculate-hodges-lehmann-estimator parallel)))
