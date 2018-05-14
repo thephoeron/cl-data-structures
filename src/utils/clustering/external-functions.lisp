@@ -114,14 +114,26 @@
                                            merge)
   (declare (optimize (debug 3)))
   (assert (< 0 from to))
-  (iterate
-    (with final = nil)
-    (for i from from to to)
-    (for result = (clara input-data i metric-type metric-fn sample-size sample-count
-                         :key key :select-medoids-attempts-count select-medoids-attempts-count
-                         :attempts attempts :split split :merge merge))
-    (for mean-silhouette = (~> result read-silhouette mean))
-    (maximize mean-silhouette into maximum)
-    (when (= mean-silhouette maximum)
-      (setf final result))
-    (finally (return result))))
+  (let ((vector (make-array (1+ (- to from)))))
+    (iterate
+      (for index from 0 below (length vector))
+      (for i from from to to)
+      (setf (aref vector index)
+            (bt:make-thread
+             (let ((i i))
+               (lambda ()
+                 (clara input-data i metric-type metric-fn sample-size sample-count
+                        :key key
+                        :select-medoids-attempts-count select-medoids-attempts-count
+                        :attempts attempts
+                        :split split
+                        :merge merge))))))
+    (iterate
+      (with final = nil)
+      (for thread in-vector vector)
+      (for result = (bt:join-thread thread))
+      (for mean-silhouette = (~> result read-silhouette mean))
+      (maximize mean-silhouette into maximum)
+      (when (= mean-silhouette maximum)
+        (setf final result))
+      (finally (return result)))))
