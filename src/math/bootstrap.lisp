@@ -4,8 +4,14 @@
 (defclass bootstrap-proxy (cl-ds.alg:proxy-range)
   ((%sample-size :initarg :sample-size
                  :reader read-sample-size)
+   (%key :initarg :key
+         :reader read-key)
+   (%compare :initarg :compare
+             :reader read-compare)
    (%confidence :initarg :confidence
                 :reader read-confidence)
+   (%parallel :initarg :parallel
+              :reader read-parallel)
    (%samples-count :initarg :samples-count
                    :reader read-samples-count)))
 
@@ -28,12 +34,18 @@
 (defclass bootstrap-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%outer-fn :initarg :outer-fn
               :reader read-outer-fn)
+   (%key :initarg :key
+         :reader read-key)
+   (%compare :initarg :compare
+             :reader read-compare)
    (%confidence :initarg :confidence
                 :reader read-confidence)
    (%whole-content :initform (vect)
                    :reader read-whole-content)
    (%sample-size :initarg :sample-size
                  :reader read-sample-size)
+   (%parallel :initarg :parallel
+              :reader read-parallel)
    (%function :initarg :function
               :accessor access-function)
    (final-result :initform nil
@@ -57,6 +69,9 @@
       (make 'bootstrap-aggregator
             :outer-fn outer-fn
             :function function
+            :key (read-key range)
+            :compare (read-compare range)
+            :parallel (read-parallel range)
             :confidence (read-confidence range)
             :sample-size (read-sample-size range)
             :samples-count (read-samples-count range)))))
@@ -67,45 +82,66 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric bootstrap (range sample-size samples-count &key confidence)
+(defgeneric bootstrap (range sample-size samples-count
+                       &key confidence key compare parallel)
   (:generic-function-class bootstrap-function)
-  (:method (range sample-size samples-count &key (confidence 0.95))
+  (:method (range sample-size samples-count
+            &key (confidence 0.95) (key #'identity) (compare #'<) (parallel t))
     (assert (< 0.0 confidence 1.0))
     (assert (< 8 samples-count))
     (assert (< 8 sample-size))
     (cl-ds.alg.meta:apply-range-function range #'bootstrap
                                          :confidence confidence
+                                         :key key
+                                         :compare compare
+                                         :parallel parallel
                                          :sample-size sample-size
                                          :samples-count samples-count)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn bootstrap-function)
-                                       &rest all &key confidence sample-size samples-count)
+                                       &rest all
+                                       &key confidence sample-size samples-count key compare parallel)
   (declare (ignore all))
   (cl-ds.alg:make-proxy range 'forward-bootstrap-proxy
                         :sample-size sample-size
                         :confidence confidence
+                        :key key
+                        :compare compare
+                        :parallel parallel
                         :samples-count samples-count))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-bidirectional-range)
                                        (fn bootstrap-function)
-                                       &rest all &key confidence sample-size samples-count)
+                                       &rest all
+                                       &key
+                                         confidence sample-size parallel
+                                         samples-count key compare)
   (declare (ignore all))
   (cl-ds.alg:make-proxy range 'bidirectional-bootstrap-proxy
                         :sample-size sample-size
                         :confidence confidence
+                        :key key
+                        :compare compare
+                        :parallel parallel
                         :samples-count samples-count))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
                                        (fn bootstrap-function)
-                                       &rest all &key confidence sample-size samples-count)
+                                       &rest all
+                                       &key
+                                         confidence sample-size parallel
+                                         samples-count key compare)
   (declare (ignore all))
   (cl-ds.alg:make-proxy range 'random-access-bootstrap-proxy
                         :sample-size sample-size
                         :confidence confidence
+                        :key key
+                        :compare compare
+                        :parallel parallel
                         :samples-count samples-count))
 
 
@@ -150,19 +186,18 @@
          (confidence (read-confidence aggregator))
          (offset (~> confidence (/ 2) (* samples-count)))
          (half (/ samples-count 2))
+         (parallel (read-parallel aggregator))
          (lower-percentail (floor (- half offset)))
          (higher-percentail (ceiling (+ half offset))))
-    (map-into samples-vector
-              (lambda ()
-                (let* ((sample (bootstrap-sample whole-content sample-size))
-                       (fresh-aggregator (funcall outer-fn)))
-                  (lparallel:future (aggregate-sample fresh-aggregator
-                                                      sample function)))))
-    (map-into samples-vector
-              (compose (rcurry #'coerce 'double-float)
-                       #'lparallel:force)
-              samples-vector)
-    (setf samples-vector (lparallel:psort samples-vector #'<))
+    (funcall (if parallel #'lparallel:pmap-into #'map-into)
+             samples-vector
+             (lambda ()
+               (let* ((sample (bootstrap-sample whole-content sample-size))
+                      (fresh-aggregator (funcall outer-fn)))
+                 (aggregate-sample fresh-aggregator sample function))))
+    (setf samples-vector (lparallel:psort samples-vector
+                                          (read-compare aggregator)
+                                          :key (read-key aggregator)))
     (setf (access-final-result aggregator)
           (list* (aref samples-vector lower-percentail)
                  (aref samples-vector higher-percentail)))))
