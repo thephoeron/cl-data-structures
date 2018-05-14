@@ -28,7 +28,7 @@
 
   (function
    bootstrap
-   (:description "Changes aggregation into bootstrapping schema. Draws multiple samples, applies aggregation to each of those, and finally uses statistical-summary on the result. Reduces time needed to calculate functions with expensive complexity."))
+   (:description "Changes aggregation into bootstrapping schema using percentail method. Reduces time needed to calculate functions with expensive complexity."))
 
   (function
    simple-linear-regression
