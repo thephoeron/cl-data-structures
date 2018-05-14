@@ -148,12 +148,10 @@
          (outer-fn (read-outer-fn aggregator))
          (function (access-function aggregator))
          (confidence (read-confidence aggregator))
-         (lower-percentail (~> (- 1 confidence)
-                               (* (1- samples-count))
-                               floor))
-         (higher-percentail (~> confidence
-                                (* (1- samples-count))
-                                ceiling)))
+         (offset (~> confidence (/ 2) (* samples-count)))
+         (half (/ samples-count 2))
+         (lower-percentail (floor (- half offset)))
+         (higher-percentail (ceiling (+ half offset))))
     (map-into samples-vector
               (lambda ()
                 (let* ((sample (bootstrap-sample whole-content sample-size))
