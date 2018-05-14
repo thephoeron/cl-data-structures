@@ -149,7 +149,7 @@
          (function (access-function aggregator))
          (confidence (read-confidence aggregator))
          (lower-percentail (max 0 (1- (floor (* (- 1 confidence) samples-count)))))
-         (higher-percentail (max (1- (ceiling (* confidence samples-count))))))
+         (higher-percentail (max 0 (1- (ceiling (* confidence samples-count))))))
     (map-into samples-vector
               (lambda ()
                 (let* ((sample (bootstrap-sample whole-content sample-size))
