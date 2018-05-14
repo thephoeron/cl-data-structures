@@ -148,13 +148,16 @@
          (outer-fn (read-outer-fn aggregator))
          (function (access-function aggregator))
          (confidence (read-confidence aggregator))
-         (lower-percentail (max 0 (1- (floor (* (- 1 confidence) samples-count)))))
-         (higher-percentail (max 0 (1- (ceiling (* confidence samples-count))))))
+         (lower-percentail (max 0 (1- (floor (* (- 1 confidence)
+                                                samples-count)))))
+         (higher-percentail (max 0 (1- (ceiling (* confidence
+                                                   samples-count))))))
     (map-into samples-vector
               (lambda ()
                 (let* ((sample (bootstrap-sample whole-content sample-size))
                        (fresh-aggregator (funcall outer-fn)))
-                  (lparallel:future (aggregate-sample fresh-aggregator sample function)))))
+                  (lparallel:future (aggregate-sample fresh-aggregator
+                                                      sample function)))))
     (map-into samples-vector
               (compose (rcurry #'coerce 'double-float)
                        #'lparallel:force)
