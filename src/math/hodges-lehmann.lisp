@@ -51,7 +51,7 @@
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
     ((function hodges-lehmann-estimator-function)
      &rest all
-     &key key
+     &key parallel key
      &allow-other-keys)
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
