@@ -127,7 +127,8 @@
                         :select-medoids-attempts-count select-medoids-attempts-count
                         :attempts attempts
                         :split split
-                        :merge merge))))))
+                        :merge merge)))
+             :name "clara-variable-number-of-medoids")))
     (iterate
       (with final = nil)
       (for thread in-vector vector)
