@@ -102,7 +102,9 @@
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn bootstrap-function)
                                        &rest all
-                                       &key confidence sample-size samples-count key compare parallel)
+                                       &key
+                                         confidence sample-size
+                                         samples-count key compare parallel)
   (declare (ignore all))
   (cl-ds.alg:make-proxy range 'forward-bootstrap-proxy
                         :sample-size sample-size
