@@ -162,7 +162,7 @@
               (assert distance)
               (sum distance into sum)
               (unless (null old-cost)
-                (while (< sum old-cost)))
+                (while (<= sum old-cost)))
               (finally (return sum))))
            (improved-something nil))
       (cl-ds.utils:optimize-value ((minimal-distance-to-medoid
@@ -200,7 +200,7 @@
               (with attempts = (read-select-medoids-attempts-count state))
               (for i from 0)
               (unless (null attempts)
-                (when (eql i attempts)
+                (unless (< i attempts)
                   (leave t)))
               (when (zerop (rem i 5))
                 (clear-cluster-contents state)
@@ -289,6 +289,7 @@
 (defun recluster-clusters-with-invalid-size (state)
   (declare (optimize (speed 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (setf %cluster-contents (shuffle %cluster-contents))
     (bind (((:values indexes count-of-eliminated expected-cluster-count)
             (prepare-reclustering-index-vector state))
            (fresh-state (make
