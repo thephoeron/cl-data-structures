@@ -138,7 +138,7 @@
                              %cluster-contents))
            (distance-difference (intra inter)
              (if (zerop (max intra inter))
-                 0.0
+                 -1.0
                  (/ (- inter intra) (max intra inter)))))
       (map 'vector
            #'distance-difference
