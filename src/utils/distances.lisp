@@ -1,7 +1,7 @@
 (in-package #:cl-ds.utils)
 
 
-(defclass distance-matrix ()
+(defclass half-matrix ()
   ((%size :type fixnum
           :reader read-size
           :initarg :size)
@@ -15,7 +15,7 @@
 
 
 (defgeneric mutate-matrix (destination fn m1 &rest more)
-  (:method ((destination distance-matrix) fn m1 &rest more)
+  (:method ((destination half-matrix) fn m1 &rest more)
     (let ((dest (read-content destination))
           (more (cons m1 more)))
       (unless (every (compose (curry #'eql (read-size destination))
@@ -38,14 +38,15 @@
                 column)))
 
 
-(defun make-distance-matrix (type size)
+(defun make-half-matrix (type size &key (query-key #'identity))
   (let ((result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                      (1- size)
                                                                      (1- size)))
                             :element-type type)))
-    (assure distance-matrix
-      (make 'distance-matrix
+    (assure half-matrix
+      (make 'half-matrix
             :size size
+            :key query-key
             :content result))))
 
 
@@ -55,7 +56,7 @@
                                                     (key-context #'identity)
                                                     (function-context #'identity))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0))
-           (type distance-matrix matrix)
+           (type half-matrix matrix)
            (type sequence vector)
            (type function function))
   (assert (<= (length sequence) (read-size matrix)))
@@ -94,7 +95,7 @@
                                                (:query-key (-> (t) t))
                                                (:key-context (-> (t) t))
                                                (:function-context (-> (t) t)))
-    distance-matrix)
+    half-matrix)
 (defun parallel-make-distance-matrix-from-vector (type function sequence
                                                   &key
                                                     (key #'identity)
@@ -102,7 +103,7 @@
                                                     (function-context #'identity)
                                                     (query-key #'identity))
   (declare (optimize (speed 3)))
-  (let ((result (make-distance-matrix type (length sequence))))
+  (let ((result (make-half-matrix type (length sequence))))
     (parallel-fill-distance-matrix-from-vector result function sequence
                                                :key key
                                                :key-context key-context
@@ -137,22 +138,22 @@
                                       &key
                                       (:key (-> (t) t))
                                       (:query-key (-> (t) t)))
-    distance-matrix)
+    half-matrix)
 (defun make-distance-matrix-from-vector (type function sequence
                                          &key
                                            (key #'identity)
                                            (query-key #'identity))
   (when (< (length sequence) 2)
     (error "Can't create distance matrix for vector of size ~a" (length sequence)))
-  (let ((result (make-distance-matrix type (length sequence))))
+  (let ((result (make-half-matrix type (length sequence))))
     (fill-distance-matrix-from-vector result function sequence :key key)
     (setf (slot-value result '%key) query-key)
     result))
 
 
-(defun distance (matrix from to)
+(defun mref (matrix from to)
   (declare (type index from to)
-           (type distance-matrix matrix)
+           (type half-matrix matrix)
            (optimize (speed 3)
                      (safety 0)
                      (space 0)
@@ -173,9 +174,13 @@
            (aref content (index-in-content-of-distance-matrix size from to)))))))
 
 
-(defun (setf distance) (value matrix from to)
+(defun distance (matrix from to)
+  (mref matrix from to))
+
+
+(defun (setf mref) (value matrix from to)
   (declare (type index from to)
-           (type distance-matrix matrix)
+           (type half-matrix matrix)
            (optimize (speed 3) (safety 0)
                      (space 0) (debug 0)))
   (let* ((size (slot-value matrix '%size))
@@ -196,8 +201,12 @@
                 value))))))
 
 
+(defun (setf distance) (value matrix from to)
+  (setf (mref matrix from to) value))
+
+
 (defgeneric each-in-matrix (fn matrix)
-  (:method (fn (matrix distance-matrix))
+  (:method (fn (matrix half-matrix))
     (declare (type (-> (index index single-float) t) fn))
     (with-vectors ((content (slot-value matrix '%content)))
       (iterate

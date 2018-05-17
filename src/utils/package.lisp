@@ -14,8 +14,9 @@
    #:cond+
    #:cond-compare
    #:copy-without
+   #:mref
    #:distance
-   #:distance-matrix
+   #:half-matrix
    #:draw-sample-vector
    #:each-in-matrix
    #:end-execution
@@ -33,7 +34,7 @@
    #:let-generator
    #:lexicographic-compare
    #:lower-bound
-   #:make-distance-matrix
+   #:make-half-matrix
    #:make-distance-matrix-from-vector
    #:make-future-carousel
    #:make-pipe-fragment

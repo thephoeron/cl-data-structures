@@ -125,7 +125,7 @@
                 :components ((:file "package")
                              (:file "average")
                              (:file "variance")
-                             (:file "information-gain")
+                             (:file "kl-divergence")
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
                              (:file "hodges-lehmann")

@@ -7,7 +7,6 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:*traverse-callback*
    #:across
    #:add
    #:add!
@@ -37,6 +36,7 @@
    #:expression
    #:force
    #:found
+   #:field
    #:freeze!
    #:frozenp
    #:functional
@@ -80,9 +80,7 @@
    #:read-class
    #:read-value
    #:reset!
-   #:send
    #:size
-   #:special-traverse
    #:take-out
    #:take-out!
    #:textual-error

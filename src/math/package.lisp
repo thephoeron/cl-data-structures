@@ -13,6 +13,7 @@
    #:hodges-lehmann-estimator
    #:harmonic-average
    #:median-absolute-deviation
+   #:kl-divergence-matrix
    #:moments
    #:simple-linear-regression
    #:standard-deviation
