@@ -23,3 +23,25 @@
   (assert (endp more))
   (gethash location (read-arguments container)))
 
+
+(defgeneric validate-field (function field))
+
+
+(defmethod validate-field :around (function field)
+  (unless (call-next-method)
+    (error "Invalid field members.")))
+
+
+(defun validate-fields (function fields)
+  (map nil (curry #'validate-field function) fields))
+
+
+(eval-always
+  (defun generate-validation-form (body field-name)
+    t))
+
+
+(defmacro define-validation-for-fields (function &body body)
+  (with-gensyms (!fn !field)
+    `(defmethod validate-field ((!fn ,function) ,!field)
+       ,(generate-validation-form body !field))))
