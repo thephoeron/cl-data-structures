@@ -15,39 +15,108 @@
                                                :key key)))
 
 
-(defun calculate-information-gain-between (vector field other-field)
-  (declare (type (vector vector)
-                 (list field other-field))))
+(defclass info-field ()
+  ((%name :initarg :name
+          :reader read-name)
+   (%type :initarg :type
+          :reader read-type)
+   (%data :initarg :data
+          :reader read-data)
+   (%selector-function :initarg :selector-function
+                       :reader read-selector-function
+                       :initform #'identity)))
 
 
-(defun calculate-information-gain (vector field fields)
-  (declare (type (vector vector)
-                 (list fields)
-                 (list field)))
+(defun continuesp (field)
+  (eq (read-type field)
+      :continues))
+
+
+(defun calculate-information-gain-between (field1 field2)
+  (bind ((table1 (make-hash-table))
+         (table2 (make-hash-table))
+         (table3 (make-hash-table :test 'equal))
+         (vector1 (read-data field1))
+         (vector2 (read-data field2))
+         (length (length vector1))
+         ((:dflet normalize-table (table))
+          (iterate
+            (for (key value) in-hashtable table)
+            (setf (gethash key table) (/ value length)))))
+    (iterate
+      (with function1 = (read-selector-function field1))
+      (with function2 = (read-selector-function field2))
+      (for v1 in-vector vector1)
+      (for v2 in-vector vector2)
+      (for value1 = (funcall function1 v1))
+      (for value2 = (funcall function2 v2))
+      (incf (gethash value1 table1 0))
+      (incf (gethash value2 table2 0))
+      (incf (gethash (cons value1 value2) table3 0)))
+    (normalize-table table1)
+    (normalize-table table2)
+    (iterate
+      (for (key p3) in-hashtable table3)
+      (for p1 = (gethash (car key) table1))
+      (for p2 = (gethash (cdr key) table2))
+      (sum (* p1 (log (/ p1 p2)))))))
+
+
+(defun calculate-information-gain (field fields)
+  (declare (type list fields))
   (iterate
     (with result = (make-hash-table :test 'eq))
     (for other-field in fields)
-    (setf (gethash (first other-field) result)
-          (calculate-information-gain-between vector field other-field))
+    (setf (gethash (read-name other-field) result)
+          (calculate-information-gain-between field other-field))
     (finally (return result))))
 
 
-(defun calculate-information-gains (vector fields)
-  (declare (type (vector vector)
-                 (list fields)))
+(defun calculate-information-gains (fields)
+  (declare (type list fields))
   (iterate
     (with result = (make-hash-table :test 'eq))
     (iterate
       (for sublist on fields)
       (for field = (first sublist))
-      (for (field-name field-class select-function) = field)
       (for future-fields = (rest sublist))
-      (collect field into past-fields at start)
-      (setf (gethash field-name result)
-            (calculate-information-gain vector
-                                        field
-                                        (append future-fields past-fields)))
+      (until (endp future-fields))
+      (setf (gethash (read-name field) result)
+            (calculate-information-gain field
+                                        future-fields))
       (finally (return result)))))
+
+
+(defun partition-points (length))
+
+
+(defun discrete-form (field data)
+  (bind ((sorted (~>> data
+                      (map 'vector (read-selector-function field))
+                      (sort _ #'<)))
+         (partition-points (partition-points (length data)))
+         (partitions (map-into (make-array 10 :adjustable t :fill-pointer 0)
+                               (curry #'aref sorted)
+                               partition-points)))
+    (map '(vector fixnum)
+         (lambda (x) (cl-ds.utils:lower-bound partitions x #'<))
+         data)))
+
+
+(defun initialize-fields (fields data)
+  (mapcar (lambda (field)
+            (if (continuesp field)
+                (make 'info-field
+                      :name (read-name field)
+                      :type (read-type field)
+                      :data (discrete-form field data)
+                      :selector-function #'identity)
+                (make 'info-field
+                      :name (read-name field)
+                      :type (read-type field)
+                      :data data
+                      :selector-function (read-selector-function field))))
+          fields))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -62,4 +131,4 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (calculate-information-gain vector fields))))
+          (calculate-information-gains (initialize-fields fields vector)))))

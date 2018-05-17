@@ -11,6 +11,7 @@
    #:average
    #:bootstrap
    #:hodges-lehmann-estimator
+   #:harmonic-average
    #:median-absolute-deviation
    #:moments
    #:simple-linear-regression
