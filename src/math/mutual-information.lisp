@@ -1,16 +1,31 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass kl-divergence-matrix-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass mutual-information-matrix-function (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric kl-divergence-matrix (range &rest fields)
-  (:generic-function-class kl-divergence-matrix-function)
+(defclass mutual-information-function (cl-ds.alg.meta:multi-aggregation-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric mutual-information (range field &rest comparative-fields)
+  (:generic-function-class mutual-information-function)
+  (:method (range field &rest comparative-fields)
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'mutual-information
+                                               :field field
+                                               :comparative-fields comparative-fields
+                                               :key #'identity)))
+
+
+(defgeneric mutual-information-matrix (range &rest fields)
+  (:generic-function-class mutual-information-matrix-function)
   (:method (range &rest fields)
     (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'kl-divergence-matrix
+                                               #'mutual-information-matrix
                                                :fields fields
                                                :key #'identity)))
 
@@ -32,7 +47,7 @@
       :continues))
 
 
-(defun calculate-kl-divergence-between (field1 field2)
+(defun calculate-mutual-information-between (field1 field2)
   (bind ((table1 (make-hash-table :test (read-test field1)))
          (table2 (make-hash-table :test (read-test field2)))
          (table3 (make-hash-table :test 'equal))
@@ -55,14 +70,15 @@
       (incf (gethash (cons value1 value2) table3 0)))
     (normalize-table table1)
     (normalize-table table2)
+    (normalize-table table3)
     (iterate
       (for (key p3) in-hashtable table3)
       (for p1 = (gethash (car key) table1))
       (for p2 = (gethash (cdr key) table2))
-      (sum (* p1 (log (/ p1 p2)))))))
+      (sum (* p3 (log (/ p3 (* p1 p2))))))))
 
 
-(defun calculate-kl-divergence (fields)
+(defun calculate-mutual-information (fields)
   (iterate
     (with result = (cl-ds.utils:make-half-matrix 'single-float
                                                  (length fields)
@@ -79,7 +95,7 @@
     (iterate
       (for future-field in (rest sublist))
       (setf (cl-ds.utils:mref result (read-name field) (read-name future-field))
-            (calculate-kl-divergence-between field future-field)))
+            (calculate-mutual-information-between field future-field)))
     (finally (return result))))
 
 
@@ -91,7 +107,7 @@
                                 :fill-pointer 0)))
     (iterate
       (for i from 0 below number-of-points)
-      (for offset = (round (* i shift)))
+      (for offset = (~> (* i shift) round (min length)))
       (vector-push-extend offset result)
       (finally (return result)))))
 
@@ -112,24 +128,26 @@
          data)))
 
 
+(defun initialize-field (data field)
+  (if (continuesp field)
+      (make 'info-field
+            :name (cl-ds:name field)
+            :test 'eql
+            :data (discrete-form field data)
+            :selector-function #'identity)
+      (make 'info-field
+            :name (cl-ds:name field)
+            :test (or (cl-ds:at field :test) 'equal)
+            :data data
+            :selector-function (cl-ds:at field :key))))
+
+
 (defun initialize-fields (fields data)
-  (mapcar (lambda (field)
-            (if (continuesp field)
-                (make 'info-field
-                      :name (cl-ds:at field :name)
-                      :test 'eql
-                      :data (discrete-form field data)
-                      :selector-function #'identity)
-                (make 'info-field
-                      :name (cl-ds:at field :name)
-                      :test (or (cl-ds:at field :test) 'equal)
-                      :data data
-                      :selector-function (cl-ds:at field :key))))
-          fields))
+  (mapcar (curry #'initialize-field data) fields))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function kl-divergence-matrix-function)
+    ((function mutual-information-matrix-function)
      &rest all
      &key key fields
      &allow-other-keys)
@@ -141,4 +159,26 @@
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
           (~> (initialize-fields fields vector)
-              calculate-kl-divergence))))
+              calculate-mutual-information))))
+
+
+(defmethod cl-ds.alg.meta:multi-aggregation-stages
+    ((function mutual-information-function)
+     &rest all
+     &key key field comparative-fields
+     &allow-other-keys)
+  (declare (ignore all))
+  (list (cl-ds.alg.meta:stage :vector (range &rest all)
+          (declare (ignore all))
+          (cl-ds.alg:to-vector range :key key :force-copy nil))
+
+        (lambda (&key vector &allow-other-keys)
+          (declare (type vector vector))
+          (let ((field (initialize-field vector field))
+                (fields (initialize-fields comparative-fields vector))
+                (result (make-hash-table :test 'eq)))
+            (iterate
+              (for f in fields)
+              (setf (gethash (read-name f) result)
+                    (calculate-mutual-information-between field f)))
+            (cl-ds.alg:make-hash-table-range result)))))

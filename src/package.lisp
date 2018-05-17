@@ -82,6 +82,7 @@
    #:reset!
    #:size
    #:take-out
+   #:name
    #:take-out!
    #:textual-error
    #:too-many-dimensions

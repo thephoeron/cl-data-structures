@@ -10,11 +10,12 @@
   (:export
    #:average
    #:bootstrap
-   #:hodges-lehmann-estimator
    #:harmonic-average
+   #:hodges-lehmann-estimator
    #:median-absolute-deviation
-   #:kl-divergence-matrix
    #:moments
+   #:mutual-information
+   #:mutual-information-matrix
    #:simple-linear-regression
    #:standard-deviation
    #:statistical-summary
