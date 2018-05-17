@@ -154,7 +154,7 @@
   (declare (ignore all))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key))
+          (cl-ds.alg:to-vector range :key key :force-copy nil))
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
