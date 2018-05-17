@@ -16,11 +16,17 @@
     (for v in-vector result)
     (for (a b) = v)
     (is a b)))
-(ok (emptyp (cl-ds.alg:hash-join #() #'identity '((#() . identity)))))
-(ok (emptyp (cl-ds.alg:hash-join #() #'identity '((#(1 2 3) . identity)))))
-(ok (emptyp (cl-ds.alg:hash-join #(1 2 3) #'identity '((#() . identity)))))
+(ok (emptyp (cl-ds.alg:hash-join #() #'identity
+                                 (list (cl-ds:field nil :data #()
+                                                        :key #'identity)))))
+(ok (emptyp (cl-ds.alg:hash-join #() #'identity
+                                 (list (cl-ds:field nil :data #(1 2 3)
+                                                        :key #'identity)))))
+(ok (emptyp (cl-ds.alg:hash-join #(1 2 3) #'identity
+                                 (list (cl-ds:field nil :data #()
+                                                        :key #'identity)))))
 (iterate
-  (for (elt) in-vector (sort (cl-ds.alg:hash-join #(1 2 3) #'identity '())
+  (for (elt) in-vector (sort (cl-ds.alg:hash-join #(1 2 3) #'identity nil)
                              #'< :key #'car))
   (for i from 1)
   (is elt i))
