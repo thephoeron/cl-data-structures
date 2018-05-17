@@ -66,9 +66,12 @@
                        &allow-other-keys)
   (declare (ignore all))
   (make-hash-join-function-state :table (make-hash-table :test test)
-                                 :ranges (map 'vector #'car secondary-range-forms)
+                                 :ranges (map 'vector (rcurry #'cl-ds:at :data)
+                                              secondary-range-forms)
                                  :primary-key primary-key
-                                 :keys (map 'vector #'cdr secondary-range-forms)
+                                 :keys (map 'vector
+                                            (rcurry #'cl-ds:at :key)
+                                            secondary-range-forms)
                                  :join-function join-function))
 
 

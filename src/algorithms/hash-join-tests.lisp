@@ -6,7 +6,10 @@
 (in-package #:hash-join-tests)
 
 (plan 9)
-(let ((result (sort (cl-ds.alg:hash-join #(1 2 3 4) #'identity '((#(1 2 3) . identity)))
+(let ((result (sort (cl-ds.alg:hash-join #(1 2 3 4) #'identity
+                                         (list (cl-ds:field nil
+                                                            :data #(1 2 3)
+                                                            :key #'identity)))
                     #'<
                     :key #'first)))
   (iterate
