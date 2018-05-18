@@ -16,6 +16,7 @@
    #:moments
    #:mutual-information
    #:mutual-information-matrix
+   #:harmonic-average-mutual-information
    #:simple-linear-regression
    #:standard-deviation
    #:statistical-summary

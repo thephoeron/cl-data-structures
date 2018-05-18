@@ -25,13 +25,18 @@
   (:range &key key)
   (:range &key (key #'identity))
 
-  (%sum %count)
+  (%sum %count %zero)
 
   ((&key &allow-other-keys)
    (setf %sum 0
-         %count 0))
+         %count 0
+         %zero nil))
   ((element)
    (incf %count)
-   (incf %sum (/ 1 element)))
+   (if (zerop element)
+       (setf %zero t)
+       (incf %sum (/ 1 element))))
 
-  ((/ %count %sum)))
+  ((if %zero
+       0.0
+       (/ %count %sum))))

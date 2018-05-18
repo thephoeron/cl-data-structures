@@ -1,12 +1,23 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass mutual-information-matrix-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass mutual-information-fundamental-function () ())
+
+
+(defclass mutual-information-matrix-function
+    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass mutual-information-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass mutual-information-function
+    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass harmonic-average-mutual-information-function
+    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -25,9 +36,21 @@
 (defgeneric mutual-information-matrix (range &rest fields)
   (:generic-function-class mutual-information-matrix-function)
   (:method (range &rest fields)
+    (cl-ds:validate-fields #'mutual-information-matrix fields)
     (cl-ds.alg.meta:apply-aggregation-function range
                                                #'mutual-information-matrix
                                                :fields fields
+                                               :key #'identity)))
+
+
+(defgeneric harmonic-average-mutual-information (range field &rest fields)
+  (:generic-function-class harmonic-average-mutual-information-function)
+  (:method (range field &rest fields)
+    (cl-ds:validate-fields #'harmonic-average-mutual-information (cons field fields))
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'harmonic-average-mutual-information
+                                               :field field
+                                               :comparative-fields fields
                                                :key #'identity)))
 
 
@@ -47,8 +70,7 @@
   (eq (cl-ds:at field :type)
       :continues))
 
-
-(defun calculate-mutual-information-between (field1 field2)
+(defun initialize-mutual-information-hash-tables (field1 field2)
   (bind ((table1 (make-hash-table :test (read-test field1)))
          (table2 (make-hash-table :test (read-test field2)))
          (table3 (make-hash-table :test 'equal))
@@ -59,6 +81,7 @@
           (iterate
             (for (key value) in-hashtable table)
             (setf (gethash key table) (/ value length)))))
+    (assert (eql length (length vector2)))
     (iterate
       (with function1 = (read-selector-function field1))
       (with function2 = (read-selector-function field2))
@@ -72,11 +95,18 @@
     (normalize-table table1)
     (normalize-table table2)
     (normalize-table table3)
+    (values table1 table2 table3)))
+
+
+(defun calculate-mutual-information-between (field1 field2)
+  (bind (((:values table1 table2 table3)
+          (initialize-mutual-information-hash-tables field1 field2)))
     (iterate
       (for (key p3) in-hashtable table3)
       (for p1 = (gethash (car key) table1))
       (for p2 = (gethash (cdr key) table2))
-      (sum (* p3 (log (/ p3 (* p1 p2))))))))
+      (for p = (* p3 (log (/ p3 (* p1 p2)) 2)))
+      (sum p))))
 
 
 (defun calculate-mutual-information (fields)
@@ -91,13 +121,13 @@
                                                    (setf (gethash (read-name field) table)
                                                          i)
                                                    (finally (return (rcurry #'gethash table))))))
-    (for sublist on fields)
-    (for field = (first sublist))
+    (for field in fields)
     (iterate
-      (for future-field in (rest sublist))
-      (setf (cl-ds.utils:mref result (read-name field) (read-name future-field))
-            (calculate-mutual-information-between field future-field)))
-    (finally (return result))))
+      (for future-field in fields)
+      (unless (eq field future-field)
+        (setf (cl-ds.utils:mref result (read-name field) (read-name future-field))
+              (calculate-mutual-information-between field future-field))))
+    (finally (assert (>= result 0)) (return result))))
 
 
 (defun partition-points (length)
@@ -163,6 +193,16 @@
               calculate-mutual-information))))
 
 
+(defun mutual-information-hash-table (field fields)
+  (let ((result (make-hash-table :test 'eq)))
+    (iterate
+      (for f in fields)
+      (setf (gethash (read-name f) result)
+            (calculate-mutual-information-between field f))
+      (assert (>= (gethash (read-name f) result) 0)))
+    (cl-ds.alg:make-hash-table-range result)))
+
+
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
     ((function mutual-information-function)
      &rest all
@@ -175,17 +215,38 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (let ((field (initialize-field vector field))
-                (fields (initialize-fields comparative-fields vector))
-                (result (make-hash-table :test 'eq)))
-            (iterate
-              (for f in fields)
-              (setf (gethash (read-name f) result)
-                    (calculate-mutual-information-between field f)))
-            (cl-ds.alg:make-hash-table-range result)))))
+          (~> (mutual-information-hash-table (initialize-field vector field)
+                                             (initialize-fields comparative-fields vector))
+              cl-ds.alg:make-hash-table-range))))
 
 
-(cl-ds:define-validation-for-fields (mutual-information-function (:name :type :key))
+(defmethod cl-ds.alg.meta:multi-aggregation-stages
+    ((function harmonic-average-mutual-information-function)
+     &rest all
+     &key key field comparative-fields
+     &allow-other-keys)
+  (declare (ignore all))
+  (list (cl-ds.alg.meta:stage :vector (range &rest all)
+          (declare (ignore all))
+          (cl-ds.alg:to-vector range :key key :force-copy nil))
+
+        (lambda (&key vector &allow-other-keys)
+          (declare (type vector vector))
+          (let ((result (mutual-information-hash-table (initialize-field vector field)
+                                                       (initialize-fields comparative-fields vector)))
+                (sum 0)
+                (count 0))
+            (maphash (lambda (key value)
+                       (declare (ignore key))
+                       (unless (zerop value)
+                         (incf sum (/ 1 value))
+                         (incf count)))
+                     result)
+            (/ count sum)))))
+
+
+(cl-ds:define-validation-for-fields
+    (mutual-information-fundamental-function (:name :type :key))
   (:name :optional nil)
   (:key :optional t :default #'identity)
   (:type :optional nil
