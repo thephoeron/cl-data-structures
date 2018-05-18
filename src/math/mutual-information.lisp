@@ -111,16 +111,16 @@
 
 (defun calculate-mutual-information (fields)
   (iterate
-    (with result = (cl-ds.utils:make-half-matrix 'single-float
-                                                 (length fields)
-                                                 :query-key
-                                                 (iterate
-                                                   (with table = (make-hash-table))
-                                                   (for field in fields)
-                                                   (for i from 0)
-                                                   (setf (gethash (read-name field) table)
-                                                         i)
-                                                   (finally (return (rcurry #'gethash table))))))
+    (with result = (cl-ds.utils:make-half-matrix
+                    'single-float
+                    (length fields)
+                    :query-key (iterate
+                                 (with table = (make-hash-table))
+                                 (for field in fields)
+                                 (for i from 0)
+                                 (setf (gethash (read-name field) table)
+                                       i)
+                                 (finally (return (rcurry #'gethash table))))))
     (for field in fields)
     (iterate
       (for future-field in fields)
