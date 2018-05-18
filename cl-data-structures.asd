@@ -47,7 +47,6 @@
                 :components ((:file "meta")
                              (:file "meta-docstrings")
                              (:file "variables")
-                             (:file "functions")
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
@@ -55,6 +54,7 @@
                              (:file "expression-wrapper")
                              (:file "delay")
                              (:file "macros")
+                             (:file "field")
                              (:file "docstrings")
                              (:test-file "expression-tests")))
                (:module "adapters"

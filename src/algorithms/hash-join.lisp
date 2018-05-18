@@ -11,6 +11,7 @@
   (:generic-function-class hash-join-function)
   (:method (primary-range primary-key secondary-range-forms
             &key (test 'eql) (join-function #'list) (key #'identity))
+    (cl-ds:validate-fields #'hash-join secondary-range-forms)
     (apply-aggregation-function primary-range #'hash-join
                                 :key key
                                 :test test
@@ -89,3 +90,15 @@
                 (setf (result i) (vect)))
               result))
           0))))
+
+
+(cl-ds:define-validation-for-fields (hash-join-function
+                                     (:optional :data :key :test :join-function))
+  (:data :optional nil)
+  (:key :optional t
+        :default #'identity)
+  (:test :optional t
+         :default 'eql
+         :member (equal eql eq equalp))
+  (:join-function :optional t
+                  :default #'list))

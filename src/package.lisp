@@ -32,6 +32,8 @@
    #:erase
    #:erase!
    #:erase-if
+   #:define-validation-for-fields
+   #:validate-fields
    #:erase-if!
    #:expression
    #:force

@@ -14,6 +14,7 @@
 (defgeneric mutual-information (range field &rest comparative-fields)
   (:generic-function-class mutual-information-function)
   (:method (range field &rest comparative-fields)
+    (cl-ds:validate-fields #'mutual-information (cons field comparative-fields))
     (cl-ds.alg.meta:apply-aggregation-function range
                                                #'mutual-information
                                                :field field
@@ -131,12 +132,12 @@
 (defun initialize-field (data field)
   (if (continuesp field)
       (make 'info-field
-            :name (cl-ds:name field)
+            :name (cl-ds:at field :name)
             :test 'eql
             :data (discrete-form field data)
             :selector-function #'identity)
       (make 'info-field
-            :name (cl-ds:name field)
+            :name (cl-ds:at field :name)
             :test (or (cl-ds:at field :test) 'equal)
             :data data
             :selector-function (cl-ds:at field :key))))
@@ -182,3 +183,10 @@
               (setf (gethash (read-name f) result)
                     (calculate-mutual-information-between field f)))
             (cl-ds.alg:make-hash-table-range result)))))
+
+
+(cl-ds:define-validation-for-fields (mutual-information-function (:name :type :key))
+  (:name :optional nil)
+  (:key :optional nil)
+  (:type :optional nil
+         :member (:discrete :continues)))
