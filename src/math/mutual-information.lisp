@@ -187,6 +187,6 @@
 
 (cl-ds:define-validation-for-fields (mutual-information-function (:name :type :key))
   (:name :optional nil)
-  (:key :optional nil)
+  (:key :optional t :default #'identity)
   (:type :optional nil
          :member (:discrete :continues)))

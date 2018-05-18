@@ -11,7 +11,10 @@
          (result (make 'field)))
     (setf (slot-value result '%arguments) table)
     (iterate
-      (for argument on arguments)
+      (for argument
+           initially arguments
+           then (cddr argument))
+      (until (endp argument))
       (for label = (first argument))
       (for value = (second argument))
       (for (values v found) = (gethash label table))
@@ -54,10 +57,10 @@
                                 argument-name field-name
                                 value-name value-found body)
   `(econd
-     ((eq ',body t)
+     ((eq ,body t)
       (unless ,value-found
         (return-from nil t)))
-     ((eq ',body nil)
+     ((eq ,body nil)
       (unless ,value-found
         (return-from nil nil)))))
 
@@ -65,7 +68,7 @@
 (defmethod validation-form-for ((parameter-name (eql :member))
                                 argument-name field-name
                                 value-name value-found body)
-  `(unless (member ,value-name '(,@body))
+  `(unless (member (cl-ds:at ,field-name ,argument-name) '(,@body))
      (return-from nil nil)))
 
 
