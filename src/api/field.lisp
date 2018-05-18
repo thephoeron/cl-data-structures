@@ -18,8 +18,9 @@
       (for label = (first argument))
       (for value = (second argument))
       (for (values v found) = (gethash label table))
-      (when found
-        (error "Can't set value in field twice!"))
+      (error 'invalid-argument
+             :argument label
+             :text "Can't set value in field twice!")
       (setf (gethash label table) value))))
 
 
@@ -38,7 +39,9 @@
 
 (defmethod validate-field :around (function field)
   (unless (call-next-method)
-    (error "Invalid field members.")))
+    (error 'invalid-argument
+           :text "Validation of field failed."
+           :argument (hash-table-alist (read-arguments field)))))
 
 
 (defun validate-fields (function fields)
