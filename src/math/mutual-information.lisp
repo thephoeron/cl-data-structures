@@ -215,8 +215,10 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (~> (mutual-information-hash-table (initialize-field vector field)
-                                             (initialize-fields comparative-fields vector))
+          (~> (mutual-information-hash-table (initialize-field vector
+                                                               field)
+                                             (initialize-fields comparative-fields
+                                                                vector))
               cl-ds.alg:make-hash-table-range))))
 
 
@@ -232,8 +234,10 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (let ((result (mutual-information-hash-table (initialize-field vector field)
-                                                       (initialize-fields comparative-fields vector)))
+          (let ((result (mutual-information-hash-table (initialize-field vector
+                                                                         field)
+                                                       (initialize-fields comparative-fields
+                                                                          vector)))
                 (sum 0)
                 (count 0))
             (maphash (lambda (key value)
