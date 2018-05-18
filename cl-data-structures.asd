@@ -135,6 +135,7 @@
                              (:file "bootstrap")
                              (:file "docstrings")
                              (:test-file "moments-tests")
+                             (:test-file "mutual-information-tests")
                              (:test-file "statistical-summary-tests")
                              (:test-file "simple-linear-regression-tests")))
                (:module "streaming-algorithms"

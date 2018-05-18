@@ -130,12 +130,13 @@
     (finally (assert (>= result 0)) (return result))))
 
 
-(defun partition-points (length)
-  (bind ((number-of-points (max length 10))
+(defun partition-points (length split-points-count)
+  (bind ((number-of-points (min length split-points-count))
          (shift (/ length number-of-points))
-         (result (make-array 10 :element-type 'fixnum
-                                :adjustable t
-                                :fill-pointer 0)))
+         (result (make-array split-points-count
+                             :element-type 'fixnum
+                             :adjustable t
+                             :fill-pointer 0)))
     (iterate
       (for i from 0 below number-of-points)
       (for offset = (~> (* i shift) round (min length)))
@@ -144,18 +145,22 @@
 
 
 (defun discrete-form (field data)
-  (bind ((sorted (~>> data
+  (bind ((split-points-count (cl-ds:at field :split-points-count))
+         (sorted (~>> data
                       (map 'vector (or (cl-ds:at field :key) #'identity))
                       (sort _ #'<)))
-         (partition-points (partition-points (length data)))
+         (partition-points (partition-points (length data)
+                                             split-points-count))
          (key (or (cl-ds:at field :key) #'identity))
-         (partitions (map-into (make-array 10 :adjustable t :fill-pointer 0)
+         (partitions (map-into (make-array (length partition-points)
+                                           :adjustable t
+                                           :fill-pointer 0)
                                (curry #'aref sorted)
                                partition-points)))
     (map '(vector fixnum)
          (lambda (x) (cl-ds.utils:lower-bound partitions
-                                         (funcall key x)
-                                         #'<))
+                                              (funcall key x)
+                                              #'<))
          data)))
 
 
@@ -164,7 +169,8 @@
       (make 'info-field
             :name (cl-ds:at field :name)
             :test 'eql
-            :data (discrete-form field data)
+            :data (discrete-form field
+                                 data)
             :selector-function #'identity)
       (make 'info-field
             :name (cl-ds:at field :name)
@@ -200,7 +206,7 @@
       (setf (gethash (read-name f) result)
             (calculate-mutual-information-between field f))
       (assert (>= (gethash (read-name f) result) 0)))
-    (cl-ds.alg:make-hash-table-range result)))
+    result))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -252,6 +258,10 @@
 (cl-ds:define-validation-for-fields
     (mutual-information-fundamental-function (:name :type :key))
   (:name :optional nil)
-  (:key :optional t :default #'identity)
+  (:key :optional t
+        :default #'identity)
+  (:split-points-count :optional t
+                       :default 10
+                       :type 'positive-integer)
   (:type :optional nil
          :member (:discrete :continues)))
