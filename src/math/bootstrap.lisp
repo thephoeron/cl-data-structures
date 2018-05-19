@@ -34,8 +34,6 @@
 (defclass bootstrap-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%outer-fn :initarg :outer-fn
               :reader read-outer-fn)
-   (%key :initarg :key
-         :reader read-key)
    (%compare :initarg :compare
              :reader read-compare)
    (%confidence :initarg :confidence
@@ -69,7 +67,7 @@
       (make 'bootstrap-aggregator
             :outer-fn outer-fn
             :function function
-            :key (read-key range)
+            :key (cl-ds.alg.meta:read-key range)
             :compare (read-compare range)
             :parallel (read-parallel range)
             :confidence (read-confidence range)
@@ -199,7 +197,7 @@
                  (aggregate-sample fresh-aggregator sample function))))
     (setf samples-vector (lparallel:psort samples-vector
                                           (read-compare aggregator)
-                                          :key (read-key aggregator)))
+                                          :key (cl-ds.alg.meta:read-key aggregator)))
     (setf (access-final-result aggregator)
           (list* (aref samples-vector lower-percentail)
                  (aref samples-vector higher-percentail)))))

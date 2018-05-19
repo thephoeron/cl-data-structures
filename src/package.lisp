@@ -7,7 +7,6 @@
   (:nicknames #:cl-ds)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:*traverse-callback*
    #:across
    #:add
    #:add!
@@ -33,10 +32,13 @@
    #:erase
    #:erase!
    #:erase-if
+   #:define-validation-for-fields
+   #:validate-fields
    #:erase-if!
    #:expression
    #:force
    #:found
+   #:field
    #:freeze!
    #:frozenp
    #:functional
@@ -80,10 +82,9 @@
    #:read-class
    #:read-value
    #:reset!
-   #:send
    #:size
-   #:special-traverse
    #:take-out
+   #:name
    #:take-out!
    #:textual-error
    #:too-many-dimensions

@@ -17,6 +17,17 @@
    key))
 
 
+(defstruct summary-field name function arguments)
+
+
+(defun summary-field (field)
+  (make-summary-field :name (cl-ds:name field)
+                      :function (if (functionp (cl-ds:at field :fn))
+                                    (cl-ds:at field :fn)
+                                    (symbol-function (cl-ds:at field :fn)))
+                      :arguments (cl-ds:at field :args)))
+
+
 (let ((extractor (make 'state-extractor)))
   (cl-ds.alg.meta:define-aggregation-function
       summary summary-function
@@ -29,9 +40,10 @@
     ((&key forms)
      (setf %table (make-hash-table))
      (iterate
-       (for form in forms)
-       (for (label fn . args) = form)
-       (for fn-obj = (if (functionp fn) fn (symbol-function fn)))
+       (for form in (mapcar #'summary-field forms))
+       (for label = (summary-field-name form))
+       (for fn-obj = (summary-field-function form))
+       (for args = (summary-field-arguments form))
        (for (values state key-function) = (apply fn-obj
                                                  (substitute extractor
                                                              :range args)))

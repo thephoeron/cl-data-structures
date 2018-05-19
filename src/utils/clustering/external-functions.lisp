@@ -2,7 +2,7 @@
 
 
 (-> partition-around-medoids (vector
-                              cl-ds.utils:distance-matrix
+                              cl-ds.utils:half-matrix
                               positive-fixnum
                               &key
                               (:select-medoids-attempts-count (or null positive-fixnum))

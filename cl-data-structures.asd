@@ -47,7 +47,6 @@
                 :components ((:file "meta")
                              (:file "meta-docstrings")
                              (:file "variables")
-                             (:file "functions")
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
@@ -55,6 +54,7 @@
                              (:file "expression-wrapper")
                              (:file "delay")
                              (:file "macros")
+                             (:file "field")
                              (:file "docstrings")
                              (:test-file "expression-tests")))
                (:module "adapters"
@@ -125,6 +125,7 @@
                 :components ((:file "package")
                              (:file "average")
                              (:file "variance")
+                             (:file "mutual-information")
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
                              (:file "hodges-lehmann")
@@ -134,6 +135,7 @@
                              (:file "bootstrap")
                              (:file "docstrings")
                              (:test-file "moments-tests")
+                             (:test-file "mutual-information-tests")
                              (:test-file "statistical-summary-tests")
                              (:test-file "simple-linear-regression-tests")))
                (:module "streaming-algorithms"

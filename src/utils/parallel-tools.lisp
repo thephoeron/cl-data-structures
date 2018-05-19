@@ -116,12 +116,12 @@
   (check-type count fixnum)
   (assert (> count 0))
   (make 'future-carousel
-        :vector (make-array count)
+        :vector (make-array count :initial-element nil)
         :function function))
 
 
 (defmethod end-execution ((obj future-carousel))
-  (map nil #'lparallel:force (read-vector obj)))
+  (map nil #'bt:join-thread (read-vector obj)))
 
 
 (defmethod initialize-instance ((obj future-carousel) &key &allow-other-keys)
@@ -131,5 +131,6 @@
    (lambda (&rest all)
      (bind (((:slots %vector %index %function) obj))
        (setf %index (mod (1+ %index) (array-dimension %vector 0)))
-       (lparallel:force (aref %vector %index))
-       (setf (aref %vector %index) (lparallel:future (apply %function all)))))))
+       (when (bt:threadp (aref %vector %index))
+         (bt:join-thread (aref %vector %index)))
+       (setf (aref %vector %index) (bt:make-thread (curry #'apply %function all)))))))

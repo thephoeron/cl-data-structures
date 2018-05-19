@@ -112,10 +112,6 @@
   (:method (function (object fundamental-range))
     (traverse function (clone object))))
 
-(defgeneric special-traverse (object)
-  (:method (object)
-    (traverse *traverse-callback* object)))
-
 (defgeneric transaction (operation object &rest args))
 
 (defgeneric make-from-traversable (class arguments traversable &rest more))

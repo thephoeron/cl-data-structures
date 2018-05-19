@@ -11,6 +11,7 @@
   (:generic-function-class hash-join-function)
   (:method (primary-range primary-key secondary-range-forms
             &key (test 'eql) (join-function #'list) (key #'identity))
+    (cl-ds:validate-fields #'hash-join secondary-range-forms)
     (apply-aggregation-function primary-range #'hash-join
                                 :key key
                                 :test test
@@ -66,9 +67,12 @@
                        &allow-other-keys)
   (declare (ignore all))
   (make-hash-join-function-state :table (make-hash-table :test test)
-                                 :ranges (map 'vector #'car secondary-range-forms)
+                                 :ranges (map 'vector (rcurry #'cl-ds:at :data)
+                                              secondary-range-forms)
                                  :primary-key primary-key
-                                 :keys (map 'vector #'cdr secondary-range-forms)
+                                 :keys (map 'vector
+                                            (rcurry #'cl-ds:at :key)
+                                            secondary-range-forms)
                                  :join-function join-function))
 
 
@@ -86,3 +90,15 @@
                 (setf (result i) (vect)))
               result))
           0))))
+
+
+(cl-ds:define-validation-for-fields (hash-join-function
+                                     (:optional :data :key :test :join-function))
+  (:data :optional nil)
+  (:key :optional t
+        :default #'identity)
+  (:test :optional t
+         :default 'eql
+         :member (equal eql eq equalp))
+  (:join-function :optional t
+                  :default #'list))

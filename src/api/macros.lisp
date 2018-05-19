@@ -10,16 +10,6 @@
          ,@body))))
 
 
-(defmacro traverse-through ((traversable var) &body body)
-  (with-gensyms (!callback)
-    `(flet ((,!callback (,var)
-              ,@body))
-       (declare (dynamic-extent (function ,!callback)))
-       (let ((cl-ds:*traverse-callback* (function ,!callback)))
-         (declare (special cl-ds:*traverse-callback*))
-         (cl-ds:traverse cl-ds:*traverse-callback* ,traversable)))))
-
-
 (metabang.bind::defbinding-form (:at
                                  :use-values-p nil
                                  :accept-multiple-forms-p nil)
