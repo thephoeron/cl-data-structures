@@ -216,7 +216,7 @@
                                  (cl-ds:at field :key)))))
 
 
-(defun construct-split-point (field i)
+(defun construct-split-point (sorted-data field i)
   (lret ((result (make 'split-point-field
                        :name (read-name field)
                        :test (read-test field)
@@ -224,11 +224,7 @@
                        :original-data (read-original-data field)
                        :split-point-count (read-split-point-count field)
                        :split-point i
-                       :data (if (read-discrete field)
-                                 (copy-array (read-data field))
-                                 (sort-new (read-data field)
-                                           #'<
-                                           :key (read-selector-function field)))
+                       :data (copy-array sorted-data)
                        :selector-function #'identity)))
     (map-into (read-data result)
               (compose (curry #'<= i) (read-selector-function field))
@@ -312,8 +308,13 @@
 (defun calculate-split-point (reference-field matched-field)
   (iterate
     (with result = nil)
+    (with sorted-data = (if (read-discrete matched-field)
+                            (copy-array (read-data matched-field))
+                            (sort-new (read-data matched-field)
+                                      #'<
+                                      :key (read-selector-function matched-field))))
     (for i from 0 below (read-split-point-count matched-field))
-    (for split-point = (construct-split-point matched-field i))
+    (for split-point = (construct-split-point sorted-data matched-field i))
     (until (null split-point))
     (for table = (mutual-information-hash-table reference-field
                                                 (list split-point)))
@@ -354,7 +355,7 @@
             (setf (gethash (read-name initialized-field) result)
                   (cons (~> initialized-field
                             read-selector-function
-                            (funcall  value))
+                            (funcall value))
                         mi))
             (finally (return (cl-ds.alg:make-hash-table-range result)))))))
 
