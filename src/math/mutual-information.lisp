@@ -32,12 +32,14 @@
 (defgeneric mutual-information (range field &rest comparative-fields)
   (:generic-function-class mutual-information-function)
   (:method (range field &rest comparative-fields)
-    (cl-ds:validate-fields #'mutual-information (cons field comparative-fields))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'mutual-information
-                                               :field field
-                                               :comparative-fields comparative-fields
-                                               :key #'identity)))
+    (cl-ds:validate-fields #'mutual-information
+                           (cons field comparative-fields))
+    (cl-ds.alg.meta:apply-aggregation-function
+     range
+     #'mutual-information
+     :field field
+     :comparative-fields comparative-fields
+     :key #'identity)))
 
 
 (defgeneric mutual-information-matrix (range &rest fields)
@@ -53,12 +55,14 @@
 (defgeneric harmonic-average-mutual-information (range field &rest fields)
   (:generic-function-class harmonic-average-mutual-information-function)
   (:method (range field &rest fields)
-    (cl-ds:validate-fields #'harmonic-average-mutual-information (cons field fields))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'harmonic-average-mutual-information
-                                               :field field
-                                               :comparative-fields fields
-                                               :key #'identity)))
+    (cl-ds:validate-fields #'harmonic-average-mutual-information
+                           (cons field fields))
+    (cl-ds.alg.meta:apply-aggregation-function
+     range
+     #'harmonic-average-mutual-information
+     :field field
+     :comparative-fields fields
+     :key #'identity)))
 
 
 (defgeneric optimal-split-point (range reference-field &rest matched-fields)
@@ -160,8 +164,10 @@
     (iterate
       (for future-field in fields)
       (unless (eq field future-field)
-        (setf (cl-ds.utils:mref result (read-name field) (read-name future-field))
-              (calculate-mutual-information-between field future-field))))
+        (setf (cl-ds.utils:mref result (read-name field)
+                                (read-name future-field))
+              (calculate-mutual-information-between field
+                                                    future-field))))
     (finally (assert (>= result 0)) (return result))))
 
 
@@ -375,7 +381,8 @@
                          (aref (car result))
                          (position (read-data matched-field))
                          (aref (read-original-data matched-field) _)
-                         (funcall (read-original-selector-function matched-field) _))))
+                         (funcall (read-original-selector-function matched-field)
+                                  _))))
              (return result))))
 
 
@@ -392,12 +399,12 @@
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
           (iterate
-            (with reference-field = (initialize-field vector
-                                                      reference-field))
+            (with reference-field =
+                  (initialize-field vector reference-field))
             (with result = (make-hash-table :test 'eq))
             (for matched-field in matched-fields)
-            (for initialized-field = (initialize-split-point-field vector
-                                                                   matched-field))
+            (for initialized-field =
+                 (initialize-split-point-field vector matched-field))
             (for (value . mi)  = (calculate-split-point reference-field
                                                         initialized-field))
             (setf (gethash (read-name initialized-field) result)
