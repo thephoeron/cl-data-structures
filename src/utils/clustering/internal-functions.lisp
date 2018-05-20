@@ -407,3 +407,46 @@
           (finally (vector-push-extend index
                                        (aref %cluster-contents
                                              target))))))))
+
+
+(defun build-clara-clusters (input-data
+                             number-of-medoids
+                             metric-type
+                             metric-fn
+                             sample-size
+                             sample-count
+                             &key
+                               (key #'identity)
+                               (select-medoids-attempts-count 50)
+                               (attempts 0)
+                               split
+                               merge)
+  (when (or (zerop (length input-data)))
+    (error "Can't cluster because there is no data"))
+  (let ((state (make 'clara-algorithm-state
+                     :number-of-medoids number-of-medoids
+                     :input-data input-data
+                     :split-merge-attempts-count attempts
+                     :select-medoids-attempts-count select-medoids-attempts-count
+                     :split-threshold split
+                     :key key
+                     :metric-fn metric-fn
+                     :sample-count sample-count
+                     :metric-type metric-type
+                     :sample-size sample-size
+                     :merge-threshold merge)))
+    (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+      (iterate
+        (repeat %sample-count)
+        (draw-clara-sample state)
+        (build-pam-clusters state)
+        (unless (null %split-merge-attempts-count)
+          (iterate
+            (scan-for-clusters-of-invalid-size state)
+            (while (unfinished-clusters-p state))
+            (repeat %split-merge-attempts-count)
+            (recluster-clusters-with-invalid-size state)))
+        (update-result-cluster state))
+      (setf %cluster-contents %result-cluster-contents)
+      (assert %silhouette)
+      state)))

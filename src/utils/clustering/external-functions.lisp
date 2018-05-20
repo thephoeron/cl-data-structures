@@ -66,38 +66,15 @@
                 (attempts 0)
                 split
                 merge)
-  (declare (optimize (debug 3)))
-  (when (or (zerop (length input-data)))
-    (error "Can't cluster because there is no data"))
-  (let ((state (make 'clara-algorithm-state
-                     :number-of-medoids number-of-medoids
-                     :input-data input-data
-                     :split-merge-attempts-count attempts
-                     :select-medoids-attempts-count select-medoids-attempts-count
-                     :split-threshold split
-                     :key key
-                     :metric-fn metric-fn
-                     :sample-count sample-count
-                     :metric-type metric-type
-                     :sample-size sample-size
-                     :merge-threshold merge)))
-    (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-      (iterate
-        (repeat %sample-count)
-        (draw-clara-sample state)
-        (build-pam-clusters state)
-        (unless (null %split-merge-attempts-count)
-          (iterate
-            (scan-for-clusters-of-invalid-size state)
-            (while (unfinished-clusters-p state))
-            (repeat %split-merge-attempts-count)
-            (recluster-clusters-with-invalid-size state)))
-        (update-result-cluster state))
-      (setf %cluster-contents %result-cluster-contents)
-      (assign-clara-data-to-medoids state)
-      (replace-indexes-in-clusters-with-data state)
-      (assert %silhouette)
-      (obtain-result state %silhouette))))
+  (let ((state (build-clara-clusters
+                input-data number-of-medoids metric-type
+                metric-fn sample-size sample-count
+                :key key
+                :select-medoids-attempts-count select-medoids-attempts-count
+                :attempts attempts :split split :merge merge)))
+    (assign-clara-data-to-medoids state)
+    (replace-indexes-in-clusters-with-data state)
+    (obtain-result state (read-silhouette state))))
 
 
 (defun clara-variable-number-of-medoids (input-data
@@ -122,19 +99,24 @@
             (bt:make-thread
              (let ((i i))
                (lambda ()
-                 (clara input-data i metric-type metric-fn sample-size sample-count
-                        :key key
-                        :select-medoids-attempts-count select-medoids-attempts-count
-                        :attempts attempts
-                        :split split
-                        :merge merge)))
+                 (let ((state (build-clara-clusters
+                               input-data i metric-type metric-fn
+                               sample-size sample-count
+                               :key key
+                               :select-medoids-attempts-count select-medoids-attempts-count
+                               :attempts attempts
+                               :split split
+                               :merge merge)))
+                   (cons state (read-silhouette state)))))
              :name "clara-variable-number-of-medoids")))
     (iterate
       (with final = nil)
       (for thread in-vector vector)
-      (for result = (bt:join-thread thread))
-      (for mean-silhouette = (~> result read-silhouette mean))
+      (for (state . silhouette) = (bt:join-thread thread))
+      (for mean-silhouette = (mean silhouette))
       (maximize mean-silhouette into maximum)
       (when (= mean-silhouette maximum)
-        (setf final result))
-      (finally (return result)))))
+        (setf final state))
+      (finally (assign-clara-data-to-medoids final)
+               (replace-indexes-in-clusters-with-data final)
+               (return (obtain-result state (read-silhouette state)))))))
