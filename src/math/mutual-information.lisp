@@ -353,15 +353,15 @@
       (setf result (cons (aref (read-discrete-values-set matched-field)
                                (access-split-point matched-field))
                          mi)))
-    (finally (unless (read-discrete matched-field)
-               (setf (car result)
-                     (~> (read-discrete-values-set matched-field)
-                         (aref (car result))
-                         (position (read-data matched-field))
-                         (aref (read-original-data matched-field) _)
-                         (funcall (read-original-selector-function matched-field)
-                                  _))))
-             (return result))))
+    (finally
+     (unless (read-discrete matched-field)
+       (setf (car result)
+             (~> (read-discrete-values-set matched-field)
+                 (aref (car result))
+                 (position (read-data matched-field))
+                 (aref (read-original-data matched-field) _)
+                 (funcall (read-original-selector-function matched-field) _)))
+       (return result)))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
