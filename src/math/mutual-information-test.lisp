@@ -23,6 +23,6 @@
                                                         :type :discrete
                                                         :split-points-count 3
                                                         :key #'cdr))))
-  (is (first (cl-ds:at mi :second)) 3 :test #'=))
+  (is (car (cl-ds:at mi :second)) 3 :test #'=))
 
 (finalize)
