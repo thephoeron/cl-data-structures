@@ -360,8 +360,8 @@
                  (aref (car result))
                  (position (read-data matched-field))
                  (aref (read-original-data matched-field) _)
-                 (funcall (read-original-selector-function matched-field) _)))
-       (return result)))))
+                 (funcall (read-original-selector-function matched-field) _))))
+     (return result))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
