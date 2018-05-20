@@ -266,32 +266,6 @@
     result))
 
 
-(defun construct-split-point (sorted-data field i)
-  (lret ((result (make 'split-point-field
-                       :name (read-name field)
-                       :test (read-test field)
-                       :discrete (read-discrete field)
-                       :original-data (read-original-data field)
-                       :split-point-count (read-split-point-count field)
-                       :split-point i
-                       :data (copy-array sorted-data)
-                       :selector-function #'identity)))
-    (if (read-discrete field)
-        (let ((dict (make-hash-table :test 'equal)))
-          (iterate
-            (for value in-vector sorted-data)
-            (setf (gethash (funcall value (read-selector-function field))
-                           dict)
-                  t))
-          (setf (slot-value result '%discrete-values-set)
-                dict
-                (slot-value result '%selector-function)
-                (read-selector-function field)))
-        (map-into (read-data result)
-                  (compose (curry #'<= i) (read-selector-function field))
-                  (read-data result)))))
-
-
 (defun initialize-fields (fields data)
   (mapcar (curry #'initialize-field data) fields))
 
