@@ -93,7 +93,11 @@
 
 (defclass split-point-field (info-field)
   ((%split-point :initarg :split-point
-                 :accessor access-split-point)))
+                 :accessor access-split-point)
+   (%original-selector-function :initarg :original-selector-function
+                                :reader read-original-selector-function)
+   (%discrete-values-set :initarg :discrete-values-set
+                         :reader read-discrete-values-set)))
 
 
 (defun continuesp (field)
@@ -216,6 +220,42 @@
                                  (cl-ds:at field :key)))))
 
 
+(defun initialize-split-point-field (data field)
+  (bind ((original-data data)
+         ((:values data split-points-count)
+          (if (continuesp field)
+              (discrete-form field data)
+              (values data nil)))
+         (result
+          (make 'split-point-field
+                :name (cl-ds:at field :name)
+                :test (if (continuesp field)
+                          'eql
+                          'equal)
+                :original-data original-data
+                :original-selector-function (cl-ds:at field :key)
+                :discrete (not (continuesp field))
+                :data data))
+         (selector-function (if (continuesp field)
+                                #'identity
+                                (cl-ds:at field :key))))
+    (setf (slot-value result '%discrete-values-set)
+          (if (continuesp field)
+              (coerce (iota split-points-count) 'vector)
+              (~> (map 'vector selector-function data)
+                  (remove-duplicates :test #'equal)))
+
+          (slot-value result '%selector-function)
+          (lambda (x)
+            (equal (aref (read-discrete-values-set result)
+                         (access-split-point result))
+                   (funcall selector-function x)))
+
+          (slot-value result '%split-point-count)
+          (length (read-discrete-values-set result)))
+    result))
+
+
 (defun construct-split-point (sorted-data field i)
   (lret ((result (make 'split-point-field
                        :name (read-name field)
@@ -226,9 +266,20 @@
                        :split-point i
                        :data (copy-array sorted-data)
                        :selector-function #'identity)))
-    (map-into (read-data result)
-              (compose (curry #'<= i) (read-selector-function field))
-              (read-data result))))
+    (if (read-discrete field)
+        (let ((dict (make-hash-table :test 'equal)))
+          (iterate
+            (for value in-vector sorted-data)
+            (setf (gethash (funcall value (read-selector-function field))
+                           dict)
+                  t))
+          (setf (slot-value result '%discrete-values-set)
+                dict
+                (slot-value result '%selector-function)
+                (read-selector-function field)))
+        (map-into (read-data result)
+                  (compose (curry #'<= i) (read-selector-function field))
+                  (read-data result)))))
 
 
 (defun initialize-fields (fields data)
@@ -308,21 +359,24 @@
 (defun calculate-split-point (reference-field matched-field)
   (iterate
     (with result = nil)
-    (with sorted-data = (if (read-discrete matched-field)
-                            (copy-array (read-data matched-field))
-                            (sort-new (read-data matched-field)
-                                      #'<
-                                      :key (read-selector-function matched-field))))
     (for i from 0 below (read-split-point-count matched-field))
-    (for split-point = (construct-split-point sorted-data matched-field i))
-    (until (null split-point))
+    (setf (access-split-point matched-field) i)
     (for table = (mutual-information-hash-table reference-field
-                                                (list split-point)))
-    (for mi = (gethash (read-name split-point) table))
+                                                (list matched-field)))
+    (for mi = (gethash (read-name matched-field) table))
     (maximize mi into maximum)
     (when (= mi maximum)
-      (setf result (cons split-point mi)))
-    (finally (return result))))
+      (setf result (cons (aref (read-discrete-values-set matched-field)
+                               (access-split-point matched-field))
+                         mi)))
+    (finally (unless (read-discrete matched-field)
+               (setf (car result)
+                     (~> (read-discrete-values-set matched-field)
+                         (aref (car result))
+                         (position (read-data matched-field))
+                         (aref (read-original-data matched-field) _)
+                         (funcall (read-original-selector-function matched-field) _))))
+             (return result))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -338,25 +392,16 @@
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
           (iterate
-            (with reference-field = (initialize-field vector reference-field))
+            (with reference-field = (initialize-field vector
+                                                      reference-field))
             (with result = (make-hash-table :test 'eq))
             (for matched-field in matched-fields)
-            (for initialized-field = (initialize-field vector matched-field))
-            (for (field . mi) = (calculate-split-point reference-field initialized-field))
-            (for sorted-data = (~> field
-                                   read-original-data
-                                   (sort #'<
-                                         :key (read-selector-function initialized-field))))
-            (for value = (aref sorted-data (~> (length sorted-data)
-                                               (/ (read-split-point-count field))
-                                               (* (access-split-point field))
-                                               round
-                                               (min (length sorted-data)))))
+            (for initialized-field = (initialize-split-point-field vector
+                                                                   matched-field))
+            (for (value . mi)  = (calculate-split-point reference-field
+                                                        initialized-field))
             (setf (gethash (read-name initialized-field) result)
-                  (cons (~> initialized-field
-                            read-selector-function
-                            (funcall value))
-                        mi))
+                  (cons value mi))
             (finally (return (cl-ds.alg:make-hash-table-range result)))))))
 
 

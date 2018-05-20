@@ -16,12 +16,11 @@
 (let* ((data #((1 . 2) (3 . 2) (4 . 1) (2 . 3) (2 . 3) (2 . 3)))
        (mi (cl-ds.math:optimal-split-point data
                                            (cl-ds:field :name :first
-                                                        :type :discrete
+                                                        :type :continues
                                                         :split-points-count 3
                                                         :key #'car)
                                            (cl-ds:field :name :second
                                                         :type :discrete
-                                                        :split-points-count 3
                                                         :key #'cdr))))
   (is (car (cl-ds:at mi :second)) 3 :test #'=))
 
