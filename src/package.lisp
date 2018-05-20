@@ -22,6 +22,7 @@
    #:clone
    #:consume-back
    #:consume-front
+   #:define-validation-for-fields
    #:delay
    #:delayed
    #:dimensionality-error
@@ -32,13 +33,11 @@
    #:erase
    #:erase!
    #:erase-if
-   #:define-validation-for-fields
-   #:validate-fields
    #:erase-if!
    #:expression
+   #:field
    #:force
    #:found
-   #:field
    #:freeze!
    #:frozenp
    #:functional
@@ -69,6 +68,7 @@
    #:mod-bind
    #:mutable
    #:mutablep
+   #:name
    #:near
    #:not-implemented
    #:operation-not-allowed
@@ -84,7 +84,6 @@
    #:reset!
    #:size
    #:take-out
-   #:name
    #:take-out!
    #:textual-error
    #:too-many-dimensions
@@ -98,6 +97,8 @@
    #:update!
    #:update-if
    #:update-if!
+   #:validate-field
+   #:validate-fields
    #:value
    #:whole-range
    #:xpr))

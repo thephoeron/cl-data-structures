@@ -11,7 +11,18 @@
        (mi (cl-ds.math:mutual-information data
                                           (cl-ds:field :name :first :type :discrete :key #'car)
                                           (cl-ds:field :name :second :type :discrete :key #'cdr))))
-
   (is (cl-ds:at mi :second) 0.0 :test #'=))
+
+(let* ((data #((1 . 2) (3 . 2) (4 . 1) (2 . 3) (2 . 3) (2 . 3)))
+       (mi (cl-ds.math:optimal-split-point data
+                                           (cl-ds:field :name :first
+                                                        :type :discrete
+                                                        :split-points-count 3
+                                                        :key #'car)
+                                           (cl-ds:field :name :second
+                                                        :type :discrete
+                                                        :split-points-count 3
+                                                        :key #'cdr))))
+  (is (first (cl-ds:at mi :second)) 3 :test #'=))
 
 (finalize)

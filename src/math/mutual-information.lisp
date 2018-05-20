@@ -1,23 +1,30 @@
 (in-package #:cl-data-structures.math)
 
 
-(defclass mutual-information-fundamental-function () ())
+(defclass mutual-information-fundamental-function ()
+  ())
 
 
-(defclass mutual-information-matrix-function
-    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
+(defclass mutual-information-matrix-function (cl-ds.alg.meta:multi-aggregation-function
+                                              mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass mutual-information-function
-    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
+(defclass mutual-information-function (cl-ds.alg.meta:multi-aggregation-function
+                                       mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass harmonic-average-mutual-information-function
-    (cl-ds.alg.meta:multi-aggregation-function mutual-information-fundamental-function)
+(defclass harmonic-average-mutual-information-function (cl-ds.alg.meta:multi-aggregation-function
+                                                        mutual-information-fundamental-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass optimal-split-point-function (cl-ds.alg.meta:multi-aggregation-function
+                                        mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -54,11 +61,29 @@
                                                :key #'identity)))
 
 
+(defgeneric optimal-split-point (range reference-field &rest matched-fields)
+  (:generic-function-class optimal-split-point-function)
+  (:method (range reference-field &rest matched-fields)
+    (cl-ds:validate-field #'optimal-split-point reference-field)
+    (cl-ds:validate-fields #'optimal-split-point matched-fields)
+    (cl-ds.alg.meta:apply-aggregation-function range
+                                               #'optimal-split-point
+                                               :key #'identity
+                                               :reference-field reference-field
+                                               :matched-fields matched-fields)))
+
+
 (defclass info-field ()
   ((%name :initarg :name
           :reader read-name)
    (%data :initarg :data
           :reader read-data)
+   (%original-data :initarg :original-data
+                   :reader read-original-data)
+   (%discrete :initarg :discrete
+              :reader read-discrete)
+   (%split-point-count :initarg :split-point-count
+                       :reader read-split-point-count)
    (%test :initarg :test
           :reader read-test)
    (%selector-function :initarg :selector-function
@@ -66,9 +91,15 @@
                        :initform #'identity)))
 
 
+(defclass split-point-field (info-field)
+  ((%split-point :initarg :split-point
+                 :accessor access-split-point)))
+
+
 (defun continuesp (field)
   (eq (cl-ds:at field :type)
       :continues))
+
 
 (defun initialize-mutual-information-hash-tables (field1 field2)
   (bind ((table1 (make-hash-table :test (read-test field1)))
@@ -157,26 +188,51 @@
                                            :fill-pointer 0)
                                (curry #'aref sorted)
                                partition-points)))
-    (map '(vector fixnum)
-         (lambda (x) (cl-ds.utils:lower-bound partitions
-                                              (funcall key x)
-                                              #'<))
-         data)))
+    (values (map '(vector fixnum)
+                 (lambda (x) (cl-ds.utils:lower-bound partitions
+                                                      (funcall key x)
+                                                      #'<))
+                 data)
+            (length partition-points))))
 
 
 (defun initialize-field (data field)
-  (if (continuesp field)
-      (make 'info-field
-            :name (cl-ds:at field :name)
-            :test 'eql
-            :data (discrete-form field
-                                 data)
-            :selector-function #'identity)
-      (make 'info-field
-            :name (cl-ds:at field :name)
-            :test (or (cl-ds:at field :test) 'equal)
-            :data data
-            :selector-function (cl-ds:at field :key))))
+  (bind ((original-data data)
+         ((:values data split-points-count)
+          (if (continuesp field)
+              (discrete-form field data)
+              (values data (cl-ds:at field :split-points-count)))))
+    (make 'info-field
+          :name (cl-ds:at field :name)
+          :test (if (continuesp field)
+                    'eql
+                    'equal)
+          :original-data original-data
+          :split-point-count split-points-count
+          :discrete (not (continuesp field))
+          :data data
+          :selector-function (if (continuesp field)
+                                 #'identity
+                                 (cl-ds:at field :key)))))
+
+
+(defun construct-split-point (field i)
+  (lret ((result (make 'split-point-field
+                       :name (read-name field)
+                       :test (read-test field)
+                       :discrete (read-discrete field)
+                       :original-data (read-original-data field)
+                       :split-point-count (read-split-point-count field)
+                       :split-point i
+                       :data (if (read-discrete field)
+                                 (copy-array (read-data field))
+                                 (sort-new (read-data field)
+                                           #'<
+                                           :key (read-selector-function field)))
+                       :selector-function #'identity)))
+    (map-into (read-data result)
+              (compose (curry #'<= i) (read-selector-function field))
+              (read-data result))))
 
 
 (defun initialize-fields (fields data)
@@ -251,6 +307,56 @@
                          (incf count)))
                      result)
             (/ count sum)))))
+
+
+(defun calculate-split-point (reference-field matched-field)
+  (iterate
+    (with result = nil)
+    (for i from 0 below (read-split-point-count matched-field))
+    (for split-point = (construct-split-point matched-field i))
+    (until (null split-point))
+    (for table = (mutual-information-hash-table reference-field
+                                                (list split-point)))
+    (for mi = (gethash (read-name split-point) table))
+    (maximize mi into maximum)
+    (when (= mi maximum)
+      (setf result (cons split-point mi)))
+    (finally (return result))))
+
+
+(defmethod cl-ds.alg.meta:multi-aggregation-stages
+    ((function optimal-split-point-function)
+     &rest all
+     &key reference-field matched-fields key
+     &allow-other-keys)
+  (declare (ignore all))
+  (list (cl-ds.alg.meta:stage :vector (range &rest all)
+          (declare (ignore all))
+          (cl-ds.alg:to-vector range :key key :force-copy nil))
+
+        (lambda (&key vector &allow-other-keys)
+          (declare (type vector vector))
+          (iterate
+            (with reference-field = (initialize-field vector reference-field))
+            (with result = (make-hash-table :test 'eq))
+            (for matched-field in matched-fields)
+            (for initialized-field = (initialize-field vector matched-field))
+            (for (field . mi) = (calculate-split-point reference-field initialized-field))
+            (for sorted-data = (~> field
+                                   read-original-data
+                                   (sort #'<
+                                         :key (read-selector-function initialized-field))))
+            (for value = (aref sorted-data (~> (length sorted-data)
+                                               (/ (read-split-point-count field))
+                                               (* (access-split-point field))
+                                               round
+                                               (min (length sorted-data)))))
+            (setf (gethash (read-name initialized-field) result)
+                  (cons (~> initialized-field
+                            read-selector-function
+                            (funcall  value))
+                        mi))
+            (finally (return (cl-ds.alg:make-hash-table-range result)))))))
 
 
 (cl-ds:define-validation-for-fields

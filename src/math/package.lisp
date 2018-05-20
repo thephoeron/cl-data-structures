@@ -11,12 +11,13 @@
    #:average
    #:bootstrap
    #:harmonic-average
+   #:harmonic-average-mutual-information
    #:hodges-lehmann-estimator
    #:median-absolute-deviation
    #:moments
    #:mutual-information
    #:mutual-information-matrix
-   #:harmonic-average-mutual-information
+   #:optimal-split-point
    #:simple-linear-regression
    #:standard-deviation
    #:statistical-summary
