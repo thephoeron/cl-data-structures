@@ -5,7 +5,7 @@
 
 (in-package #:mutual-information-tests)
 
-(plan 1)
+(plan 2)
 
 (let* ((data #((1 . 2) (3 . 2) (4 . 2) (5 . 2)))
        (mi (cl-ds.math:mutual-information data
