@@ -89,7 +89,6 @@
                                            (attempts 0)
                                            split
                                            merge)
-  (declare (optimize (debug 3)))
   (assert (< 0 from to))
   (let ((vector (make-array (1+ (- to from)))))
     (iterate
