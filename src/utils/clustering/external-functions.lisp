@@ -98,21 +98,20 @@
             (bt:make-thread
              (let ((i i))
                (lambda ()
-                 (let ((state (build-clara-clusters
-                               input-data i metric-type metric-fn
-                               sample-size sample-count
-                               :key key
-                               :select-medoids-attempts-count select-medoids-attempts-count
-                               :attempts attempts
-                               :split split
-                               :merge merge)))
-                   (cons state (read-silhouette state)))))
+                 (build-clara-clusters
+                  input-data i metric-type metric-fn
+                  sample-size sample-count
+                  :key key
+                  :select-medoids-attempts-count select-medoids-attempts-count
+                  :attempts attempts
+                  :split split
+                  :merge merge)))
              :name "clara-variable-number-of-medoids")))
     (iterate
       (with final = nil)
       (for thread in-vector vector)
-      (for (state . silhouette) = (bt:join-thread thread))
-      (for mean-silhouette = (mean silhouette))
+      (for state = (bt:join-thread thread))
+      (for mean-silhouette = (~> state read-silhouette mean))
       (maximize mean-silhouette into maximum)
       (when (= mean-silhouette maximum)
         (setf final state))
