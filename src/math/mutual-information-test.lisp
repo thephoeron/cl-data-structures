@@ -9,8 +9,12 @@
 
 (let* ((data #((1 . 2) (3 . 2) (4 . 2) (5 . 2)))
        (mi (cl-ds.math:mutual-information data
-                                          (cl-ds:field :name :first :type :discrete :key #'car)
-                                          (cl-ds:field :name :second :type :discrete :key #'cdr))))
+                                          (cl-ds:field :name :first
+                                                       :type :discrete
+                                                       :key #'car)
+                                          (cl-ds:field :name :second
+                                                       :type :discrete
+                                                       :key #'cdr))))
   (is (cl-ds:at mi :second) 0.0 :test #'=))
 
 (let* ((data #((1 . 2) (3 . 2) (4 . 1) (2 . 3) (2 . 3) (2 . 3)))
