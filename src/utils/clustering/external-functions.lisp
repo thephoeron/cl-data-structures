@@ -94,19 +94,18 @@
     (iterate
       (for index from 0 below (length vector))
       (for i from from to to)
-      (setf (aref vector index)
-            (bt:make-thread
-             (let ((i i))
-               (lambda ()
-                 (build-clara-clusters
-                  input-data i metric-type metric-fn
-                  sample-size sample-count
-                  :key key
-                  :select-medoids-attempts-count select-medoids-attempts-count
-                  :attempts attempts
-                  :split split
-                  :merge merge)))
-             :name "clara-variable-number-of-medoids")))
+      (nest (setf (aref vector index))
+            (let ((i i)))
+            (bt:make-thread)
+            (lambda ())
+            (build-clara-clusters
+             input-data i metric-type metric-fn
+             sample-size sample-count
+             :key key
+             :select-medoids-attempts-count select-medoids-attempts-count
+             :attempts attempts
+             :split split
+             :merge merge)))
     (iterate
       (with final = nil)
       (for thread in-vector vector)
