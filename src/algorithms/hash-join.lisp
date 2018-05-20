@@ -86,7 +86,7 @@
     (aref (ensure (gethash key table)
             (with-vectors ((result (~> ranges length 1+ make-array)))
               (iterate
-                (for i from 0 below (~> ranges length 1+))
+                (for i from 0 below (length result))
                 (setf (result i) (vect)))
               result))
           0))))
