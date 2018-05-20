@@ -5,26 +5,30 @@
   ())
 
 
-(defclass mutual-information-matrix-function (cl-ds.alg.meta:multi-aggregation-function
-                                              mutual-information-fundamental-function)
+(defclass mutual-information-matrix-function
+    (cl-ds.alg.meta:multi-aggregation-function
+     mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass mutual-information-function (cl-ds.alg.meta:multi-aggregation-function
-                                       mutual-information-fundamental-function)
+(defclass mutual-information-function
+    (cl-ds.alg.meta:multi-aggregation-function
+     mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass harmonic-average-mutual-information-function (cl-ds.alg.meta:multi-aggregation-function
-                                                        mutual-information-fundamental-function)
+(defclass harmonic-average-mutual-information-function
+    (cl-ds.alg.meta:multi-aggregation-function
+     mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass optimal-split-point-function (cl-ds.alg.meta:multi-aggregation-function
-                                        mutual-information-fundamental-function)
+(defclass optimal-split-point-function
+    (cl-ds.alg.meta:multi-aggregation-function
+     mutual-information-fundamental-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
