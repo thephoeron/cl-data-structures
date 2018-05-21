@@ -40,6 +40,9 @@
                                            (:file "external-functions")
                                            (:file "docstrings")
                                            (:test-file "tests")))
+                             (:module "metric"
+                              :components ((:file "package")
+                                           (:file "hellinger")))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
