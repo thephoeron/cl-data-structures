@@ -460,17 +460,13 @@
          ((:slots %root %shift %size %tail-size %tail)
           container))
     (setf %content (make-instance 'flexichain:standard-flexichain
-                                  :min-size (iterate
-                                              (repeat %shift)
-                                              (for result
-                                                   initially 1
-                                                   then (ash result +bit-count+))
-                                              (finally (return result))))
+                                  :min-size +maximum-children-count+)
           %start (mod from +maximum-children-count+)
           %lower-bound from
           %last-size (mod to +maximum-children-count+)
           %upper-bound to)
     (labels ((collect-bottom (node depth &optional (offset 0))
+               (declare (optimize (debug 3)))
                (let* ((bit-offset (* +bit-count+ (- %shift depth)))
                       (start-range offset)
                       (difference (ash 1 bit-offset))

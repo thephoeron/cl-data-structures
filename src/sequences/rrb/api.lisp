@@ -634,17 +634,77 @@
                    (copy-array (cl-ds.common.rrb:access-tail container)))))
 
 
+(defun fold-content (tag content)
+  (iterate
+    (for i
+         from 0
+         by cl-ds.common.rrb:+maximum-children-count+)
+    (for k from 0)
+    (setf (aref content k)
+          (iterate
+            (with result = (cl-ds.common.rrb:make-node-content))
+            (for j from i below (length content))
+            (for k from 0)
+            (repeat cl-ds.common.rrb:+maximum-children-count+)
+            (setf (aref result k) (aref content j))
+            (finally (return (cl-ds.common.rrb:make-rrb-node
+                              :content result
+                              :ownership-tag tag)))))
+    (while (< i (length content)))))
+
+
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
                                         arguments
                                         traversable
                                         &rest more)
-  (declare (ignore arguments))
-  (let ((result (make 'mutable-rrb-vector)))
+  (declare (ignore arguments)
+           (optimize (debug 3)))
+  (bind ((content (vect))
+         (size 0)
+         (tag (cl-ds.common.abstract:make-ownership-tag))
+         ((:dflet index ())
+          (rem size cl-ds.common.rrb:+maximum-children-count+)))
     (iterate
       (for tr in (cons traversable more))
-      (cl-ds:across (lambda (x) (cl-ds:put! result x))
+      (cl-ds:across (lambda (x)
+                      (when (zerop (index))
+                        (vector-push-extend (cl-ds.common.rrb:make-node-content)
+                                            content))
+                      (setf (aref (last-elt content) (index))
+                            x)
+                      (incf size))
                     tr))
-    result))
+    (let* ((tail (last-elt content))
+           (shift 0)
+           (tail-size-or-zero (logand size (lognot cl-ds.common.rrb:+tail-mask+)))
+           (tail-size (if (zerop tail-size-or-zero)
+                          cl-ds.common.rrb:+maximum-children-count+
+                          tail-size-or-zero))
+           (tree-size (- size tail-size)))
+      (decf (fill-pointer content))
+      (map-into content
+                (lambda (x)
+                  (cl-ds.common.rrb:make-rrb-node :content x
+                                                  :ownership-tag tag))
+                content)
+      (iterate
+        (for count
+             initially (floor (/ tree-size cl-ds.common.rrb:+maximum-children-count+))
+             then (floor (/ count cl-ds.common.rrb:+maximum-children-count+)))
+        (while (> count +maximum-children-count+))
+        (fold-content tag content)
+        (incf shift)
+        (setf (fill-pointer content) count))
+      (make 'mutable-rrb-vector
+            :root (if (emptyp content)
+                      (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
+                      (first-elt content))
+            :ownership-tag tag
+            :shift shift
+            :tail tail
+            :tail-size tail-size
+            :size tree-size))))
+
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
