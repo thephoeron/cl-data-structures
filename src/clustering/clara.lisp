@@ -17,17 +17,18 @@
             &key
               (key #'identity) (select-medoids-attempts-count 50)
               (attempts 0) split merge)
-    (cl-ds.alg.meta:apply-aggregation-function range #'clara
-                                               :key key
-                                               :number-of-medoids number-of-medoids
-                                               :sample-size sample-size
-                                               :sample-count sample-count
-                                               :metric-fn metric-fn
-                                               :metric-type metric-type
-                                               :select-medoids-attempts-count select-medoids-attempts-count
-                                               :attempts attempts
-                                               :split split
-                                               :merge merge)))
+    (cl-ds.alg.meta:apply-aggregation-function
+     range #'clara
+     :key key
+     :number-of-medoids number-of-medoids
+     :sample-size sample-size
+     :sample-count sample-count
+     :metric-fn metric-fn
+     :metric-type metric-type
+     :select-medoids-attempts-count select-medoids-attempts-count
+     :attempts attempts
+     :split split
+     :merge merge)))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -44,6 +45,9 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (cl-ds.utils.cluster:clara vector number-of-medoids metric-type metric-fn sample-size sample-count
-                                     :key key :select-medoids-attempts-count select-medoids-attempts-count
-                                     :attempts attempts :split split :merge merge))))
+          (cl-ds.utils.cluster:clara
+           vector number-of-medoids metric-type
+           metric-fn sample-size sample-count
+           :key key
+           :select-medoids-attempts-count select-medoids-attempts-count
+           :attempts attempts :split split :merge merge))))
