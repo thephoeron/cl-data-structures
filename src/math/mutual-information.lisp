@@ -231,6 +231,7 @@
 
 
 (defun initialize-split-point-field (data field)
+  (declare (optimize (debug 3)))
   (bind ((original-data data)
          ((:values data split-points-count)
           (if (continuesp field)
@@ -391,7 +392,7 @@
 
 
 (cl-ds:define-validation-for-fields
-    (mutual-information-fundamental-function (:name :type :key))
+    (mutual-information-fundamental-function (:name :type :key :split-points-count))
   (:name :optional nil)
   (:key :optional t
         :default #'identity)
