@@ -13,7 +13,7 @@
                         "Dispatches state-result."
                         "Mutates state in aggregate function."
                         "Presents callable interface to the user.")
-     :collaborators ("State" "Range")
+     :collaborators ("State" "Range" "Aggregator")
      :notes "Aggregation-function is part of moderatly complex user aggregation protocol."
      :see-also (make-state aggregate state-result)))
 
