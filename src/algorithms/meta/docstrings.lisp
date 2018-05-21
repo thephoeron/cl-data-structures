@@ -9,6 +9,11 @@
 
   (type aggregation-function
     (:description "Fundamental class of aggregation functions. Aggregation functions transform range into single result."
+     :responsibilities ("Dispatches make-state."
+                        "Dispatches state-result."
+                        "Mutates state in aggregate function."
+                        "Presents callable interface to the user.")
+     :collaborators ("State" "Range")
      :notes "Aggregation-function is part of moderatly complex user aggregation protocol."
      :see-also (make-state aggregate state-result)))
 

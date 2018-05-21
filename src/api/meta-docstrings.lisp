@@ -63,11 +63,12 @@
                "Boolean. T if returned bucket contains new elements, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
      :side-effects "Can modify bucket."))
 
-  (function :description
+  (function make-bucket
     (:returns ("New or passed bucket. May return nil as empty bucket."
                "Instance of position modification status."
                "Boolean. T if elements were removed from BUCKET, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
-     :side-effects "Can modify bucket."))
+     :side-effects "Can modify bucket."
+     :description "Constructs abstract bucket."))
 
   (type functional-function
     (:description "Function that inherits this class is not allowed to perform any side effects."))
