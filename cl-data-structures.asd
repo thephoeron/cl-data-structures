@@ -40,10 +40,10 @@
                                            (:file "external-functions")
                                            (:file "docstrings")
                                            (:test-file "tests")))
-                             (:module "metrics"
+                             (:module "metric-functions"
                               :components ((:file "package")
                                            (:file "hellinger")))
-                             (:module "distances"
+                             (:module "distance-functions"
                               :components ((:file "package")
                                            (:file "bhattacharyya")))
                              (:test-file "distances-tests")
