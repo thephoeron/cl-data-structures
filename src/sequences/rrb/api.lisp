@@ -657,10 +657,10 @@
                                         arguments
                                         traversable
                                         &rest more)
-  (declare (ignore arguments)
-           (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((content (vect))
          (size 0)
+         (element-type (or (getf arguments :element-type) t))
          (tag (cl-ds.common.abstract:make-ownership-tag))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
@@ -668,7 +668,7 @@
       (for tr in (cons traversable more))
       (cl-ds:across (lambda (x)
                       (when (zerop (index))
-                        (vector-push-extend (cl-ds.common.rrb:make-node-content)
+                        (vector-push-extend (cl-ds.common.rrb:make-node-content element-type)
                                             content))
                       (setf (aref (last-elt content) (index))
                             x)
