@@ -12,4 +12,6 @@
   (function clara
     (:description "Clusters data set using CLARA algorithm. This algorithm attempts to cluster random subset, picking best set of clusters."
      :notes "Useful for clustering large data sets, as required memory is linear to the size of data set and quadratic to the size of the sample."
+     :returns ("Vector of vectors (each inner vector represents cluster)."
+               "Silhouette of each cluster (as vector of single-floats).")
      :thread-safety "Uses lparallel underneath.")))
