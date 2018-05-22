@@ -28,6 +28,8 @@
  @row{@'cl-ds:update-if @'cl-ds:update-if!}
  @row{@'cl-ds:erase @'cl-ds:erase!}
  @row{@'cl-ds:erase-if @'cl-ds:erase-if!}
+ @row{@'cl-ds:put @'cl-ds:put!}
+ @row{@'cl-ds:take-out @'cl-ds:take-out!}
  @end{table}
 (level [section]
   @title{Functional modification API}
@@ -39,6 +41,7 @@
   @docgeneric['cl-ds:update-if]
   @docgeneric['cl-ds:erase]
   @docgeneric['cl-ds:erase-if]
+  @docgeneric['cl-ds:put]
   @end{documentation})
 (level [section]
   @title{Mutable modification API}
@@ -50,6 +53,7 @@
   @docgeneric['cl-ds:update-if!]
   @docgeneric['cl-ds:erase!]
   @docgeneric['cl-ds:erase-if!]
+  @docgeneric['cl-ds:put!]
   @end{documentation})
 (level [section]
   @title{Variants API}

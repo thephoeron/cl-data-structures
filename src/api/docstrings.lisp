@@ -413,6 +413,16 @@
           (prove:ok (cl-ds:transactionalp container))))]
      :returns "T if CONTAINER is transactional and NIL if it is not."))
 
+  (function put
+    (:arguments ((container "A subclass of fundamental-container")
+                 (item "Object that should be added into CONTAINER"))
+     :description "Functional API. Inserts new ELEMENT into new instance of CONTAINER. Relevant to sets and sequences."))
+
+  (function put!
+    (:arguments ((container "A subclass of fundamental-container")
+                 (item "Object that should be added into CONTAINER"))
+     :description "Destructive API. Inserts new ELEMENT into CONTAINER. Relevant to sets and sequences."))
+
   (function value
     (:syntax "value status => value"
      :arguments ((status "instance of modification status class."))
