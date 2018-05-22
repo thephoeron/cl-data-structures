@@ -19,10 +19,22 @@
 
   (type fundamental-aggregation-stage
     (:description "Fundamental class of aggregation stages."
+     :responsibilities ("Represents up to one pass over data.")
+     :collaborators ("Aggregation-function" "Range")
      :notes "cl:function is acceptable stage as well."))
 
   (type linear-aggregator
-    (:description "Simple, low level aggregator."))
+    (:description "Simple, low level aggregator."
+     :responsibilities ("Calls aggregate."
+                        "Manages aggregation functions state.")
+     :collaborators ("Aggregation-function" "Range")))
+
+  (type multi-stage-linear-aggregator
+    (:description "Low level aggregator for multistage functions.."
+     :responsibilities ("Initializes stages."
+                        "Calls aggregate with each stage."
+                        "Passes values between stages")
+     :collaborators ("Aggregation-function" "Range")))
 
   (function make-linear-aggregator
     (:description "Construct LINEAR-AGGREGATOR."
