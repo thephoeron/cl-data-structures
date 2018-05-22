@@ -7,6 +7,7 @@
   (function partition-around-medoids
     (:description "Clusters data set using partition-around-medoids algorithm. Requires precalculated distance matrix that will contain distance of each pair in the data set."
      :notes "Not well suited for clustering large data sets, as construction of full distance matrix will take large ammount of cpu cycles and memory."
+     :returns "Vector of vectors (each inner vector represents cluster)."
      :thread-safety "Uses lparallel underneath."))
 
   (function clara

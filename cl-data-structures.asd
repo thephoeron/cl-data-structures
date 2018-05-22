@@ -95,6 +95,7 @@
                                            (:file "generics")
                                            (:file "common")
                                            (:file "methods")
+                                           (:file "docstrings")
                                            (:test-file "tests")))))
                (:module "algorithms"
                 :components ((:file "package")
