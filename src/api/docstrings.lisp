@@ -238,6 +238,42 @@
 
      :notes "This is the functional counterpart to the UPDATE! function."))
 
+  (function update-if
+    (:description
+     "Functional API: if there is value at LOCATION in the CONTAINER and supplied CONDITION-FN passes when called with present value return new instance with NEW-VALUE at LOCATION."
+
+     :syntax
+     "update-if container location new-value CONDITION-FN => new-instance status"
+
+     :returns
+     ("New container, with updated value at LOCATION if UPDATE took place"
+      "Modification status object")
+
+     :arguments
+     ((container "The instance that shall be transformed.")
+      (location "The location in the container that we want to transform.")
+      (condition-fn "Function used to check if update should happen."))
+
+     :notes "This is the functional counterpart to the UPDATE-IF! function."))
+
+  (function update-if!
+    (:description
+     "Mutable API: if there is value at LOCATION in the CONTAINER and supplied CONDITION-FN passes when called with present value sets LOCATION and returns container."
+
+     :syntax
+     "update-if! container location new-value CONDITION-FN => container status"
+
+     :returns
+     ("CONTAINER"
+      "Modification status object")
+
+     :arguments
+     ((container "The instance that shall be transformed.")
+      (location "The location in the container that we want to transform.")
+      (condition-fn "Function used to check if update should happen."))
+
+     :notes "This is the destructive counterpart to the UPDATE-IF function."))
+
   (function update!
     (:description
      "Mutable API: If the LOCATION is taken in the CONTAINER, destructivly update it with the NEW-VALUE"
