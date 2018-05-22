@@ -33,6 +33,7 @@
                              (:file "bind")
                              (:file "parallel-tools")
                              (:file "lambda-lists")
+                             (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
                                            (:file "types")

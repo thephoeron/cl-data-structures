@@ -30,10 +30,10 @@
      :collaborators ("Aggregation-function" "Range")))
 
   (type multi-stage-linear-aggregator
-    (:description "Low level aggregator for multistage functions.."
+    (:description "Low level aggregator for multistage functions."
      :responsibilities ("Initializes stages."
                         "Calls aggregate with each stage."
-                        "Passes values between stages")
+                        "Passes values between stages.")
      :collaborators ("Aggregation-function" "Range")))
 
   (function make-linear-aggregator
