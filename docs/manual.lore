@@ -14,6 +14,7 @@
   @begin{documentation}
   @pack{CL-DATA-STRUCTURES}
   @docgeneric['cl-ds:at]
+  @docgeneric['cl-ds:near]
   @docgeneric['cl-ds:size]
   @docgeneric['cl-ds:mutablep]
   @docgeneric['cl-ds:transactionalp]
@@ -42,6 +43,7 @@
   @docgeneric['cl-ds:erase]
   @docgeneric['cl-ds:erase-if]
   @docgeneric['cl-ds:put]
+  @docgeneric['cl-ds:take-out]
   @end{documentation})
 (level [section]
   @title{Mutable modification API}
@@ -54,6 +56,7 @@
   @docgeneric['cl-ds:erase!]
   @docgeneric['cl-ds:erase-if!]
   @docgeneric['cl-ds:put!]
+  @docgeneric['cl-ds:take-out!]
   @end{documentation})
 (level [section]
   @title{Variants API}

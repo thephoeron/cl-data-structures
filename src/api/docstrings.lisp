@@ -31,40 +31,8 @@
           (prove:is value 1)
           (prove:is found t)))]))
 
-  (function add
-    (:syntax "add dictionary key value => new-dictionary-instance status"
-     :arguments (("CONTAINER" "Instance that we want to modify.")
-                 ("LOCATION" "Place where NEW-VALUE shall be added.")
-                 ("NEW-VALUE" "Value that we intend to add into returned instance."))
-
-     :examples
-     [(let ((table (cl-ds.dicts.hamt:make-functional-hamt-dictionary #'sxhash #'eq))
-            (prove:diag \"Testing example for add function.\"))
-        (multiple-value-bind (value found) (cl-ds:at table 'a)
-          (prove:is value nil)
-          (prove:is found nil))
-        (let ((next-table (cl-ds:add table 'a 1)))
-          (multiple-value-bind (value found) (cl-ds:at table 'a)
-            (prove:is value nil)
-            (prove:is found nil))
-          (multiple-value-bind (value found) (cl-ds:at next-table 'a)
-            (prove:is value 1)
-            (prove:is found t))
-          (cl-ds:mod-bind (next-next-table found value)
-                          (cl-ds:add next-table 'a 2)
-            (prove:ok found)
-            (prove:is value 1)
-            (prove:is next-next-table next-table)
-            (multiple-value-bind (value found) (cl-ds:at next-next-table 'a)
-              (prove:ok found)
-              (prove:is value 1)))))]
-
-     :returns ("Instance of the same type as CONTAINER. If add took place it shall contain NEW-VALUE at LOCATION."
-               "Modification status object.")
-
-     :description "Functional API: attempts to non-destructively add NEW-VALUE into CONTAINER at LOCATION. Will not replace value at LOCATION if it was already occupied."
-
-     :notes "This is functional counterpart to the ADD! function."))
+  (function near
+    (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."))
 
   (function add!
     (:arguments
@@ -237,6 +205,34 @@
       ("location" "The location in the container that we want to transform."))
 
      :notes "This is the functional counterpart to the UPDATE! function."))
+
+  (function put
+    (:arguments ((container "A subclass of fundamental-container")
+                 (item "Object that should be added into CONTAINER"))
+     :description "Functional API. Inserts new the ITEM into a new version of the CONTAINER. Relevant to sets and sequences."
+     :returns "Modified container."
+     :notes "This is the functional counterpart to the PUT! function."))
+
+  (function put!
+    (:arguments ((container "A subclass of fundamental-container")
+                 (item "Object that should be added into CONTAINER"))
+     :description ("Destructive API. Inserts new the ITEM into the CONTAINER. Relevant to sets and sequences."
+                   "Modification status.")
+     :returns "CONTAINER"
+     :notes "This is the destructive counterpart to the PUT function."))
+
+  (function take-out
+    (:description "Functional API. Removes one element from the CONTAINER. Relevant to sequences."
+     :arguments ((container "Container that is about to be modified."))
+     :returns ("New version of the container, without one element."
+               "Modification status.")
+     :notes "This is the functional counterpart to the TAKE-OUT! function."))
+
+  (function take-out!
+    (:description "Destructive API: removes one element from the CONTAINER. Relevant to sequences."
+     :returns "CONTAINER"
+     :arguments ((container "Container that is about to be modified"))
+     :notes "This is the destructive counterpart to the TAKE-OUT function."))
 
   (function update-if
     (:description
@@ -412,16 +408,6 @@
           (prove:ok (cl-ds:mutablep container))
           (prove:ok (cl-ds:transactionalp container))))]
      :returns "T if CONTAINER is transactional and NIL if it is not."))
-
-  (function put
-    (:arguments ((container "A subclass of fundamental-container")
-                 (item "Object that should be added into CONTAINER"))
-     :description "Functional API. Inserts new ELEMENT into new instance of CONTAINER. Relevant to sets and sequences."))
-
-  (function put!
-    (:arguments ((container "A subclass of fundamental-container")
-                 (item "Object that should be added into CONTAINER"))
-     :description "Destructive API. Inserts new ELEMENT into CONTAINER. Relevant to sets and sequences."))
 
   (function value
     (:syntax "value status => value"
