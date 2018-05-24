@@ -68,8 +68,8 @@
      :notes "This is the functional counterpart to the (SETF AT) function."
 
      :examples
-     [(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq)))
-        (next-table (cl-ds:insert table 'a 5))
+     [(let* ((table (cl-ds.dicts.hamt::make-functional-hamt-dictionary #'sxhash #'eq))
+             (next-table (cl-ds:insert table 'a 5)))
         (prove:is (cl-ds:at next-table 'a) 5)
         (prove:is (cl-ds:at table 'a) 5 :test (alexandria:compose #'null #'eql)))]))
 
@@ -123,11 +123,11 @@
           (prove:is value nil)
           (prove:is (cl-ds:at erased-table 'a) 5)
           (prove:is (cl-ds:at next-table 'a) 5))
-        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'b (lambda (location value) (declare (ignore location)) (evenp value))))
-        (prove:ok found)
-        (prove:is value 6)
-        (prove:is (cl-ds:at erased-table 'b) nil)
-        (prove:is (cl-ds:at next-table 'b) 6))]
+        (cl-ds:mod-bind (erased-table found value) (cl-ds:erase-if next-table 'b (lambda (location value) (declare (ignore location)) (evenp value)))
+          (prove:ok found)
+          (prove:is value 6)
+          (prove:is (cl-ds:at erased-table 'b) nil)
+          (prove:is (cl-ds:at next-table 'b) 6)))]
 
      :arguments
      (("CONTAINER" "Container that shall be modified.")
