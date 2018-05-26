@@ -15,6 +15,7 @@
     :notes ("This algorithm gives solid estimates for large sets, not so good for small sets."
             "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
             "Can be used to (for instance) estimate number of keys for hash table before creating one. Good estimate will minimize rehashing and reduce both memory that needs to allocated and time required to fill hash table.")
+    :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
     :examples [(let ((data (cl-ds:xpr (:i 0)
                              (when (< i 500000)
                                (send-recur (random 90000000000) :i (1+ i))))))
