@@ -14,17 +14,22 @@
     (:description "Joins multiple ranges into one using JOIN-FUNCTION."))
 
   (function split-into-chunks
-    (:description "Divides aggregation process into partitions upto size."))
+    (:description "Divides aggregation process into partitions upto size."
+     :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
+                  (prove:is (cl-ds:size data) 3)
+                  (prove:is (cl-ds:at data 0) #(1 2) :test 'equalp)
+                  (prove:is (cl-ds:at data 1) #(3 4) :test 'equalp)
+                  (prove:is (cl-ds:at data 2) #(5 6) :test 'equalp))]))
 
   (function to-vector
-    (:description "Collects all elements into cl:vector."
+    (:description "Collects all elements into CL:VECTOR."
      :arguments-and-values ((range "Object to aggregate accross.")
                             (key "Key function used to extract value for vector.")
                             (element-type ":element-type for result vector."))))
 
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE.")
-    (:notes "Works almost like cl:map-and-friends, but it is lazy evaluated. FUNCTION is called only when required."))
+    (:notes "Works almost like cl:map-and-friends, but lazy evaluated."))
 
   (function count
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
@@ -52,5 +57,6 @@
                  (test "Test for inner hashtable (either eq, eql or equal)."))
      :examples [(let* ((data #(1 2 3 4 5 6 7 8 9 10))
                        (sums (cl-ds.alg:accumulate #'+ (cl-ds.alg:group-by data :key #'evenp))))
+                  (prove:is (cl-ds:size sums) 2)
                   (prove:is (cl-ds:at sums t) 30)
                   (prove:is (cl-ds:at sums nil) 25))])))
