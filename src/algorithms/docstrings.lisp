@@ -31,8 +31,12 @@
     (:description "Creates new range by applying FUNCTION to each element of the RANGE.")
     (:notes "Works almost like cl:map-and-friends, but lazy evaluated."))
 
-  (function count
+  (function count-elements
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
+     :examples [(let ((data #(1 2 3 4 5)))
+                  (prove:is (length data) (cl-ds.alg:count-elements data))
+                  (prove:is 3 (cl-ds:at (cl-ds.alg:count-elements (cl-ds.alg:group-by data :key #'evenp))
+                                        nil)))]
      :see-also (group-by)))
 
   (function chain
