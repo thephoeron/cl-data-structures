@@ -26,7 +26,8 @@
                         (setf estimate (* size (log (/ size result))))))))
           ((> estimate (* (/ 1.0 30.0) 4294967296.0))
            (setf estimate (* -4294967296.0
-                             (log (- 1.0 (/ estimate 4294967296.0)))))))
+                             (log (- 1.0 (/ estimate
+                                            4294967296.0)))))))
     estimate))
 
 
@@ -54,7 +55,7 @@
    (bind ((hash (ldb (byte 32 0) (funcall %hash-fn element)))
           (index (ash hash (- (- 32 %bits))))
           (hash-length (integer-length hash))
-          (rank (if (zerop hash-length) 31 (1- hash-length))))
+          (rank (if (zerop hash-length) 0 (1- hash-length))))
      (when (> rank (aref %registers index))
        (setf (aref %registers index) rank))))
 
