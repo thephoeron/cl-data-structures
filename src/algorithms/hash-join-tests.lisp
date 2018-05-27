@@ -5,16 +5,7 @@
 
 (in-package #:hash-join-tests)
 
-(plan 9)
-(let ((result (sort (cl-ds.alg:hash-join #(1 2 3 4) #'identity
-                                         (list (cl-ds:field :data #(1 2 3)
-                                                            :key #'identity)))
-                    #'<
-                    :key #'first)))
-  (iterate
-    (for v in-vector result)
-    (for (a b) = v)
-    (is a b)))
+(plan 6)
 (ok (emptyp (cl-ds.alg:hash-join #() #'identity
                                  (list (cl-ds:field :data #()
                                                     :key #'identity)))))
