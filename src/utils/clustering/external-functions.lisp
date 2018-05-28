@@ -110,7 +110,7 @@
       (with final = nil)
       (for thread in-vector vector)
       (for state = (bt:join-thread thread))
-      (for mean-silhouette = (~> state read-silhouette mean))
+      (for mean-silhouette = (~> state access-silhouette mean))
       (maximize mean-silhouette into maximum)
       (when (= mean-silhouette maximum)
         (setf final state))
