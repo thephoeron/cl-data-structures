@@ -116,4 +116,4 @@
         (setf final state))
       (finally (assign-clara-data-to-medoids final)
                (replace-indexes-in-clusters-with-data final)
-               (return (obtain-result state (access-silhouette state)))))))
+               (return (obtain-result final (access-silhouette final)))))))
