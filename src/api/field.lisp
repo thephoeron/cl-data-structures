@@ -102,14 +102,23 @@
 
   (defun generate-validation-forms (body field-name accepted-field-arguments)
     (let* ((ordering (ordering accepted-field-arguments)))
-      `(block nil
-         ,@(mapcar (lambda (x)
-                     (bind (((name . parameters-list) x))
-                       (validation-form (sort (plist-alist parameters-list) ordering :key #'first)
-                                        name
-                                        field-name)))
-                   body)
-         t))))
+      (with-gensyms (!key !arg)
+        `(block nil
+           (iterate
+             (for (,!key ,!arg) in-hashtable (read-arguments ,field-name))
+             (unless (member ,!key '(,@accepted-field-arguments))
+               (error 'cl-ds:unexpected-argument
+                      :argument ,!key
+                      :text ,(format nil
+                                     "Field does not accept this argument. Accepted arguments are: ~{~A~^ ~}."
+                                     accepted-field-arguments))))
+           ,@(mapcar (lambda (x)
+                       (bind (((name . parameters-list) x))
+                         (validation-form (sort (plist-alist parameters-list) ordering :key #'first)
+                                          name
+                                          field-name)))
+                     body)
+           t)))))
 
 
 (defmacro define-validation-for-fields ((fn accepted-field-arguments) &body body)

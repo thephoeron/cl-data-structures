@@ -23,6 +23,7 @@
    #:consume-back
    #:consume-front
    #:define-validation-for-fields
+   #:unexpected-argument
    #:delay
    #:delayed
    #:dimensionality-error

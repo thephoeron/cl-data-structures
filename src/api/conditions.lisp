@@ -42,6 +42,10 @@
               :reader read-argument)))
 
 
+(define-condition unexpected-argument (invalid-argument)
+  ())
+
+
 (define-condition out-of-bounds (textual-error)
   ((%value :initarg :value
            :reader read-value)
@@ -67,10 +71,16 @@
 
 
 (defmethod print-object ((condition argument-out-of-bounds) stream)
-  (format stream "Argument ~a has value ~a which is out of bounds ~a~%"
+  (format stream "Argument ~A has value ~a which is out of bounds ~a~%"
           (read-argument condition)
           (read-value condition)
           (read-bounds condition))
+  (call-next-method))
+
+
+(defmethod print-object ((condition unexpected-argument) stream)
+  (format stream "Argument ~A was not expected.~%"
+          (read-argument condition))
   (call-next-method))
 
 
