@@ -93,8 +93,8 @@
       `(bind (((:values ,!value ,!found) (cl-ds:at ,field-name ,argument-name)))
          (declare (ignorable ,!value ,!found))
          ,@(mapcar (lambda (x &aux
-                                (parameter-name (car x))
-                                (parameter-body (cdr x)))
+                           (parameter-name (car x))
+                           (parameter-body (cdr x)))
                      (validation-form-for parameter-name argument-name
                                           field-name !value !found parameter-body))
                    parameters-list))))

@@ -83,7 +83,7 @@
       (let ((length (length %indexes)))
         (setf %number-of-medoids
               (if (slot-initialized-p %number-of-medoids)
-                  (min %number-of-medoids length)
+                  (max (min %number-of-medoids length) 1)
                   length))
         (if (slot-initialized-p %cluster-size)
             (assert (< 0 %cluster-size))
