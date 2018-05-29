@@ -488,5 +488,8 @@
   (type not-implemented
     (:description "Error signaled when not implemented functionality is accessed."))
 
+  (type unexpected-argument
+    (:description "Error signaled when passed argument was not expected."))
+
   (type out-of-bounds
     (:description "Error signaled when some value is out of expected bounds.")))
