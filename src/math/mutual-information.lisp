@@ -192,9 +192,8 @@
 
 (defun discrete-form (field data)
   (bind ((split-points-count (cl-ds:at field :split-points-count))
-         (sorted (~>> data
-                      (map 'vector (or (cl-ds:at field :key) #'identity))
-                      (sort _ #'<)))
+         (sorted (~> (map 'vector (cl-ds:at field :key) data)
+                     (sort #'<)))
          (partition-points (partition-points (length data)
                                              split-points-count))
          (key (or (cl-ds:at field :key) #'identity))
