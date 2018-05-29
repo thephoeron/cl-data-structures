@@ -167,11 +167,12 @@
     (for field in fields)
     (iterate
       (for future-field in fields)
-      (unless (eq field future-field)
-        (setf (cl-ds.utils:mref result (read-name field)
-                                (read-name future-field))
-              (calculate-mutual-information-between field
-                                                    future-field))))
+      (until (eq field future-field))
+      (setf (cl-ds.utils:mref result
+                              (read-name field)
+                              (read-name future-field))
+            (calculate-mutual-information-between field
+                                                  future-field)))
     (finally (assert (>= result 0)) (return result))))
 
 
