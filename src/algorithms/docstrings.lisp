@@ -43,9 +43,9 @@
     (:description "Joins multiple ranges using hash join algorithm."
      :examples [(let ((result (sort (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                          (list (cl-ds:field :data #(1 2 3)
-                                                                            :key #'identity)))
-                                    #'<
-                                    :key #'first)))
+                                                                            :key #'identity))
+                                                         #'<
+                                                         :key #'first))))
                   (prove:is (length result) 3)
                   (map nil (lambda (x) (prove:is (first x) (second x))) result))]))
 
