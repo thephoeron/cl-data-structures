@@ -116,9 +116,9 @@
                       :text ,error-text)))
            ,@(mapcar (lambda (x)
                        (bind (((name . parameters-list) x))
-                         (validation-form (sort (plist-alist parameters-list) ordering :key #'first)
-                                          name
-                                          field-name)))
+                         (~> (plist-alist parameters-list)
+                             (sort ordering :key #'first)
+                             (validation-form name field-name))))
                      body)
            t)))))
 
