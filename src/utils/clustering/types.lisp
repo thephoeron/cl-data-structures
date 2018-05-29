@@ -95,7 +95,7 @@
                                               :fill-pointer %number-of-medoids))
           (map-into %cluster-contents
                     (lambda () (make-array %cluster-size :adjustable t
-                                                         :fill-pointer 1))))
+                                                    :fill-pointer 1))))
         (unless (slot-initialized-p %unfinished-clusters)
           (setf %unfinished-clusters
                 (make-array %number-of-medoids
