@@ -286,7 +286,8 @@
          (unwind-protect
               (progn ,@body)
            (eval-always
-             (setf ,@(apply #'append (mapcar (lambda (binding symbol) (list (car symbol) binding))
+             (setf ,@(apply #'append (mapcar (lambda (binding symbol)
+                                               (list (car symbol) binding))
                                              !vars bindings)))))))))
 
 
