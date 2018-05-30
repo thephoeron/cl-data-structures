@@ -33,7 +33,7 @@
     (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."))
 
   (function mutual-information
-    (:description "Calculates mutual-information between FIELD and COMPARATIVE-FIELDS."
+    (:description "Calculates mutual-information between FIELD and COMPARATIVE-FIELDS. Elements in each FIELD should be equal comparable."
      :returns "Range, allowing to access value for each field by quering cl-ds:at with label of field."))
 
   (function moments
