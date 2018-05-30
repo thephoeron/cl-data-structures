@@ -51,13 +51,13 @@
                    :type (or symbol list))
      (%metric-fn :initarg :metric-fn
                  :accessor access-metric-fn
-                 :type (or symbol function))
+                 :type function)
      (%sample-count :initarg :sample-count
                     :accessor access-sample-count
                     :type positive-integer)
      (%key :initarg :key
            :accessor access-key
-           :type (or symbol function))
+           :type function)
      (%index-mapping :initform nil
                      :accessor access-index-mapping
                      :type (or null (simple-array non-negative-fixnum (*)))

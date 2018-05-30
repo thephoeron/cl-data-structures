@@ -68,8 +68,8 @@
                 merge)
   (let ((state (build-clara-clusters
                 input-data number-of-medoids metric-type
-                metric-fn sample-size sample-count
-                :key key
+                (ensure-function metric-fn) sample-size sample-count
+                :key (ensure-function key)
                 :select-medoids-attempts-count select-medoids-attempts-count
                 :attempts attempts :split split :merge merge)))
     (assign-clara-data-to-medoids state)
@@ -90,7 +90,9 @@
                                            split
                                            merge)
   (assert (< 0 from to))
-  (let ((vector (make-array (1+ (- to from)))))
+  (let ((vector (make-array (1+ (- to from))))
+        (metric-fn (ensure-function metric-fn))
+        (key (ensure-function key)))
     (iterate
       (for index from 0 below (length vector))
       (for i from from to to)
