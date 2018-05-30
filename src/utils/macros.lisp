@@ -344,12 +344,14 @@
                                        (list `(setf ,alias) '(value)
                                              `(funcall (function ,write) value
                                                        ,object)))
-                                     alias-list write-list)))
+                                     alias-list write-list))
+           (all-functions (mapcar (compose (curry #'list 'function)
+                                           #'first)
+                                  (append reader-functions
+                                          writer-functions))))
       `(flet (,@reader-functions
               ,@writer-functions)
-         (declare (ignorable ,@(mapcar (compose (curry #'list 'function)
-                                                #'first)
-                                       (append reader-functions
-                                               writer-functions))))
+         (declare (ignorable ,@all-functions)
+                  (dynamic-extent ,@all-functions))
          (symbol-macrolet ,(mapcar #'list names-list (mapcar #'list alias-list))
            ,@body)))))
