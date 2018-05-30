@@ -320,13 +320,19 @@
                                 (lret ((result (~> x
                                                    closer-mop:slot-definition-readers
                                                    first)))
-                                  (assert result)))
+                                  (assert result
+                                          nil
+                                          "No reader for slot ~a."
+                                          (closer-mop:slot-definition-name x))))
                               slots))
            (write-list (mapcar (lambda (x)
                                  (lret ((result (~> x
                                                     closer-mop:slot-definition-writers
                                                     first)))
-                                   (assert result)))
+                                   (assert result
+                                           nil
+                                           "No writer for slot ~a."
+                                           (closer-mop:slot-definition-name x))))
                                slots))
            (alias-list (mapcar (lambda (x) (gensym)) names-list))
            (reader-functions (mapcar (lambda (alias read)
