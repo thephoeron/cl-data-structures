@@ -44,11 +44,11 @@
 (-> clara (vector
            positive-fixnum
            (or symbol list)
-           function
+           (or symbol function)
            positive-fixnum
            positive-fixnum
            &key
-           (:key function)
+           (:key (or symbol function))
            (:select-medoids-attempts-count (or null positive-fixnum))
            (:attempts non-negative-fixnum)
            (:split (or null positive-fixnum))
