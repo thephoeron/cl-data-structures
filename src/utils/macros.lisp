@@ -317,24 +317,33 @@
     (let* ((slots (list-of-slots id))
            (names-list (mapcar #'closer-mop:slot-definition-name slots))
            (read-list (mapcar (lambda (x)
-                                (lret ((result (~> x closer-mop:slot-definition-readers first)))
+                                (lret ((result (~> x
+                                                   closer-mop:slot-definition-readers
+                                                   first)))
                                   (assert result)))
                               slots))
            (write-list (mapcar (lambda (x)
-                                 (lret ((result (~> x closer-mop:slot-definition-writers first)))
+                                 (lret ((result (~> x
+                                                    closer-mop:slot-definition-writers
+                                                    first)))
                                    (assert result)))
                                slots))
            (alias-list (mapcar (lambda (x) (gensym)) names-list))
            (reader-functions (mapcar (lambda (alias read)
-                                       (list alias nil `(funcall (function ,read) ,object)))
+                                       (list alias nil
+                                             `(funcall (function ,read)
+                                                       ,object)))
                                      alias-list read-list))
            (writer-functions (mapcar (lambda (alias write)
                                        (list `(setf ,alias) '(value)
-                                             `(funcall (function ,write) value ,object)))
+                                             `(funcall (function ,write) value
+                                                       ,object)))
                                      alias-list write-list)))
       `(flet (,@reader-functions
               ,@writer-functions)
-         (declare (ignorable ,@(mapcar (compose (curry #'list 'function) #'first)
-                                       (append reader-functions writer-functions))))
+         (declare (ignorable ,@(mapcar (compose (curry #'list 'function)
+                                                #'first)
+                                       (append reader-functions
+                                               writer-functions))))
          (symbol-macrolet ,(mapcar #'list names-list (mapcar #'list alias-list))
            ,@body)))))
