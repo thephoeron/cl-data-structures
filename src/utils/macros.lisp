@@ -291,16 +291,50 @@
 
 
 (eval-always
+  (defgeneric list-of-slots-using-class (class slots)
+    (:method (id (slots list))
+      nil)
+    (:method ((id standard-class) (slots list))
+      (apply #'append
+             (remove-if-not (lambda (x)
+                              (find (closer-mop:slot-definition-name x)
+                                    slots))
+                            (closer-mop:class-direct-slots id))
+             (mapcar (rcurry #'list-of-slots-using-class slots)
+                     (closer-mop:class-direct-superclasses id)))))
   (defgeneric list-of-slots (symbol)))
 
 
 (defmacro define-list-of-slots (id &body slots)
   `(eval-always
      (defmethod list-of-slots ((class (eql ',id)))
-       '(,@slots))))
+       (list-of-slots-using-class (find-class class)
+                                  '(,@slots)))))
 
 
 (defmacro with-slots-for ((object id) &body body)
   (once-only (object)
-    `(with-slots ,(list-of-slots id) ,object
-       ,@body)))
+    (let* ((slots (list-of-slots id))
+           (names-list (mapcar #'closer-mop:slot-definition-name slots))
+           (read-list (mapcar (lambda (x)
+                                (lret ((result (~> x closer-mop:slot-definition-readers first)))
+                                  (assert result)))
+                              slots))
+           (write-list (mapcar (lambda (x)
+                                 (lret ((result (~> x closer-mop:slot-definition-writers first)))
+                                   (assert result)))
+                               slots))
+           (alias-list (mapcar (lambda (x) (gensym)) names-list))
+           (reader-functions (mapcar (lambda (alias read)
+                                       (list alias nil `(funcall (function ,read) ,object)))
+                                     alias-list read-list))
+           (writer-functions (mapcar (lambda (alias write)
+                                       (list `(setf ,alias) '(value)
+                                             `(funcall (function ,write) value ,object)))
+                                     alias-list write-list)))
+      `(flet (,@reader-functions
+              ,@writer-functions)
+         (declare (ignorable ,@(mapcar (compose (curry #'list 'function) #'first)
+                                       (append reader-functions writer-functions))))
+         (symbol-macrolet ,(mapcar #'list names-list (mapcar #'list alias-list))
+           ,@body)))))

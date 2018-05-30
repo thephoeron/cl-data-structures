@@ -4,30 +4,47 @@
 (locally (declare (optimize (safety 3)))
   (defclass pam-algorithm-state ()
     ((%input-data :initarg :input-data
-                  :reader read-input-data)
+                  :reader read-input-data
+                  :writer write-input-data)
      (%number-of-medoids :initarg :number-of-medoids
                          :type positive-integer
+                         :writer write-number-of-medoids
                          :reader read-number-of-medoids)
      (%distance-matrix :initarg :distance-matrix
                        :type cl-ds.utils:half-matrix
+                       :writer write-distance-matrix
                        :reader read-distance-matrix)
      (%select-medoids-attempts-count :initarg :select-medoids-attempts-count
                                      :reader read-select-medoids-attempts-count
+                                     :writer write-select-medoids-attempts-count
                                      :initform 20)
      (%split-merge-attempts-count :initarg :split-merge-attempts-count
                                   :type non-negative-fixnum
+                                  :reader read-split-merge-attempts-count
+                                  :writer write-split-merge-attempts-count
                                   :initform 0)
      (%split-threshold :initarg :split-threshold
+                       :reader read-split-merge-attempts-count
+                       :writer write-split-merge-attempts-count
                        :initform nil)
      (%merge-threshold :initarg :merge-threshold
+                       :reader read-split-merge-attempts-count
+                       :writer write-split-merge-attempts-count
                        :initform nil)
-     (%unfinished-clusters :initarg :improvements)
-     (%cluster-size :initarg :cluster-size :type non-negative-fixnum)
+     (%unfinished-clusters :initarg :improvements
+                           :reader read-unfinished-clusters
+                           :writer write-unfinished-clusters)
+     (%cluster-size :initarg :cluster-size
+                    :type non-negative-fixnum
+                    :reader read-cluster-size
+                    :writer write-cluster-size)
      (%indexes :initarg :indexes
                :type (vector non-negative-fixnum)
-               :reader read-indexes)
+               :reader read-indexes
+               :writer write-indexes)
      (%cluster-contents :initarg :cluster-contents
                         :type vector
+                        :writer write-cluster-contents
                         :reader read-cluster-contents))))
 
 
@@ -37,19 +54,28 @@
                                :type (or null vector)
                                :accessor access-result-cluster-contents)
      (%all-indexes :reader read-all-indexes
+                   :writer write-all-indexes
                    :type (vector non-negative-fixnum))
      (%metric-type :initarg :metric-type
+                   :reader read-metric-type
+                   :writer write-metric-type
                    :type (or symbol list))
      (%metric-fn :initarg :metric-fn
+                 :accessor access-metric-fn
                  :type (or symbol function))
      (%sample-count :initarg :sample-count
+                    :accessor access-sample-count
                     :type positive-integer)
      (%key :initarg :key
+           :accessor access-key
            :type (or symbol function))
      (%index-mapping :initform nil
+                     :accessor access-index-mapping
                      :type (or null (simple-array non-negative-fixnum (*)))
                      :reader read-index-mapping)
-     (%sample-size :initarg :sample-size)
+     (%sample-size :initarg :sample-size
+                   :type positive-integer
+                   :accessor access-sample-size)
      (%mean-silhouette :initform -10 ; silhouette is bound by definition in -1 to +1
                        :type number
                        :accessor access-mean-silhouette)
@@ -58,11 +84,14 @@
                   :accessor access-silhouette))))
 
 
-(defclass clustering-result ()
-  ((%cluster-contents :initarg :cluster-contents
-                      :reader read-cluster-contents)
-   (%silhouette :initarg :silhouette
-                :reader read-silhouette)))
+(locally (declare (optimize (safety 3)))
+  (defclass clustering-result ()
+    ((%cluster-contents :initarg :cluster-contents
+                        :type vector
+                        :reader read-cluster-contents)
+     (%silhouette :initarg :silhouette
+                  :type (vector single-float)
+                  :reader read-silhouette))))
 
 
 (cl-ds.utils:define-list-of-slots pam-algorithm-state
