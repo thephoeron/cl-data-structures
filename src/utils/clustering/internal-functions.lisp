@@ -140,7 +140,7 @@
              (if (zerop (max intra inter))
                  -1.0
                  (/ (- inter intra) (max intra inter)))))
-      (map 'vector
+      (map '(vector number)
            #'distance-difference
            (map-distance #'intra-cluster-distances)
            (map-distance #'inter-cluster-distances)))))
@@ -197,7 +197,7 @@
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (let ((expired-attempts-limits
             (iterate
-              (with attempts = (read-select-medoids-attempts-count state))
+              (with attempts = %select-medoids-attempts-count)
               (for i from 0)
               (unless (null attempts)
                 (unless (< i attempts)
@@ -306,7 +306,7 @@
       (decf (fill-pointer %cluster-contents) count-of-eliminated)
       (map nil
            (rcurry #'vector-push-extend %cluster-contents)
-           (read-cluster-contents fresh-state)))))
+           (access-cluster-contents fresh-state)))))
 
 
 (defun replace-indexes-in-cluster-with-data (state cluster)
@@ -327,7 +327,7 @@
 
 (defmethod obtain-result ((state pam-algorithm-state) silhouette)
   (make 'clustering-result
-        :cluster-contents (read-cluster-contents state)
+        :cluster-contents (access-cluster-contents state)
         :silhouette silhouette))
 
 

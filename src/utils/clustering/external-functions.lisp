@@ -74,7 +74,7 @@
                 :attempts attempts :split split :merge merge)))
     (assign-clara-data-to-medoids state)
     (replace-indexes-in-clusters-with-data state)
-    (obtain-result state (read-silhouette state))))
+    (obtain-result state (access-silhouette state))))
 
 
 (defun clara-variable-number-of-medoids (input-data

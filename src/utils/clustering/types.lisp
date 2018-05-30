@@ -8,44 +8,35 @@
                   :writer write-input-data)
      (%number-of-medoids :initarg :number-of-medoids
                          :type positive-integer
-                         :writer write-number-of-medoids
-                         :reader read-number-of-medoids)
+                         :accessor access-number-of-medoids)
      (%distance-matrix :initarg :distance-matrix
                        :type cl-ds.utils:half-matrix
-                       :writer write-distance-matrix
-                       :reader read-distance-matrix)
+                       :accessor access-distance-matrix)
      (%select-medoids-attempts-count :initarg :select-medoids-attempts-count
-                                     :reader read-select-medoids-attempts-count
-                                     :writer write-select-medoids-attempts-count
+                                     :accessor access-select-medoids-attempts-count
                                      :initform 20)
      (%split-merge-attempts-count :initarg :split-merge-attempts-count
                                   :type non-negative-fixnum
-                                  :reader read-split-merge-attempts-count
-                                  :writer write-split-merge-attempts-count
+                                  :accessor access-split-merge-attempts-count
                                   :initform 0)
      (%split-threshold :initarg :split-threshold
-                       :reader read-split-merge-attempts-count
-                       :writer write-split-merge-attempts-count
+                       :accessor access-split-merge-attempts-count
                        :initform nil)
      (%merge-threshold :initarg :merge-threshold
                        :reader read-split-merge-attempts-count
                        :writer write-split-merge-attempts-count
                        :initform nil)
      (%unfinished-clusters :initarg :improvements
-                           :reader read-unfinished-clusters
-                           :writer write-unfinished-clusters)
+                           :accessor accessor-unfinished-clusters)
      (%cluster-size :initarg :cluster-size
                     :type non-negative-fixnum
-                    :reader read-cluster-size
-                    :writer write-cluster-size)
+                    :accessor access-cluster-size)
      (%indexes :initarg :indexes
                :type (vector non-negative-fixnum)
-               :reader read-indexes
-               :writer write-indexes)
+               :accessor access-indexes)
      (%cluster-contents :initarg :cluster-contents
                         :type vector
-                        :writer write-cluster-contents
-                        :reader read-cluster-contents))))
+                        :accessor access-cluster-contents))))
 
 
 (locally (declare (optimize (safety 3)))
@@ -53,12 +44,10 @@
     ((%result-cluster-contents :initform nil
                                :type (or null vector)
                                :accessor access-result-cluster-contents)
-     (%all-indexes :reader read-all-indexes
-                   :writer write-all-indexes
+     (%all-indexes :accessor access-all-indexes
                    :type (vector non-negative-fixnum))
      (%metric-type :initarg :metric-type
-                   :reader read-metric-type
-                   :writer write-metric-type
+                   :accessor access-metric-type
                    :type (or symbol list))
      (%metric-fn :initarg :metric-fn
                  :accessor access-metric-fn
@@ -80,7 +69,7 @@
                        :type number
                        :accessor access-mean-silhouette)
      (%silhouette :initform nil
-                  :type (or null (vector single-float))
+                  :type (or null (vector number))
                   :accessor access-silhouette))))
 
 
@@ -90,7 +79,7 @@
                         :type vector
                         :reader read-cluster-contents)
      (%silhouette :initarg :silhouette
-                  :type (vector single-float)
+                  :type (vector number)
                   :reader read-silhouette))))
 
 
@@ -161,7 +150,7 @@
     (setf %all-indexes %indexes)
     (setf %sample-size (min (length %indexes) %sample-size))
     (setf %index-mapping (make-array (length %indexes)
-                                     :element-type 'fixnum))))
+                                     :element-type 'non-negative-fixnum))))
 
 
 (defun clone-state (state &key indexes)
