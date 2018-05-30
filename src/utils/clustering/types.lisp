@@ -1,45 +1,61 @@
 (in-package #:cl-ds.utils.cluster)
 
 
-(defclass pam-algorithm-state ()
-  ((%input-data :initarg :input-data
-                :reader read-input-data)
-   (%number-of-medoids :initarg :number-of-medoids
-                       :reader read-number-of-medoids)
-   (%distance-matrix :initarg :distance-matrix
-                     :reader read-distance-matrix)
-   (%select-medoids-attempts-count :initarg :select-medoids-attempts-count
-                                   :reader read-select-medoids-attempts-count
-                                   :initform 20)
-   (%split-merge-attempts-count :initarg :split-merge-attempts-count
-                                :initform 0)
-   (%split-threshold :initarg :split-threshold
-                     :initform nil)
-   (%merge-threshold :initarg :merge-threshold
-                     :initform nil)
-   (%unfinished-clusters :initarg :improvements)
-   (%cluster-size :initarg :cluster-size)
-   (%indexes :initarg :indexes
-             :reader read-indexes)
-   (%cluster-contents :initarg :cluster-contents
-                      :reader read-cluster-contents)))
+(locally (declare (optimize (safety 3)))
+  (defclass pam-algorithm-state ()
+    ((%input-data :initarg :input-data
+                  :reader read-input-data)
+     (%number-of-medoids :initarg :number-of-medoids
+                         :type positive-integer
+                         :reader read-number-of-medoids)
+     (%distance-matrix :initarg :distance-matrix
+                       :type cl-ds.utils:half-matrix
+                       :reader read-distance-matrix)
+     (%select-medoids-attempts-count :initarg :select-medoids-attempts-count
+                                     :reader read-select-medoids-attempts-count
+                                     :initform 20)
+     (%split-merge-attempts-count :initarg :split-merge-attempts-count
+                                  :type non-negative-fixnum
+                                  :initform 0)
+     (%split-threshold :initarg :split-threshold
+                       :initform nil)
+     (%merge-threshold :initarg :merge-threshold
+                       :initform nil)
+     (%unfinished-clusters :initarg :improvements)
+     (%cluster-size :initarg :cluster-size :type non-negative-fixnum)
+     (%indexes :initarg :indexes
+               :type (vector non-negative-fixnum)
+               :reader read-indexes)
+     (%cluster-contents :initarg :cluster-contents
+                        :type vector
+                        :reader read-cluster-contents))))
 
 
-(defclass clara-algorithm-state (pam-algorithm-state)
-  ((%result-cluster-contents :initform nil
-                             :accessor access-result-cluster-contents)
-   (%all-indexes :reader read-all-indexes)
-   (%metric-type :initarg :metric-type)
-   (%metric-fn :initarg :metric-fn)
-   (%sample-count :initarg :sample-count)
-   (%key :initarg :key)
-   (%index-mapping :initform nil
-                   :reader read-index-mapping)
-   (%sample-size :initarg :sample-size)
-   (%mean-silhouette :initform -10 ;silhouette is bound by definition in -1 to +1
-                     :accessor access-mean-silhouette)
-   (%silhouette :initform nil
-                :accessor access-silhouette)))
+(locally (declare (optimize (safety 3)))
+  (defclass clara-algorithm-state (pam-algorithm-state)
+    ((%result-cluster-contents :initform nil
+                               :type (or null vector)
+                               :accessor access-result-cluster-contents)
+     (%all-indexes :reader read-all-indexes
+                   :type (vector non-negative-fixnum))
+     (%metric-type :initarg :metric-type
+                   :type (or symbol list))
+     (%metric-fn :initarg :metric-fn
+                 :type (or symbol function))
+     (%sample-count :initarg :sample-count
+                    :type positive-integer)
+     (%key :initarg :key
+           :type (or symbol function))
+     (%index-mapping :initform nil
+                     :type (or null (simple-array non-negative-fixnum (*)))
+                     :reader read-index-mapping)
+     (%sample-size :initarg :sample-size)
+     (%mean-silhouette :initform -10 ; silhouette is bound by definition in -1 to +1
+                       :type number
+                       :accessor access-mean-silhouette)
+     (%silhouette :initform nil
+                  :type (or null (vector single-float))
+                  :accessor access-silhouette))))
 
 
 (defclass clustering-result ()

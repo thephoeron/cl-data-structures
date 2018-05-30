@@ -403,3 +403,4 @@
                        :type 'positive-integer)
   (:type :optional nil
          :member (:discrete :continues)))
+

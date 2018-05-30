@@ -334,7 +334,7 @@
 (defun index-mapping-function (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (let ((index-mapping %index-mapping))
-      (declare (type (simple-array fixnum *) %index-mapping))
+      (declare (type (simple-array non-negative-fixnum (*)) %index-mapping))
       (lambda (x)
         (declare (optimize (speed 3)
                            (safety 0)
