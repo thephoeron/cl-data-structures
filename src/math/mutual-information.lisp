@@ -177,6 +177,7 @@
 
 
 (defun partition-points (length split-points-count)
+  "How to divide vector into equal partitions?"
   (bind ((number-of-points (min length split-points-count))
          (shift (/ length number-of-points))
          (result (make-array split-points-count
@@ -191,6 +192,7 @@
 
 
 (defun discrete-form (field data)
+  "Can't calculate mutual information for continues variables, so we will divide whole range into segments."
   (bind ((split-points-count (cl-ds:at field :split-points-count))
          (sorted (~> (map 'vector (cl-ds:at field :key) data)
                      (sort #'<)))
@@ -215,7 +217,7 @@
          ((:values data split-points-count)
           (if (continuesp field)
               (discrete-form field data)
-              (values data (cl-ds:at field :split-points-count)))))
+              (values data nil)))) ; split-points-count is ignored. Maybe i should check if it was passed anyway and signal error in such case?
     (make 'info-field
           :name (cl-ds:at field :name)
           :test (if (continuesp field)
