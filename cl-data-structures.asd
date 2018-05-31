@@ -43,6 +43,7 @@
                                            (:test-file "tests")))
                              (:module "metric-functions"
                               :components ((:file "package")
+                                           (:file "levenshtein")
                                            (:file "hellinger")))
                              (:module "distance-functions"
                               :components ((:file "package")
@@ -156,7 +157,8 @@
                              (:file "common")
                              (:file "api")
                              (:module "egnat"
-                              :components ((:file "api")))))
+                              :components ((:file "api")
+                                           (:test-file "tests")))))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")

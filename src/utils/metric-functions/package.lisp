@@ -3,4 +3,5 @@
   (:nicknames #:cl-ds.utils.metric)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
-   #:hellinger-metric))
+   #:hellinger-metric
+   #:levenshtein-metric))
