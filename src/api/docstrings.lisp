@@ -32,7 +32,14 @@
           (prove:is found t)))]))
 
   (function near
-    (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."))
+    (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."
+     :examples [(let* ((data #(10 20 40 5 11 12 50 30 20 1 6 7 8 18 21 51 52 80 78))
+                       (set (cl-ds:make-from-traversable
+                             'cl-ds.ms.egnat:mutable-egnat-metric-set
+                             (list #'= (alexandria:compose #'abs #'-) 'fixnum)
+                             data))
+                       (near (cl-ds.alg:to-vector (cl-ds:near set 10 7))))
+                  (prove:ok (every (lambda (x) (< 3 x 17)) near)))]))
 
   (function add!
     (:arguments

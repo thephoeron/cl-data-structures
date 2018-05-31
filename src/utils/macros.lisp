@@ -237,7 +237,8 @@
   (let* ((values (mapcar #'first bindings))
          (initial-value-present (mapcar #'cddr bindings))
          (first-times (map-into (make-list (length bindings)) #'gensym))
-         (first-times-values (mapcar (lambda (first-symbol value) (list first-symbol (null value)))
+         (first-times-values (mapcar (lambda (first-symbol value)
+                                       (list first-symbol (null value)))
                                      first-times
                                      initial-value-present))
          (initial-values (mapcar (lambda (value-symbol value-present)
