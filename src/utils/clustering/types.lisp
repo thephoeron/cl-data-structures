@@ -1,11 +1,9 @@
 (in-package #:cl-ds.utils.cluster)
 
-
-(locally (declare (optimize (safety 3)))
+(locally (declare (optimize (debug 3)))
   (defclass pam-algorithm-state ()
     ((%input-data :initarg :input-data
-                  :reader read-input-data
-                  :writer write-input-data)
+                  :accessor access-input-data)
      (%number-of-medoids :initarg :number-of-medoids
                          :type positive-integer
                          :accessor access-number-of-medoids)
@@ -20,14 +18,13 @@
                                   :accessor access-split-merge-attempts-count
                                   :initform 0)
      (%split-threshold :initarg :split-threshold
-                       :accessor access-split-merge-attempts-count
+                       :accessor access-split-threshold
                        :initform nil)
      (%merge-threshold :initarg :merge-threshold
-                       :reader read-split-merge-attempts-count
-                       :writer write-split-merge-attempts-count
+                       :accessor access-merge-threshold
                        :initform nil)
      (%unfinished-clusters :initarg :improvements
-                           :accessor accessor-unfinished-clusters)
+                           :accessor access-unfinished-clusters)
      (%cluster-size :initarg :cluster-size
                     :type non-negative-fixnum
                     :accessor access-cluster-size)
@@ -36,10 +33,9 @@
                :accessor access-indexes)
      (%cluster-contents :initarg :cluster-contents
                         :type vector
-                        :accessor access-cluster-contents))))
+                        :accessor access-cluster-contents)))
 
 
-(locally (declare (optimize (safety 3)))
   (defclass clara-algorithm-state (pam-algorithm-state)
     ((%result-cluster-contents :initform nil
                                :type (or null vector)
@@ -60,8 +56,7 @@
            :type function)
      (%index-mapping :initform nil
                      :accessor access-index-mapping
-                     :type (or null (simple-array non-negative-fixnum (*)))
-                     :reader read-index-mapping)
+                     :type (or null (simple-array non-negative-fixnum (*))))
      (%sample-size :initarg :sample-size
                    :type positive-integer
                    :accessor access-sample-size)
@@ -70,10 +65,9 @@
                        :accessor access-mean-silhouette)
      (%silhouette :initform nil
                   :type (or null (vector number))
-                  :accessor access-silhouette))))
+                  :accessor access-silhouette)))
 
 
-(locally (declare (optimize (safety 3)))
   (defclass clustering-result ()
     ((%cluster-contents :initarg :cluster-contents
                         :type vector
@@ -90,21 +84,42 @@
 
 
 (cl-ds.utils:define-list-of-slots pam-algorithm-state
-  %input-data %number-of-medoids %distance-matrix
-  %split-merge-attempts-count %split-threshold
-  %merge-threshold %unfinished-clusters
-  %select-medoids-attempts-count
-  %cluster-contents %indexes %cluster-size)
+  (%input-data access-input-data)
+  (%number-of-medoids access-number-of-medoids)
+  (%distance-matrix access-distance-matrix)
+  (%split-merge-attempts-count access-split-merge-attempts-count)
+  (%split-threshold access-split-threshold)
+  (%merge-threshold access-merge-threshold)
+  (%unfinished-clusters access-unfinished-clusters)
+  (%select-medoids-attempts-count access-select-medoids-attempts-count)
+  (%cluster-contents access-cluster-contents)
+  (%indexes access-indexes)
+  (%cluster-size access-cluster-size))
 
 
 (cl-ds.utils:define-list-of-slots clara-algorithm-state
-  %input-data %number-of-medoids %distance-matrix
-  %split-merge-attempts-count %split-threshold
-  %merge-threshold %unfinished-clusters %metric-fn
-  %metric-type %select-medoids-attempts-count
-  %sample-size %cluster-contents %silhouette %key
-  %index-mapping %sample-count %all-indexes %indexes
-  %cluster-size %result-cluster-contents %mean-silhouette)
+  (%input-data access-input-data)
+  (%number-of-medoids access-number-of-medoids)
+  (%distance-matrix access-distance-matrix)
+  (%split-merge-attempts-count access-split-merge-attempts-count)
+  (%split-threshold access-split-threshold)
+  (%merge-threshold access-merge-threshold)
+  (%unfinished-clusters access-unfinished-clusters)
+  (%select-medoids-attempts-count access-select-medoids-attempts-count)
+  (%cluster-contents access-cluster-contents)
+  (%indexes access-indexes)
+  (%cluster-size access-cluster-size)
+  (%metric-fn access-metric-fn)
+  (%metric-type access-metric-type)
+  (%sample-size access-sample-size)
+  (%cluster-contents access-cluster-contents)
+  (%silhouette access-silhouette)
+  (%key access-key)
+  (%index-mapping access-index-mapping)
+  (%sample-count access-sample-count)
+  (%all-indexes access-all-indexes)
+  (%result-cluster-contents access-result-cluster-contents)
+  (%mean-silhouette access-mean-silhouette))
 
 
 (defun restart-pam (object)
