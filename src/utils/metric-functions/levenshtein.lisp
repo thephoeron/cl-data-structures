@@ -10,11 +10,14 @@
           ((= 0 m) (return-from levenshtein-metric n)))
     (let ((col (make-array (1+ m) :element-type 'non-negative-fixnum))
           (prev-col (make-array (1+ m) :element-type 'non-negative-fixnum)))
-      (dotimes (i (1+ m))
+      (iterate
+        (for i from 0 below (1+ m))
         (setf (aref prev-col i) i))
-      (dotimes (i n)
+      (iterate
+        (for i below n)
         (setf (aref col 0) (1+ i))
-        (dotimes (j m)
+        (iterate
+          (for j below m)
           (setf (aref col (1+ j))
                 (min (1+ (aref col j))
                      (1+ (aref prev-col (1+ j)))
