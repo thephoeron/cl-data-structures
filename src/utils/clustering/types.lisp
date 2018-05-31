@@ -83,6 +83,12 @@
                   :reader read-silhouette))))
 
 
+(defun empty-clustering-result ()
+  (make 'clustering-result
+        :cluster-content #()
+        :silhouette (make-array 0 :element-type 'number)))
+
+
 (cl-ds.utils:define-list-of-slots pam-algorithm-state
   %input-data %number-of-medoids %distance-matrix
   %split-merge-attempts-count %split-threshold

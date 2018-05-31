@@ -3,8 +3,8 @@
   (:nicknames #:cl-ds.utils.cluster)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
+   #:clara
+   #:clara-variable-number-of-medoids
    #:partition-around-medoids
    #:read-cluster-contents
-   #:read-silhouette
-   #:clara-variable-number-of-medoids
-   #:clara))
+   #:read-silhouette))

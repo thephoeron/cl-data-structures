@@ -421,8 +421,9 @@
                                (attempts 0)
                                split
                                merge)
-  (when (or (zerop (length input-data)))
-    (error "Can't cluster because there is no data"))
+  (when (emptyp input-data)
+    (return-from build-clara-clusters
+      (empty-clustering-result)))
   (let ((state (make 'clara-algorithm-state
                      :number-of-medoids number-of-medoids
                      :input-data input-data
