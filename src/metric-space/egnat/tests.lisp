@@ -2,7 +2,7 @@
 (defpackage metric-egnat-tests (:use :prove :cl :iterate))
 (in-package :metric-egnat-tests)
 
-(plan 41)
+(plan 42)
 
 (let* ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt"))
        (data (serapeum:vect))
@@ -26,7 +26,9 @@
       (for n = (cl-ds:consume-front near))
       (until (null n))
       (for distance = (cl-ds.utils.metric:levenshtein-metric n "rose"))
-      (ok (<= distance 1)))
+      (ok (<= distance 1))
+      (count t into result)
+      (finally (is result 40)))
     (ok (< count (length data)))))
 
 (finalize)
