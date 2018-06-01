@@ -12,7 +12,8 @@
   (function median-absolute-deviation
     (:description "Calculates MAD estimator for range."
      :arguments ((range "Object to aggregate")
-                 (key "Function used to extract value from element."))))
+                 (key "Function used to extract values from elements."))
+     :notes "Roboost estimator."))
 
   (function hodges-lehman-estimator
     (:description "Calculates Hodges-Lehman estimator for range."
@@ -39,8 +40,16 @@
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."))
 
+  (function variance
+    (:description "Calculates variance."
+     :returns "Number representing variance."
+     :arguments ((range "Data to aggregate.")
+                 (key "Function used to extract values from elements.")
+                 (biased "Boolean. Should variance be biased."))))
+
   (function statistical-summary
-    (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."))
+    (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."
+     :returns "Range. use :AVERAGE :VARIANCE :SKEWNESS :KURTOSIS as locations in the cl-ds:at"))
 
   (function mutual-information
     (:description "Calculates mutual-information between FIELD and COMPARATIVE-FIELDS. Elements in each FIELD should be EQUAL comparable."
@@ -51,4 +60,6 @@
      :arguments ((range "Object to aggregate.")
                  (from "Positive number. Lowest moment to calculate.")
                  (count "Positive number. How many moments to calculate.")
-                 (about "Number. Value around which moments are calculated.")))))
+                 (about "Number. Value around which moments are calculated.")
+                 (key "Function used to extract values from elements."))
+     :returns "Range. Query it with CL-DS:AT function passing rank of moment that you want to obtain.")))

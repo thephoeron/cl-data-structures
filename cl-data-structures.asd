@@ -131,7 +131,8 @@
                              (:test-file "zip-tests")))
                (:module "clustering"
                 :components ((:file "package")
-                             (:file "clara")))
+                             (:file "clara")
+                             (:file "docstrings")))
                (:module "math"
                 :components ((:file "package")
                              (:file "average")
