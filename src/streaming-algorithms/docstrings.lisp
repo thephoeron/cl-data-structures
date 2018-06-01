@@ -11,7 +11,8 @@
    (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory."
     :arguments ((range "Object to aggregate.")
                 (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are prefered for accurate results.")
-                (hash-fn "Hashing function. SXHASH will do for strings."))
+                (hash-fn "Hashing function. SXHASH will do for strings.")
+                (key "Function used to extract extract value from each element."))
     :notes ("This algorithm gives solid estimates for large sets, not so good for small sets."
             "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
             "Can be used to (for instance) estimate number of keys for hash table before creating one. Good estimate will minimize rehashing and reduce both memory that needs to allocated and time required to fill hash table.")
