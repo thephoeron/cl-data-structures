@@ -12,9 +12,7 @@
 
 
 (defun if-else (predicate true false)
-  (ensure-function predicate)
-  (ensure-function true)
-  (ensure-function false)
+  (ensure-functionf predicate true false)
   (lambda (&rest all)
     (if (apply predicate all)
         (apply true all)
