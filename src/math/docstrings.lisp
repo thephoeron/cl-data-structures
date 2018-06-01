@@ -38,7 +38,10 @@
      :thread-safety "Will use lparallel to samples if PARALLEL is T."))
 
   (function simple-linear-regression
-    (:description "Matches linear function to RANGE using least squares method."))
+    (:description "Matches linear function to RANGE using least squares method."
+     :arguments ((x-key "Function used to extract argument from range.")
+                 (y-key "Function used to extract result from range."))
+     :returns "Function object. Call with argument to obtain expected result. Pass to beta0 function to obtain beta0 value. Pass to beta1 to obtain beta1 value."))
 
   (function variance
     (:description "Calculates variance."

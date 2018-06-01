@@ -9,6 +9,8 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:average
+   #:beta0
+   #:beta1
    #:bootstrap
    #:harmonic-average
    #:harmonic-average-mutual-information

@@ -13,12 +13,12 @@
               (when (< x 100)
                 (send-recur (list x (1+ (* 2 x)))
                             :x (1+ x)))))
-       ((beta1 beta0) (cl-ds.math::simple-linear-regression
-                       xpr
-                       #'first
-                       #'second)))
-  (is beta1 2 :test #'=)
-  (is beta0 1 :test #'=))
+       (result (cl-ds.math::simple-linear-regression
+                xpr
+                #'first
+                #'second)))
+  (is (cl-ds.math:beta1 result) 2 :test #'=)
+  (is (cl-ds.math:beta0 result) 1 :test #'=))
 
 
 (finalize)

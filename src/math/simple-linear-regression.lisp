@@ -19,6 +19,21 @@
   (xx 0.0) (yy 0.0) (xy 0.0))
 
 
+(defclass linear-regression-fit (c2mop:funcallable-standard-object)
+  ((%beta1 :initarg :beta1
+           :accessor beta1)
+   (%beta0 :initarg :beta0
+           :accessor beta0))
+  (:metaclass c2mop:funcallable-standard-class))
+
+
+(defmethod initialize-instance :after ((obj linear-regression-fit) &rest rest)
+  (declare (ignore rest))
+  (c2mop:set-funcallable-instance-function obj (lambda (x)
+                                                 (+ (* (beta1 obj) x)
+                                                    (beta0 obj)))))
+
+
 (defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn simple-linear-regression)
                                                     &rest all
                                                     &key x-key y-key
@@ -46,4 +61,4 @@
           (bind (((:slots xx yy xy) stats)
                  (beta1 (/ xy xx))
                  (beta0 (- average-y (* beta1 average-x))))
-            (list beta1 beta0)))))
+            (make 'linear-regression-fit :beta0 beta0 :beta1 beta1)))))
