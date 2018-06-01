@@ -25,7 +25,8 @@
     (:description "Collects all elements into CL:VECTOR."
      :arguments-and-values ((range "Object to aggregate accross.")
                             (key "Key function used to extract value for vector.")
-                            (element-type ":element-type for result vector."))))
+                            (element-type ":element-type for result vector.")
+                            (force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE.")
