@@ -9,7 +9,7 @@
                               (:attempts non-negative-fixnum)
                               (:split (or null positive-fixnum))
                               (:merge (or null positive-fixnum)))
-    t)
+    clustering-result)
 (defun partition-around-medoids (input-data
                                  distance-matrix
                                  number-of-medoids
@@ -38,7 +38,8 @@
           (recluster-clusters-with-invalid-size state))))
     (let ((silhouette (silhouette state)))
       (replace-indexes-in-clusters-with-data state)
-      (obtain-result state silhouette))))
+      (the clustering-result (obtain-result state
+                                            silhouette)))))
 
 
 (-> clara (vector
@@ -53,7 +54,7 @@
            (:attempts non-negative-fixnum)
            (:split (or null positive-fixnum))
            (:merge (or null positive-fixnum)))
-    t)
+    clustering-result)
 (defun clara (input-data
               number-of-medoids
               metric-type
@@ -74,9 +75,24 @@
                 :attempts attempts :split split :merge merge)))
     (assign-clara-data-to-medoids state)
     (replace-indexes-in-clusters-with-data state)
-    (obtain-result state (access-silhouette state))))
+    (the clustering-result (obtain-result state
+                                          (access-silhouette state)))))
 
 
+(-> clara-variable-number-of-medoids (vector
+                                      (or symbol list)
+                                      (or symbol function)
+                                      positive-fixnum
+                                      positive-fixnum
+                                      positive-fixnum
+                                      positive-fixnum
+                                      &key
+                                      (:key (or symbol function))
+                                      (:select-medoids-attempts-count (or null positive-fixnum))
+                                      (:attempts non-negative-fixnum)
+                                      (:split (or null positive-fixnum))
+                                      (:merge (or null positive-fixnum)))
+    clustering-result)
 (defun clara-variable-number-of-medoids (input-data
                                          metric-type
                                          metric-fn
@@ -118,4 +134,6 @@
         (setf final state))
       (finally (assign-clara-data-to-medoids final)
                (replace-indexes-in-clusters-with-data final)
-               (return (obtain-result final (access-silhouette final)))))))
+               (return (the clustering-result
+                            (obtain-result final
+                                           (access-silhouette final))))))))
