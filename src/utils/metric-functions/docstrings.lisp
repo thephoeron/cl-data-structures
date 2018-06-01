@@ -11,7 +11,7 @@
                  (str2 "String."))))
 
   (function hellinger-metric
-    (:description "Calculates hellinger distance between two distributions, both represented as histogram."
+    (:description "Calculates hellinger distance between two distributions, both represented as histograms."
      :arguments ((q "Frequency vector.")
                  (p "Frequency vector."))
      :returns "Hellinger distance.")))
