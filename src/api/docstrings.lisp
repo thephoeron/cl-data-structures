@@ -31,6 +31,14 @@
           (prove:is value 1)
           (prove:is found t)))]))
 
+  (function make-from-traversable
+    (:description "Creates container of CLASS with content from traversable."
+     :returns "Instance of CLASS."
+     :exceptional-situations "Varies, depending on the CLASS argument."
+     :arguments ((class "Class of resulting container.")
+                 (arguments "Arguments, as passed to usual make function.")
+                 (traversable "Data that should be put in the result container."))))
+
   (function near
     (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."
      :examples [(let* ((data #(10 20 40 5 11 12 50 30 20 1 6 7 8 18 21 51 52 80 78))
