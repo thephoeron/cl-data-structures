@@ -6,6 +6,12 @@
 
   (function partition-around-medoids
     (:description "Clusters data set using partition-around-medoids algorithm. Requires precalculated distance matrix that will contain distance of each pair in the data set."
+     :arguments ((input-data "Data to cluster.")
+                 (distance-matrix "HALF-MATRIX containing distance for each element pair.")
+                 (select-medoids-attempts-count "How many times PAM should attempt to select medoids before accepting suboptimal medoids?")
+                 (attempts "How many times clusters should be splitted and merged before accepting suboptimal cluster sizes.")
+                 (split "Threshold size of clusters. Clusters above this size will attempt to be splitted.")
+                 (merge "Threshold size of clusters. Clusters below this size will attempt to be merged."))
      :notes "Not well suited for clustering large data sets, as construction of full distance matrix will take large ammount of cpu cycles and memory."
      :returns "Vector of vectors (each inner vector represents cluster)."
      :thread-safety "Uses lparallel underneath."))
