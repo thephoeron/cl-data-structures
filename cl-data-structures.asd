@@ -44,7 +44,8 @@
                              (:module "metric-functions"
                               :components ((:file "package")
                                            (:file "levenshtein")
-                                           (:file "hellinger")))
+                                           (:file "hellinger")
+                                           (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
                                            (:file "bhattacharyya")))

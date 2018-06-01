@@ -3,7 +3,6 @@
 
 (-> levenshtein-metric (string string) non-negative-fixnum)
 (defun levenshtein-metric (str1 str2)
-  "Calculates the Levenshtein distance between str1 and str2, returns an editing distance."
   (let ((n (length str1))
         (m (length str2)))
     (cond ((= 0 n) (return-from levenshtein-metric m))
