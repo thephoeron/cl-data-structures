@@ -38,8 +38,9 @@
           (recluster-clusters-with-invalid-size state))))
     (let ((silhouette (silhouette state)))
       (replace-indexes-in-clusters-with-data state)
-      (the clustering-result (obtain-result state
-                                            silhouette)))))
+      (the clustering-result
+           (obtain-result state
+                          silhouette)))))
 
 
 (-> clara (vector
@@ -75,8 +76,9 @@
                 :attempts attempts :split split :merge merge)))
     (assign-clara-data-to-medoids state)
     (replace-indexes-in-clusters-with-data state)
-    (the clustering-result (obtain-result state
-                                          (access-silhouette state)))))
+    (the clustering-result
+         (obtain-result state
+                        (access-silhouette state)))))
 
 
 (-> clara-variable-number-of-medoids (vector
