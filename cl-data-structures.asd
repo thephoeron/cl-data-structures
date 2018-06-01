@@ -81,6 +81,7 @@
                              (:file "content-tuple")
                              (:file "ranges")
                              (:file "sequence-window")
+                             (:file "docstrings")
                              (:test-file "sequence-window-tests")
                              (:module "abstract"
                               :components ((:file "package")
