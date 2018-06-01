@@ -60,7 +60,7 @@
         (for cluster in-vector %cluster-contents)
         (for i from 0)
         (for medoid = (aref cluster 0))
-        (for distance = (cl-ds.utils:distance %distance-matrix index medoid))
+        (for distance = (cl-ds.utils:mref %distance-matrix index medoid))
         (minimize distance into mini)
         (when (= mini distance)
           (setf result i))
@@ -90,8 +90,8 @@
          (for k in-vector cluster)
          (when (eql c k)
            (next-iteration))
-         (sum (cl-ds.utils:distance %distance-matrix
-                                    c k)
+         (sum (cl-ds.utils:mref %distance-matrix
+                                c k)
               into sum)
          (finally (return (/ sum (length cluster))))) ; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
        into sum)
@@ -106,9 +106,9 @@
     (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
     (iterate
       (for c in-vector cluster)
-      (for distance = (cl-ds.utils:distance %distance-matrix
-                                            (the fixnum c)
-                                            (the fixnum element)))
+      (for distance = (cl-ds.utils:mref %distance-matrix
+                                        (the fixnum c)
+                                        (the fixnum element)))
       (sum distance into sum)
       (finally (return (coerce (/ sum (length cluster))
                                'single-float))))))
@@ -156,9 +156,9 @@
            ((:dflet total-distance-to-medoid (&optional old-cost))
             (iterate
               (for i from 1 below (length cluster))
-              (for distance = (cl-ds.utils:distance %distance-matrix
-                                                    (the fixnum (aref cluster 0))
-                                                    (the fixnum (aref cluster i))))
+              (for distance = (cl-ds.utils:mref %distance-matrix
+                                                (the fixnum (aref cluster 0))
+                                                (the fixnum (aref cluster i))))
               (assert distance)
               (sum distance into sum)
               (unless (null old-cost)

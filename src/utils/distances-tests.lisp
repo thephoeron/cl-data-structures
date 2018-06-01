@@ -25,16 +25,16 @@
   (let ((matrix (cl-ds.utils:make-distance-matrix-from-vector 'single-float #'jaccard-metric data)))
     (iterate
       (for i below 5)
-      (is (cl-ds.utils:distance matrix i i) nil))
+      (is (cl-ds.utils:mref matrix i i) nil))
     (iterate
       (for i below 5)
       (iterate
         (for j from (1+ i) below 5)
-        (is (cl-ds.utils:distance matrix i j)
+        (is (cl-ds.utils:mref matrix i j)
             (jaccard-metric (data i)
                             (data j))
             :test #'=)))
-    (setf (cl-ds.utils:distance matrix 1 2) 5.0)
-    (is (cl-ds.utils:distance matrix 1 2) 5.0)))
+    (setf (cl-ds.utils:mref matrix 1 2) 5.0)
+    (is (cl-ds.utils:mref matrix 1 2) 5.0)))
 
 (prove:finalize)

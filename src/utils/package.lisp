@@ -15,7 +15,6 @@
    #:cond-compare
    #:copy-without
    #:mref
-   #:distance
    #:half-matrix
    #:draw-sample-vector
    #:each-in-matrix
