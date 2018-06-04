@@ -8,4 +8,5 @@
   (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.cluster)
   (:export
-   #:clara))
+   #:clara
+   #:clara-variable-number-of-medoids))

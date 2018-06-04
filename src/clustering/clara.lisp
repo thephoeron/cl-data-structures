@@ -6,6 +6,11 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass clara-variable-number-of-medoids (cl-ds.alg.meta:multi-aggregation-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
 (defgeneric clara (range number-of-medoids sample-size
                    sample-count metric-fn metric-type
                    &key
@@ -31,11 +36,37 @@
      :merge merge)))
 
 
+(defgeneric clara-variable-number-of-medoids (range number-of-medoids sample-size
+                                              sample-count metric-fn metric-type
+                                              &key
+                                                key select-medoids-attempts-count
+                                                attempts split merge)
+  (:generic-function-class clara-variable-number-of-medoids)
+  (:method (range from to sample-size
+            sample-count metric-fn metric-type
+            &key
+              (key #'identity) (select-medoids-attempts-count 50)
+              (attempts 0) split merge)
+    (cl-ds.alg.meta:apply-aggregation-function
+     range #'clara-variable-number-of-medoids
+     :key key
+     :from from
+     :to to
+     :sample-size sample-size
+     :sample-count sample-count
+     :metric-fn metric-fn
+     :metric-type metric-type
+     :select-medoids-attempts-count select-medoids-attempts-count
+     :attempts attempts
+     :split split
+     :merge merge)))
+
+
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function clara-function)
+    ((function clara-variable-number-of-medoids)
      &rest all
      &key
-       number-of-medoids sample-size sample-count metric-fn metric-type
+       from to sample-size sample-count metric-fn metric-type
        key select-medoids-attempts-count attempts split merge
      &allow-other-keys)
   (declare (ignore all))
@@ -45,9 +76,9 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (cl-ds.utils.cluster:clara
-           vector number-of-medoids metric-type
-           metric-fn sample-size sample-count
+          (cl-ds.utils.cluster:clara-variable-number-of-medoids
+           vector metric-type
+           metric-fn sample-size sample-count from to
            :key key
            :select-medoids-attempts-count select-medoids-attempts-count
            :attempts attempts :split split :merge merge))))
