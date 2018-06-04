@@ -48,7 +48,8 @@
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
-                                           (:file "bhattacharyya")))
+                                           (:file "bhattacharyya")
+                                           (:file "docstrings")))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))

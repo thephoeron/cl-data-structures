@@ -1,6 +1,8 @@
 (in-package #:cl-data-structures.utils.distance)
 
 
+(-> bhattacharyya-distance ((vector single-float) (vector single-float))
+    single-float)
 (defun bhattacharyya-distance (h1 h2)
   (let* ((mean1 (mean h1))
          (mean2 (mean h2))
@@ -13,4 +15,5 @@
          (/ 1)
          (* score)
          (- 1)
-         sqrt)))
+         sqrt
+         (coerce 'single-float))))
