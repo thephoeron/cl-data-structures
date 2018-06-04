@@ -35,7 +35,8 @@
                  (key "Key passed to SORT function.")
                  (compare "Function passed to SORT function.")
                  (parallel "Will use lparallel to evaluate samples if T. Defaults to T."))
-     :thread-safety "Will use lparallel to samples if PARALLEL is T."))
+     :thread-safety "Will use lparallel to samples if PARALLEL is T."
+     :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in aggregation funciton."))
 
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."
@@ -52,7 +53,7 @@
 
   (function statistical-summary
     (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."
-     :returns "Range. use :AVERAGE :VARIANCE :SKEWNESS :KURTOSIS as locations in the cl-ds:at"))
+     :returns "Range. use :AVERAGE :VARIANCE :SKEWNESS :KURTOSIS as locations in the cl-ds:at to obtain (in order) average, variance, skewness and kurtosis."))
 
   (function mutual-information
     (:description "Calculates mutual-information between FIELD and COMPARATIVE-FIELDS. Elements in each FIELD should be EQUAL comparable."

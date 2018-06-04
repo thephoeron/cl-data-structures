@@ -41,6 +41,9 @@
 
   (function near
     (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."
+     :arguments ((container "Container searched for element.")
+                 (item "Item to search around.")
+                 (maximal-distance "Don't yield elements longer "))
      :examples [(let* ((data #(10 20 40 5 11 12 50 30 20 1 6 7 8 18 21 51 52 80 78))
                        (set (cl-ds:make-from-traversable
                              'cl-ds.ms.egnat:mutable-egnat-metric-set
@@ -245,7 +248,8 @@
 
   (function take-out!
     (:description "Destructive API: removes one element from the CONTAINER. Relevant to sequences."
-     :returns "CONTAINER"
+     :returns ("CONTAINER"
+               "Modification status.")
      :arguments ((container "Container that is about to be modified"))
      :notes "This is the destructive counterpart to the TAKE-OUT function."))
 
