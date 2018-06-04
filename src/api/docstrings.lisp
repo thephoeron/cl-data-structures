@@ -31,6 +31,9 @@
           (prove:is value 1)
           (prove:is found t)))]))
 
+  (function delay
+    (:description "Simple lazy evaluated value. Used to eleminate costly creation of elements in the container by update-if."))
+
   (function make-from-traversable
     (:description "Creates container of CLASS with content from traversable."
      :returns "Instance of CLASS."
