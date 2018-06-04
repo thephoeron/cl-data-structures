@@ -36,7 +36,7 @@
      :merge merge)))
 
 
-(defgeneric clara-variable-number-of-medoids (range number-of-medoids sample-size
+(defgeneric clara-variable-number-of-medoids (range from to sample-size
                                               sample-count metric-fn metric-type
                                               &key
                                                 key select-medoids-attempts-count
