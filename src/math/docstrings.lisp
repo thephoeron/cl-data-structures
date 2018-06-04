@@ -24,7 +24,7 @@
              "Time complexity greater then cubic. Memory complexity quadratic."
              "Use bootstrapping for more scalable solution.")
      :see-also (bootstrap)
-     :thread-safety "Will ues lparallel if PARALLEL is T"))
+     :thread-safety "Will ues lparallel if PARALLEL is T."))
 
   (function bootstrap
     (:description "Changes aggregation into bootstrapping schema using percentail method. Reduces time needed to calculate functions with expensive complexity."
@@ -49,7 +49,8 @@
      :returns "Number representing variance."
      :arguments ((range "Data to aggregate.")
                  (key "Function used to extract values from elements.")
-                 (biased "Boolean. Should variance be biased."))))
+                 (biased "Boolean. Should variance be biased."))
+     :notes "Name conflict with alexandria:variance."))
 
   (function statistical-summary
     (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."

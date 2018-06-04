@@ -19,11 +19,12 @@
   (%vector))
 
 
-(defmethod to-vector ((range vector)
-                      &key
-                        (key #'identity)
-                        (element-type t)
-                        (force-copy t))
+(defmethod cl-ds.alg.meta:apply-range-function
+    ((range vector)
+     (function to-vector-function)
+     &rest all &key force-copy key element-type
+     &allow-other-keys)
+  (declare (ignore all))
   (if (and (not force-copy)
            (subtypep element-type (array-element-type range))
            (eq key #'identity))
