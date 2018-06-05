@@ -52,19 +52,20 @@
    #:accumulate
    #:chain
    #:count-elements
-   #:count-elements-if
    #:count-elements-function
+   #:count-elements-if
    #:count-elements-if-function
    #:gather-prior-states
    #:group-by
    #:group-by-function
    #:hash-join
    #:make-hash-table-range
-   #:on-each
-   #:proxy-box-range
-   #:proxy-range-aggregator-outer-fn
    #:make-proxy
+   #:on-each
+   #:only
+   #:proxy-box-range
    #:proxy-range
+   #:proxy-range-aggregator-outer-fn
    #:split-into-chunks
    #:summary
    #:summary-function

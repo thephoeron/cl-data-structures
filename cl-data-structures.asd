@@ -120,6 +120,7 @@
                              (:file "accumulate")
                              (:file "group-by")
                              (:file "without")
+                             (:file "only")
                              (:file "split-into-chunks")
                              (:file "hash-join")
                              (:file "chain")
