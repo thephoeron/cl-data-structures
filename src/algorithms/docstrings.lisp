@@ -59,6 +59,12 @@
                  (forms "Lists describing way to invoke function. First element of list is label used to identify value in the result range, second is aggregation function designator, the rest is list of arguments that should be passed to the function, with range being replaced by the keyword :range."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."))
 
+  (function only
+    (:description "Layer funciton. Creates range that skips elements that return NIL when passed to the PREDICATE function through key function."
+     :arguments ((predicate "Test used to check if element should be skipped.")
+                 (key "Key function used to extract value for predicate.")
+                 (range "Range argument."))))
+
   (function without
     (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
      :arguments ((predicate "Test used to check if element should be skipped.")
