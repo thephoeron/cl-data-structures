@@ -55,6 +55,9 @@
                        (near (cl-ds.alg:to-vector (cl-ds:near set 10 7))))
                   (prove:ok (every (lambda (x) (< 3 x 17)) near)))]))
 
+  (function add
+    (:description "Add NEW-VALUE into the CONTAINER at the LOCATION. Will not replace a value at LOCATION if it was already occupied."))
+
   (function add!
     (:arguments
      (("CONTAINER" "Instance that we intend to destructivly modify")
@@ -237,8 +240,7 @@
   (function put!
     (:arguments ((container "A subclass of fundamental-container")
                  (item "Object that should be added into CONTAINER"))
-     :description ("Destructive API. Inserts new the ITEM into the CONTAINER. Relevant to sets and sequences."
-                   "Modification status.")
+     :description "Destructive API. Inserts new the ITEM into the CONTAINER. Relevant to sets and sequences."
      :returns "CONTAINER"
      :notes "This is the destructive counterpart to the PUT function."))
 
