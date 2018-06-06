@@ -187,7 +187,7 @@
                                            (:test-file "tests")))))
                (:module "data-frame"
                 :components ((:file "packages")
-                             (:file "generics")
                              (:file "variables")
                              (:file "types")
+                             (:file "generics")
                              (:file "functions")))))
