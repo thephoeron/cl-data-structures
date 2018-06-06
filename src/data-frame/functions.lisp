@@ -13,3 +13,11 @@
 
 
 (defun range-stack (dimension range &key (key #'identity)))
+
+
+(defun row (data number)
+  (plane data nil number))
+
+
+(defun column (data number)
+  (plane data number nil))

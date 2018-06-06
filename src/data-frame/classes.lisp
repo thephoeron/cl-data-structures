@@ -12,4 +12,7 @@
                       :reader cl-ds:dimensionality)
      (%sizes :initarg :sizes
              :reader read-sizes
-             :type (vector non-negative-fixnum)))))
+             :type (vector non-negative-fixnum))
+     (%aliases :initform (make-hash-table)
+               :reader read-aliases
+               :type hash-table))))
