@@ -190,4 +190,5 @@
                              (:file "variables")
                              (:file "types")
                              (:file "generics")
-                             (:file "functions")))))
+                             (:file "functions")
+                             (:file "macros")))))
