@@ -189,4 +189,5 @@
                 :components ((:file "packages")
                              (:file "generics")
                              (:file "variables")
+                             (:file "types")
                              (:file "functions")))))
