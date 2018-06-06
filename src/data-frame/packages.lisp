@@ -11,7 +11,12 @@
    #:*active-frame*
    #:column
    #:column-at
-   #:combine
+   #:stack
+   #:range-stack
+   #:combine!
+   #:range-combine!
+   #:alias
    #:data
    #:row
-   #:row-at))
+   #:row-at
+   #:plane))

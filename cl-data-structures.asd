@@ -186,4 +186,7 @@
                               :components ((:file "api")
                                            (:test-file "tests")))))
                (:module "data-frame"
-                :components ((:file "packages")))))
+                :components ((:file "packages")
+                             (:file "generics")
+                             (:file "variables")
+                             (:file "functions")))))
