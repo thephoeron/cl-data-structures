@@ -134,6 +134,10 @@ Range releated functions.
 
 (defgeneric (setf peek-back) (new-value range))
 
+(defgeneric dimensionality (object)
+  (:method ((object fundamental-container))
+    1))
+
 (defgeneric drop-front (range count)
   (:method ((range fundamental-forward-range) count)
     (check-type count non-negative-fixnum)

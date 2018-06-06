@@ -23,9 +23,9 @@
    #:consume-back
    #:consume-front
    #:define-validation-for-fields
-   #:unexpected-argument
    #:delay
    #:delayed
+   #:dimensionality
    #:dimensionality-error
    #:drop-back
    #:drop-front
@@ -94,6 +94,7 @@
    #:traversable
    #:traverse
    #:traverse-through
+   #:unexpected-argument
    #:update
    #:update!
    #:update-if

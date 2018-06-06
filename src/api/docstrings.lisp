@@ -31,6 +31,9 @@
           (prove:is value 1)
           (prove:is found t)))]))
 
+  (function dimensionality
+    (:description "Number of dimensions in the object."))
+
   (function delay
     (:description "Simple lazy evaluated value. Used to eleminate costly creation of elements in the container by update-if."))
 

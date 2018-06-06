@@ -9,7 +9,7 @@
   (rcurry #'row number))
 
 
-(defun stack (dimension &rest data))
+(defun stack (dimension key &rest data))
 
 
-(defun range-stack (dimension range))
+(defun range-stack (dimension range &key (key #'identity)))

@@ -9,14 +9,15 @@
   (:export
    #:*active-data*
    #:*active-frame*
+   #:alias
    #:column
    #:column-at
-   #:stack
-   #:range-stack
    #:combine!
-   #:range-combine!
-   #:alias
    #:data
+   #:plane
+   #:mutate!
+   #:range-combine!
+   #:range-stack
    #:row
    #:row-at
-   #:plane))
+   #:stack))
