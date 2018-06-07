@@ -18,6 +18,8 @@
    #:data
    #:mutate!
    #:plane
+   #:at-cell
+   #:cell
    #:range-combine!
    #:range-stack
    #:data-frame

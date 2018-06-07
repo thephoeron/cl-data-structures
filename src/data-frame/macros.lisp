@@ -1,5 +1,5 @@
 (in-package #:cl-data-structures.data-frame)
 
 
-(defmacro data (&rest locations)
-  `(cl-ds:at *active-data* ,@locations))
+(defmacro cell (&rest locations)
+  `(at-cell *active-data* ,@locations))

@@ -24,32 +24,28 @@
            :text "No such position in the data frame.")))
 
 
-(labels ((impl (data location)
-           (if (endp location)
-               data
-               (impl (cl-ds:at data
-                               (first location))
-                     (rest location)))))
-  (defmethod cl-ds:at ((object data-frame) location &rest more)
-    (let ((more (cons location more)))
-      (ensure-dimensionality object more)
-      (ensure-in-frame object more)
-      (impl (access-data object)
-            more))))
+(defmethod cl-ds:at ((object data-frame) location &rest more)
+  (let ((more (cons location more)))
+    (ensure-dimensionality object more)
+    (ensure-in-frame object more)
+    (at-data (access-data object)
+             more)))
 
 
-(labels ((impl (new-value data location)
-           (if (endp (rest location))
-               (setf (cl-ds:at data (first location))
-                     new-value)
-               (impl new-value
-                     (cl-ds:at data
-                               (first location))
-                     (rest location)))))
-  (defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
-    (let ((more (cons location more)))
-      (ensure-dimensionality object more)
-      (ensure-in-frame object more)
-      (impl new-value
-            (access-data object)
-            more))))
+(defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
+  (let ((more (cons location more)))
+    (ensure-dimensionality object more)
+    (ensure-in-frame object more)
+    (set-at-data new-value
+                 (access-data object)
+                 more)))
+
+
+(defmethod mutate! (data dimension function &rest ranges)
+  (bind ((old-instance (access-data data))
+         (new-instance (cl-ds:become-transactional old-instance))
+         (*active-data* (make-data-accessor data new-instance dimension)))
+    todo
+    (cl-ds:freeze! old-instance)
+    (setf (access-data data) new-instance)
+    data))

@@ -188,8 +188,8 @@
                (:module "data-frame"
                 :components ((:file "packages")
                              (:file "variables")
-                             (:file "types")
                              (:file "internal")
+                             (:file "types")
                              (:file "generics")
                              (:file "functions")
                              (:file "macros")
