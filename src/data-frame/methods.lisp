@@ -21,9 +21,7 @@
           (cons location more))))
 
 
-(defmethod (setf cl-ds:at) (new-value
-                            (object data-frame)
-                            location &rest more)
+(defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
   (ensure-dimensionality object more)
   (labels ((impl (data location)
              (if (endp (rest location))
