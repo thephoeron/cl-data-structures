@@ -31,3 +31,15 @@
             (setf (cdr prev-loc) (cons location loc))
             (leave address))))
     (finally (return address))))
+
+
+(defun apply-aliases (aliases locations)
+  (map-into locations
+            (lambda (x)
+              (if (fixnump x)
+                  x
+                  (lret ((result (gethash x aliases)))
+                    (error 'cl-ds:invalid-argument
+                           :text "Unkown alias."
+                           :argument x))))
+            locations))

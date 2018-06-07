@@ -10,6 +10,11 @@
 
 
 (defun ensure-in-frame (object more)
+  (iterate
+    (for m in more)
+    (unless (fixnump m)
+      (error 'cl:type-error :datum m
+                            :expected-type 'non-negative-fixnum)))
   (when (some (curry #'> 0) more)
     (error 'cl-ds:argument-out-of-bounds
            :bounds "Must be non negative."
