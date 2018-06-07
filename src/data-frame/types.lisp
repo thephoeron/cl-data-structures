@@ -4,7 +4,7 @@
 (locally (declare (optimize (safety 3)))
   (defclass data-frame ()
     ((%data :initarg :data
-            :type vector
+            :type cl-ds.seqs.rrb:transactional-rrb-vector
             :reader read-data)
      (%dimensionality :initarg :dimensionality
                       :type (integer 2 *)
