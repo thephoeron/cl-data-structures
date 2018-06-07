@@ -38,11 +38,11 @@
     (for loc on locations)
     (for x = (car loc))
     (for i from 0)
-    (setf (car loc) (typecase x
-                      (fixnum x)
-                      (symbol (lret ((result (gethash (cons i x) aliases)))
-                                (when (null result)
-                                  (error 'cl-ds:invalid-argument
-                                         :text "Unkown alias."
-                                         :argument x))))))
+    (setf (car loc) (if (symbolp x)
+                        (lret ((result (gethash (cons i x) aliases)))
+                          (when (null result)
+                            (error 'cl-ds:invalid-argument
+                                   :text "Unkown alias."
+                                   :argument x)))
+                        x))
     (finally (return locations))))
