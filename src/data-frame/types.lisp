@@ -5,7 +5,7 @@
   (defclass data-frame ()
     ((%data :initarg :data
             :type cl-ds.seqs.rrb:transactional-rrb-vector
-            :reader read-data)
+            :accessor access-data)
      (%dimensionality :initarg :dimensionality
                       :type (integer 2 *)
                       :accessor access-dimensionality
