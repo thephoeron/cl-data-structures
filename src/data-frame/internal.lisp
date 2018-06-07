@@ -34,12 +34,15 @@
 
 
 (defun apply-aliases (aliases locations)
-  (map-into locations
-            (lambda (x)
-              (if (fixnump x)
-                  x
-                  (lret ((result (gethash x aliases)))
-                    (error 'cl-ds:invalid-argument
-                           :text "Unkown alias."
-                           :argument x))))
-            locations))
+  (iterate
+    (for loc on locations)
+    (for x = (car loc))
+    (for i from 0)
+    (setf (car loc) (typecase x
+                      (fixnum x)
+                      (symbol (lret ((result (gethash (cons i x) aliases)))
+                                (when (null result)
+                                  (error 'cl-ds:invalid-argument
+                                         :text "Unkown alias."
+                                         :argument x))))))
+    (finally (return locations))))
