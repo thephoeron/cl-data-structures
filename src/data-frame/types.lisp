@@ -44,4 +44,14 @@
 (nest
  (locally (declare (optimize (safety 3))))
  (defclass fundamental-frame-dimension (cl-ds:fundamental-random-access-range))
- ())
+ ((%dimension :initarg :dimension
+              :reader read-dimension
+              :type non-negative-fixnum)))
+
+
+(nest
+ (locally (declare (optimize (safety 3))))
+ (defclass sequence-dimension (fundamental-frame-dimension))
+ ((%range :initarg :range
+          :reader read-range
+          :type cl-ds:fundamental-random-access-range)))
