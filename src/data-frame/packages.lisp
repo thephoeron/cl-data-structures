@@ -20,6 +20,8 @@
    #:plane
    #:range-combine!
    #:range-stack
+   #:data-frame
+   #:fundamental-data-frame
    #:row
    #:row-at
    #:stack))

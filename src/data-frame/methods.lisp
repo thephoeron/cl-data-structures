@@ -13,12 +13,14 @@
   (when (some (curry #'> 0) more)
     (error 'cl-ds:argument-out-of-bounds
            :bounds "Must be non negative."
+           :argument 'location
            :value more
            :text "Part of location is negative."))
   (unless (every #'< more #1=(read-sizes object))
     (error 'cl-ds:argument-out-of-bounds
            :bounds #1#
            :value more
+           :argument 'location
            :text "No such position in the data frame.")))
 
 

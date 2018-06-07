@@ -193,4 +193,5 @@
                              (:file "generics")
                              (:file "functions")
                              (:file "macros")
-                             (:file "methods")))))
+                             (:file "methods")
+                             (:test-file "tests")))))
