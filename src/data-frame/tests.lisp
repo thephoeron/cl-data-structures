@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 6)
+(plan 9)
 
 (let ((frame (make-instance 'cl-ds.df:data-frame
                             :sizes (~> '(5 3)
@@ -17,6 +17,9 @@
   (#2# (cl-ds:at frame 1 -1) #1#)
   (#2# (cl-ds:at frame 5 3) #1#)
   (#2# (cl-ds:at frame 5 2) #1#)
-  (#2# (cl-ds:at frame 2 3) #1#))
+  (#2# (cl-ds:at frame 2 3) #1#)
+  (#2# (cl-ds:at frame nil nil) 'type-error)
+  (#2# (cl-ds:at frame 1 1 1) #3='cl-ds:dimensionality-error)
+  (#2# (cl-ds:at frame 1) #3#))
 
 (finalize)
