@@ -6,7 +6,7 @@
     (error 'cl-ds:dimensionality-error
            :text (format nil
                          "Passed ~a arguments but data-frame dimensionality is ~a."
-                         #1# #2#))))
+                         #2# #1#))))
 
 
 (defmethod cl-ds:at ((object data-frame) location &rest more)
