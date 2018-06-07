@@ -2,11 +2,24 @@
 
 
 (defun ensure-dimensionality (object more)
-  (unless (= #1=(cl-ds:dimensionality object) #2=(~> more length 1+))
+  (unless (= #1=(cl-ds:dimensionality object) #2=(length more))
     (error 'cl-ds:dimensionality-error
            :text (format nil
                          "Passed ~a arguments but data-frame dimensionality is ~a."
                          #2# #1#))))
+
+
+(defun ensure-in-frame (object more)
+  (when (some (curry #'> 0) more)
+    (error 'cl-ds:argument-out-of-bounds
+           :bounds "Must be non negative."
+           :value more
+           :text "Part of location is negative."))
+  (unless (every #'< more #1=(read-sizes object))
+    (error 'cl-ds:argument-out-of-bounds
+           :bounds #1#
+           :value more
+           :text "No such position in the data frame.")))
 
 
 (labels ((impl (data location)
@@ -16,9 +29,11 @@
                                (first location))
                      (rest location)))))
   (defmethod cl-ds:at ((object data-frame) location &rest more)
-    (ensure-dimensionality object more)
-    (impl (access-data object)
-          (cons location more))))
+    (let ((more (cons location more)))
+      (ensure-dimensionality object more)
+      (ensure-in-frame object more)
+      (impl (access-data object)
+            more))))
 
 
 (labels ((impl (new-value data location)
@@ -30,7 +45,9 @@
                                (first location))
                      (rest location)))))
   (defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
-    (ensure-dimensionality object more)
-    (impl new-value
-          (access-data object)
-          (cons location more))))
+    (let ((more (cons location more)))
+      (ensure-dimensionality object more)
+      (ensure-in-frame object more)
+      (impl new-value
+            (access-data object)
+            more))))
