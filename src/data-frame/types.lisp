@@ -18,7 +18,7 @@
   (%sizes :initarg :sizes
           :reader read-sizes
           :type (vector non-negative-fixnum))
-  (%aliases :initform (make-hash-table)
+  (%aliases :initform (make-hash-table :test 'equal)
             :reader read-aliases
             :type hash-table)))
 
@@ -33,6 +33,9 @@
   (%frame :initarg :frame
           :reader read-frame
           :type data-frame)
+  (%aliases :reader read-aliases
+            :type hash-table
+            :initarg :aliases)
   (%dimension :initarg :dimension
               :type non-negative-fixnum
               :reader read-dimension)
@@ -46,7 +49,10 @@
  (defclass fundamental-frame-dimension (cl-ds:fundamental-random-access-range))
  ((%dimension :initarg :dimension
               :reader read-dimension
-              :type non-negative-fixnum)))
+              :type non-negative-fixnum)
+  (%aliases :initarg :aliases
+            :reader read-aliases
+            :type hash-table)))
 
 
 (nest
