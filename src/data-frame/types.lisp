@@ -1,8 +1,12 @@
 (in-package #:cl-data-structures.data-frame)
 
 
+(defclass fundamental-data-frame ()
+  ())
+
+
 (locally (declare (optimize (safety 3)))
-  (defclass data-frame ()
+  (defclass data-frame (fundamental-data-frame)
     ((%data :initarg :data
             :type cl-ds.seqs.rrb:transactional-rrb-vector
             :accessor access-data)
