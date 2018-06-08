@@ -11,6 +11,8 @@
                    :initarg :ownership-tag)))
 
 
+(declaim (inline register-ownership))
+(-> register-ownership ((or null hash-table) t) t)
 (defun register-ownership (ownership-tag node)
   (unless (null ownership-tag)
     (setf (gethash node ownership-tag) t)))
