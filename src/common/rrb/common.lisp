@@ -282,7 +282,7 @@
    (iterate
      (for i from 0 below shift)
      (for node = (aref path i))
-     (finding i such-that (~> node
+     (finding i such-that (~> (the list node)
                               (acquire-ownership ownership-tag)
                               null)))
    shift))

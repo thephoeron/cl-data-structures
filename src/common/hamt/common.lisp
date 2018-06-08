@@ -136,20 +136,12 @@ Tree structure of HAMT
 
 |#
 
-(deftype hash-node () 'list)
+(defstruct (hash-node (:include tagged-node))
+  (node-mask 0 :type hash-mask)
+  (content #() :type simple-array))
 
 
 (declaim (inline make-hash-node))
-(defun make-hash-node (&key node-mask content ownership-tag)
-  (cons (cons node-mask content) ownership-tag))
-
-
-(defun hash-node-node-mask (node)
-  (caar node))
-
-
-(defun hash-node-content (node)
-  (cdar node))
 
 
 #|
@@ -548,7 +540,7 @@ Copy nodes and stuff.
       (with owned-depth = (iterate
                             (for i from 0 below depth)
                             (for node = (path i))
-                            (while (acquire-ownership node
+                            (while (acquire-ownership (the hash-node node)
                                                       ownership-tag))
                             (finally (return i))))
       (for i from (- depth 1) downto 0) ;reverse order (starting from deepest node)
@@ -658,3 +650,4 @@ Copy nodes and stuff.
         :key (get-range-key-function container)
         :forward-stack (list (new-cell (access-root container)))
         :container container))
+

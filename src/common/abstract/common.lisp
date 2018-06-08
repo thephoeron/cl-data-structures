@@ -10,8 +10,14 @@
                    :initarg :ownership-tag)))
 
 
+(defstruct tagged-node
+  (ownership-tag nil :type t))
+
+
 (declaim (inline acquire-ownership))
-(-> acquire-ownership (list t) boolean)
+(-> acquire-ownership ((or tagged-node list) t) boolean)
 (defun acquire-ownership (node ownership-tag)
-  (eq (cdr node) ownership-tag))
+  (if (listp node)
+      (eq (cdr node) ownership-tag)
+      (eq ownership-tag (tagged-node-ownership-tag node))))
 
