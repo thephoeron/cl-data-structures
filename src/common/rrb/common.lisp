@@ -227,12 +227,6 @@
 (defun rrb-at (container index)
   (declare (optimize (speed 3) (debug 0)
                      (safety 1) (space 0)))
-  (unless (> (cl-ds:size container) index)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'index
-           :bounds (list 0 (cl-ds:size container))
-           :value index
-           :text "Index out of bounds."))
   (if (< index (access-size container))
       (iterate
         (with shift = (slot-value container '%shift))
@@ -248,6 +242,12 @@
 
 (defmethod cl-ds:at ((container rrb-container) index &rest more)
   (cl-ds:assert-one-dimension more)
+  (unless (> 0 index (cl-ds:size container))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'index
+           :bounds (list 0 (cl-ds:size container))
+           :value index
+           :text "Index out of bounds."))
   (check-type index rrb-index)
   (rrb-at container index))
 
