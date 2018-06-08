@@ -35,7 +35,6 @@
    #:rrb-at
    #:rrb-container
    #:rrb-node
-   #:rrb-node-content
    #:rrb-node-push!
    #:rrb-node-push-into-copy
    #:rrb-range

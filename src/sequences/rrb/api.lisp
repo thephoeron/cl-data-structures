@@ -554,8 +554,7 @@
                               (cl-ds.common.rrb:rrb-node-push-into-copy
                                root
                                index
-                               (change-bucket (~> root
-                                                  (aref index)))
+                               (change-bucket (~> root (aref index)))
                                tag)
                               (cl-ds.common.rrb:descend-into-tree container index #'cont)))
                 ((:accessors (tail cl-ds.common.rrb:access-tail)

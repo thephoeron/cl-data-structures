@@ -38,10 +38,6 @@
   content)
 
 
-(defun rrb-node-content (node)
-  node)
-
-
 (defun rrb-node-deep-copy (node ownership-tag)
   (lret ((result (copy-array node)))
     (register-ownership result ownership-tag)
