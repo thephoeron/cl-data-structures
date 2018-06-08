@@ -741,4 +741,3 @@
 
 (defun make-transactional-rrb-vector ()
   (make 'transactional-rrb-vector))
-

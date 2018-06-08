@@ -243,7 +243,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (bind ((hash (hash-fn location))
-           (tag (cl-ds.common.abstract:make-tagged-node))
+           (tag (cl-ds.common.abstract:make-ownership-tag))
            (changed nil)
            ((:dflet shrink-bucket (bucket))
             (multiple-value-bind (a b c)

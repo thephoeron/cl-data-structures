@@ -7,6 +7,7 @@
 
 (defclass fundamental-ownership-tagged-object ()
   ((%ownership-tag :reader read-ownership-tag
+                   :initform nil
                    :initarg :ownership-tag)))
 
 
