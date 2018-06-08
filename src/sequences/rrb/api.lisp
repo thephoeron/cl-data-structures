@@ -52,7 +52,7 @@
                                   (cl-ds.common.rrb:access-shift container)))
                    (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
                                        cl-ds.common.rrb:+maximum-children-count+)))
-                   (new-tail (~> tail cl-ds.common.rrb:rrb-node-content))
+                   (new-tail tail)
                    (tail-size (if (null new-root)
                                   (cl-ds.common.rrb:access-size container)
                                   cl-ds.common.rrb:+maximum-children-count+))
@@ -118,7 +118,7 @@
                                   (cl-ds.common.rrb:access-shift container)))
                    (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
                                        cl-ds.common.rrb:+maximum-children-count+)))
-                   (new-tail (~> tail cl-ds.common.rrb:rrb-node-content))
+                   (new-tail tail)
                    (tail-size (if (null new-root)
                                   (cl-ds.common.rrb:access-size container)
                                   cl-ds.common.rrb:+maximum-children-count+))
@@ -189,9 +189,9 @@
                        (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position) index))
                        (for node
                             initially (cl-ds.common.rrb:access-root container)
-                            then (~> node cl-ds.common.rrb:rrb-node-content (aref i)))
+                            then (~> node (aref i)))
                        (finally (return node))))
-               (last-array (cl-ds.common.rrb:rrb-node-content node))
+               (last-array node)
                (bucket (change-bucket (aref last-array last-index))))
           (setf (aref last-array last-index) bucket))
         (let* ((offset (- index size))
@@ -375,7 +375,7 @@
                                    (cl-ds.common.rrb:access-shift container)))
                     (new-size (max 0 (- (cl-ds.common.rrb:access-size container)
                                         cl-ds.common.rrb:+maximum-children-count+)))
-                    (new-tail (~> tail cl-ds.common.rrb:rrb-node-content))
+                    (new-tail tail)
                     (tail-size (if (null new-root)
                                    (cl-ds.common.rrb:access-size container)
                                    cl-ds.common.rrb:+maximum-children-count+))
@@ -462,7 +462,7 @@
                   (for position = (aref indexes i))
                   (for old-node = (aref path i))
                   (for node
-                       initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
+                       initially (let* ((bucket (aref (aref path shift)
                                                       (aref index shift)))
                                         (next-value (change-bucket bucket))
                                         (content (if (eql shift owned-depth)
@@ -487,7 +487,6 @@
                               root
                               index
                               (change-bucket (~> root
-                                                 cl-ds.common.rrb:rrb-node-content
                                                  (aref index)))
                               tag)
                              (cl-ds.common.rrb:descend-into-tree container index #'cont))))
@@ -539,7 +538,7 @@
                    (for position = (aref indexes i))
                    (for old-node = (aref path i))
                    (for node
-                        initially (let* ((bucket (aref (cl-ds.common.rrb:rrb-node-content (aref path shift))
+                        initially (let* ((bucket (aref (aref path shift)
                                                        (aref index shift)))
                                          (next-value (change-bucket bucket))
                                          (content (copy-array (aref path shift))))
@@ -556,7 +555,6 @@
                                root
                                index
                                (change-bucket (~> root
-                                                  cl-ds.common.rrb:rrb-node-content
                                                   (aref index)))
                                tag)
                               (cl-ds.common.rrb:descend-into-tree container index #'cont)))
