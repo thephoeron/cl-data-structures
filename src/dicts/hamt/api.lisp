@@ -126,7 +126,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (bind ((changed nil)
-           (tag (make-ownership-tag))
+           (tag nil)
            (hash (hash-fn location))
            ((:dflet grow-bucket (bucket))
             (multiple-value-bind (a b c)
@@ -243,7 +243,7 @@ Methods. Those will just call non generic functions.
                      (space 0)))
   (with-hash-tree-functions (container :cases nil)
     (bind ((hash (hash-fn location))
-           (tag (cl-ds.common.abstract:make-ownership-tag))
+           (tag nil)
            (changed nil)
            ((:dflet shrink-bucket (bucket))
             (multiple-value-bind (a b c)
@@ -474,32 +474,22 @@ Methods. Those will just call non generic functions.
   (make 'transactional-hamt-dictionary
         :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
         :equal-fn (cl-ds.dicts:read-equal-fn container)
         :size (access-size container)))
 
 
-(defmethod cl-ds:become-transactional ((container transactional-hamt-dictionary))
-  (let* ((root (~> container access-root)))
-    (make 'transactional-hamt-dictionary
-          :hash-fn (cl-ds.dicts:read-hash-fn container)
-          :root root
-          :equal-fn (cl-ds.dicts:read-equal-fn container)
-          :size (access-size container))))
-
-
 (defmethod cl-ds:become-mutable ((container transactional-hamt-dictionary))
-  (let* ((tag (read-ownership-tag container))
-         (root (~> container access-root)))
+  (let ((root (~> container access-root)))
     (make 'mutable-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :equal-fn (cl-ds.dicts:read-equal-fn container)
-          :size (access-size container))))
+          :size (access-size container)))
 
 
 (defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
-  (let* ((tag (read-ownership-tag container))
-         (root (~> container access-root)))
+  (let ((root (~> container access-root)))
     (make 'functional-hamt-dictionary
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root

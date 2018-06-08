@@ -136,12 +136,16 @@ Tree structure of HAMT
 
 |#
 
-(defstruct (hash-node (:include tagged-node))
+(defstruct (hash-node (:constructor build-hash-node))
   (node-mask 0 :type hash-mask)
   (content #() :type simple-array))
 
 
-(declaim (inline make-hash-node))
+(declaim (inline build-hash-node))
+
+(defun make-hash-node (&key (node-mask 0) (content #()) ownership-tag)
+  (lret ((result (build-hash-node :node-mask node-mask :content content)))
+    (register-ownership ownership-tag result)))
 
 
 #|

@@ -246,7 +246,7 @@
   (declare (optimize (speed 3) (space 0)
                      (debug 0) (safety 1)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (tag nil)
          (tail-change 1)
          ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
                                                      operation
@@ -301,7 +301,7 @@
   (declare (optimize (speed 3) (space 0)
                      (debug 0) (safety 1)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (tag (cl-ds.common.abstract:read-ownership-tag))
          (tail-change 1)
          ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
                                                      operation
@@ -347,7 +347,7 @@
   (declare (optimize (speed 1) (space 0)
                      (safety 1) (debug 0)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (tag nil)
          (result-status nil)
          (tail-change 0)
          ((:dflet shrink-bucket (bucket))
@@ -506,7 +506,7 @@
   (declare (optimize (speed 3) (space 0)
                      (safety 1) (debug 0)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (tag nil)
          (shift (cl-ds.common.rrb:access-shift container))
          (size (cl-ds.common.rrb:access-size container))
          (root (cl-ds.common.rrb:access-root container))
@@ -630,6 +630,7 @@
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
         :tail (and (cl-ds.common.rrb:access-tail container)
                    (copy-array (cl-ds.common.rrb:access-tail container)))))
 
@@ -661,7 +662,7 @@
   (bind ((content (vect))
          (size 0)
          (element-type (or (getf arguments :element-type) t))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (tag nil)
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
     (iterate

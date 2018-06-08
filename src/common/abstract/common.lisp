@@ -2,7 +2,7 @@
 
 
 (defun make-ownership-tag ()
-  (box t))
+  (make-hash-table :test 'eq))
 
 
 (defclass fundamental-ownership-tagged-object ()
@@ -11,15 +11,20 @@
                    :initarg :ownership-tag)))
 
 
-(defstruct tagged-node
-  (ownership-tag nil :type t))
+(defun register-ownership (ownership-tag node)
+  (unless (null ownership-tag)
+    (setf (gethash node ownership-tag) t)))
 
 
 (declaim (inline acquire-ownership))
-(-> acquire-ownership ((or tagged-node list) t) boolean)
+(-> acquire-ownership ((or tagged-node list) (or null hash-table)) boolean)
 (defun acquire-ownership (node ownership-tag)
   (declare (optimize (speed 3)))
-  (etypecase node
-    (list (eq (cdr node) ownership-tag))
-    (tagged-node (eq ownership-tag (tagged-node-ownership-tag node)))))
+  (unless (null ownership-tag)
+    (nth-value 1 (gethash node ownership-tag))))
 
+
+(defun reset-ownership-tag (object)
+  (let ((tag (read-ownership-tag object)))
+    (unless (null tag)
+      (clrhash tag))))

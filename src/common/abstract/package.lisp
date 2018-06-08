@@ -11,6 +11,7 @@
    #:fundamental-ownership-tagged-object
    #:make-ownership-tag
    #:make-tagged-node
+   #:register-ownership
    #:read-ownership-tag
    #:reset-ownership-tag
    #:tagged-node
