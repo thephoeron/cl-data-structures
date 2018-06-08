@@ -17,7 +17,8 @@
 (declaim (inline acquire-ownership))
 (-> acquire-ownership ((or tagged-node list) t) boolean)
 (defun acquire-ownership (node ownership-tag)
-  (if (listp node)
-      (eq (cdr node) ownership-tag)
-      (eq ownership-tag (tagged-node-ownership-tag node))))
+  (declare (optimize (speed 3)))
+  (etypecase node
+    (list (eq (cdr node) ownership-tag))
+    (tagged-node (eq ownership-tag (tagged-node-ownership-tag node)))))
 
