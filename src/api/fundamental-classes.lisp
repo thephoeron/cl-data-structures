@@ -53,17 +53,5 @@
   ())
 
 
-(defmethod freeze! ((obj fundamental-container))
-  (prog1
-      (access-frozen obj)
-    (setf (access-frozen obj) t)))
-
-
-(defmethod melt! ((obj fundamental-container))
-  (prog1
-      (access-frozen obj)
-    (setf (access-frozen obj) nil)))
-
-
 (defmethod frozenp ((obj fundamental-container))
   (access-frozen obj))

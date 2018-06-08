@@ -31,8 +31,12 @@
                                        :element-type element-type))
 
 
-(defstruct (rrb-node (:include tagged-node))
-  (content (make-node-content) :type node-content))
+(defun make-rrb-node (&key content ownership-tag)
+  (cons content ownership-tag))
+
+
+(defun rrb-node-content (node)
+  (car node))
 
 
 (defmethod print-object ((obj rrb-node) stream)
@@ -47,8 +51,6 @@
   (format stream ">"))
 
 
-(-> rrb-node-deep-copy (rrb-node list) rrb-node)
-(declaim (notinline rrb-node-deep-copy))
 (defun rrb-node-deep-copy (node ownership-tag)
   (make-rrb-node :ownership-tag ownership-tag
                  :content (copy-array (rrb-node-content node))))
@@ -71,7 +73,6 @@
 
 
 (defun rrb-node-pop-in-the-copy (node position ownership-tag)
-  (declare (optimize (debug 3)))
   (unless (zerop position)
     (let* ((source-content (rrb-node-content node))
            (result-content (copy-array source-content)))
@@ -383,20 +384,6 @@
 (defmethod cl-ds:size ((container rrb-container))
   (+ (access-size container)
      (access-tail-size container)))
-
-
-(defun isolate-transaction (tree tag)
-  (if (and (rrb-node-p tree) (acquire-ownership tree tag))
-      (let ((content (copy-array (rrb-node-content tree))))
-        (iterate
-          (with size = 32)
-          (for i below size)
-          (setf (aref content i)
-                (isolate-transaction (aref content i)
-                                     tag)))
-        (make-rrb-node :ownership-tag tag
-                       :content content))
-      tree))
 
 
 (labels ((impl (function node depth)

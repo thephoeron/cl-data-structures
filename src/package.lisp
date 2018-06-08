@@ -39,7 +39,6 @@
    #:field
    #:force
    #:found
-   #:freeze!
    #:frozenp
    #:functional
    #:functionalp
@@ -65,7 +64,6 @@
    #:make-delay
    #:make-from-traversable
    #:make-state
-   #:melt!
    #:mod-bind
    #:mutable
    #:mutablep
@@ -88,7 +86,6 @@
    #:take-out!
    #:textual-error
    #:too-many-dimensions
-   #:transaction
    #:transactional
    #:transactionalp
    #:traversable

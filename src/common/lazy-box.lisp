@@ -59,15 +59,12 @@
 (-> force-version (lazy-box-container) lazy-box-container)
 (defun force-version (instance)
   (bind (((:accessors (operations access-operations)
-                      (content access-content)
-                      (frozen cl-ds::access-frozen))
+                      (content access-content))
           instance)
          (transactional-instance (cl-ds:become-transactional content)))
     (execute-changes operations transactional-instance)
     (setf operations nil
           content transactional-instance)
-    (when frozen
-      (cl-ds:freeze! transactional-instance))
     instance))
 
 
@@ -144,16 +141,6 @@
 
   (defmethod cl-ds:value ((status lazy-modification-operation-status))
     (cl-ds:value (force-status status))))
-
-
-(defmethod cl-ds:freeze! ((container lazy-box-container))
-  (prog1 (cl-ds::access-frozen container)
-    (setf (cl-ds::access-frozen container) t)))
-
-
-(defmethod cl-ds:melt! ((container lazy-box-container))
-  (prog1 (cl-ds::access-frozen container)
-    (setf (cl-ds::access-frozen container) nil)))
 
 
 (defmethod cl-ds:frozenp ((container lazy-box-container))

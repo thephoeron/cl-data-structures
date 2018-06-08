@@ -2,10 +2,6 @@
 
 (defgeneric frozenp (obj))
 
-(defgeneric freeze! (obj))
-
-(defgeneric melt! (obj))
-
 (defun ensure-not-frozen (obj)
   (when (frozenp obj)
     (error 'ice-error :test "Trying to change frozen object!")))
@@ -111,8 +107,6 @@
     (traverse function object))
   (:method (function (object fundamental-range))
     (traverse function (clone object))))
-
-(defgeneric transaction (operation object &rest args))
 
 (defgeneric make-from-traversable (class arguments traversable &rest more))
 

@@ -532,7 +532,6 @@ Methods. Those will just call non generic functions.
                       :equal-fn (cl-ds.dicts:read-equal-fn container)
                       :size (access-size container))))
     (apply operation result args)
-    (cl-ds:freeze! container)
     result))
 
 
@@ -546,7 +545,6 @@ Methods. Those will just call non generic functions.
                        :equal-fn (cl-ds.dicts:read-equal-fn container)
                        :size (access-size container))))
     (funcall operation new-value result location)
-    (cl-ds:freeze! container)
     result))
 
 
@@ -609,17 +607,3 @@ Methods. Those will just call non generic functions.
              traversable
              more)
       cl-ds:become-transactional))
-
-
-(defmethod cl-ds:freeze! ((obj transactional-hamt-dictionary))
-  (let ((result (call-next-method)))
-    (unless result
-      (cl-ds.common.abstract:enclose-finalizer obj))
-    result))
-
-
-(defmethod cl-ds:melt! ((obj transactional-hamt-dictionary))
-  (let ((result (call-next-method)))
-    (when result
-      (trivial-garbage:cancel-finalization obj))
-    result))

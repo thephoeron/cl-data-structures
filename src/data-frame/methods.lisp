@@ -51,6 +51,5 @@
          (new-instance (cl-ds:become-transactional old-instance))
          (*active-data* (make-data-accessor data new-instance dimension)))
     todo
-    (cl-ds:freeze! old-instance)
     (setf (access-data data) new-instance)
     data))
