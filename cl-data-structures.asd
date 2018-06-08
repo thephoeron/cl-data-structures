@@ -113,7 +113,6 @@
                              (:file "common")
                              (:file "on-each")
                              (:file "count")
-                             (:file "summary")
                              (:file "to-vector")
                              (:file "common-range-category")
                              (:file "change-each!")

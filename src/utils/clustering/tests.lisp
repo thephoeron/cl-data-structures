@@ -6,6 +6,7 @@
 (defun metric (a b)
   (abs (- a b)))
 
+(plan 2)
 
 (let* ((data (concatenate 'vector
                           (map-into (make-array 100)
@@ -38,3 +39,5 @@
   (is (sort clara-total #'<)
       (sort data #'<)
       :test #'serapeum:vector=))
+
+(finalize)

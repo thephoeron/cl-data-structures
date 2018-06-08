@@ -19,10 +19,12 @@
                 (sd (sqrt variance))
                 (skewness (if (zerop sd)
                               0.0
-                              (/ (cl-ds:at moments 3) (expt sd 3))))
+                              (/ (cl-ds:at moments 3)
+                                 (expt sd 3))))
                 (kurtosis (if (zerop sd)
                               0.0
-                              (/ (cl-ds:at moments 4) (expt sd 4)))))
+                              (/ (cl-ds:at moments 4)
+                                 (expt sd 4)))))
            (cl-ds.alg:make-hash-table-range
             (dict :average average
                   :variance variance

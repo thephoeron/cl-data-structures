@@ -194,20 +194,7 @@
              (for word = (aref *all-words* (1+ s)))
              (multiple-value-bind (value found) (at t-dict word)
                (is value word :test #'string=)
-               (ok found)))
-           (iterate
-             (for s from ,limit)
-             (repeat ,limit)
-             (for word = (aref *all-words* (1+ s)))
-             (setf (at t-another-dict word) 98789)
-             (for d
-                  first (become-transactional dict)
-                  then (cl-ds:transaction #'(setf cl-ds:at) d word 12))
-             (for p-d previous d)
-             (unless (null p-d)
-               (is (cl-ds:at p-d word) nil))
-             (unless (first-iteration-p)
-               (is (cl-ds:at d word) 12))))))))
+               (ok found))))))))
 
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/dicts/result.txt")))

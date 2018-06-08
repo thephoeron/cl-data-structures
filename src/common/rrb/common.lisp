@@ -33,8 +33,8 @@
                                        :element-type element-type))
 
 
-(defun make-rrb-node (&key content ownership-tag)
-  (register-ownership content ownership-tag)
+(defun make-rrb-node (&key (content (make-node-content)) ownership-tag)
+  (register-ownership ownership-tag content)
   content)
 
 
@@ -142,7 +142,7 @@
 (declaim (inline insert-tail))
 (-> insert-tail (rrb-container
                  t
-                 (-> (rrb-path rrb-indexes shift serapeum:box node-content)
+                 (-> (rrb-path rrb-indexes shift t node-content)
                      cl-ds.common.rrb:rrb-node)
                  node-content)
     rrb-node)
@@ -242,7 +242,7 @@
 
 (defmethod cl-ds:at ((container rrb-container) index &rest more)
   (cl-ds:assert-one-dimension more)
-  (unless (> 0 index (cl-ds:size container))
+  (unless (< -1 index (cl-ds:size container))
     (error 'cl-ds:argument-out-of-bounds
            :argument 'index
            :bounds (list 0 (cl-ds:size container))
@@ -254,7 +254,7 @@
 
 (declaim (inline copy-on-write))
 (-> copy-on-write
-    (rrb-path rrb-indexes shift serapeum:box node-content)
+    (rrb-path rrb-indexes shift t node-content)
     cl-ds.common.rrb:rrb-node)
 (defun copy-on-write (path indexes shift ownership-tag tail)
   (declare (optimize (speed 3) (debug 0)
@@ -282,14 +282,14 @@
    (iterate
      (for i from 0 below shift)
      (for node = (aref path i))
-     (finding i such-that (~> (the list node)
+     (finding i such-that (~> node
                               (acquire-ownership ownership-tag)
                               null)))
    shift))
 
 
 (-> transactional-copy-on-write
-    (rrb-path rrb-indexes shift serapeum:box cl-ds.common.rrb:node-content)
+    (rrb-path rrb-indexes shift t cl-ds.common.rrb:node-content)
     cl-ds.common.rrb:rrb-node)
 (defun transactional-copy-on-write (path indexes shift ownership-tag tail)
   (iterate
@@ -317,7 +317,7 @@
 
 (declaim (inline destructive-write))
 (-> destructive-write
-    (rrb-path rrb-indexes shift serapeum:box cl-ds.common.rrb:node-content)
+    (rrb-path rrb-indexes shift t cl-ds.common.rrb:node-content)
     cl-ds.common.rrb:rrb-node)
 (defun destructive-write (path indexes shift ownership-tag tail)
   (declare (optimize (speed 3) (debug 0)

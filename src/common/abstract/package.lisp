@@ -13,7 +13,4 @@
    #:make-tagged-node
    #:register-ownership
    #:read-ownership-tag
-   #:reset-ownership-tag
-   #:tagged-node
-   #:tagged-node-lock
-   #:tagged-node-ownership-tag))
+   #:reset-ownership-tag))

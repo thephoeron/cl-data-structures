@@ -19,7 +19,7 @@
 
 
 (declaim (inline acquire-ownership))
-(-> acquire-ownership ((or tagged-node list) (or null hash-table)) boolean)
+(-> acquire-ownership (t (or null hash-table)) boolean)
 (defun acquire-ownership (node ownership-tag)
   (declare (optimize (speed 3)))
   (unless (null ownership-tag)

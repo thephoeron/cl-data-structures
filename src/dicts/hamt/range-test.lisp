@@ -46,13 +46,6 @@
                  (cl-ds.alg:on-each (curry #'* 2) _ :key #'cdr)
                  (cl-ds.alg:accumulate #'+ _))))
     (is sum 20))
-  (let ((summary (~> dict
-                     cl-ds:whole-range
-                     (cl-ds.alg:summary
-                      _
-                      '(:average-of-values cl-ds.math:average :range :key cdr)
-                      '(:sum-of-keys cl-ds.alg:accumulate + :range :key car)))))
-    (is (cl-ds:at summary :sum-of-keys) 26))
   (let ((divided-sum (~> dict
                          cl-ds:whole-range
                          (cl-ds.alg:group-by :key (compose #'evenp #'cdr))

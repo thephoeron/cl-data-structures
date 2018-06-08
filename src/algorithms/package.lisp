@@ -67,8 +67,6 @@
    #:proxy-range
    #:proxy-range-aggregator-outer-fn
    #:split-into-chunks
-   #:summary
-   #:summary-function
    #:to-vector
    #:without
    #:without-function

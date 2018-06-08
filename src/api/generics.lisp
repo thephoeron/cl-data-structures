@@ -156,11 +156,7 @@ Range releated functions.
 
 (defgeneric whole-range (container))
 
-(defgeneric reset! (obj)
-  (:method :before ((obj transactional))
-    (when (frozenp obj)
-      (error 'ice-error :text "Can't reset frozen containers."))))
-
+(defgeneric reset! (obj))
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:functional-function))
   operation)

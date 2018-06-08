@@ -485,7 +485,7 @@ Methods. Those will just call non generic functions.
           :hash-fn (cl-ds.dicts:read-hash-fn container)
           :root root
           :equal-fn (cl-ds.dicts:read-equal-fn container)
-          :size (access-size container)))
+          :size (access-size container))))
 
 
 (defmethod cl-ds:become-functional ((container transactional-hamt-dictionary))
@@ -511,31 +511,6 @@ Methods. Those will just call non generic functions.
         :forward-stack (list (new-cell (access-root container)))
         :store-value (lambda (node value) (setf (cl-ds.common:hash-dict-content-value node) value))
         :container container))
-
-
-(defmethod cl-ds:transaction ((operation cl-ds.meta:destructive-function)
-                              (container transactional-hamt-dictionary)
-                              &rest args)
-  (let ((result (make 'transactional-hamt-dictionary
-                      :hash-fn (cl-ds.dicts:read-hash-fn container)
-                      :root (access-root container)
-                      :equal-fn (cl-ds.dicts:read-equal-fn container)
-                      :size (access-size container))))
-    (apply operation result args)
-    result))
-
-
-(defmethod cl-ds:transaction ((operation cl-ds.meta:insert!-function)
-                              (container transactional-hamt-dictionary)
-                              &rest args)
-  (bind (((location new-value . _) args)
-         (result (make 'transactional-hamt-dictionary
-                       :hash-fn (cl-ds.dicts:read-hash-fn container)
-                       :root (access-root container)
-                       :equal-fn (cl-ds.dicts:read-equal-fn container)
-                       :size (access-size container))))
-    (funcall operation new-value result location)
-    result))
 
 
 (defmethod cl-ds:across (function (container hamt-dictionary))

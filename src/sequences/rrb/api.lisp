@@ -243,8 +243,8 @@
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:functional-put-function)
                                              (container functional-rrb-vector)
                                              location &rest rest &key &allow-other-keys)
-  (declare (optimize (speed 3) (space 0)
-                     (debug 0) (safety 1)))
+  (declare (optimize (speed 0) (space 0)
+                     (debug 3) (safety 1)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
          (tag nil)
          (tail-change 1)
@@ -301,7 +301,7 @@
   (declare (optimize (speed 3) (space 0)
                      (debug 0) (safety 1)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
-         (tag (cl-ds.common.abstract:read-ownership-tag))
+         (tag (cl-ds.common.abstract:read-ownership-tag container))
          (tail-change 1)
          ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
                                                      operation

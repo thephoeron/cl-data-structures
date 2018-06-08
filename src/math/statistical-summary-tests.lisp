@@ -8,16 +8,16 @@
 
 (plan 5)
 
+(defun delta-comparsion (a b)
+  (< (abs (- a b)) 0.000001))
 
-(bind ((data #(1 3 5))
+
+(bind ((data #(1 3 5 3 2 3))
        (summary (cl-ds.math:statistical-summary data)))
   (is (cl-ds:size summary) 4)
-  (is (cl-ds:at summary :average) 3)
-  (is (cl-ds:at summary :variance) 8/3)
-  (is (cl-ds:at summary :skewness) 0 :test #'=)
-  (is (cl-ds:at summary :kurtosis) 1.5 :test
-      (lambda (a b)
-        (< (abs (- a b)) 0.000001))))
-
+  (is (cl-ds:at summary :average) (alexandria:mean data) :test #1=#'delta-comparsion)
+  (is (cl-ds:at summary :variance) (alexandria:variance data) :test #1#)
+  (is (cl-ds:at summary :skewness) 0.321372 :test #1#)
+  (is (cl-ds:at summary :kurtosis) 2.600569 :test #1#))
 
 (finalize)

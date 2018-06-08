@@ -25,7 +25,7 @@
   (let ((matrix (cl-ds.utils:make-distance-matrix-from-vector 'single-float #'jaccard-metric data)))
     (iterate
       (for i below 5)
-      (is (cl-ds.utils:mref matrix i i) nil))
+      (is-error (cl-ds.utils:mref matrix i i) 'simple-error))
     (iterate
       (for i below 5)
       (iterate
