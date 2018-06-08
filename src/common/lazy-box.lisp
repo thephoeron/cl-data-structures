@@ -141,7 +141,3 @@
 
   (defmethod cl-ds:value ((status lazy-modification-operation-status))
     (cl-ds:value (force-status status))))
-
-
-(defmethod cl-ds:frozenp ((container lazy-box-container))
-  (cl-ds::access-frozen container))

@@ -39,7 +39,6 @@
    #:field
    #:force
    #:found
-   #:frozenp
    #:functional
    #:functionalp
    #:fundamental-assignable-forward-range

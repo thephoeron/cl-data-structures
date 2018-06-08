@@ -6,8 +6,7 @@
 
 
 (defclass fundamental-container (traversable)
-  ((%frozen :initform nil
-            :accessor access-frozen)))
+  ())
 
 
 (defclass fundamental-modification-operation-status ()
@@ -51,7 +50,3 @@
 
 (defclass key-value-range ()
   ())
-
-
-(defmethod frozenp ((obj fundamental-container))
-  (access-frozen obj))
