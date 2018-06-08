@@ -53,11 +53,11 @@
   (function chain
     (:description "Joins multiple ranges sequentially into one."))
 
-  (function summary
-    (:description "Summary is a function that allows to perform multiple aggregations in one form."
-     :arguments ((range "Range to aggregate.")
-                 (forms "Lists describing way to invoke function. First element of list is label used to identify value in the result range, second is aggregation function designator, the rest is list of arguments that should be passed to the function, with range being replaced by the keyword :range."))
-     :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."))
+  ;; (function summary
+  ;;   (:description "Summary is a function that allows to perform multiple aggregations in one form."
+  ;;    :arguments ((range "Range to aggregate.")
+  ;;                (forms "Lists describing way to invoke function. First element of list is label used to identify value in the result range, second is aggregation function designator, the rest is list of arguments that should be passed to the function, with range being replaced by the keyword :range."))
+  ;;    :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."))
 
   (function only
     (:description "Layer funciton. Creates range that skips elements that return NIL when passed to the PREDICATE function through key function."
