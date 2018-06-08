@@ -46,10 +46,47 @@
                  more)))
 
 
-(defmethod mutate! (data dimension function &rest ranges)
+(defun transactional-data (data count)
+  (lret ((result (cl-ds:become-transactional data)))
+    (unless (eql 1 count)
+      (iterate
+        (with count = (1- count))
+        (for i from 0 below (cl-ds:size result))
+        (setf (cl-ds:at result i)
+              (transactional-data (cl-ds:at result i)
+                                  count))))))
+
+
+(defun mutable-data (data count)
+  (lret ((result (cl-ds:become-mutable data)))
+    (unless (eql 1 count)
+      (iterate
+        (with count = (1- count))
+        (for i from 0 below (cl-ds:size result))
+        (setf (cl-ds:at result i)
+              (mutable-data (cl-ds:at result i)
+                            count))))))
+
+
+(defmethod mutate! ((data data-frame) dimension function &rest ranges)
   (bind ((old-instance (access-data data))
-         (new-instance (cl-ds:become-transactional old-instance))
+         (new-instance (transactional-data old-instance
+                                           (cl-ds:dimensionality data)))
+         (sizes (read-sizes data))
          (*active-data* (make-data-accessor data new-instance dimension)))
-    todo
-    (setf (access-data data) new-instance)
+    (block outer
+      (iterate
+        (for i from 0 below (~> sizes (aref dimension)))
+        (for extra-data =
+             (iterate
+               (for range in ranges)
+               (for (values value more) = (cl-ds:consume-front range))
+               (unless more
+                 (return-from outer))
+               (collect value)))
+        (setf (access-position *active-data*) i)
+        (apply function extra-data)))
+    (setf (access-data data)
+          (mutable-data new-instance
+                        (cl-ds:dimensionality data)))
     data))

@@ -9,7 +9,7 @@
  (locally (declare (optimize (safety 3))))
  (defclass data-frame (fundamental-data-frame))
  ((%data :initarg :data
-         :type cl-ds.seqs.rrb:transactional-rrb-vector
+         :type cl-ds.seqs.rrb:mutable-rrb-vector
          :accessor access-data)
   (%dimensionality :initarg :dimensionality
                    :type (integer 2 *)
@@ -61,3 +61,11 @@
  ((%range :initarg :range
           :reader read-range
           :type cl-ds:fundamental-random-access-range)))
+
+
+(defun make-data-accessor (data instance dimension)
+  (make 'data-accessor
+        :frame instance
+        :aliases (read-aliases instance)
+        :dimension dimension
+        :data data))

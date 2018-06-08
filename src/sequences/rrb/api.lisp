@@ -189,9 +189,9 @@
                        (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position) index))
                        (for node
                             initially (cl-ds.common.rrb:access-root container)
-                            then (~> node (aref i)))
+                            then (cl-ds.common.rrb:nref node i))
                        (finally (return node))))
-               (last-array node)
+               (last-array (car node))
                (bucket (change-bucket (aref last-array last-index))))
           (setf (aref last-array last-index) bucket))
         (let* ((offset (- index size))
@@ -243,8 +243,8 @@
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:functional-put-function)
                                              (container functional-rrb-vector)
                                              location &rest rest &key &allow-other-keys)
-  (declare (optimize (speed 0) (space 0)
-                     (debug 3) (safety 1)))
+  (declare (optimize (speed 3) (space 0)
+                     (debug 0) (safety 1)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
          (tag nil)
          (tail-change 1)
@@ -344,7 +344,7 @@
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:take-out-function)
                                              (container functional-rrb-vector)
                                              location &rest rest &key &allow-other-keys)
-  (declare (optimize (speed 1) (space 0)
+  (declare (optimize (speed 3) (space 0)
                      (safety 1) (debug 0)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size container))
          (tag nil)
@@ -462,12 +462,12 @@
                   (for position = (aref indexes i))
                   (for old-node = (aref path i))
                   (for node
-                       initially (let* ((bucket (aref (aref path shift)
-                                                      (aref index shift)))
+                       initially (let* ((bucket (cl-ds.common.rrb:nref (aref path shift)
+                                                                       (aref index shift)))
                                         (next-value (change-bucket bucket))
                                         (content (if (eql shift owned-depth)
                                                      (aref path shift)
-                                                     (copy-array (aref path shift)))))
+                                                     (copy-array (car (aref path shift))))))
                                    (setf (aref content (aref index shift)) next-value)
                                    (if (eql shift owned-depth)
                                        (aref path shift)
@@ -486,8 +486,7 @@
                              (cl-ds.common.rrb:rrb-node-push-into-copy
                               root
                               index
-                              (change-bucket (~> root
-                                                 (aref index)))
+                              (change-bucket (cl-ds.common.rrb:nref root index))
                               tag)
                              (cl-ds.common.rrb:descend-into-tree container index #'cont))))
           (setf (cl-ds.common.rrb:access-root container) new-root))
@@ -538,11 +537,12 @@
                    (for position = (aref indexes i))
                    (for old-node = (aref path i))
                    (for node
-                        initially (let* ((bucket (aref (aref path shift)
-                                                       (aref index shift)))
+                        initially (let* ((bucket (cl-ds.common.rrb:nref (aref path shift)
+                                                                        (aref index shift)))
                                          (next-value (change-bucket bucket))
-                                         (content (copy-array (aref path shift))))
-                                    (setf (aref content (aref index shift)) next-value)
+                                         (content (copy-array (car (aref path shift)))))
+                                    (setf (aref content (aref index shift))
+                                          next-value)
                                     (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
                                                                     :content content))
                         then (cl-ds.common.rrb:rrb-node-push-into-copy old-node
@@ -554,7 +554,7 @@
                               (cl-ds.common.rrb:rrb-node-push-into-copy
                                root
                                index
-                               (change-bucket (~> root (aref index)))
+                               (change-bucket (cl-ds.common.rrb:nref root index))
                                tag)
                               (cl-ds.common.rrb:descend-into-tree container index #'cont)))
                 ((:accessors (tail cl-ds.common.rrb:access-tail)

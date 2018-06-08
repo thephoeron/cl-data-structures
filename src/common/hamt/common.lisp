@@ -136,16 +136,12 @@ Tree structure of HAMT
 
 |#
 
-(defstruct (hash-node (:constructor build-hash-node))
+(defstruct (hash-node (:include tagged-node))
   (node-mask 0 :type hash-mask)
   (content #() :type simple-array))
 
 
-(declaim (inline build-hash-node))
-
-(defun make-hash-node (&key (node-mask 0) (content #()) ownership-tag)
-  (lret ((result (build-hash-node :node-mask node-mask :content content)))
-    (register-ownership ownership-tag result)))
+(declaim (inline make-hash-node))
 
 
 #|
@@ -578,7 +574,9 @@ Copy nodes and stuff.
                       ((t t) ac)
                       ((t nil) ac)
                       ((nil t) (hash-node-remove! node index))
-                      ((nil nil) (hash-node-remove-from-the-copy node index ownership-tag)))))
+                      ((nil nil) (hash-node-remove-from-the-copy node
+                                                                 index
+                                                                 ownership-tag)))))
       (when (eq node ac)
         (leave (path 0)))
       (finally (return ac)))))
@@ -654,4 +652,3 @@ Copy nodes and stuff.
         :key (get-range-key-function container)
         :forward-stack (list (new-cell (access-root container)))
         :container container))
-

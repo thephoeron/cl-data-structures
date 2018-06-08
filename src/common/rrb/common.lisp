@@ -16,7 +16,7 @@
 (deftype node-content ()
   `(simple-vector ,+maximum-children-count+))
 (deftype rrb-node ()
-  'node-content)
+  'list)
 (deftype node-size ()
   `(integer 0 ,+maximum-children-count+))
 (deftype shift ()
@@ -34,23 +34,30 @@
 
 
 (defun make-rrb-node (&key (content (make-node-content)) ownership-tag)
-  (register-ownership ownership-tag content)
-  content)
+  (cons content ownership-tag))
 
 
 (defun rrb-node-deep-copy (node ownership-tag)
   (lret ((result (copy-array node)))
-    (register-ownership result ownership-tag)
-    result))
+    (cons result ownership-tag)))
+
+
+(defun nref (node position)
+  (aref (car node) position))
+
+
+(defun (setf nref) (new-value node position)
+  (setf (aref (car node) position)
+        new-value))
 
 
 (defun rrb-node-push! (node position element)
-  (setf (aref node position) element)
+  (setf (nref node position) element)
   node)
 
 
 (defun rrb-node-push-into-copy (node position element ownership-tag)
-  (let* ((source-content node)
+  (let* ((source-content (car node))
          (result-content (make-node-content (array-element-type source-content))))
     (setf (aref result-content position) element)
     (iterate
@@ -62,7 +69,7 @@
 
 (defun rrb-node-pop-in-the-copy (node position ownership-tag)
   (unless (zerop position)
-    (let* ((source-content node)
+    (let* ((source-content (car node))
            (result-content (copy-array source-content)))
       (setf (aref result-content position) nil)
       (make-rrb-node :ownership-tag ownership-tag
@@ -70,7 +77,7 @@
 
 
 (defun rrb-node-pop! (node position)
-  (setf (aref node position) nil)
+  (setf (nref node position) nil)
   node)
 
 
@@ -159,12 +166,12 @@
                initially (make-rrb-node :content tail
                                         :ownership-tag ownership-tag)
                then (let ((next (make-rrb-node :ownership-tag ownership-tag)))
-                      (setf (~> next (aref 0))
+                      (setf (nref next 0)
                             node)
                       next))
           (finally
            (bind ((root (make-rrb-node :ownership-tag ownership-tag))
-                  ((:vectors content) root))
+                  ((:vectors content) (car root)))
              (setf (content 0) %root
                    (content 1) node)
              (return (values root t)))))
@@ -181,7 +188,7 @@
             (for index = (ldb (byte +bit-count+ position) size))
             (for node
                  initially %root
-                 then (and node (~> node (aref index))))
+                 then (and node (nref node index)))
             (setf (aref path i) node
                   (aref indexes i) index))
           (values (funcall continue
@@ -214,7 +221,7 @@
       (for index = (ldb (byte +bit-count+ position) location))
       (for node
            initially (access-root rrb-container)
-           then (and node (~> node (aref index))))
+           then (and node (nref node index)))
       (setf (aref path i) node
             (aref indexes i) index))
     (funcall continue
@@ -234,7 +241,7 @@
         (for i = (ldb (byte +bit-count+ position) index))
         (for node
              initially (slot-value container '%root)
-             then (~> node (aref i)))
+             then (nref node i))
         (finally (return node)))
       (let ((offset (- index (access-size container))))
         (~> container access-tail (aref offset)))))
@@ -269,7 +276,7 @@
          then (if (null old-node)
                   (lret ((n (make-rrb-node :content (make-node-content (array-element-type tail))
                                            :ownership-tag ownership-tag)))
-                    (setf (~> n (aref position)) node))
+                    (setf (nref n position) node))
                   (rrb-node-push-into-copy old-node
                                            position
                                            node
@@ -303,7 +310,7 @@
          then (if (null old-node)
                   (lret ((n (make-rrb-node :content (make-node-content (array-element-type tail))
                                            :ownership-tag ownership-tag)))
-                    (setf (~> n (aref position)) node))
+                    (setf (nref n position) node))
                   (if (< i acquired)
                       (rrb-node-push! old-node
                                       position
@@ -332,7 +339,7 @@
          then (if (null old-node)
                   (lret ((n (make-rrb-node :content (make-node-content (array-element-type tail))
                                            :ownership-tag ownership-tag)))
-                    (setf (~> n (aref position)) node))
+                    (setf (nref n position) node))
                   (rrb-node-push! old-node position node)))
     (finally (return node))))
 
@@ -346,7 +353,7 @@
                                    (- (* %shift +bit-count+)))
                               1)))
     (if (zerop %shift)
-        (values nil %root nil)
+        (values nil (car %root) nil)
         (iterate
           (with last = (1- (the non-negative-fixnum %size)))
           (repeat %shift)
@@ -357,15 +364,15 @@
           (for index = (ldb (byte +bit-count+ position) last))
           (for node
                initially %root
-               then (~> node (aref index)))
+               then (nref node index))
           (finally
            (check-type node rrb-node)
            (return
              (values
               (if root-underflow
-                  (~> %root (aref 0))
+                  (nref %root 0)
                   %root)
-              node
+              (car node)
               root-underflow)))))))
 
 
@@ -376,10 +383,10 @@
 
 (labels ((impl (function node depth)
            (if (zerop depth)
-               (map nil function node)
+               (map nil function (car node))
                (map nil
                     (lambda (x) (impl function x (1- depth)))
-                    node))))
+                    (car node)))))
   (defmethod cl-ds:traverse (function (object rrb-container))
     (let ((root (access-root object)))
       (unless (null root)
@@ -441,24 +448,24 @@
           %last-size (mod to +maximum-children-count+)
           %upper-bound to)
     (labels ((collect-bottom (node depth &optional (offset 0))
-               (declare (optimize (debug 3)))
                (let* ((bit-offset (* +bit-count+ (- %shift depth)))
                       (start-range offset)
                       (difference (ash 1 bit-offset))
                       (end-range (+ offset (ash +tail-mask+ bit-offset))))
                  (when (<= start-range from to end-range)
                    (if (zerop depth)
-                       (flexichain:push-end %content node)
+                       (flexichain:push-end %content
+                                            (the node-content (car node)))
                        (iterate
                          (for i from 0 below +maximum-children-count+)
                          (for d from difference by difference)
-                         (collect-bottom (~> node (aref i))
+                         (collect-bottom (nref node i)
                                          (1- depth)
                                          (+ start-range d))))))))
       (collect-bottom %root %shift))
     (unless (null %tail)
       (when (< %size to)
-        (flexichain:push-end %content %tail)))))
+        (flexichain:push-end %content (the node-content %tail))))))
 
 
 (defmethod initialize-instance :after ((instance rrb-range)

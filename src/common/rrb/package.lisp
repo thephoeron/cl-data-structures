@@ -13,6 +13,7 @@
    #:+tail-mask+
    #:access-last-size
    #:access-lower-bound
+   #:nref
    #:access-root
    #:access-shift
    #:access-size
