@@ -115,6 +115,7 @@
                              (:file "count")
                              (:file "to-vector")
                              (:file "common-range-category")
+                             (:file "summary")
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")
@@ -128,6 +129,7 @@
                              (:test-file "split-into-chunks-test")
                              (:test-file "hash-join-tests")
                              (:test-file "without-test")
+                             (:test-file "summary-tests")
                              (:test-file "chain-tests")
                              (:test-file "zip-tests")))
                (:module "clustering"
