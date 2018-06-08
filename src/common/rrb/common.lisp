@@ -39,18 +39,6 @@
   (car node))
 
 
-(defmethod print-object ((obj rrb-node) stream)
-  (format stream "<")
-  (iterate
-    (for elt in-vector (rrb-node-content obj))
-    (for p-elt previous elt)
-    (until (null elt))
-    (unless (null p-elt)
-      (format stream ", "))
-    (format stream "~a" elt))
-  (format stream ">"))
-
-
 (defun rrb-node-deep-copy (node ownership-tag)
   (make-rrb-node :ownership-tag ownership-tag
                  :content (copy-array (rrb-node-content node))))
