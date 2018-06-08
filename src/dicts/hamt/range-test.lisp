@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 19)
+(plan 18)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
