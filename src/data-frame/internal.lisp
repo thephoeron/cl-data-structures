@@ -10,13 +10,16 @@
 
 
 (defun set-at-data (new-value data location)
-  (if (endp (rest location))
-      (setf (cl-ds:at data (first location))
-            new-value)
-      (set-at-data new-value
-                   (cl-ds:at data
-                             (first location))
-                   (rest location))))
+  (let ((first (first location))
+        (rest (rest location)))
+    (if (endp rest)
+        (setf (cl-ds:at data first)
+              new-value)
+        (let ((value (cl-ds:at data first)))
+          (setf (cl-ds:at data first) value)
+          (set-at-data new-value
+                       value
+                       rest)))))
 
 
 (defun location-list (address dimension location)

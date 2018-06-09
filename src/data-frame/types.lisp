@@ -15,9 +15,12 @@
                    :type (integer 2 *)
                    :accessor access-dimensionality
                    :reader cl-ds:dimensionality)
-  (%sizes :initarg :sizes
-          :reader read-sizes
-          :type (vector non-negative-fixnum))
+  (%lower-bounds :initarg :lower-bounds
+                 :reader read-lower-bounds
+                 :type (vector non-negative-fixnum))
+  (%upper-bounds :initarg :upper-bounds
+                 :reader read-upper-bounds
+                 :type (vector non-negative-fixnum))
   (%aliases :initform (make-hash-table :test 'equal)
             :reader read-aliases
             :type hash-table)))

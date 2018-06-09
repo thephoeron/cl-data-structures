@@ -130,6 +130,8 @@ Range releated functions.
 
 (defgeneric dimensionality (object)
   (:method ((object fundamental-container))
+    1)
+  (:method ((object fundamental-range))
     1))
 
 (defgeneric drop-front (range count)

@@ -21,7 +21,7 @@
            :argument 'location
            :value more
            :text "Part of location is negative."))
-  (unless (every #'< more #1=(read-sizes object))
+  (unless (every #'< more #1=(read-upper-bounds object))
     (error 'cl-ds:argument-out-of-bounds
            :bounds #1#
            :value more
@@ -33,6 +33,7 @@
   (let ((more (cons location more)))
     (ensure-dimensionality object more)
     (ensure-in-frame object more)
+    (apply-aliases (read-aliases object) more)
     (at-data (access-data object)
              more)))
 
@@ -41,6 +42,7 @@
   (let ((more (cons location more)))
     (ensure-dimensionality object more)
     (ensure-in-frame object more)
+    (apply-aliases (read-aliases object) more)
     (set-at-data new-value
                  (access-data object)
                  more)))
@@ -72,11 +74,12 @@
   (bind ((old-instance (access-data data))
          (new-instance (transactional-data old-instance
                                            (cl-ds:dimensionality data)))
-         (sizes (read-sizes data))
          (*active-data* (make-data-accessor data new-instance dimension)))
     (block outer
       (iterate
-        (for i from 0 below (~> sizes (aref dimension)))
+        (for i
+             from (~> data read-lower-bounds (aref dimension))
+             below (~> data read-upper-bounds (aref dimension)))
         (for extra-data =
              (iterate
                (for range in ranges)
