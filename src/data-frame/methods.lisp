@@ -2,12 +2,12 @@
 
 
 (defun ensure-dimensionality (object more)
-  (unless (= #1=(cl-ds:dimensionality object) #2=(length more))
-    (error 'cl-ds:dimensionality-error
-           :text (format
-                  nil
-                  "Passed ~a arguments but data-frame dimensionality is ~a."
-                  #2# #1#))))
+  (nest
+   (unless (= #1=(cl-ds:dimensionality object) #2=(length more)))
+   (error 'cl-ds:dimensionality-error :text)
+   (format nil
+           "Passed ~a arguments but data-frame dimensionality is ~a."
+           #2# #1#)))
 
 
 (defun ensure-in-frame (object more)
@@ -50,25 +50,27 @@
 
 
 (defun transactional-data (data count)
-  (lret ((result (cl-ds:become-transactional data)))
-    (unless (eql 1 count)
-      (iterate
-        (with count = (1- count))
-        (for i from 0 below (cl-ds:size result))
-        (setf (cl-ds:at result i)
-              (transactional-data (cl-ds:at result i)
-                                  count))))))
+  (nest
+   (lret ((result (cl-ds:become-transactional data))))
+   (unless (eql 1 count))
+   (iterate
+     (with count = (1- count))
+     (for i from 0 below (cl-ds:size result))
+     (setf (cl-ds:at result i)
+           (transactional-data (cl-ds:at result i)
+                               count)))))
 
 
 (defun mutable-data (data count)
-  (lret ((result (cl-ds:become-mutable data)))
-    (unless (eql 1 count)
-      (iterate
-        (with count = (1- count))
-        (for i from 0 below (cl-ds:size result))
-        (setf (cl-ds:at result i)
-              (mutable-data (cl-ds:at result i)
-                            count))))))
+  (nest
+   (lret ((result (cl-ds:become-mutable data))))
+   (unless (eql 1 count))
+   (iterate
+     (with count = (1- count))
+     (for i from 0 below (cl-ds:size result))
+     (setf (cl-ds:at result i)
+           (mutable-data (cl-ds:at result i)
+                         count)))))
 
 
 (defmethod mutate! ((data data-frame) dimension function &rest ranges)
