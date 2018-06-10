@@ -14,12 +14,12 @@
       (vector-push-extend word data)))
   (let ((set (cl-ds:make-from-traversable
               'cl-ds.ms.egnat:mutable-egnat-metric-set
-              (list #'string=
-                    (lambda (a b)
-                      (incf count)
-                      (cl-ds.utils.metric:levenshtein-metric a b))
-                    'non-negative-fixnum)
-              data)))
+              data
+              #'string=
+              (lambda (a b)
+                (incf count)
+                (cl-ds.utils.metric:levenshtein-metric a b))
+              'non-negative-fixnum)))
     (setf count 0)
     (iterate
       (with near = (cl-ds:near set "rose" 1))

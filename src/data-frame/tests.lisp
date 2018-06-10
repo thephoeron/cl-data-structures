@@ -9,8 +9,8 @@
 (plan 10)
 
 (let ((frame (make-instance 'cl-ds.df:data-frame
-                            :sizes (~> '(5 3)
-                                       (coerce '(vector non-negative-fixnum)))
+                            :upper-bounds (~> '(5 3)
+                                              (coerce '(vector non-negative-fixnum)))
                             :dimensionality 2)))
   (#2=is-error (cl-ds:at frame -1 -1) #1='cl-ds:argument-out-of-bounds)
   (#2# (cl-ds:at frame -1 2) #1#)
@@ -24,4 +24,3 @@
   (#2# (cl-ds:at frame 0.2 0.5) #4#))
 
 (finalize)
-

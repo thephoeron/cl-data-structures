@@ -52,11 +52,11 @@
 (defun fill-data (data-frame axis position data)
   (bind ((addres (map 'list
                       (constantly 0)
-                      (read-sizes data-frame)))
-         (length (~> data-frame read-sizes length)))
+                      (read-upper-bounds data-frame)))
+         (length (~> data-frame read-upper-bounds length)))
     (setf (elt addres axis) position)
     (iterate
-      (for i from 0 below (aref (read-sizes data-frame) axis))
+      (for i from 0 below (aref (read-upper-bounds data-frame) axis))
       (iterate
         (for j from 0 below (cl-ds:size data))
         (iterate

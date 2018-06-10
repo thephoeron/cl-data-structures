@@ -33,10 +33,8 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-egnat-metric-set))
-                                        arguments
                                         (sequence vector)
-                                        &rest all)
-  (declare (ignore all))
+                                        &rest arguments)
   (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
@@ -48,10 +46,8 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-egnat-metric-set))
-                                        arguments
                                         (sequence cl-ds:fundamental-random-access-range)
-                                        &rest all)
-  (declare (ignore all))
+                                        &rest arguments)
   (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
@@ -63,10 +59,8 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-egnat-metric-set))
-                                        arguments
                                         (sequence cl-ds:fundamental-forward-range)
-                                        &rest all)
-  (declare (ignore all))
+                                        &rest arguments)
   (let ((vector (vect)))
     (cl-ds:across (rcurry #'vector-push-extend vector) sequence)
     (cl-ds:make-from-traversable class arguments vector)))
