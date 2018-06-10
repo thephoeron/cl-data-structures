@@ -127,3 +127,11 @@
     (ensure-in-frame frame location)
     (set-at-data new-value (read-data object) location)
     (cl-ds:force new-value)))
+
+
+(defun cell (&rest locations)
+  (apply #'at-cell *active-data* locations))
+
+
+(defun (setf cell) (new-value &rest locations)
+  (apply #'(setf at-cell) new-value locations))
