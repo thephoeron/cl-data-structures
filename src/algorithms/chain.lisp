@@ -19,6 +19,12 @@
   ())
 
 
+(defmethod cl-ds:clone ((range forward-chain-of-ranges))
+  (make (type-of range)
+        :content (read-content range)
+        :original-content (read-content range)))
+
+
 (defun init-chain-of-range (obj)
   (bind (((:slots %content %original-content) obj))
     (setf %content (make 'flexichain:standard-flexichain))
@@ -134,3 +140,10 @@
       (for i from 0 below (flexichain:nb-elements %content))
       (cl-ds:traverse function (flexichain:element* %content i)))
     range))
+
+
+(defmethod cl-ds:across (function (range forward-chain-of-ranges))
+  (bind (((:slots %content range) range))
+    (iterate
+      (for i from 0 below (flexichain:nb-elements %content))
+      (cl-ds:across function (flexichain:element* %content i)))))

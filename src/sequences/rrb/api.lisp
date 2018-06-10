@@ -672,9 +672,8 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (declare (optimize (speed 3)))
   (bind ((content (vect))
          (size 0)
@@ -682,16 +681,14 @@
          (tag (cl-ds.common.abstract:make-ownership-tag))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
-    (iterate
-      (for tr in (cons traversable more))
-      (cl-ds:across (lambda (x)
-                      (when (zerop (index))
-                        (vector-push-extend (cl-ds.common.rrb:make-node-content element-type)
-                                            content))
-                      (setf (aref (last-elt content) (index))
-                            x)
-                      (incf size))
-                    tr))
+    (cl-ds:across (lambda (x)
+                    (when (zerop (index))
+                      (vector-push-extend (cl-ds.common.rrb:make-node-content element-type)
+                                          content))
+                    (setf (aref (last-elt content) (index))
+                          x)
+                    (incf size))
+                  traversable)
     (map-into content
               (lambda (x)
                 (cl-ds.common.rrb:make-rrb-node :content x
@@ -713,26 +710,22 @@
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (bind ((result (apply #'cl-ds:make-from-traversable
                         'mutable-rrb-vector
-                        arguments
                         traversable
-                        more)))
+                        arguments)))
     (cl-ds:become-functional result)))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (bind ((result (apply #'cl-ds:make-from-traversable
                         'mutable-rrb-vector
-                        arguments
                         traversable
-                        more))
+                        arguments))
          (tag (cl-ds.common.abstract:read-ownership-tag result))
          (transactional (cl-ds:become-transactional result)))
     (cl-ds.common.abstract:write-ownership-tag tag transactional)

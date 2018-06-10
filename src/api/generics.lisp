@@ -108,7 +108,7 @@
   (:method (function (object fundamental-range))
     (traverse function (clone object))))
 
-(defgeneric make-from-traversable (class arguments traversable &rest more))
+(defgeneric make-from-traversable (class traversable &rest arguments))
 
 (defgeneric make-of-size (class size &rest more))
 

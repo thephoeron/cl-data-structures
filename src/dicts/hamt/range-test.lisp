@@ -66,11 +66,13 @@
                     range)
     (is (cdr (find 'value result :key #'cdr)) 'value)))
 
-(let ((dict (cl-ds:make-from-traversable 'cl-ds.dicts.hamt:mutable-hamt-dictionary
-                                         (list :hash-fn #'identity
-                                               :equal-fn #'=)
-                                         #((1 . 1) (2 . 2) (3 . 3))
-                                         #((4 . 4) (5 . 5) (6 . 6)))))
+(let ((dict (cl-ds:make-from-traversable
+             'cl-ds.dicts.hamt:mutable-hamt-dictionary
+             (cl-ds.alg:chain
+              (cl-ds:whole-range #((1 . 1) (2 . 2) (3 . 3)))
+              (cl-ds:whole-range #((4 . 4) (5 . 5) (6 . 6))))
+             :hash-fn #'identity
+             :equal-fn #'=)))
   (iterate
     (for i from 1 to 6)
     (is (cl-ds:at dict i) i)))

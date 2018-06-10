@@ -535,39 +535,32 @@ Methods. Those will just call non generic functions.
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-hamt-dictionary))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (let* ((hash-fn (getf arguments :hash-fn))
          (equal-fn (getf arguments :equal-fn))
          (result (make-mutable-hamt-dictionary hash-fn equal-fn)))
-    (iterate
-      (for tr in (cons traversable more))
-      (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
-                      (setf (cl-ds:at result key) value))
-                    tr))
+    (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
+                    (setf (cl-ds:at result key) value))
+                  traversable)
     result))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-hamt-dictionary))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (~> (apply #'cl-ds:make-from-traversable
              'mutable-hamt-dictionary
-             arguments
              traversable
-             more)
+             arguments)
       cl-ds:become-functional))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-hamt-dictionary))
-                                        arguments
                                         traversable
-                                        &rest more)
+                                        &rest arguments)
   (~> (apply #'cl-ds:make-from-traversable
              'mutable-hamt-dictionary
-             arguments
              traversable
-             more)
+             arguments)
       cl-ds:become-transactional))

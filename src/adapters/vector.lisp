@@ -9,9 +9,11 @@
    (%lower-bound
     :type fixnum
     :accessor access-lower-bound
+    :initarg :lower-bound
     :initform 0)
    (%upper-bound
     :type fixnum
+    :initarg :upper-bound
     :accessor access-upper-bound)))
 
 
@@ -54,6 +56,21 @@
   (reinitialize-instance range))
 
 
+(defmethod cl-ds:clone ((range vector-range))
+  (make (type-of range)
+        :vector (read-vector range)
+        :upper-bound (access-upper-bound range)
+        :lower-bound (access-lower-bound range)))
+
+
+(defmethod cl-ds:clone ((range offset-vector-range))
+  (make (type-of range)
+        :vector (read-vector range)
+        :upper-bound (access-upper-bound range)
+        :lower-bound (access-lower-bound range)
+        :offset (read-offset range)))
+
+
 (defun range-not-fully-read (range)
   (bind (((:slots %upper-bound %lower-bound) range))
     (< %lower-bound %upper-bound)))
@@ -71,10 +88,6 @@
     (when more
       (incf (access-lower-bound range)))
     (values value more)))
-
-
-(defmethod cl-ds:clone ((range vector-range))
-  (make 'vector-range :vector (read-vector range)))
 
 
 (defmethod cl-ds:peek-back ((range vector-range))

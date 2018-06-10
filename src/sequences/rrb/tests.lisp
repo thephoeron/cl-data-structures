@@ -93,7 +93,7 @@
     (ok (cl-ds:found status))
     (is (cl-ds:value status) (+ 129 (1- i)))))
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
+(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 10)
                                                   (send-recur i :i (1+ i)))))))
@@ -101,7 +101,7 @@
     (for i from 0 below 10)
     (is (cl-ds:at container i) i)))
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
+(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
                                                   (send-recur i :i (1+ i)))))))
@@ -109,7 +109,7 @@
     (for i from 0 below 64)
     (is (cl-ds:at container i) i)))
 
-(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector nil
+(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
                                                   (send-recur i :i (1+ i)))))))
@@ -134,7 +134,7 @@
       (is (cl-ds:at new-container i) i))))
 
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector nil
+(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
                                                   (send-recur i :i (1+ i)))))))
