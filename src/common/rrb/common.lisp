@@ -645,7 +645,8 @@
               new-value))))
 
 
-(defmethod (setf cl-ds:at) (new-value (range mutable-rrb-range) index &rest more)
+(defmethod (setf cl-ds:at) (new-value (range mutable-rrb-range)
+                            index &rest more)
   (cl-ds:assert-one-dimension more)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
