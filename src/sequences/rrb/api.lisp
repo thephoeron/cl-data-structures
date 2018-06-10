@@ -654,6 +654,10 @@
 
 
 (defun fold-rrb-content (content tag)
+  (when (emptyp content)
+    (return-from fold-rrb-content
+      (values (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
+              0)))
   (iterate
     (with shift = 0)
     (for count

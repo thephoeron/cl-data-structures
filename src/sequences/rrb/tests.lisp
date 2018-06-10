@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 19641)
+(plan 19644)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -155,5 +155,10 @@
   (iterate
     (for i from 0 below 500)
     (is (cl-ds:at container i) i)))
+
+(let ((container (cl-ds:make-of-size 'functional-rrb-vector 5)))
+  (is-error (cl-ds:at container 6) 'cl-ds:argument-out-of-bounds)
+  (is-error (cl-ds:at container -1) 'cl-ds:argument-out-of-bounds)
+  (is-error (cl-ds:at container 0.2) 'cl:type-error))
 
 (finalize)
