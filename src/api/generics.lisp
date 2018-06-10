@@ -110,6 +110,8 @@
 
 (defgeneric make-from-traversable (class arguments traversable &rest more))
 
+(defgeneric make-of-size (class size &rest more))
+
 #|
 
 Range releated functions.

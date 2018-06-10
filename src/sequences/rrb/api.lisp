@@ -609,7 +609,8 @@
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
-        :tail (copy-array (cl-ds.common.rrb:access-tail container))))
+        :tail (and #1=(cl-ds.common.rrb:access-tail container)
+                   (copy-array #1#))))
 
 
 (defmethod cl-ds:become-functional ((container mutable-rrb-vector))
@@ -618,7 +619,8 @@
         :shift (cl-ds.common.rrb:access-shift container)
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
-        :tail (copy-array (cl-ds.common.rrb:access-tail container))))
+        :tail (and #1=(cl-ds.common.rrb:access-tail container)
+                   (copy-array #1#))))
 
 
 (defmethod cl-ds:become-transactional ((container rrb-vector))
@@ -628,8 +630,8 @@
         :size (cl-ds.common.rrb:access-size container)
         :tail-size (cl-ds.common.rrb:access-tail-size container)
         :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
-        :tail (and (cl-ds.common.rrb:access-tail container)
-                   (copy-array (cl-ds.common.rrb:access-tail container)))))
+        :tail (and #1=(cl-ds.common.rrb:access-tail container)
+                   (copy-array #1#))))
 
 
 (defun fold-content (tag content)
@@ -651,6 +653,24 @@
     (while (< i (length content)))))
 
 
+(defun fold-rrb-content (content tag)
+  (iterate
+    (with shift = 0)
+    (for count
+         initially (floor (/ (length content)
+                             cl-ds.common.rrb:+maximum-children-count+))
+         then (floor (/ count cl-ds.common.rrb:+maximum-children-count+)))
+    (fold-content tag content)
+    (incf shift)
+    (while (> count +maximum-children-count+))
+    (setf (fill-pointer content) count)
+    (finally
+     (return (values (if (emptyp content)
+                         (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
+                         (first-elt content))
+                     shift)))))
+
+
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
                                         arguments
                                         traversable
@@ -658,8 +678,8 @@
   (declare (optimize (speed 3)))
   (bind ((content (vect))
          (size 0)
-         (element-type (or (getf arguments :element-type) t))
-         (tag nil)
+         (element-type (getf arguments :element-type t))
+         (tag (cl-ds.common.abstract:make-ownership-tag))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
     (iterate
@@ -672,61 +692,51 @@
                             x)
                       (incf size))
                     tr))
-    (let* ((tail (last-elt content))
-           (shift 0)
-           (tail-size-or-zero (logand size (lognot cl-ds.common.rrb:+tail-mask+)))
-           (tail-size (if (zerop tail-size-or-zero)
-                          cl-ds.common.rrb:+maximum-children-count+
-                          tail-size-or-zero))
-           (tree-size (- size tail-size)))
-      (decf (fill-pointer content))
-      (map-into content
-                (lambda (x)
-                  (cl-ds.common.rrb:make-rrb-node :content x
-                                                  :ownership-tag tag))
-                content)
-      (iterate
-        (for count
-             initially (floor (/ tree-size cl-ds.common.rrb:+maximum-children-count+))
-             then (floor (/ count cl-ds.common.rrb:+maximum-children-count+)))
-        (while (> count +maximum-children-count+))
-        (fold-content tag content)
-        (incf shift)
-        (setf (fill-pointer content) count))
+    (map-into content
+              (lambda (x)
+                (cl-ds.common.rrb:make-rrb-node :content x
+                                                :ownership-tag tag))
+              content)
+    (bind ((tail-size (logand size (lognot cl-ds.common.rrb:+tail-mask+)))
+           (tree-size (- size tail-size))
+           (tail (if (zerop tail-size) nil (~> content pop-last car)))
+           ((:values root shift) (fold-rrb-content content tag)))
       (make 'mutable-rrb-vector
-            :root (if (emptyp content)
-                      (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
-                      (first-elt content))
+            :root root
             :ownership-tag tag
             :shift shift
-            :tail tail
+            :tail (if (zerop tail-size)
+                      nil
+                      tail)
             :tail-size tail-size
             :size tree-size))))
-
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
                                         arguments
                                         traversable
                                         &rest more)
-  (~> (apply #'cl-ds:make-from-traversable
-             'mutable-rrb-vector
-             arguments
-             traversable
-             more)
-      cl-ds:become-functional))
+  (bind ((result (apply #'cl-ds:make-from-traversable
+                        'mutable-rrb-vector
+                        arguments
+                        traversable
+                        more)))
+    (cl-ds:become-functional result)))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
                                         arguments
                                         traversable
                                         &rest more)
-  (~> (apply #'cl-ds:make-from-traversable
-             'mutable-rrb-vector
-             arguments
-             traversable
-             more)
-      cl-ds:become-transactional))
+  (bind ((result (apply #'cl-ds:make-from-traversable
+                        'mutable-rrb-vector
+                        arguments
+                        traversable
+                        more))
+         (tag (cl-ds.common.abstract:read-ownership-tag result))
+         (transactional (cl-ds:become-transactional result)))
+    (cl-ds.common.abstract:write-ownership-tag tag transactional)
+    transactional))
 
 
 (defun make-functional-rrb-vector ()
@@ -739,3 +749,47 @@
 
 (defun make-transactional-rrb-vector ()
   (make 'transactional-rrb-vector))
+
+
+(defmethod cl-ds:make-of-size ((class (eql 'mutable-rrb-vector)) size &rest arguments)
+  (declare (optimize (speed 3)))
+  (let* ((number-of-leafs (~> size
+                              (/ cl-ds.common.rrb:+maximum-children-count+)
+                              truncate))
+         (tree-size (* cl-ds.common.rrb:+maximum-children-count+
+                       number-of-leafs))
+         (tail-size (- size tree-size))
+         (element-type (getf arguments :element-type t))
+         (tag (cl-ds.common.abstract:make-ownership-tag))
+         (leafs (make-array number-of-leafs :fill-pointer number-of-leafs)))
+    (iterate
+      (for i from 0 below number-of-leafs)
+      (setf (aref leafs i)
+            (cl-ds.common.rrb:make-rrb-node
+             :content (cl-ds.common.rrb:make-node-content element-type)
+             :ownership-tag tag)))
+    (bind (((:values root shift) (fold-rrb-content leafs tag)))
+      (make 'mutable-rrb-vector
+            :root root
+            :ownership-tag tag
+            :shift shift
+            :tail (if (zerop tail-size)
+                      nil
+                      (cl-ds.common.rrb:make-node-content element-type))
+            :tail-size tail-size
+            :size tree-size))))
+
+
+(defmethod cl-ds:make-of-size ((class (eql 'functional-rrb-vector)) size &rest arguments)
+  (declare (optimize (speed 3)))
+  (~> (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments)
+      cl-ds:become-functional))
+
+
+(defmethod cl-ds:make-of-size ((class (eql 'transactional-rrb-vector)) size &rest arguments)
+  (declare (optimize (speed 3)))
+  (bind ((mutable (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments))
+         (tag (cl-ds.common.abstract:read-ownership-tag mutable))
+         (transactional (cl-ds:become-transactional mutable)))
+    (cl-ds.common.abstract:write-ownership-tag tag transactional)
+    transactional))

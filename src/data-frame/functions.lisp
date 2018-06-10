@@ -27,38 +27,72 @@
              :text "Can't create data-frame because data provided is of unequal sizes."))))
 
 
-(defun initialize-dimensions (data-frame dimension)
-  (iterate
-    (repeat dimension)
-    (for data initially (access-data data-frame)
-         then (lret ((next (cl-ds.seqs.rrb:make-mutable-rrb-vector)))
-                (cl-ds:put! data next)))))
+(defun initialize-dimensions (sizes)
+  (assert sizes)
+  (lret ((result (cl-ds:make-of-size 'cl-ds.seqs.rrb:make-mutable-rrb-vector
+                                     (first sizes))))
+    (when (rest sizes)
+      (iterate
+        (for i from 0 below (first sizes))
+        (setf (cl-ds:at result i) (initialize-dimensions (rest sizes)))))))
+
+
+(defun initialize-sizes (dimension data)
+  (validate-data data)
+  (coerce
+   (iterate
+     (for d in-vector data)
+     (for i from 0)
+     (collect (if (eql i dimension)
+                  (length data)
+                  (cl-ds:size d))))
+   '(vector non-negative-fixnum)))
+
+
+(defun fill-data (data-frame axis position data)
+  (bind ((addres (map 'list
+                      (constantly 0)
+                      (read-sizes data-frame)))
+         (length (~> data-frame read-sizes length)))
+    (setf (elt addres axis) position)
+    (iterate
+      (for i from 0 below (aref (read-sizes data-frame) axis))
+      (iterate
+        (for j from 0 below (cl-ds:size data))
+        (iterate
+          (for k from 0 below length)
+          (for adr on addres)
+          (if (eql k axis)
+              (setf (car adr) i)
+              (setf (car adr) j))) ; TODO support for multiple dimensions
+        (apply #'(setf cl-ds:at) (cl-ds:at data i) data-frame addres)))))
 
 
 (defun fill-dimensions (data-frame data dimension)
-  (let ((size (array-dimension data 0)))
-    (iterate
-      (for d = (iterate
-                 (for d in-vector data)
-                 (for (values v more) = (cl-ds:consume-front d))
-                 (unless more
-                   (return-from fill-dimensions nil))
-                 (collect v))))))
+  (iterate
+    (for j from 0)
+    (for d in-vector data)
+    (fill-data data-frame dimension j d)))
 
 
-
-(defun stack (dimension key data &rest more-data)
+(defun stack (dimension data &rest more-data)
   (let* ((data-dimensionality (cl-ds:dimensionality data))
-         (data-size (cl-ds:size data))
          (frame-dimensionality (1+ data-dimensionality))
-         (result-content (cl-ds.seqs.rrb:make-mutable-rrb-vector))
          (data (coerce (cons data more-data) 'vector))
-         (result-frame (make-instance 'data-frame
-                                      :data result-content
-                                      :dimensionality frame-dimensionality)))
-    (validate-data data)
-    (initialize-dimensions result-frame dimension)
-    (fill-dimensions result-frame data dimension)))
+         (sizes (initialize-sizes dimension data))
+         (result-content (initialize-dimensions sizes))
+         (result-frame (make 'data-frame
+                             :data result-content
+                             :lower-bounds (make-array
+                                            frame-dimensionality
+                                            :element-type 'non-negative-fixnum
+                                            :initial-element 0)
+                             :upper-bounds sizes
+                             :dimensionality frame-dimensionality)))
+    (fill-dimensions result-frame
+                     data
+                     dimension)
+    result-frame))
 
 
 (defun range-stack (dimension range &key (key #'identity)))

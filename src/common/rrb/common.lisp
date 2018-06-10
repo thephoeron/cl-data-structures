@@ -452,7 +452,8 @@
                       (start-range offset)
                       (difference (ash 1 bit-offset))
                       (end-range (+ offset (ash +tail-mask+ bit-offset))))
-                 (when (<= start-range from to end-range)
+                 (when (and node
+                            (<= start-range from to end-range))
                    (if (zerop depth)
                        (flexichain:push-end %content
                                             (the node-content (car node)))

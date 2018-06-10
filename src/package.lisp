@@ -39,6 +39,7 @@
    #:field
    #:force
    #:found
+   #:make-of-size
    #:functional
    #:functionalp
    #:fundamental-assignable-forward-range
