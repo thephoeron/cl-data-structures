@@ -2,7 +2,7 @@
 (defpackage metric-egnat-tests (:use :prove :cl :iterate))
 (in-package :metric-egnat-tests)
 
-(plan 42)
+(plan 43)
 
 (let* ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt"))
        (data (serapeum:vect))
@@ -29,6 +29,7 @@
       (ok (<= distance 1))
       (count t into result)
       (finally (is result 40)))
+    (ok (null (zerop count)))
     (ok (< count (length data)))))
 
 (finalize)
