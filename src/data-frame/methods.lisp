@@ -4,9 +4,10 @@
 (defun ensure-dimensionality (object more)
   (unless (= #1=(cl-ds:dimensionality object) #2=(length more))
     (error 'cl-ds:dimensionality-error
-           :text (format nil
-                         "Passed ~a arguments but data-frame dimensionality is ~a."
-                         #2# #1#))))
+           :text (format
+                  nil
+                  "Passed ~a arguments but data-frame dimensionality is ~a."
+                  #2# #1#))))
 
 
 (defun ensure-in-frame (object more)
