@@ -33,7 +33,8 @@
           (progn
             (setf (cdr prev-loc) (cons location loc))
             (leave address))))
-    (finally (return address))))
+    (finally (progn (setf (rest loc) (list location))
+                    (return address)))))
 
 
 (defun apply-aliases (aliases locations)

@@ -49,6 +49,8 @@
                  more)))
 
 
+(-> mutable-data (cl-ds.seqs.rrb:mutable-rrb-vector non-negative-fixnum)
+    cl-ds.seqs.rrb:transactional-rrb-vector)
 (defun transactional-data (data count)
   (nest
    (lret ((result (cl-ds:become-transactional data))))
@@ -61,6 +63,8 @@
                                count)))))
 
 
+(-> mutable-data (cl-ds.seqs.rrb:transactional-rrb-vector non-negative-fixnum)
+    cl-ds.seqs.rrb:mutable-rrb-vector)
 (defun mutable-data (data count)
   (nest
    (lret ((result (cl-ds:become-mutable data))))
@@ -77,7 +81,7 @@
   (bind ((old-instance (access-data data))
          (new-instance (transactional-data old-instance
                                            (cl-ds:dimensionality data)))
-         (*active-data* (make-data-accessor data new-instance dimension)))
+         (*active-data* (make-data-accessor new-instance data dimension)))
     (block outer
       (iterate
         (for i

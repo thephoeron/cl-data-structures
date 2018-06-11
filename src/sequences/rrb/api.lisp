@@ -613,6 +613,16 @@
                    (copy-array #1#))))
 
 
+(defmethod cl-ds:become-mutable ((container transactional-rrb-vector))
+  (make 'mutable-rrb-vector
+        :root (cl-ds.common.rrb:access-root container)
+        :shift (cl-ds.common.rrb:access-shift container)
+        :size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-tail-size container)
+        :tail (and #1=(cl-ds.common.rrb:access-tail container)
+                   (copy-array #1#))))
+
+
 (defmethod cl-ds:become-functional ((container mutable-rrb-vector))
   (make 'functional-rrb-vector
         :root (cl-ds.common.rrb:access-root container)

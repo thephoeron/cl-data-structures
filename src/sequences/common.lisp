@@ -74,6 +74,17 @@
                                                                  bucket)
           t))
 
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
+                                   (container transactional-sequence)
+                                   bucket
+                                   location
+                                   &rest rest &key value
+                                   &allow-other-keys)
+  (declare (ignore rest))
+  (values (cl-ds:force value)
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
                                    (container fundamental-sequence)
