@@ -7,14 +7,13 @@
   :license "MIT"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
-  :depends-on ( :iterate         :alexandria
-                :serapeum        :prove
-                :prove-asdf      :documentation-utils-extensions
-                :more-conditions :closer-mop
-                :lparallel       :flexichain
-                :metabang-bind   :bordeaux-threads
-                :trivial-garbage :fare-memoization
-                :scribble)
+  :depends-on ( :iterate          :alexandria
+                :serapeum         :prove
+                :prove-asdf       :documentation-utils-extensions
+                :more-conditions  :closer-mop
+                :lparallel        :flexichain
+                :metabang-bind    :bordeaux-threads
+                :fare-memoization :scribble)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
