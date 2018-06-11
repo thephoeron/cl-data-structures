@@ -41,8 +41,8 @@
   (validate-data data)
   (coerce
    (iterate
-     (for d in-vector data)
-     (for i from 0)
+     (with d = (first-elt data))
+     (for i from 0 below (1+ (cl-ds:dimensionality d)))
      (collect (if (eql i dimension)
                   (length data)
                   (cl-ds:size d))))
