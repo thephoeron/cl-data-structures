@@ -73,7 +73,6 @@
 
 
 (defun stack (dimension data &rest more-data)
-  (declare (optimize (debug 3)))
   (let* ((data-dimensionality (cl-ds:dimensionality data))
          (frame-dimensionality (1+ data-dimensionality))
          (data (coerce (cons data more-data) 'vector))
