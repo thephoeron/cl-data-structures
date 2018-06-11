@@ -37,10 +37,9 @@
   (let ((i 0))
     (cl-ds.df:mutate! frame
                       1
-                      (lambda ()
-                        (iterate
-                          (for j from 0 below 3)
-                          (is (cl-ds.df:cell j) (incf i)))))))
+                      (lambda () (iterate
+                              (for j from 0 below 3)
+                              (is (cl-ds.df:cell j) (incf i)))))))
 
 (let ((frame (cl-ds.df:stack 0 #(1 2 3) #(3 4 5))))
   (is (cl-ds:dimensionality frame) 2)
