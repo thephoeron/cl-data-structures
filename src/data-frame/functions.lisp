@@ -93,6 +93,12 @@
                                             :initial-element 0)
                              :upper-bounds sizes
                              :dimensionality frame-dimensionality)))
+    (unless (< dimension frame-dimensionality)
+      (error 'cl-ds:argument-out-of-bounds
+             :text "Dimension to stack along is larger then frame dimensionality!."
+             :bounds `(< ,frame-dimensionality)
+             :value dimension
+             :argument 'dimension))
     (fill-dimensions result-frame
                      data
                      dimension)

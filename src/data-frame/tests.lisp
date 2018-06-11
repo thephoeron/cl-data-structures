@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 28)
+(plan 30)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -46,6 +46,12 @@
 
 (is-error (cl-ds.df:stack 1 #(1 2 3) #(3 4 5 6))
           'cl-ds:initialization-error)
+
+(is-error (cl-ds.df:stack 2 #(1 2 3) #(3 4 5))
+          'cl-ds:argument-out-of-bounds)
+
+(is-error (cl-ds.df:stack -1 #(1 2 3) #(3 4 5))
+          'cl-ds:argument-out-of-bounds)
 
 (is-error (cl-ds.df:stack -1 #(1 2 3) #(3 4 5))
           'cl-ds:argument-out-of-bounds)
