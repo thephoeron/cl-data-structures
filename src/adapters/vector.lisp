@@ -130,3 +130,7 @@
 (defmethod cl-ds:at ((container vector) index &rest more-locations)
   (cl-ds:assert-one-dimension more-locations)
   (elt container index))
+
+
+(defmethod cl-ds:dimensionality ((container array))
+  (length (array-dimensions container)))

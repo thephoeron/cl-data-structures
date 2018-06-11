@@ -656,7 +656,7 @@
 (defun fold-rrb-content (content tag)
   (when (emptyp content)
     (return-from fold-rrb-content
-      (values (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
+      (values nil
               0)))
   (iterate
     (with shift = 0)
@@ -670,7 +670,7 @@
     (setf (fill-pointer content) count)
     (finally
      (return (values (if (emptyp content)
-                         (cl-ds.common.rrb:make-rrb-node :ownership-tag tag)
+                         nil
                          (first-elt content))
                      shift)))))
 
@@ -748,7 +748,8 @@
   (make 'transactional-rrb-vector))
 
 
-(defmethod cl-ds:make-of-size ((class (eql 'mutable-rrb-vector)) size &rest arguments)
+(defmethod cl-ds:make-of-size ((class (eql 'mutable-rrb-vector))
+                               size &rest arguments)
   (declare (optimize (speed 3)))
   (let* ((number-of-leafs (~> size
                               (/ cl-ds.common.rrb:+maximum-children-count+)
@@ -777,13 +778,15 @@
             :size tree-size))))
 
 
-(defmethod cl-ds:make-of-size ((class (eql 'functional-rrb-vector)) size &rest arguments)
+(defmethod cl-ds:make-of-size ((class (eql 'functional-rrb-vector))
+                               size &rest arguments)
   (declare (optimize (speed 3)))
   (~> (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments)
       cl-ds:become-functional))
 
 
-(defmethod cl-ds:make-of-size ((class (eql 'transactional-rrb-vector)) size &rest arguments)
+(defmethod cl-ds:make-of-size ((class (eql 'transactional-rrb-vector))
+                               size &rest arguments)
   (declare (optimize (speed 3)))
   (bind ((mutable (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments))
          (tag (cl-ds.common.abstract:read-ownership-tag mutable))

@@ -184,7 +184,7 @@ Range releated functions.
   #'insert)
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:take-out!-function))
-  #'functional-take-out-function)
+  #'take-out)
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update!-function))
   #'update)

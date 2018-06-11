@@ -29,7 +29,7 @@
 
 (defun initialize-dimensions (sizes)
   (assert sizes)
-  (lret ((result (cl-ds:make-of-size 'cl-ds.seqs.rrb:make-mutable-rrb-vector
+  (lret ((result (cl-ds:make-of-size 'cl-ds.seqs.rrb:mutable-rrb-vector
                                      (first sizes))))
     (when (rest sizes)
       (iterate
@@ -54,18 +54,15 @@
                       (constantly 0)
                       (read-upper-bounds data-frame)))
          (length (~> data-frame read-upper-bounds length)))
-    (setf (elt addres axis) position)
     (iterate
-      (for i from 0 below (aref (read-upper-bounds data-frame) axis))
+      (for j from 0 below (cl-ds:size data))
       (iterate
-        (for j from 0 below (cl-ds:size data))
-        (iterate
-          (for k from 0 below length)
-          (for adr on addres)
-          (if (eql k axis)
-              (setf (car adr) i)
-              (setf (car adr) j))) ; TODO support for multiple dimensions
-        (apply #'(setf cl-ds:at) (cl-ds:at data i) data-frame addres)))))
+        (for k from 0 below length)
+        (for adr on addres)
+        (if (eql k axis)
+            (setf (car adr) position)
+            (setf (car adr) j))) ; TODO support for multiple dimensions
+      (apply #'(setf cl-ds:at) (cl-ds:at data j) data-frame addres))))
 
 
 (defun fill-dimensions (data-frame data dimension)
@@ -76,11 +73,12 @@
 
 
 (defun stack (dimension data &rest more-data)
+  (declare (optimize (debug 3)))
   (let* ((data-dimensionality (cl-ds:dimensionality data))
          (frame-dimensionality (1+ data-dimensionality))
          (data (coerce (cons data more-data) 'vector))
          (sizes (initialize-sizes dimension data))
-         (result-content (initialize-dimensions sizes))
+         (result-content (initialize-dimensions (coerce sizes 'list)))
          (result-frame (make 'data-frame
                              :data result-content
                              :lower-bounds (make-array

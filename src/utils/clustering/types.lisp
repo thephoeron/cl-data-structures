@@ -176,9 +176,9 @@
 
 (defun clone-state (state &key indexes)
   (lret ((result (make 'pam-algorithm-state
-                       :input-data (read-input-data state)
+                       :input-data (access-input-data state)
                        :indexes indexes
                        :clusters nil
                        :unfinished-clusters nil
-                       :distance-matrix (read-distance-matrix state))))
-    (assert (not (emptyp (read-indexes state))))))
+                       :distance-matrix (access-distance-matrix state))))
+    (assert (not (emptyp (access-indexes state))))))
