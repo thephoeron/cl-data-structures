@@ -100,3 +100,10 @@
           (mutable-data new-instance
                         (cl-ds:dimensionality data)))
     data))
+
+
+(defmethod cl-ds:size ((container data-frame))
+  (iterate
+    (for l in-vector (read-upper-bounds container))
+    (for u in-vector (read-lower-bounds container))
+    (multiplying (- u l))))
