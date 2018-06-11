@@ -45,7 +45,7 @@
      (for i from 0 below (1+ (cl-ds:dimensionality d)))
      (collect (if (eql i dimension)
                   (length data)
-                  (cl-ds:size d))))
+                  (cl-ds:size d)))) ; TODO support for multiple dimensions
    '(vector non-negative-fixnum)))
 
 
