@@ -21,8 +21,8 @@
 
 (defmethod cl-ds:clone ((range forward-chain-of-ranges))
   (make (type-of range)
-        :content (read-content range)
-        :original-content (read-content range)))
+        :content (mapcar #'clone (read-content range))
+        :original-content (mapcar #'clone (read-content range))))
 
 
 (defun init-chain-of-range (obj)
