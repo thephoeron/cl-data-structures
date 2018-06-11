@@ -73,6 +73,13 @@
 
 
 (defun stack (dimension data &rest more-data)
+  (check-type dimension integer)
+  (when (> 0 dimension)
+    (error 'cl-ds:argument-out-of-bounds
+           :text "Dimension can't be negative."
+           :bounds '(>= 0)
+           :value dimension
+           :argument 'dimension))
   (let* ((data-dimensionality (cl-ds:dimensionality data))
          (frame-dimensionality (1+ data-dimensionality))
          (data (coerce (cons data more-data) 'vector))
