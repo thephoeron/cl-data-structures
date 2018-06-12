@@ -128,7 +128,7 @@
                          dimension)
            :argument 'position
            :value position
-           :bounds `(<= ,#1# #2#)))
+           :bounds `(<= ,#1# ,#2#)))
   (let* ((key (cons dimension name))
          (reverse-aliases (read-reverse-aliases container))
          (result #3=(gethash key (read-aliases container))))
