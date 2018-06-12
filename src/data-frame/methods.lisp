@@ -123,6 +123,9 @@
               position
               #2=(~> container read-upper-bounds (aref dimension) 1-))
     (error 'cl-ds:argument-out-of-bounds
+           :text (format nil "No position ~a in dimension ~a"
+                         position
+                         dimension)
            :argument 'position
            :value position
            :bounds `(<= ,#1# #2#)))
