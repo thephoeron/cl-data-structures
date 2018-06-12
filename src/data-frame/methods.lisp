@@ -107,3 +107,28 @@
     (for l in-vector (read-upper-bounds container))
     (for u in-vector (read-lower-bounds container))
     (multiplying (- u l))))
+
+
+(defmethod set-alias ((container data-frame)
+                      dimension
+                      (name symbol)
+                      position)
+  (check-type dimension fixnum)
+  (check-type position fixnum)
+  (unless (<= 0 dimension (1- (cl-ds:dimensionality container)))
+    (error 'cl-ds:dimensionality-error
+           :text (format nil "No dimension ~a in data frame."
+                         dimension)))
+  (unless (<= #1=(~> container read-lower-bounds (aref dimension))
+              position
+              #2=(~> container read-upper-bounds (aref dimension) 1-))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'position
+           :value position
+           :bounds `(<= ,#1# #2#)))
+  (let* ((key (cons dimension name))
+         (reverse-aliases (read-reverse-aliases container))
+         (result #3=(gethash key (read-aliases container))))
+    (setf (gethash (cons dimension position) reverse-aliases) name
+          #3# position)
+    result))

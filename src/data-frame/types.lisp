@@ -21,6 +21,10 @@
   (%upper-bounds :initarg :upper-bounds
                  :reader read-upper-bounds
                  :type (vector non-negative-fixnum))
+  (%reverse-alias :initarg :reverse-alias
+                  :reader read-reverse-aliases
+                  :type hash-table
+                  :initform (make-hash-table :test 'equal))
   (%aliases :initform (make-hash-table :test 'equal)
             :reader read-aliases
             :type hash-table)))

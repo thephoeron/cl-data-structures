@@ -24,6 +24,7 @@
    #:range-stack
    #:data-frame
    #:fundamental-data-frame
+   #:set-alias
    #:row
    #:row-at
    #:stack))
