@@ -109,10 +109,10 @@
     (multiplying (- u l))))
 
 
-(defmethod set-alias ((container data-frame)
-                      dimension
-                      (name symbol)
-                      position)
+(defmethod (setf alias) ((name symbol)
+                         (container data-frame)
+                         dimension
+                         position)
   (check-type dimension fixnum)
   (check-type position fixnum)
   (unless (<= 0 dimension (1- (cl-ds:dimensionality container)))

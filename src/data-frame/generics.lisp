@@ -8,4 +8,5 @@
   (:method :around (data dimension function &rest ranges)
     (let ((*active-frame* data))
       (call-next-method))))
-(defgeneric set-alias (data dimension name position))
+(defgeneric (setf alias) (name data dimension position))
+(defgeneric alias (data dimension position))
