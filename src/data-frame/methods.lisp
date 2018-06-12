@@ -104,8 +104,8 @@
 
 (defmethod cl-ds:size ((container data-frame))
   (iterate
-    (for l in-vector (read-upper-bounds container))
-    (for u in-vector (read-lower-bounds container))
+    (for u in-vector (read-upper-bounds container))
+    (for l in-vector (read-lower-bounds container))
     (multiplying (- u l))))
 
 
