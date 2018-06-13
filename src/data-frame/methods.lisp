@@ -32,18 +32,18 @@
 
 (defmethod cl-ds:at ((object data-frame) location &rest more)
   (let ((more (cons location more)))
+    (apply-aliases (read-aliases object) more)
     (ensure-dimensionality object more)
     (ensure-in-frame object more)
-    (apply-aliases (read-aliases object) more)
     (at-data (access-data object)
              more)))
 
 
 (defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
   (let ((more (cons location more)))
+    (apply-aliases (read-aliases object) more)
     (ensure-dimensionality object more)
     (ensure-in-frame object more)
-    (apply-aliases (read-aliases object) more)
     (set-at-data new-value
                  (access-data object)
                  more)))
@@ -154,4 +154,4 @@
            :argument 'position
            :value position
            :bounds `(<= ,#1# ,#2#)))
-  (gethash (cons dimension position) (read-aliases container)))
+  (gethash (cons dimension position) (read-reverse-aliases container)))

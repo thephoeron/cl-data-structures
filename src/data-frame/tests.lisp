@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 53)
+(plan 56)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -64,7 +64,10 @@
   (is (cl-ds:at frame 1 2) 6)
   (is (cl-ds:at frame 2 0) 7)
   (is (cl-ds:at frame 2 1) 8)
-  (is (cl-ds:at frame 2 2) 9))
+  (is (cl-ds:at frame 2 2) 9)
+  (setf (cl-ds.df:alias frame 0 0) :column0)
+  (is (cl-ds.df:alias frame 0 0) :column0)
+  (is (cl-ds:at frame :column0 0) 1))
 
 (is-error (cl-ds.df:stack 0 #(1 2 3) #(3 4 5 6))
           'cl-ds:initialization-error)
