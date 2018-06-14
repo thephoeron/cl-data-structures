@@ -13,3 +13,11 @@
                (return-from traverse-multiple nil))
              (collect data)))
       (apply function data))))
+
+
+(defun iota-range (&key (from 0) to (by 1))
+  (check-type to (or null integer))
+  (cl-ds:xpr (:i from)
+    (when (or (null to)
+              (< i to))
+      (send-recur i :i (+ by i)))))

@@ -34,6 +34,7 @@
    #:erase
    #:erase!
    #:traverse-multiple
+   #:iota-range
    #:erase-if
    #:erase-if!
    #:expression
