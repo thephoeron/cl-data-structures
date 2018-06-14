@@ -17,6 +17,8 @@
 
 (defun iota-range (&key (from 0) to (by 1))
   (check-type to (or null integer))
+  (check-type from integer)
+  (check-type by integer)
   (cl-ds:xpr (:i from)
     (when (or (null to)
               (< i to))
