@@ -122,12 +122,3 @@
       (for range in %ranges)
       (minimize (cl-ds:size range)))))
 
-
-(defmethod cl-ds:traverse (function (range forward-zipped-ranges))
-  (bind (((:slots %function %ranges) range))
-    (iterate
-      (for (values val more) = (cl-ds:consume-front range))
-      (while more)
-      (funcall function val)
-      (finally (cl-ds:reset! range)))
-    range))

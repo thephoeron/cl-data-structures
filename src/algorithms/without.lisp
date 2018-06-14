@@ -55,11 +55,11 @@
   (cl-ds.alg.meta:expects-content-p (read-outer aggregator)))
 
 
-(defmethod cl-ds:peek-front ((aggregator forward-without-proxy))
-  (fbind ((key (read-key aggregator))
-          (predicate (read-predicate aggregator)))
+(defmethod cl-ds:peek-front ((range forward-without-proxy))
+  (fbind ((key (read-key range))
+          (predicate (read-predicate range)))
     (iterate
-      (with outer = (read-outer aggregator))
+      (with outer = (read-outer range))
       (for (values value more) = (cl-ds:peek-front outer))
       (when (null more)
         (return (values nil nil)))
@@ -132,7 +132,7 @@
         (predicate (read-predicate range))
         (key (read-key range)))
     (cl-ds:traverse (lambda (x) (unless (funcall predicate (funcall key x))
-                                  (funcall function x)))
+                             (funcall function x)))
                     range)
     range))
 
@@ -142,7 +142,7 @@
         (predicate (read-predicate range))
         (key (read-key range)))
     (cl-ds:across (lambda (x) (unless (funcall predicate (funcall key x))
-                                (funcall function x)))
+                           (funcall function x)))
                   range)
     range))
 

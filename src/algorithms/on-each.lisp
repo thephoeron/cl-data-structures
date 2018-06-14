@@ -23,11 +23,13 @@
   ())
 
 
-(defclass bidirectional-proxy-box-range (proxy-box-range bidirectional-proxy-range)
+(defclass bidirectional-proxy-box-range (bidirectional-proxy-range
+                                         forward-proxy-box-range)
   ())
 
 
-(defclass random-access-proxy-box-range (proxy-box-range random-access-proxy-range)
+(defclass random-access-proxy-box-range (random-access-proxy-range
+                                         bidirectional-proxy-box-range)
   ())
 
 
@@ -123,17 +125,20 @@
     (check-type key (or symbol function))
     (call-next-method))
   (:method ((range fundamental-forward-range) function key)
-    (make-proxy range 'forward-proxy-box-range
-                :function function
-                :key key))
+    (make 'forward-proxy-box-range
+          :original-range range
+          :function function
+          :key key))
   (:method ((range fundamental-random-access-range) function key)
-    (make-proxy range 'random-access-proxy-box-range
-                :function function
-                :key key))
+    (make 'random-access-proxy-box-range
+          :function function
+          :key key
+          :original-range range))
   (:method ((range fundamental-bidirectional-range) function key)
-    (make-proxy range 'bidirectional-proxy-box-range
-                :function function
-                :key key)))
+    (make 'bidirectional-proxy-box-range
+          :original-range range
+          :function function
+          :key key)))
 
 
 (defmethod cl-ds:apply-layer ((range fundamental-range)
