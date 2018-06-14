@@ -70,4 +70,5 @@
    #:to-vector
    #:without
    #:without-function
+   #:flatten-lists
    #:zip))

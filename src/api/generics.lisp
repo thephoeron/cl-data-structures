@@ -98,7 +98,12 @@
 
 (defgeneric traverse (function object)
   (:method (function (object sequence))
-    (map nil function object)))
+    (map nil function object))
+  (:method (function (object fundamental-range))
+    (iterate
+      (for (values val more) = (cl-ds:consume-front object))
+      (while more)
+      (funcall function val))))
 
 (defgeneric across (function object)
   (:method (function (object sequence))
