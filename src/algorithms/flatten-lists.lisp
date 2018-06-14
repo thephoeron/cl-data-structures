@@ -21,6 +21,26 @@
         :original-range (read-original-range range)))
 
 
+(defmethod cl-ds:traverse (function (range flatten-proxy))
+  (labels ((impl (x)
+             (if (listp x)
+                 (map nil #'impl x)
+                 (funcall function x))))
+    (declare (dynamic-extent (function impl)))
+    (cl-ds:traverse #'impl (read-original-range range))
+    range))
+
+
+(defmethod cl-ds:across (function (range flatten-proxy))
+  (labels ((impl (x)
+             (if (listp x)
+                 (map nil #'impl x)
+                 (funcall function x))))
+    (declare (dynamic-extent (function impl)))
+    (cl-ds:across #'impl (read-original-range range))
+    range))
+
+
 (defmethod cl-ds:peek-front ((range forward-flatten-proxy))
   (bind ((key (read-key range))
          (current (access-current range))
