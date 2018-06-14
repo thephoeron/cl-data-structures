@@ -41,6 +41,11 @@
     range))
 
 
+(defmethod cl-ds:reset! ((range flatten-proxy))
+  (setf (access-current range) nil)
+  (call-next-method))
+
+
 (defmethod cl-ds:peek-front ((range forward-flatten-proxy))
   (bind ((key (read-key range))
          (current (access-current range))
