@@ -62,7 +62,7 @@
   ())
 
 
-(define-condition dimensionality-error (textual-error)
+(define-condition dimensionality-error (out-of-bounds)
   ())
 
 
