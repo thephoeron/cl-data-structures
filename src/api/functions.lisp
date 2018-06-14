@@ -27,7 +27,6 @@
                  :argument 'by
                  :bounds '(> 0)
                  :value by))
-        (assert (positive-integer-p by))
         (cl-ds:xpr (:i from)
           (when (or (null to)
                     (< i to))
