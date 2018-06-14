@@ -163,7 +163,9 @@ Range releated functions.
 
 (defgeneric clone (range))
 
-(defgeneric whole-range (container))
+(defgeneric whole-range (container)
+  (:method ((range fundamental-range))
+    range))
 
 (defgeneric reset! (obj))
 

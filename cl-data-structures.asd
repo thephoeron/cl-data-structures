@@ -63,6 +63,7 @@
                              (:file "expression-wrapper")
                              (:file "delay")
                              (:file "macros")
+                             (:file "functions")
                              (:file "field")
                              (:file "docstrings")
                              (:test-file "expression-tests")))

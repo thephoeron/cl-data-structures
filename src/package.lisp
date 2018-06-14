@@ -33,6 +33,7 @@
    #:empty-container
    #:erase
    #:erase!
+   #:traverse-multiple
    #:erase-if
    #:erase-if!
    #:expression
