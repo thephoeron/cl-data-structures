@@ -158,6 +158,9 @@
                 :components ((:file "package")
                              (:file "approximated-set-cardinality")
                              (:file "docstrings")))
+               (:module "counting"
+                :components ((:file "package")
+                             (:file "apriori")))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
