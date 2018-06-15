@@ -157,8 +157,8 @@
          all-subsets)))
 
 
-(defun apriori-algorithm (minimal-support minimal-frequency vector.table)
-  (bind (((vector . table) vector.table)
+(defun apriori-algorithm (minimal-support minimal-frequency &key set-form)
+  (bind (((vector . table) set-form)
          (index (make-apriori-index vector
                                     minimal-support
                                     minimal-frequency)))
