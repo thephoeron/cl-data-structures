@@ -35,6 +35,11 @@
    #:lower-bound
    #:make-half-matrix
    #:make-distance-matrix-from-vector
+   #:make-new-skip-vector
+   #:ordered-intersection
+   #:sref
+   #:skip-vector-without
+   #:make-skip-vector
    #:make-future-carousel
    #:make-pipe-fragment
    #:merge-ordered-vectors

@@ -1,12 +1,13 @@
 (in-package #:cl-ds.utils)
 
 
-(defun ordered-p (sequence fn)
+(defun ordered-p (sequence fn &key (key #'identity))
   "Predictate. Checks if SEQUENCE is ordered by FN (that is, if call to (fn prev current) always returns T).
 
   @b(Side Effects:) none. "
   (iterate
-    (for elt in-sequence sequence)
+    (for s in-sequence sequence)
+    (for elt = (funcall key s))
     (for pelt previous elt)
     (if-first-time
      t
@@ -114,3 +115,37 @@
        (iterate
          (for i from b below (length second-order))
          (funcall on-second-missing (second-order i)))))))
+
+
+(defun ordered-intersection (compare-fn test-fn vector &rest more-vectors)
+  (push vector more-vectors)
+  (iterate
+    (with indexes = (map '(vector fixnum) (constantly 0) more-vectors))
+    (with sizes = (map '(vector fixnum) #'length more-vectors))
+    (with result = (vect))
+    (while (every #'< indexes sizes))
+    (iterate
+      (with ok = t)
+      (with minimum = nil)
+      (with minimum-i = 0)
+      (for i from 0)
+      (for index in-vector indexes)
+      (for vector in more-vectors)
+      (for value = (aref vector index))
+      (for prev-value previous value)
+      (if (first-iteration-p)
+          (setf minimum value)
+          (progn
+            (when ok
+              (setf ok (funcall test-fn value prev-value)))
+            (when (and (not ok) (funcall compare-fn value minimum))
+              (setf minimum value
+                    minimum-i i))))
+      (finally (if ok
+                   (progn
+                     (map-into indexes #'1+ indexes)
+                     (vector-push-extend minimum result))
+                   (incf (aref indexes minimum-i)))))
+    (finally (return result))))
+
+

@@ -32,6 +32,7 @@
                              (:file "bind")
                              (:file "parallel-tools")
                              (:file "lambda-lists")
+                             (:file "skip-vector")
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
