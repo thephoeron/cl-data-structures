@@ -19,7 +19,26 @@
   (check-type to (or null integer))
   (check-type from integer)
   (check-type by integer)
-  (cl-ds:xpr (:i from)
-    (when (or (null to)
-              (< i to))
-      (send-recur i :i (+ by i)))))
+  (if (< from to)
+      (progn
+        (unless (positive-integer-p by)
+          (error 'argument-out-of-bounds
+                 :text "BY must be positive because TO is larger then FROM."
+                 :argument 'by
+                 :bounds '(> 0)
+                 :value by))
+        (cl-ds:xpr (:i from)
+          (when (or (null to)
+                    (< i to))
+            (send-recur i :i (+ by i)))))
+      (progn
+        (unless (negative-integer-p by)
+          (error 'argument-out-of-bounds
+                 :text "BY must be negative because TO is smaller then FROM."
+                 :argument 'by
+                 :bounds '(< 0)
+                 :value by))
+        (cl-ds:xpr (:i from)
+          (when (or (null to)
+                    (> i to))
+            (send-recur i :i (+ by i)))))))

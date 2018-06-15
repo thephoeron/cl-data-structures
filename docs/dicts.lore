@@ -48,7 +48,7 @@
 @begin{section}
 @title{HAMT}
 @label{HAMT}
-@text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copy-on-write whole path from root to bottom (conflict) node.}
+@text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copy-on-write whole path from root to the bottom (conflict) node.}
 @text{Dictionary implementation of HAMT is present in the system as a class.}
 @docclass['cl-ds.dicts.hamt:hamt-dictionary]
 @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
