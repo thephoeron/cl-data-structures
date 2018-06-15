@@ -122,19 +122,6 @@
 (define-constant +empty-sets+ (list nil) :test 'equal)
 
 
-(defun all-subsets (supersets sets)
-  (if (eql sets +empty-sets+)
-      supersets
-      (lret ((result supersets))
-        (labels ((impl (superset set)
-                   (iterate
-                     (for k from (length set) below (length superset))
-                     (for next = (copy-without superset k))
-                     (push next result)
-                     (impl next set))))
-          (map nil #'impl supersets sets)))))
-
-
 (defun insert-one-into-index (index subset)
   (let* ((prototype-node (last-elt subset))
          (last-existing-node (aref subset (- (length subset) 2)))
@@ -177,12 +164,10 @@
                                     minimal-frequency)))
     (iterate
       (with sets = +empty-sets+)
-      (for supersets = (mapcar (curry #'construct-supersets index) sets))
-      (while supersets)
-      (for all-subsets = (all-subsets supersets sets))
-      (for effective-new-sets = (insert-into-index index all-subsets))
-      (setf sets effective-new-sets)
-      (while sets))))
+      (map-into sets (curry #'construct-supersets index) sets)
+      (while sets)
+      (for effective-new-sets = (insert-into-index index sets))
+      (setf sets effective-new-sets))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -199,7 +184,6 @@
               (for (data more) = (cl-ds:consume-front range))
               (while more)
               (for k = (funcall key data))
-
               (cl-ds:across (lambda (k) (ensure (gethash k table) (finc i)))
                             k)
               (vector-push-extend (~> k
@@ -209,5 +193,3 @@
                                   vector))
             (cons vector table)))
         (curry #'apriori-algorithm minimal-support minimal-frequency)))
-
-
