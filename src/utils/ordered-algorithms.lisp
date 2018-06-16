@@ -122,7 +122,19 @@
   (iterate
     (with indexes = (map '(vector fixnum) (constantly 0) more-vectors))
     (with sizes = (map '(vector fixnum) #'length more-vectors))
-    (with result = (vect))
+    (with vector-type = (iterate
+                          (for vector in (rest more-vectors))
+                          (for prev-vector
+                               previous vector
+                               initially (first more-vectors))
+                          (unless (equal (array-element-type vector)
+                                         (array-element-type prev-vector))
+                            (leave t))
+                          (finally (return (array-element-type prev-vector)))))
+    (with result = (make-array (reduce #'min more-vectors :key #'length)
+                               :element-type vector-type
+                               :adjustable t
+                               :fill-pointer 0))
     (while (every #'< indexes sizes))
     (iterate
       (with ok = t)
