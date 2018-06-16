@@ -5,11 +5,19 @@
 
 (in-package #:apriori-tests)
 
+(plan 3)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:apriori data
                                       1
                                       0.1
-                                      :parallel nil)))
-  (defparameter *index* index))
+                                      :parallel nil))
+       (result (cl-ds.alg:to-vector (cl-ds:whole-range index))))
+  (is (cl-ds:size (cl-ds.alg:to-vector result)) 13)
+  (ok (every (compose (rcurry #'>= 0.1) #'first) result))
+  (is (length result) (~> (map 'vector #'rest result)
+                          (remove-duplicates :test #'equal)
+                          length)))
+
+(finalize)

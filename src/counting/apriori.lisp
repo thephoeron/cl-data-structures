@@ -60,6 +60,10 @@
           :initarg :root)
    (%minimal-support :reader read-minimal-support
                      :initarg :minimal-support)
+   (%reverse-mapping :accessor access-reverse-mapping
+                     :initform nil)
+   (%mapping :accessor access-mapping
+             :initform nil)
    (%minimal-frequency :reader read-minimal-frequency
                        :initarg :minimal-frequency)
    (%total-size :reader read-total-size
@@ -73,7 +77,7 @@
       (for (key value) in-hashtable table)
       (for (id . positions) = value)
       (setf (aref root-content i) (make 'apriori-node
-                                        :type key
+                                        :type id
                                         :locations positions)))
     (let ((result (make
                    'apriori-index
@@ -131,6 +135,7 @@
       (combine-nodes node)))
 
 
+(-> number-of-children (apriori-node) integer)
 (defun number-of-children (node)
   (~> node read-sets length))
 
@@ -143,9 +148,12 @@
   (vector-push-extend children (read-sets parent)))
 
 
-(lparallel:defpun expand-node (index parent i)
+(defun expand-node (index parent i queue)
+  (declare (optimize (speed 3)))
   (when (< i (number-of-children parent))
-    (expand-node index parent (1+ i))
+    (unless (eql (1+ i) (number-of-children parent))
+      (lparallel.queue:push-queue (lparallel:future (expand-node index parent (1+ i) queue))
+                                  queue))
     (let* ((node (children-at parent i))
            (supersets (construct-supersets index node)))
       (iterate
@@ -155,7 +163,9 @@
                              (read-locations node)
                              (read-locations superset)))
         (for intersection-size = (length intersection))
-        (when (< intersection-size (read-minimal-support index))
+        (when (or (< intersection-size (read-minimal-support index))
+                  (< (/ intersection-size (read-total-size index))
+                     (read-minimal-frequency index)))
           (next-iteration))
         (for new-node = (make 'apriori-node
                               :locations intersection
@@ -163,7 +173,16 @@
                               :type (read-type superset)))
         (push-children node new-node))
       (sort-sets node)
-      (expand-node index node 0))))
+      (expand-node index node 0 queue))))
+
+
+(defun reset-locations (index)
+  (labels ((impl (node)
+             (slot-makunbound node '%locations)
+             (iterate
+               (for n in-vector (read-sets node))
+               (impl n))))
+    (impl (read-root index))))
 
 
 (defun apriori-algorithm (&key set-form minimal-support
@@ -173,9 +192,29 @@
          (index (make-apriori-index table
                                     total-size
                                     minimal-support
-                                    minimal-frequency)))
-    (expand-node index (read-root index) 0)
-    index))
+                                    minimal-frequency))
+         (queue (lparallel.queue:make-queue)))
+    (lparallel.queue:push-queue (lparallel:future
+                                  (expand-node index
+                                               (read-root index)
+                                               0
+                                               queue))
+                                queue)
+    (let ((reverse-mapping (make-array (hash-table-count table)))
+          (mapping (make-hash-table :size (hash-table-count table))))
+      (iterate
+        (for i from 0)
+        (for (key value) in-hashtable table)
+        (for (id . positions) = value)
+        (setf (aref reverse-mapping id) key
+              (gethash key mapping) i))
+      (setf (access-mapping index) mapping
+            (access-reverse-mapping index) reverse-mapping)
+      (iterate
+        (until (lparallel.queue:queue-empty-p queue))
+        (lparallel:force (lparallel.queue:pop-queue queue)))
+      (reset-locations index)
+      index)))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
@@ -199,3 +238,30 @@
           (incf (second state))
           state)
         (curry #'apriori-algorithm minimal-support minimal-frequency)))
+
+
+(defun node-name (index node)
+  (aref (access-reverse-mapping index)
+        (read-type node)))
+
+
+(defun build-path (index node)
+  (cons (coerce (/ (read-count node) (read-total-size index)) 'single-float)
+        (iterate
+          (for n initially node then (read-parent n))
+          (until (null (read-parent n)))
+          (collect (node-name index n) at start))))
+
+
+(flet ((add-to-stack (stack node)
+         (reduce (flip #'cons)
+                 (read-sets node)
+                 :initial-value stack)))
+  (defmethod cl-ds:whole-range ((object apriori-index))
+    (cl-ds:xpr (:stack (list (read-root object)))
+      (let ((node (pop stack)))
+        (unless (null node)
+          (if (null (read-parent node))
+              (recur :stack (add-to-stack stack node))
+              (send-recur (build-path object node)
+                          :stack (add-to-stack stack node))))))))
