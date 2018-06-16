@@ -6,4 +6,5 @@
         #:alexandria #:iterate #:metabang-bind)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.counting)
-  )
+  (:export
+   #:apriori))

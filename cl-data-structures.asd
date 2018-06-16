@@ -161,7 +161,8 @@
                              (:file "docstrings")))
                (:module "counting"
                 :components ((:file "package")
-                             (:file "apriori")))
+                             (:file "apriori")
+                             (:test-file "tests")))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
