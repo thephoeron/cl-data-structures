@@ -149,7 +149,7 @@
 
 
 (defun expand-node (index parent i queue)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (when (< i (number-of-children parent))
     (unless (eql (1+ i) (number-of-children parent))
       (lparallel.queue:push-queue (lparallel:future (expand-node index parent (1+ i) queue))

@@ -146,6 +146,5 @@
                      (map-into indexes #'1+ indexes)
                      (vector-push-extend minimum result))
                    (incf (aref indexes minimum-i)))))
-    (finally (return result))))
-
-
+    (finally (return (adjust-array result
+                                   (fill-pointer result))))))
