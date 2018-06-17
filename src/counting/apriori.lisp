@@ -7,14 +7,13 @@
 
 
 (defgeneric apriori (range minimal-support minimal-frequency
-                     &key key parallel)
+                     &key key)
   (:generic-function-class apriori-function)
   (:method (range minimal-support minimal-frequency
-            &key (key #'identity) (parallel nil))
+            &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function
      range
      #'apriori
-     :parallel parallel
      :minimal-support minimal-support
      :minimal-frequency minimal-frequency
      :key key)))
