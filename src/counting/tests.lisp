@@ -11,8 +11,7 @@
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:apriori data
                                       1
-                                      0.1
-                                      :parallel nil))
+                                      0.1))
        (result (cl-ds.alg:to-vector (cl-ds:whole-range index))))
   (is (cl-ds:size (cl-ds.alg:to-vector result)) 13)
   (ok (every (compose (rcurry #'>= 0.1) #'first) result))

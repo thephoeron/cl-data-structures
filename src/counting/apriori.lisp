@@ -151,8 +151,9 @@
   (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (when (< i (number-of-children parent))
     (unless (eql (1+ i) (number-of-children parent))
-      (lparallel.queue:push-queue (lparallel:future (expand-node index parent (1+ i) queue))
-                                  queue))
+      (~> (expand-node index parent (1+ i) queue)
+          lparallel:future
+          (lparallel.queue:push-queue queue)))
     (let* ((node (children-at parent i))
            (supersets (construct-supersets index node)))
       (iterate
@@ -193,12 +194,9 @@
                                     minimal-support
                                     minimal-frequency))
          (queue (lparallel.queue:make-queue)))
-    (lparallel.queue:push-queue (lparallel:future
-                                  (expand-node index
-                                               (read-root index)
-                                               0
-                                               queue))
-                                queue)
+    (~> (expand-node index (read-root index) 0 queue)
+        lparallel:future
+        (lparallel.queue:push-queue queue))
     (let ((reverse-mapping (make-array (hash-table-count table)))
           (mapping (make-hash-table :size (hash-table-count table))))
       (iterate
@@ -211,7 +209,7 @@
             (access-reverse-mapping index) reverse-mapping)
       (iterate
         (until (lparallel.queue:queue-empty-p queue))
-        (lparallel:force (lparallel.queue:pop-queue queue)))
+        (~> queue lparallel.queue:pop-queue lparallel:force))
       (reset-locations index)
       index)))
 
@@ -225,15 +223,16 @@
             (list* -1 0 (make-hash-table :test 'equal))
             (state data &rest all)
           (declare (ignore all))
-          (bind (((_ position . table) state)
-                 (k (funcall key data)))
+          (bind (((_ position . table) state))
             (cl-ds:across (lambda (k)
-                            (ensure (gethash k table) (list* (incf (car state))
-                                                             (make-array 16 :element-type 'fixnum
-                                                                            :adjustable t
-                                                                            :fill-pointer 0)))
-                            (vector-push-extend position (cdr (gethash k table))))
-                          k))
+                            (ensure (gethash k table)
+                              (list* (incf (car state))
+                                     (make-array 4 :element-type 'fixnum
+                                                   :adjustable t
+                                                   :fill-pointer 0)))
+                            (vector-push-extend position
+                                                (cdr (gethash k table))))
+                          (funcall key data)))
           (incf (second state))
           state)
         (curry #'apriori-algorithm minimal-support minimal-frequency)))
