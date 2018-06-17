@@ -79,22 +79,22 @@
              (setf (aref result i) (make 'apriori-node
                                          :type id
                                          :locations positions))
-             (finally (return result))))
-         (root (~> (delete-if (lambda (x &aux (length (read-count x)))
-                                (or (< length minimal-support)
-                                    (< (/ length total-size)
-                                       minimal-frequency)))
-                              root-content)
-                   (sort #'< :key #'read-type)
-                   (make-instance 'apriori-node
-                                  :sets _
-                                  :count total-size)))
+             (finally
+              (return (sort (delete-if (lambda (x &aux (length (read-count x)))
+                                         (or (< length minimal-support)
+                                             (< (/ length total-size)
+                                                minimal-frequency)))
+                                       result)
+                            #'< :key #'read-type)))))
+         (root (make-instance 'apriori-node
+                              :sets root-content
+                              :count total-size))
          (result (make 'apriori-index
                        :total-size total-size
                        :minimal-support minimal-support
                        :minimal-frequency minimal-frequency
                        :root root)))
-    (map nil (curry #'write-parent root) (read-sets root))
+    (map nil (curry #'write-parent root) root-content)
     result))
 
 
