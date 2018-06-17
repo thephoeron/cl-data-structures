@@ -101,12 +101,13 @@
     result))
 
 
+(-> combine-nodes (apriori-node) list)
 (defun combine-nodes (node)
   (let* ((last-elt node)
          (parent (read-parent last-elt))
          (content (read-sets parent))
-         (lower-bound (lower-bound content
-                                   (read-type last-elt)
+         (lower-bound (lower-bound (the vector content)
+                                   (the fixnum (read-type last-elt))
                                    #'<
                                    :key #'read-type)))
     (iterate
@@ -138,28 +139,26 @@
     (while (< i (the fixnum (number-of-children parent))))
     (unless (eql (1+ i) (the fixnum (number-of-children parent)))
       (async-expand-node index parent (1+ i) queue))
-    (let* ((node (children-at parent i))
-           (supersets (combine-nodes node)))
-      (declare (type list supersets)
-               (type apriori-node node))
-      (iterate
-        (for superset in supersets)
-        (for intersection = (the (vector fixnum) (ordered-intersection
-                                                  #'< #'eql
-                                                  (read-locations node)
-                                                  (read-locations superset))))
-        (for intersection-size = (length intersection))
-        (when (or (< intersection-size (the fixnum (read-minimal-support index)))
-                  (< (/ intersection-size (the fixnum (read-count node)))
-                     (the single-float (read-minimal-frequency index))))
-          (next-iteration))
-        (for new-node = (make 'apriori-node
-                              :locations intersection
-                              :parent node
-                              :type (read-type superset)))
-        (push-children node new-node))
-      (sort-sets node)
-      (setf parent node i 0))))
+    (for node = (children-at parent i))
+    (for supersets = (combine-nodes node))
+    (iterate
+      (for superset in supersets)
+      (for intersection = (the (vector fixnum) (ordered-intersection
+                                                #'< #'eql
+                                                (read-locations node)
+                                                (read-locations superset))))
+      (for intersection-size = (length intersection))
+      (when (or (< intersection-size (the fixnum (read-minimal-support index)))
+                (< (/ intersection-size (the fixnum (read-count node)))
+                   (the single-float (read-minimal-frequency index))))
+        (next-iteration))
+      (for new-node = (make 'apriori-node
+                            :locations intersection
+                            :parent node
+                            :type (read-type superset)))
+      (push-children node new-node))
+    (sort-sets node)
+    (setf parent node i 0)))
 
 
 (defun async-expand-node (index parent i queue)
