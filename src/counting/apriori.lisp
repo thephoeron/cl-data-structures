@@ -127,31 +127,31 @@
 
 (defun expand-node (index parent i queue)
   (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
-  (when (< i (number-of-children parent))
-    (unless (eql (1+ i) (number-of-children parent))
-      (~> (expand-node index parent (1+ i) queue)
-          lparallel:future
-          (lparallel.queue:push-queue queue)))
-    (let* ((node (children-at parent i))
-           (supersets (combine-nodes node)))
-      (iterate
-        (for superset in supersets)
-        (for intersection = (ordered-intersection
-                             #'< #'eql
-                             (read-locations node)
-                             (read-locations superset)))
-        (for intersection-size = (length intersection))
-        (when (or (< intersection-size (read-minimal-support index))
-                  (< (/ intersection-size (read-count node))
-                     (read-minimal-frequency index)))
-          (next-iteration))
-        (for new-node = (make 'apriori-node
-                              :locations intersection
-                              :parent node
-                              :type (read-type superset)))
-        (push-children node new-node))
-      (sort-sets node)
-      (expand-node index node 0 queue))))
+  (unless (< i (number-of-children parent))
+    (return-from expand-node))
+  (unless (eql (1+ i) (number-of-children parent))
+    (~> (expand-node index parent (1+ i) queue)
+        lparallel:future
+        (lparallel.queue:push-queue queue)))
+  (let* ((node (children-at parent i))
+         (supersets (combine-nodes node)))
+    (iterate
+      (for superset in supersets)
+      (for intersection = (ordered-intersection #'< #'eql
+                                                (read-locations node)
+                                                (read-locations superset)))
+      (for intersection-size = (length intersection))
+      (when (or (< intersection-size (read-minimal-support index))
+                (< (/ intersection-size (read-count node))
+                   (read-minimal-frequency index)))
+        (next-iteration))
+      (for new-node = (make 'apriori-node
+                            :locations intersection
+                            :parent node
+                            :type (read-type superset)))
+      (push-children node new-node))
+    (sort-sets node)
+    (expand-node index node 0 queue)))
 
 
 (defun reset-locations (index)
