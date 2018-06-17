@@ -112,26 +112,6 @@
       (collect elt at start))))
 
 
-(defun construct-supersets (index node)
-  (if (null (~> node read-parent))
-      (iterate
-        (with root = (~> index read-root read-sets))
-        (with size = (length root))
-        (with result = nil)
-        (for i from 0 below size)
-        (for elt = (aref root i))
-        (iterate
-          (for j from i below size)
-          (for elt2 = (aref root j))
-          (unless (eql (read-type elt) (read-type elt2))
-            (push (lret ((array (make-array 2)))
-                    (setf (aref array 1) elt2
-                          (aref array 0) elt))
-                  result)))
-        (finally (return result)))
-      (combine-nodes node)))
-
-
 (-> number-of-children (apriori-node) integer)
 (defun number-of-children (node)
   (~> node read-sets length))
@@ -153,7 +133,7 @@
           lparallel:future
           (lparallel.queue:push-queue queue)))
     (let* ((node (children-at parent i))
-           (supersets (construct-supersets index node)))
+           (supersets (combine-nodes node)))
       (iterate
         (for superset in supersets)
         (for intersection = (ordered-intersection
