@@ -235,7 +235,7 @@
                           (funcall key data)))
           (incf (second state))
           state)
-        (curry #'apriori-algorithm minimal-support minimal-frequency)))
+        #'apriori-algorithm))
 
 
 (defun node-name (index node)
