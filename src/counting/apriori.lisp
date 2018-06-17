@@ -207,8 +207,9 @@
       (setf (access-mapping index) mapping
             (access-reverse-mapping index) reverse-mapping)
       (iterate
-        (until (lparallel.queue:queue-empty-p queue))
-        (~> queue lparallel.queue:pop-queue lparallel:force))
+        (for (values f more) = (lparallel.queue:try-pop-queue queue))
+        (while more)
+        (lparallel:force f))
       (reset-locations index)
       index)))
 
