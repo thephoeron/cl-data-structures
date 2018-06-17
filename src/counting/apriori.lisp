@@ -187,7 +187,6 @@
 
 (defun apriori-algorithm (&key set-form minimal-support
                             minimal-frequency &allow-other-keys)
-  (declare (optimize (debug 3)))
   (bind (((_ total-size . table) set-form)
          (index (make-apriori-index table
                                     total-size
