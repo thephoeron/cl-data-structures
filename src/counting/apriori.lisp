@@ -11,6 +11,9 @@
   (:generic-function-class apriori-function)
   (:method (range minimal-support minimal-frequency
             &key (key #'identity))
+    (ensure-functionf key)
+    (check-type minimal-support positive-fixnum)
+    (check-type minimal-frequency single-float)
     (cl-ds.alg.meta:apply-aggregation-function
      range
      #'apriori
