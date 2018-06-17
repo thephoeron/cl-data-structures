@@ -70,34 +70,32 @@
 
 
 (defun make-apriori-index (table total-size minimal-support minimal-frequency)
-  (let ((root-content (make-array (hash-table-count table))))
-    (iterate
-      (for i from 0)
-      (for (key value) in-hashtable table)
-      (for (id . positions) = value)
-      (setf (aref root-content i) (make 'apriori-node
-                                        :type id
-                                        :locations positions)))
-    (let ((result (make
-                   'apriori-index
-                   :total-size total-size
-                   :minimal-support minimal-support
-                   :minimal-frequency minimal-frequency
-                   :root (~> root-content
-                             (delete-if
-                              (lambda (x &aux (length (read-count x)))
+  (let* ((root-content
+           (iterate
+             (with result = (make-array (hash-table-count table)))
+             (for i from 0)
+             (for (key value) in-hashtable table)
+             (for (id . positions) = value)
+             (setf (aref result i) (make 'apriori-node
+                                         :type id
+                                         :locations positions))
+             (finally (return result))))
+         (root (~> (delete-if (lambda (x &aux (length (read-count x)))
                                 (or (< length minimal-support)
                                     (< (/ length total-size)
                                        minimal-frequency)))
-                              _)
-                             (sort #'< :key #'read-type)
-                             (make-instance 'apriori-node
-                                            :sets _
-                                            :count total-size)))))
-      (map nil
-           (curry #'write-parent (read-root result))
-           (~> result read-root read-sets))
-      result)))
+                              root-content)
+                   (sort #'< :key #'read-type)
+                   (make-instance 'apriori-node
+                                  :sets _
+                                  :count total-size)))
+         (result (make 'apriori-index
+                       :total-size total-size
+                       :minimal-support minimal-support
+                       :minimal-frequency minimal-frequency
+                       :root root)))
+    (map nil (curry #'write-parent root) (read-sets root))
+    result))
 
 
 (defun combine-nodes (node)
