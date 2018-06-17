@@ -136,21 +136,25 @@
            (type fixnum i)
            (type lparallel.queue:queue queue))
   (iterate
-    (while (< i (the fixnum (number-of-children parent))))
-    (unless (eql (1+ i) (the fixnum (number-of-children parent)))
+    (with minimal-support = (the fixnum (read-minimal-support index)))
+    (with minimal-frequency = (the float (read-minimal-frequency index)))
+    (for children-count = (the fixnum (number-of-children parent)))
+    (while (< i children-count))
+    (unless (eql (1+ i) children-count)
       (async-expand-node index parent (1+ i) queue))
     (for node = (children-at parent i))
     (for supersets = (combine-nodes node))
+    (for count = (the fixnum (read-count node)))
+    (for locations = (the (vector fixnum) (read-locations node)))
     (iterate
       (for superset in supersets)
       (for intersection = (the (vector fixnum) (ordered-intersection
                                                 #'< #'eql
-                                                (read-locations node)
+                                                locations
                                                 (read-locations superset))))
       (for intersection-size = (length intersection))
-      (when (or (< intersection-size (the fixnum (read-minimal-support index)))
-                (< (/ intersection-size (the fixnum (read-count node)))
-                   (the single-float (read-minimal-frequency index))))
+      (when (or (< intersection-size minimal-support)
+                (< (/ intersection-size count) minimal-frequency))
         (next-iteration))
       (for new-node = (make 'apriori-node
                             :locations intersection
