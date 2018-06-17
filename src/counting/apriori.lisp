@@ -164,7 +164,7 @@
                              (read-locations superset)))
         (for intersection-size = (length intersection))
         (when (or (< intersection-size (read-minimal-support index))
-                  (< (/ intersection-size (read-total-size index))
+                  (< (/ intersection-size (read-count node))
                      (read-minimal-frequency index)))
           (next-iteration))
         (for new-node = (make 'apriori-node
