@@ -291,6 +291,35 @@
       (lparallel:pmap nil #'sort-sets elt))))
 
 
+(defun node-at (index type &rest more-types)
+  (iterate
+    (for elt in more-types)
+    (for node
+         initially (child-at (read-root index) type)
+         then (child-at node type))
+    (always node)
+    (finally (return node))))
+
+
+(defun ensure-all-two-level-deep-nodes (index)
+  (bind ((root (read-root index))
+         (content (read-sets root)))
+    (iterate
+      (for i from 1 below (length content))
+      (for node = (aref content i))
+      (iterate
+        (for j from 0 below i)
+        (for alternative-node = (aref content j))
+        (for symetric-node = (node-at index
+                                      (read-type alternative-node)
+                                      (read-type node)))
+        (when (null symetric-node) (next-iteration))
+        (push-child node (make 'apriori-node
+                               :type (read-type alternative-node)
+                               :locations (read-locations symetric-node))))
+      (sort-sets node))))
+
+
 (defun apriori-algorithm (&key set-form minimal-support
                             minimal-frequency &allow-other-keys)
   (bind (((_ total-size . table) set-form)
@@ -314,7 +343,7 @@
         (for (values f more) = (lparallel.queue:try-pop-queue queue))
         (while more)
         (lparallel:force f))
-      (add-shuffled-nodes index)
+      (ensure-all-two-level-deep-nodes index)
       (reset-locations index)
       index)))
 
@@ -348,23 +377,27 @@
         (read-type node)))
 
 
-(defun build-path (index node)
-  (cons (coerce (/ (read-count node) (read-count (read-parent node)))
-                'single-float)
+(defun build-path (node &optional (operation #'identity))
+  (list (frequency node)
+        (funcall operation node)
         (iterate
-          (for n initially node then (read-parent n))
+          (for n initially (read-parent node) then (read-parent n))
           (until (null (read-parent n)))
-          (collect (node-name index n) at start))))
+          (collect (funcall operation n) at start))))
 
 
-(defmethod cl-ds:whole-range ((object apriori-index))
-  (cl-ds:xpr (:stack (list (read-root object)))
+(defun data-range (index &optional (operation #'identity))
+  (cl-ds:xpr (:stack (list (read-root index)))
     (let ((node (pop stack)))
       (unless (null node)
         (if (null (read-parent node))
             (recur :stack (add-to-stack stack node))
             (if (< (frequency node)
-                   (read-minimal-frequency object))
+                   (read-minimal-frequency index))
                 (recur :stack (add-to-stack stack node))
-                (send-recur (build-path object node)
+                (send-recur (build-path node operation)
                             :stack (add-to-stack stack node))))))))
+
+
+(defmethod cl-ds:whole-range ((object apriori-index))
+  (data-range object (curry #'node-name object)))
