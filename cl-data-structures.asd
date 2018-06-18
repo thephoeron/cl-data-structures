@@ -133,6 +133,7 @@
                              (:test-file "without-test")
                              ;; (:test-file "summary-tests")
                              (:test-file "chain-tests")
+                             (:test-file "on-each-tests")
                              (:test-file "zip-tests")))
                (:module "clustering"
                 :components ((:file "package")

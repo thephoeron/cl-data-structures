@@ -72,6 +72,12 @@
                 :initarg :total-size)))
 
 
+(defun frequency (node)
+  (if-let ((parent (read-parent node)))
+    (coerce (/ (read-count node) (read-count parent)) 'single-float)
+    1.0))
+
+
 (defun make-apriori-index (table total-size minimal-support minimal-frequency)
   (let* ((root-content
            (iterate
@@ -120,12 +126,13 @@
   (~> node read-sets length))
 
 
-(defun children-at (node i)
+(defun child-at (node i)
   (~> node read-sets (aref i)))
 
 
-(defun push-children (parent children)
-  (vector-push-extend children (read-sets parent)))
+(defun push-child (parent child)
+  (vector-push-extend child (read-sets parent))
+  (write-parent parent child))
 
 
 (defun expand-node (index parent i queue)
@@ -136,12 +143,11 @@
            (type lparallel.queue:queue queue))
   (iterate
     (with minimal-support = (the fixnum (read-minimal-support index)))
-    (with minimal-frequency = (the float (read-minimal-frequency index)))
     (for children-count = (the fixnum (number-of-children parent)))
     (while (< i children-count))
     (unless (eql (1+ i) children-count)
       (async-expand-node index parent (1+ i) queue))
-    (for node = (children-at parent i))
+    (for node = (child-at parent i))
     (for supersets = (combine-nodes node))
     (for count = (the fixnum (read-count node)))
     (for locations = (the (vector fixnum) (read-locations node)))
@@ -152,14 +158,12 @@
                                                 locations
                                                 (read-locations superset))))
       (for intersection-size = (length intersection))
-      (when (or (< intersection-size minimal-support)
-                (< (/ intersection-size count) minimal-frequency))
+      (when (< intersection-size minimal-support)
         (next-iteration))
       (for new-node = (make 'apriori-node
                             :locations intersection
-                            :parent node
                             :type (read-type superset)))
-      (push-children node new-node))
+      (push-child node new-node))
     (sort-sets node)
     (setf parent node i 0)))
 
@@ -177,6 +181,114 @@
                (for n in-vector (read-sets node))
                (impl n))))
     (impl (read-root index))))
+
+
+(defun path-compare (a b)
+  (lexicographic-compare #'< #'eql a b
+                         :key #'read-type))
+
+
+(defun add-to-stack (stack node)
+  (reduce (flip #'cons)
+          (read-sets node)
+          :initial-value stack))
+
+
+(defun build-path-node (node)
+  (iterate
+    (with size = 0)
+    (for n initially node then (read-parent n))
+    (while (read-parent n))
+    (incf size)
+    (finally (iterate
+               (with result = (make-array size))
+               (for n initially node then (read-parent n))
+               (for j from (1- size) downto 0)
+               (while n)
+               (setf (aref result j) n)
+               (finally (return-from build-path-node result))))))
+
+
+(defun make-path-generator (node)
+  (cl-ds:xpr (:stack (list node))
+    (let ((node (pop stack)))
+      (unless (null node)
+        (if (null (read-parent node))
+            (recur :stack (add-to-stack stack node))
+            (if (emptyp (read-sets node))
+                (send-recur (build-path-node node)
+                            :stack stack)
+                (recur :stack (add-to-stack stack node))))))))
+
+
+(defun shuffle-nodes (path)
+  (iterate
+    (with source = (list path))
+    (with result = nil)
+    (for i from 0 below (length path))
+    (iterate
+      (for s in source)
+      (iterate
+        (for j from (1+ i) below (length path))
+        (for next = (copy-array s))
+        (rotatef (aref next i) (aref next j))
+        (push next result)))
+    (setf source result)
+    (finally (return result))))
+
+
+(defun child-of-type (parent type)
+  (let* ((content (read-sets parent))
+         (lower-bound (lower-bound content
+                                   type
+                                   #'<
+                                   :key #'read-type)))
+    (when (and (< lower-bound (length content))
+               (eql (read-type (aref content lower-bound))
+                    type))
+      (aref content lower-bound))))
+
+
+(defun intersection-from-index (index path)
+  (iterate
+    (with root = (read-root index))
+    (for i from 1 below (length path))
+    (for type = (read-type (aref path i)))
+    (collect (read-locations (child-of-type root type)) at start into result)
+    (finally (return (apply #'ordered-intersection #'< #'eql result)))))
+
+
+(defun insert-shuffled-node (index root path)
+  (iterate
+    (for i from 0 below (length path))
+    (for node = (aref path i))
+    (setf (aref path i) root)
+    (when (eq node (read-root index))
+      (next-iteration))
+    (for type = (read-type node))
+    (for child = (child-of-type root type))
+    (if (null child)
+        (let ((new (make-instance
+                    'apriori-node
+                    :type type
+                    :locations (intersection-from-index index path))))
+          (push-child root new)
+          (setf root new))
+        (setf root child))))
+
+
+(defun add-shuffled-nodes (index)
+  (let ((new-paths (~> (read-root index)
+                       make-path-generator
+                       (cl-ds.alg:on-each #'shuffle-nodes _)
+                       cl-ds.alg:flatten-lists
+                       cl-ds.alg:to-vector
+                       (lparallel:psort #'path-compare)))
+        (root (read-root index)))
+    (iterate
+      (for elt in-vector new-paths)
+      (insert-shuffled-node index root elt)
+      (lparallel:pmap nil #'sort-sets elt))))
 
 
 (defun apriori-algorithm (&key set-form minimal-support
@@ -202,6 +314,7 @@
         (for (values f more) = (lparallel.queue:try-pop-queue queue))
         (while more)
         (lparallel:force f))
+      (add-shuffled-nodes index)
       (reset-locations index)
       index)))
 
@@ -236,22 +349,22 @@
 
 
 (defun build-path (index node)
-  (cons (coerce (/ (read-count node) (read-total-size index)) 'single-float)
+  (cons (coerce (/ (read-count node) (read-count (read-parent node)))
+                'single-float)
         (iterate
           (for n initially node then (read-parent n))
           (until (null (read-parent n)))
           (collect (node-name index n) at start))))
 
 
-(flet ((add-to-stack (stack node)
-         (reduce (flip #'cons)
-                 (read-sets node)
-                 :initial-value stack)))
-  (defmethod cl-ds:whole-range ((object apriori-index))
-    (cl-ds:xpr (:stack (list (read-root object)))
-      (let ((node (pop stack)))
-        (unless (null node)
-          (if (null (read-parent node))
-              (recur :stack (add-to-stack stack node))
-              (send-recur (build-path object node)
-                          :stack (add-to-stack stack node))))))))
+(defmethod cl-ds:whole-range ((object apriori-index))
+  (cl-ds:xpr (:stack (list (read-root object)))
+    (let ((node (pop stack)))
+      (unless (null node)
+        (if (null (read-parent node))
+            (recur :stack (add-to-stack stack node))
+            (if (< (frequency node)
+                   (read-minimal-frequency object))
+                (recur :stack (add-to-stack stack node))
+                (send-recur (build-path object node)
+                            :stack (add-to-stack stack node))))))))

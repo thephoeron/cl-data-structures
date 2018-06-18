@@ -13,7 +13,7 @@
                                       1
                                       0.1))
        (result (cl-ds.alg:to-vector (cl-ds:whole-range index))))
-  (is (cl-ds:size (cl-ds.alg:to-vector result)) 13)
+  (is (cl-ds:size (cl-ds.alg:to-vector result)) 31)
   (ok (every (compose (rcurry #'>= 0.1) #'first) result))
   (is (length result) (~> (map 'vector #'rest result)
                           (remove-duplicates :test #'equal)

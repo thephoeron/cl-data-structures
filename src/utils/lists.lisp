@@ -113,7 +113,7 @@
             (not (null r)))))
 
 
-(defun lexicographic-compare (compare same av bv)
+(defun lexicographic-compare (compare same av bv &key (key #'identity))
   (setf compare (alexandria:ensure-function compare))
   (setf same (alexandria:ensure-function same))
   (check-type av sequence)
@@ -121,8 +121,10 @@
   (check-type compare function)
   (check-type same function)
   (iterate
-    (for ea in-sequence av)
-    (for eb in-sequence bv)
+    (for ea1 in-sequence av)
+    (for eb1 in-sequence bv)
+    (for ea = (funcall key ea1))
+    (for eb = (funcall key eb1))
     (for sm = (funcall same ea eb))
     (for comp = (funcall compare ea eb))
     (finding comp such-that comp into r)

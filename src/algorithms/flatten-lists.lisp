@@ -107,18 +107,35 @@
    (%outer :initarg :outer
            :reader read-outer)))
 
+(defmethod proxy-range-aggregator-outer-fn ((range flatten-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (bind (((:slots (%key cl-ds.alg.meta:%key) %function) range)
+         (outer-fn (call-next-method)))
+    (lambda ()
+      (let ((outer (funcall outer-fn)))
+        (make 'flatten-aggregator
+              :key (read-key range)
+              :outer outer)))))
+
+
 (defmethod cl-ds.alg.meta:construct-aggregator ((range flatten-proxy)
                                                 key
                                                 (function cl-ds.alg.meta:aggregation-function)
                                                 outer-fn
                                                 (arguments list))
-  (make 'flatten-aggregator :key (read-key range)
-                            :outer (funcall (proxy-range-aggregator-outer-fn
-                                             range
-                                             key
-                                             function
-                                             outer-fn
-                                             arguments))))
+  (cl-ds.alg.meta:construct-aggregator
+   (read-original-range range)
+   (read-key range)
+   function
+   (proxy-range-aggregator-outer-fn range
+                                    key
+                                    function
+                                    outer-fn
+                                    arguments)
+   arguments))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator flatten-aggregator)
