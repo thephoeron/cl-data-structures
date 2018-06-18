@@ -83,12 +83,11 @@
                                          :type id
                                          :locations positions))
              (finally
-              (return (sort (delete-if (lambda (x &aux (length (read-count x)))
-                                         (or (< length minimal-support)
-                                             (< (/ length total-size)
-                                                minimal-frequency)))
-                                       result)
-                            #'< :key #'read-type)))))
+              (return (sort (delete-if (rcurry #'< minimal-support)
+                                       result
+                                       :key #'read-count)
+                            #'<
+                            :key #'read-type)))))
          (root (make-instance 'apriori-node
                               :sets root-content
                               :count total-size))
