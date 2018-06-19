@@ -330,7 +330,8 @@
          (queue (lparallel.queue:make-queue)))
     (async-expand-node index (read-root index) 0 queue)
     (let ((reverse-mapping (make-array (hash-table-count table)))
-          (mapping (make-hash-table :size (hash-table-count table))))
+          (mapping (make-hash-table :size (hash-table-count table)
+                                    :test 'equal)))
       (iterate
         (for i from 0)
         (for (key value) in-hashtable table)
@@ -377,6 +378,10 @@
         (read-type node)))
 
 
+(defun name-to-type (index name)
+  (gethash name (access-mapping index)))
+
+
 (defun build-path (node &optional (operation #'identity))
   (list (frequency node)
         (funcall operation node)
@@ -401,3 +406,80 @@
 
 (defmethod cl-ds:whole-range ((object apriori-index))
   (data-range object (curry #'node-name object)))
+
+
+(defgeneric association-frequency (index post &rest apriori))
+
+
+(defgeneric association-information-gain (index post &rest apriori))
+
+
+(defun node-at-with-names (index post &rest apriori)
+  (let ((path (mapcar (curry #'node-name index) (cons post apriori))))
+    (apply #'node-at index
+           (if (endp (cddr path))
+               path
+               (sort path #'<)))))
+
+
+(defmethod association-frequency ((index apriori-index) post &rest apriori)
+  (let ((node (apply #'node-at-with-names index post apriori)))
+    (when node
+      (frequency node))))
+
+
+(defun total-entropy (index)
+  (iterate
+    (with root = (read-root index))
+    (with content = (read-sets root))
+    (for node in-vector content)
+    (for frequency = (frequency node))
+    (sum (* frequency (log frequency 2))
+         into result)
+    (finally (return (- result)))))
+
+
+(defun chain-node (node)
+  (iterate
+    (for n initially node then (read-parent n))
+    (for p-n previous n)
+    (until (read-parent n))
+    (collect p-n at start)))
+
+
+(defun all-containing (index node)
+  (cl-ds:xpr (:stack (list (list (chain-node node) (read-root index))))
+    (let ((cell (pop stack)))
+      (when cell
+        (bind (((chain parent) cell)
+               (front (first chain))
+               (content (read-sets parent))
+               (index (lower-bound content (read-type front) #'< :key #'read-type)))
+          (cond ((= index (length content))
+                 (recur :stack stack))
+                ((eql (read-type front) (~> content (aref index) read-type))
+                 (if (endp (rest chain))
+                     (send-recur (aref content index) :stack stack)
+                     (recur :stack (cons (list (rest chain)
+                                               (aref content index))
+                                         stack))))
+                (t
+                 (iterate
+                   (for i from 0 below index)
+                   (push (list chain (aref content i)) stack)
+                   (finally (recur :stack stack))))))))))
+
+
+(defmethod association-information-gain ((index apriori-index)
+                                         post &rest apriori)
+  (let ((with-set (apply #'node-at-with-names index post apriori))
+        (without-set (apply #'node-at-with-names index apriori)))
+    (when with-set
+      (assert without-set)
+      (let* ((apriori-range (all-containing without-set))
+             (posteriori-range (all-containing with-set))
+             (posteriori-sum (cl-ds.alg:accumulate #'+ posteriori-range
+                                                   :key #'read-count))
+             (apriori-sum (cl-ds.alg:accumulate #'+ apriori-range
+                                                :key #'read-count)))
+        ))))
