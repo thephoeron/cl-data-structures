@@ -162,7 +162,11 @@
                              (:file "docstrings")))
                (:module "counting"
                 :components ((:file "package")
+                             (:file "generics")
+                             (:file "types")
+                             (:file "internal")
                              (:file "apriori")
+                             (:file "methods")
                              (:test-file "tests")))
                (:module "metric-space"
                 :components ((:file "packages")

@@ -37,6 +37,7 @@
    #:make-half-matrix
    #:make-distance-matrix-from-vector
    #:make-new-skip-vector
+   #:add-to-list
    #:ordered-intersection
    #:sref
    #:skip-vector-without

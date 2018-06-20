@@ -134,3 +134,9 @@
          (return r)
          (when sm
            (return (< (length av) (length bv))))))))
+
+
+(defun add-to-list (list data)
+  (reduce (flip #'cons)
+          data
+          :initial-value list))
