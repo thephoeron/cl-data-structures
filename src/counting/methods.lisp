@@ -137,3 +137,32 @@
   (make 'apriori-set
         :apriori-node (read-apriori-node set)
         :index (read-index set)))
+
+
+(defmethod make-apriori-set ((apriori apriori-set)
+                             (aposteriori apriori-set))
+  (assert (eq (read-index apriori) (read-index aposteriori)))
+  (let* ((apriori-node (read-apriori-node apriori))
+         (aposteriori-node (read-apriori-node aposteriori))
+         (union (~> (add-to-list (chain-node apriori-node)
+                                 (chain-node aposteriori-node))
+                    (mapcar #'read-type _)
+                    remove-duplicates
+                    (apply #'node-at (read-index apriori) _))))
+    (and union
+         (make 'apriori-set
+               :index (read-index apriori)
+               :node union
+               :apriori-node apriori-node))))
+
+
+(defmethod support ((object apriori-index))
+  (read-total-size object))
+
+
+(defmethod support ((object apriori-set))
+  (support (read-node object)))
+
+
+(defmethod support ((object apriori-node))
+  (read-count object))

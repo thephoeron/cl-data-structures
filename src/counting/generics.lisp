@@ -18,3 +18,7 @@
 (defgeneric aposteriori-set (set))
 
 (defgeneric content (set))
+
+(defgeneric make-apriori-set (apriori aposteriori))
+
+(defgeneric support (object))
