@@ -38,17 +38,20 @@
                 :initarg :total-size)))
 
 
-(defclass apriori-set ()
+(defclass set-in-index ()
   ((%node :initarg :node
           :type apriori-node
-          :reader read-node)
-   (%apriori-node :initarg :apriori-node
-                  :reader read-apriori-node
-                  :type apriori-node
           :reader read-node)
    (%index :initarg :index
            :type apriori-index
            :reader read-index)))
+
+
+(defclass apriori-set (set-in-index)
+  ((%apriori-node :initarg :apriori-node
+                  :reader read-apriori-node
+                  :type apriori-node
+          :reader read-node)))
 
 
 (defmethod initialize-instance :after ((node apriori-node)

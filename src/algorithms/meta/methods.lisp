@@ -303,10 +303,11 @@ Range function invokaction protocol.
            aggregator range function all)))
 
 
-(defmethod apply-aggregation-function-with-aggregator ((aggregator fundamental-aggregator)
-                                                       range
-                                                       (function aggregation-function)
-                                                       &rest all &key &allow-other-keys)
+(defmethod apply-aggregation-function-with-aggregator
+    ((aggregator fundamental-aggregator)
+     range
+     (function aggregation-function)
+     &rest all &key &allow-other-keys)
   (declare (ignore all))
   (iterate
     (until (aggregator-finished-p aggregator))

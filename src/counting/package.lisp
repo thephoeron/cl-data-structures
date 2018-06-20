@@ -7,4 +7,17 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.counting)
   (:export
-   #:apriori))
+   #:all-super-sets
+   #:all-sets
+   #:aposteriori-set
+   #:apriori
+   #:apriori-set
+   #:association-frequency
+   #:association-information-gain
+   #:content
+   #:find-association
+   #:find-set
+   #:make-apriori-set
+   #:support
+   #:total-entropy
+   #:type-count))

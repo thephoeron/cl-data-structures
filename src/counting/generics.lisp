@@ -9,9 +9,13 @@
 
 (defgeneric find-association (index apriori aposteriori))
 
+(defgeneric find-set (index &rest content))
+
 (defgeneric total-entropy (object))
 
-(defgeneric all-super-sets (set))
+(defgeneric all-super-sets (set minimal-frequency))
+
+(defgeneric all-sets (index minimal-frequency))
 
 (defgeneric apriori-set (set))
 

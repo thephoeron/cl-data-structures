@@ -6,19 +6,15 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric apriori (range minimal-support minimal-frequency
-                     &key key)
+(defgeneric apriori (range minimal-support &key key)
   (:generic-function-class apriori-function)
-  (:method (range minimal-support minimal-frequency
-            &key (key #'identity))
+  (:method (range minimal-support &key (key #'identity))
     (ensure-functionf key)
     (check-type minimal-support positive-fixnum)
-    (check-type minimal-frequency single-float)
     (cl-ds.alg.meta:apply-aggregation-function
      range
      #'apriori
      :minimal-support minimal-support
-     :minimal-frequency minimal-frequency
      :key key)))
 
 
@@ -41,13 +37,11 @@
       (sort-sets node))))
 
 
-(defun apriori-algorithm (&key set-form minimal-support
-                            minimal-frequency &allow-other-keys)
+(defun apriori-algorithm (&key set-form minimal-support &allow-other-keys)
   (bind (((_ total-size . table) set-form)
          (index (make-apriori-index table
                                     total-size
-                                    minimal-support
-                                    minimal-frequency))
+                                    minimal-support))
          (queue (lparallel.queue:make-queue)))
     (async-expand-node index (read-root index) 0 queue)
     (let ((reverse-mapping (make-array (hash-table-count table)))
@@ -73,7 +67,7 @@
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
     ((function apriori-function)
      &rest all
-     &key minimal-support minimal-frequency key &allow-other-keys)
+     &key minimal-support key &allow-other-keys)
   (declare (ignore all))
   (list (cl-ds.alg.meta:reduce-stage :set-form
             (list* -1 0 (make-hash-table :test 'equal))
@@ -92,4 +86,3 @@
           (incf (second state))
           state)
         #'apriori-algorithm))
-

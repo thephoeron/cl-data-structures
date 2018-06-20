@@ -49,13 +49,12 @@
           :apriori-node apriori-node)))
 
 
-(defmethod cl-ds:whole-range ((object apriori-index))
-  (data-range object
+(defmethod all-sets ((index apriori-index) minimal-frequency)
+  (data-range index
+              minimal-frequency
               (lambda (x)
-                (make-instance 'apriori-set
-                               :index object
-                               :apriori-node (read-parent x)
-                               :type (read-type x)
+                (make-instance 'set-in-index
+                               :index index
                                :node x))))
 
 
@@ -63,7 +62,7 @@
   (entropy-from-node (read-parent index)))
 
 
-(defmethod all-super-sets ((set apriori-set))
+(defmethod all-super-sets ((set apriori-set) minimal-frequency)
   (let ((index (read-index set))
         (node (read-node set)))
     (cl-ds:xpr (:stack (list (list* (chain-node node)
@@ -80,11 +79,10 @@
                   ((eql (read-type front) (~> content (aref index) read-type))
                    (if (endp (rest chain))
                        (if (< (association-frequency node)
-                              (read-minimal-frequency index))
+                              minimal-frequency)
                            (recur :stack stack)
                            (send-recur (make
                                         'apriori-set
-                                        :apriori-node parent
                                         :node (aref content index)
                                         :index index)
                                        :stack stack))
@@ -117,38 +115,37 @@
        total-size)))
 
 
-(defmethod content ((set apriori-set))
-  (list (~> set read-apriori-node chain-node
-            (mapcar (curry #'node-name (read-index set)) _))
-        (when (slot-boundp set '%node)
-          (~>> (just-post (read-apriori-node set) (read-node set))
-               (map 'list (curry #'node-name (read-index set)))))))
+(defmethod content ((set set-in-index))
+  (~>> set
+       read-node
+       chain-node
+       (mapcar (curry #'node-name (read-index set)))))
 
 
 (defmethod aposteriori-set ((set apriori-set))
   (let ((types (~>> (just-post (read-apriori-node set) (read-node set))
                     (map 'list #'read-type))))
-    (make 'apriori-set
-          :apriori-node (apply #'node-at (read-index set) types)
+    (make 'set-in-index
+          :node (apply #'node-at (read-index set) types)
           :index (read-index set))))
 
 
 (defmethod apriori-set ((set apriori-set))
-  (make 'apriori-set
-        :apriori-node (read-apriori-node set)
+  (make 'set-in-index
+        :node (read-apriori-node set)
         :index (read-index set)))
 
 
-(defmethod make-apriori-set ((apriori apriori-set)
-                             (aposteriori apriori-set))
+(defmethod make-apriori-set ((apriori set-in-index)
+                             (aposteriori set-in-index))
   (assert (eq (read-index apriori) (read-index aposteriori)))
-  (let* ((apriori-node (read-apriori-node apriori))
-         (aposteriori-node (read-apriori-node aposteriori))
-         (union (~> (add-to-list (chain-node apriori-node)
-                                 (chain-node aposteriori-node))
-                    (mapcar #'read-type _)
+  (let* ((apriori-node (read-node apriori))
+         (aposteriori-node (read-node aposteriori))
+         (union (~>> (add-to-list (chain-node apriori-node)
+                                  (chain-node aposteriori-node))
+                    (mapcar #'read-type)
                     remove-duplicates
-                    (apply #'node-at (read-index apriori) _))))
+                    (apply #'node-at (read-index apriori)))))
     (and union
          (make 'apriori-set
                :index (read-index apriori)
@@ -160,9 +157,16 @@
   (read-total-size object))
 
 
-(defmethod support ((object apriori-set))
+(defmethod support ((object set-in-index))
   (support (read-node object)))
 
 
 (defmethod support ((object apriori-node))
   (read-count object))
+
+
+(defmethod find-set ((index apriori-index) &rest content)
+  (when-let ((node (apply #'node-at-with-names index content)))
+    (make 'set-in-index
+          :node node
+          :index index)))

@@ -9,14 +9,15 @@
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
-       (index (cl-ds.counting:apriori data
-                                      1
-                                      0.1))
-       (result (cl-ds.alg:to-vector (cl-ds:whole-range index))))
-  (is (cl-ds:size (cl-ds.alg:to-vector result)) 19)
-  (ok (every (compose (rcurry #'>= 0.1) #'first) result))
-  (is (length result) (~> (map 'vector #'rest result)
-                          (remove-duplicates :test #'equal)
-                          length)))
+       (index (cl-ds.counting:apriori data 1))
+       (result (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
+  (is (cl-ds:size result) 19)
+  (is (length result)
+      (length (remove-duplicates result
+                                 :test 'equal
+                                 :key #'cl-ds.counting:content)))
+  (ok (every (compose (curry #'<= 1)
+                      #'cl-ds.counting:support)
+             result)))
 
 (finalize)

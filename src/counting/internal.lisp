@@ -7,7 +7,7 @@
   node)
 
 
-(defun make-apriori-index (table total-size minimal-support minimal-frequency)
+(defun make-apriori-index (table total-size minimal-support)
   (let* ((root-content
            (iterate
              (with result = (make-array (hash-table-count table)))
@@ -29,7 +29,6 @@
          (result (make 'apriori-index
                        :total-size total-size
                        :minimal-support minimal-support
-                       :minimal-frequency minimal-frequency
                        :root root)))
     (map nil (curry #'write-parent root) root-content)
     result))
@@ -162,14 +161,14 @@
     (finally (return (- result)))))
 
 
-(defun data-range (index &optional (operation #'identity))
+(defun data-range (index minimal-frequency &optional (operation #'identity))
   (cl-ds:xpr (:stack (list (read-root index)))
     (let ((node (pop stack)))
       (unless (null node)
         (if (null (read-parent node))
             (recur :stack (add-to-stack stack node))
-            (if (< (association-frequency node)
-                   (read-minimal-frequency index))
+            (if (< (/ (support node) (read-total-size index))
+                   minimal-frequency)
                 (recur :stack (add-to-stack stack node))
                 (send-recur (funcall operation node)
                             :stack (add-to-stack stack node))))))))
@@ -177,10 +176,10 @@
 
 (defun chain-node (node)
   (iterate
-    (for n initially node then (read-parent n))
-    (for p-n previous n)
-    (until (read-parent n))
-    (collect p-n at start)))
+    (for n initially (read-parent node) then (read-parent n))
+    (for p-n previous n initially node)
+    (collect p-n at start)
+    (while (read-parent n))))
 
 
 (defun node-name (index node)
