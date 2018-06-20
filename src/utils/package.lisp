@@ -24,6 +24,7 @@
    #:fill-distance-matrix-from-vector
    #:future-carousel
    #:if-else
+   #:ordered-exclusion
    #:import-all-package-symbols
    #:insert-or-replace
    #:lambda-list-to-bindings

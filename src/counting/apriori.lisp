@@ -72,6 +72,10 @@
                 :initarg :total-size)))
 
 
+(defun type-count (index)
+  (~> index access-reverse-mapping length))
+
+
 (defun frequency (node)
   (if-let ((parent (read-parent node)))
     (coerce (/ (read-count node) (read-count parent)) 'single-float)
@@ -428,15 +432,18 @@
       (frequency node))))
 
 
-(defun total-entropy (index)
+(defun entropy-from-node (parent)
   (iterate
-    (with root = (read-root index))
-    (with content = (read-sets root))
+    (with content = (read-sets parent))
     (for node in-vector content)
     (for frequency = (frequency node))
     (sum (* frequency (log frequency 2))
          into result)
     (finally (return (- result)))))
+
+
+(defun total-entropy (index)
+  (entropy-from-node (read-root index)))
 
 
 (defun chain-node (node)
@@ -447,6 +454,43 @@
     (collect p-n at start)))
 
 
+(defun entropy-of-supersets (index &rest types)
+  (iterate
+    (with total = (~> (apply #'node-at index types)
+                      read-count))
+    (for type from 0 below (type-count index))
+    (when (member type types)
+      (next-iteration))
+    (for node = (apply #'node-at index type types))
+    (unless node (next-iteration))
+    (for count = (read-count node))
+    (for p = (/ count total))
+    (sum (* p (log p 2)) into sum)
+    (finally (return (- sum)))))
+
+
+(defun entropy-of-excluded-sets (index &rest types)
+  (iterate
+    (with root = (read-root index))
+    (with root-content = (read-sets root))
+    (with node = (apply #'node-at index types))
+    (with locations = (read-locations node))
+    (with size = (- (read-total-size index) (read-count node)))
+    (for first-order-node in-vector root-content)
+    (for indexes = (read-locations first-order-node))
+    (for excluded-indexes = (ordered-exclusion #'< #'eql indexes locations))
+    (for count = (length excluded-indexes))
+    (when (zerop count) (next-iteration))
+    (for p = (/ count size))
+    (sum (* p (log p 2)) into result)
+    (finally (return (- result)))))
+
+
+(defun entropy-of-supersets-with-names (index &rest names)
+  (apply #'entropy-of-supersets index
+         (mapcar (curry #'name-to-type index) names)))
+
+
 (defun all-containing (index node)
   (cl-ds:xpr (:stack (list (list (chain-node node) (read-root index))))
     (let ((cell (pop stack)))
@@ -454,7 +498,8 @@
         (bind (((chain parent) cell)
                (front (first chain))
                (content (read-sets parent))
-               (index (lower-bound content (read-type front) #'< :key #'read-type)))
+               (index (lower-bound content (read-type front)
+                                   #'< :key #'read-type)))
           (cond ((= index (length content))
                  (recur :stack stack))
                 ((eql (read-type front) (~> content (aref index) read-type))
@@ -476,10 +521,11 @@
         (without-set (apply #'node-at-with-names index apriori)))
     (when with-set
       (assert without-set)
-      (let* ((apriori-range (all-containing without-set))
-             (posteriori-range (all-containing with-set))
-             (posteriori-sum (cl-ds.alg:accumulate #'+ posteriori-range
-                                                   :key #'read-count))
-             (apriori-sum (cl-ds.alg:accumulate #'+ apriori-range
-                                                :key #'read-count)))
-        ))))
+      (let* ((total-frequency (frequency (node-at-with-names index post)))
+             (total-entropy (* total-frequency (log total-frequency 2)))
+             (yes-frequency (frequency with-set))
+             (yes-entropy (- (* yes-frequency (log yes-frequency 2))))
+             (no-count (- (read-count without-set) (read-count with-set)))
+             (no-frequency (/ no-count (read-count without-set)))
+             (no-entropy (* no-frequency (log no-frequency 2))))
+        (- total-entropy (+ yes-entropy no-entropy))))))

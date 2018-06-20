@@ -159,3 +159,35 @@
                    (incf (aref indexes minimum-i)))))
     (finally (return (adjust-array result
                                    (fill-pointer result))))))
+
+
+(defun ordered-exclusion (compare-fn test-fn vector &rest more-vectors)
+  (iterate
+    (with indexes = (map '(vector fixnum) (constantly 0) more-vectors))
+    (with vector-type = (iterate
+                          (for vector in (rest more-vectors))
+                          (for prev-vector
+                               previous vector
+                               initially (first more-vectors))
+                          (unless (equal (array-element-type vector)
+                                         (array-element-type prev-vector))
+                            (leave t))
+                          (finally (return (array-element-type prev-vector)))))
+    (with result = (make-array (reduce #'min more-vectors :key #'length)
+                               :element-type vector-type
+                               :adjustable t
+                               :fill-pointer 0))
+    (for v in-vector vector)
+    (map-into indexes
+              (lambda (vector index) (lower-bound vector v #'<))
+              more-vectors
+              indexes)
+    (iterate
+      (for other-vector in more-vectors)
+      (for index in-vector indexes)
+      (when (< index (length other-vector))
+        (let ((data (aref other-vector index)))
+          (unless (funcall test-fn data v)
+            (vector-push-extend v result)))))
+    (finally (return (adjust-array result
+                                   (fill-pointer result))))))
