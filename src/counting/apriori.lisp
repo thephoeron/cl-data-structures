@@ -18,25 +18,6 @@
      :key key)))
 
 
-(defun ensure-all-two-level-deep-nodes (index)
-  (bind ((root (read-root index))
-         (content (read-sets root)))
-    (iterate
-      (for i from 1 below (length content))
-      (for node = (aref content i))
-      (iterate
-        (for j from 0 below i)
-        (for alternative-node = (aref content j))
-        (for symetric-node = (node-at index
-                                      (read-type alternative-node)
-                                      (read-type node)))
-        (when (null symetric-node) (next-iteration))
-        (push-child node (make 'apriori-node
-                               :type (read-type alternative-node)
-                               :locations (read-locations symetric-node))))
-      (sort-sets node))))
-
-
 (defun apriori-algorithm (&key set-form minimal-support &allow-other-keys)
   (bind (((_ total-size . table) set-form)
          (index (make-apriori-index table
