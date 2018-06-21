@@ -10,10 +10,9 @@
     (for i from 0)
     (for n
          initially node
-         then (read-parent node))
+         then (read-parent n))
     (for type = (read-type n))
     (while type)
-    (incf i)
     (finally (return i))))
 
 

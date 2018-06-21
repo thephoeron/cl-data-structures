@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 12)
+(plan 13)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -21,6 +21,7 @@
              vector))
   (let ((result (cl-ds.counting:find-association index '(1 3) '(4))))
     (ok result)
+    (is (cl-ds.counting:type-count result) 3)
     (is (cl-ds.counting:type-count index) 4)
     (is (sort (cl-ds.counting:content result) #'<) '(1 3 4) :test #'equal)
     (is (sort (cl-ds.counting:content (cl-ds.counting:apriori-set result)) #'<) '(1 3) :test #'equal)
