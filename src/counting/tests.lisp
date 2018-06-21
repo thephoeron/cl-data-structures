@@ -29,6 +29,7 @@
     (is (cl-ds.counting:type-count set1) 2)
     (is (cl-ds.counting:type-count set2) 2)
     (is (cl-ds.counting:type-count apriori-set) 3)
+    (ok (not (= 0 (cl-ds.counting:association-information-gain apriori-set))))
     (is (cl-ds.counting:support apriori-set) 1)
     (is (cl-ds.counting:type-count result) 3)
     (is (cl-ds.counting:type-count index) 4)

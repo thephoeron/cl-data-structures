@@ -133,9 +133,9 @@
       (aref content lower-bound))))
 
 
-(defun node-at-type (index type &rest more-types)
+(defun node-at-type (index &rest more-types)
   (iterate
-    (with path = (sort (cons type more-types) #'<))
+    (with path = (sort more-types #'<))
     (with node = (read-root index))
     (while path)
     (setf node (child-of-type node (first path))
@@ -209,9 +209,21 @@
 
 
 (defun just-post (apriori aposteriori)
-  (when (or apriori aposteriori)
+  (when (and apriori aposteriori)
     (cl-ds.utils:ordered-exclusion
      (lambda (a b) (< (read-type a) (read-type b)))
      (lambda (a b) (eql (read-type a) (read-type b)))
-     (~> apriori chain-node (coerce 'vector))
-     (~> aposteriori chain-node (coerce 'vector)))))
+     (~> aposteriori chain-node (coerce 'vector))
+     (~> apriori chain-node (coerce 'vector)))))
+
+
+(defun pure-aposteriori (set)
+  (when-let ((types (~> (just-post (read-apriori-node set) (read-node set))
+                        (map 'list #'read-type _))))
+    (apply #'node-at-type (read-index set) types)))
+
+
+(defun entropy-of-frequency (frequency)
+  (if (zerop frequency)
+    0.0
+    (- (* frequency (log frequency 2)))))

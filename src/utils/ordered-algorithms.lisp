@@ -182,12 +182,14 @@
               (lambda (vector index) (lower-bound vector v compare-fn))
               more-vectors
               indexes)
-    (iterate
-      (for other-vector in more-vectors)
-      (for index in-vector indexes)
-      (when (< index (length other-vector))
-        (let ((data (aref other-vector index)))
-          (unless (funcall test-fn data v)
-            (vector-push-extend v result)))))
+    (for not-present =
+         (iterate
+           (for other-vector in more-vectors)
+           (for index in-vector indexes)
+           (always (or (eql index (length other-vector))
+                       (let ((data (aref other-vector index)))
+                         (not (funcall test-fn data v)))))))
+    (when not-present
+      (vector-push-extend v result))
     (finally (return (adjust-array result
                                    (fill-pointer result))))))

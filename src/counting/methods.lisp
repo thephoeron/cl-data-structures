@@ -72,60 +72,71 @@
   (all-sets (read-index set) minimal-frequency))
 
 
-(defmethod all-super-sets ((set apriori-set) minimal-frequency)
-  (let ((index (read-index set))
-        (node (read-node set)))
+(defmethod all-super-sets ((set set-in-index) minimal-frequency)
+  (bind ((index (read-index set))
+         (node (read-node set))
+         ((:flet all-children-to-stack (chain node stack))
+          (iterate
+            (with content = (read-sets node))
+            (for i from 0 below (length content))
+            (push (list* chain (aref content i)) stack)
+            (finally (return stack)))))
     (cl-ds:xpr (:stack (list (list* (chain-node node)
                                     (read-root index))))
-      (let ((cell (pop stack)))
-        (when cell
-          (bind (((chain . parent) cell)
-                 (front (first chain))
-                 (content (read-sets parent))
-                 (index (lower-bound content (read-type front)
-                                     #'< :key #'read-type)))
-            (cond ((= index (length content))
+      (when-let ((cell (pop stack)))
+        (bind (((chain . parent) cell)
+               (front (first chain))
+               (content (read-sets parent)))
+          (when (null front)
+            (send-recur (make 'set-in-index
+                              :index index
+                              :node parent)
+                        :stack (all-children-to-stack nil
+                                                      parent
+                                                      stack)))
+          (let ((position (lower-bound content
+                                       (read-type front)
+                                       #'<
+                                       :key #'read-type)))
+            (cond ((= position (length content))
                    (recur :stack stack))
-                  ((eql (read-type front) (~> content (aref index) read-type))
-                   (if (endp (rest chain))
-                       (if (< (association-frequency node)
-                              minimal-frequency)
-                           (recur :stack stack)
-                           (send-recur (make
-                                        'apriori-set
-                                        :node (aref content index)
-                                        :index index)
-                                       :stack stack))
-                       (recur :stack (cons (list* (rest chain)
-                                                  (aref content index))
-                                           stack))))
-                  (t
-                   (iterate
-                     (for i from 0 below index)
-                     (push (list chain (aref content i)) stack)
-                     (finally (recur :stack stack)))))))))))
+                  ((eql (read-type front) (~> content (aref position) read-type))
+                   (send-recur
+                    (make 'set-in-index
+                          :node (aref content position)
+                          :index index)
+                    :stack (all-children-to-stack (rest chain)
+                                                  (aref content position)
+                                                  stack)))
+                  (t (iterate
+                       (for i from 0 below position)
+                       (push (list* chain (aref content i)) stack)
+                       (finally (recur :stack stack)))))))))))
 
 
 (defmethod association-information-gain ((set apriori-set))
+  (declare (optimize (debug 3)))
+  (when (eq (read-node set) (read-apriori-node set))
+    (return-from association-information-gain 0.0))
   (when (or (null (read-node set))
             (null (read-apriori-node set)))
+    (return-from association-information-gain 0.0))
+  (let ((without-node (pure-aposteriori set)))
+    (when (null without-node)
       (return-from association-information-gain 0.0))
-  (let* ((index (read-index set))
-         (without-node (~> (just-post (read-apriori-node set) (read-node set))
-                           (map 'list #'read-type _)
-                           (apply #'node-at index)))
-         (total-frequency (/ (read-count without-node)
-                             (read-total-size index)))
-         (total-entropy (- (* total-frequency (log total-frequency 2))))
-         (yes-frequency (association-frequency set))
-         (no-frequency (- 1 yes-frequency))
-         (yes-entropy (- (* yes-frequency (log yes-frequency 2))))
-         (no-entropy (* no-frequency (log no-frequency 2)))
-         (total-size (read-total-size set))
-         (apriori-size (~> set read-apriori-node read-count)))
-    (/ (- (* (- total-size apriori-size) total-entropy)
-          (* apriori-size (+ yes-entropy no-entropy)))
-       total-size)))
+    (let* ((index (read-index set))
+           (total-frequency (/ (read-count without-node)
+                               (read-total-size index)))
+           (total-entropy (- (* total-frequency (log total-frequency 2))))
+           (yes-frequency (association-frequency set))
+           (no-frequency (- 1 yes-frequency))
+           (yes-entropy (entropy-of-frequency yes-frequency))
+           (no-entropy (entropy-of-frequency no-frequency))
+           (total-size (read-total-size index))
+           (apriori-size (~> set read-apriori-node read-count)))
+      (/ (- (* (- total-size apriori-size) total-entropy)
+            (* apriori-size (+ yes-entropy no-entropy)))
+         total-size))))
 
 
 (defmethod content ((set set-in-index))
@@ -140,7 +151,7 @@
 
 
 (defmethod aposteriori-set ((set apriori-set))
-  (let ((types (~>> (just-post (read-node set) (read-apriori-node set))
+  (let ((types (~>> (just-post (read-apriori-node set) (read-node set))
                     (map 'list #'read-type))))
     (make 'set-in-index
           :node (apply #'node-at-type (read-index set) types)
