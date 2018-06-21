@@ -133,6 +133,10 @@
        (mapcar (curry #'node-name (read-index set)))))
 
 
+(defmethod content ((set empty-mixin))
+  nil)
+
+
 (defmethod aposteriori-set ((set apriori-set))
   (let ((types (~>> (just-post (read-node set) (read-apriori-node set))
                     (map 'list #'read-type))))
@@ -145,6 +149,14 @@
   (make 'set-in-index
         :node (read-apriori-node set)
         :index (read-index set)))
+
+
+(defmethod apriori-set ((set empty-apriori-set))
+  set)
+
+
+(defmethod aposteriori-set ((set empty-apriori-set))
+  set)
 
 
 (defmethod make-apriori-set ((apriori set-in-index)
