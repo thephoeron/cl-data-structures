@@ -59,7 +59,6 @@
         (for (values f more) = (lparallel.queue:try-pop-queue queue))
         (while more)
         (lparallel:force f))
-      (ensure-all-two-level-deep-nodes index)
       (reset-locations index)
       index)))
 

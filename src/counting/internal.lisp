@@ -133,22 +133,30 @@
       (aref content lower-bound))))
 
 
-(defun node-at (index type &rest more-types)
+(defun node-at-type (index type &rest more-types)
   (iterate
-    (for elt in more-types)
-    (for node
-         initially (child-at (read-root index) type)
-         then (child-at node type))
-    (always node)
+    (with path = (sort (cons type more-types) #'<))
+    (with node = (read-root index))
+    (while path)
+    (setf node (child-of-type node (first path))
+          path (rest path))
+    (while node)
     (finally (return node))))
 
 
-(defun node-at-with-names (index post &rest apriori)
-  (let ((path (mapcar (curry #'node-name index) (cons post apriori))))
-    (apply #'node-at index
-           (if (endp (cddr path))
-               path
-               (sort path #'<)))))
+(defun node-at (index i &rest more-i)
+  (iterate
+    (for elt in more-i)
+    (for node
+         initially (child-at (read-root index) i)
+         then (child-at node elt))
+    (while node)
+    (finally (return node))))
+
+
+(defun node-at-with-names (index name &rest more-names)
+  (let ((path (mapcar (curry #'name-to-type index) (cons name more-names))))
+    (apply #'node-at-type index path)))
 
 
 (defun entropy-from-node (parent)
@@ -176,15 +184,18 @@
 
 (defun chain-node (node)
   (iterate
-    (for n initially (read-parent node) then (read-parent n))
-    (for p-n previous n initially node)
-    (collect p-n at start)
-    (while (read-parent n))))
+    (for n initially node then (read-parent n))
+    (while (read-type n))
+    (collect n at start)))
+
+
+(defun type-to-name (index type)
+  (aref (access-reverse-mapping index)
+        type))
 
 
 (defun node-name (index node)
-  (aref (access-reverse-mapping index)
-        (read-type node)))
+  (type-to-name index (read-type node)))
 
 
 (defun name-to-type (index name)
@@ -193,7 +204,7 @@
 
 (defun just-post (apriori aposteriori)
   (cl-ds.utils:ordered-exclusion
-   #'< #'eql
+   (lambda (a b) (< (read-type a) (read-type b)))
+   (lambda (a b) (eql (read-type a) (read-type b)))
    (~> apriori chain-node (coerce 'vector))
-   (~> aposteriori chain-node (coerce 'vector))
-   :key #'read-type))
+   (~> aposteriori chain-node (coerce 'vector))))

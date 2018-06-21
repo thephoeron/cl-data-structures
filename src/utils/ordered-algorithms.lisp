@@ -179,7 +179,7 @@
                                :fill-pointer 0))
     (for v in-vector vector)
     (map-into indexes
-              (lambda (vector index) (lower-bound vector v #'<))
+              (lambda (vector index) (lower-bound vector v compare-fn))
               more-vectors
               indexes)
     (iterate

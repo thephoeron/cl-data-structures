@@ -37,16 +37,14 @@
                              (aposteriori list))
   (assert apriori)
   (assert aposteriori)
-  (when-let ((aposteriori (~> (add-to-list apriori aposteriori)
-                              (remove-duplicates :test #'equal)))
-             (node (apply #'node-at-with-names index
-                          aposteriori))
-             (apriori-node #'node-at-with-names index apriori))
-    (make 'apriori-set
-          :apriori-node apriori-node
-          :node node
-          :index index
-          :apriori-node apriori-node)))
+  (let ((aposteriori (~> (add-to-list apriori aposteriori)
+                         (remove-duplicates :test #'equal))))
+    (when-let ((node (apply #'node-at-with-names index aposteriori))
+               (apriori-node (apply #'node-at-with-names index apriori)))
+      (make 'apriori-set
+            :apriori-node apriori-node
+            :node node
+            :index index))))
 
 
 (defmethod all-sets ((index apriori-index) minimal-frequency)

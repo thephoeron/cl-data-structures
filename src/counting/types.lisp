@@ -50,8 +50,7 @@
 (defclass apriori-set (set-in-index)
   ((%apriori-node :initarg :apriori-node
                   :reader read-apriori-node
-                  :type apriori-node
-          :reader read-node)))
+                  :type apriori-node)))
 
 
 (defmethod initialize-instance :after ((node apriori-node)

@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 3)
+(plan 5)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -18,6 +18,10 @@
                                  :key #'cl-ds.counting:content)))
   (ok (every (compose (curry #'<= 1)
                       #'cl-ds.counting:support)
-             result)))
+             result))
+  (let ((result (cl-ds.counting:find-association index '(1 3) '(4))))
+    (ok result)
+    (is (cl-ds.counting:support result) 1)))
+
 
 (finalize)
