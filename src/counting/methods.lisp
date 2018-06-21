@@ -24,15 +24,14 @@
   0)
 
 
-(defmethod association-frequency ((node apriori-node))
-  (if-let ((parent (read-parent node)))
-    (/ (read-count node) (read-count parent))
-    1))
-
-
 (defmethod association-frequency ((set apriori-set))
-  (/ (~> set read-node read-count)
-     (~> set read-apriori-node read-count)))
+  (cond+ ((read-node set) (read-apriori-node set))
+    ((t t) (/ (~> set read-node read-count)
+              (~> set read-apriori-node read-count)))
+    ((t nil) (/ (~> set read-node read-count)
+                (~> set read-index read-total-size)))
+    ((nil t) 1)
+    ((nil nil) 1)))
 
 
 (defmethod association-frequency ((set empty-apriori-set))
@@ -108,6 +107,9 @@
 
 
 (defmethod association-information-gain ((set apriori-set))
+  (when (or (null (read-node set))
+            (null (read-apriori-node set)))
+      (return-from association-information-gain 0.0))
   (let* ((index (read-index set))
          (without-node (~> (just-post (read-apriori-node set) (read-node set))
                            (map 'list #'read-type _)
@@ -127,10 +129,10 @@
 
 
 (defmethod content ((set set-in-index))
-  (~>> set
-       read-node
-       chain-node
-       (mapcar (curry #'node-name (read-index set)))))
+  (when-let ((node (read-node set)))
+    (~>> node
+         chain-node
+         (mapcar (curry #'node-name (read-index set))))))
 
 
 (defmethod content ((set empty-mixin))
@@ -184,12 +186,18 @@
 
 (defmethod make-apriori-set ((apriori set-in-index)
                              (aposteriori empty-mixin))
-  apriori)
+  (make 'apriori-set
+        :index (read-index apriori)
+        :apriori-node (read-node apriori)
+        :node nil))
 
 
 (defmethod make-apriori-set ((apriori empty-mixin)
                              (aposteriori set-in-index))
-  aposteriori)
+  (make 'apriori-set
+        :index (read-index apriori)
+        :apriori-node nil
+        :node (read-node aposteriori)))
 
 
 (defmethod support ((object empty-mixin))

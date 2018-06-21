@@ -209,8 +209,9 @@
 
 
 (defun just-post (apriori aposteriori)
-  (cl-ds.utils:ordered-exclusion
-   (lambda (a b) (< (read-type a) (read-type b)))
-   (lambda (a b) (eql (read-type a) (read-type b)))
-   (~> apriori chain-node (coerce 'vector))
-   (~> aposteriori chain-node (coerce 'vector))))
+  (when (or apriori aposteriori)
+    (cl-ds.utils:ordered-exclusion
+     (lambda (a b) (< (read-type a) (read-type b)))
+     (lambda (a b) (eql (read-type a) (read-type b)))
+     (~> apriori chain-node (coerce 'vector))
+     (~> aposteriori chain-node (coerce 'vector)))))
