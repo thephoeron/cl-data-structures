@@ -101,13 +101,9 @@
             (cond ((= position (length content))
                    (recur :stack stack))
                   ((eql (read-type front) (~> content (aref position) read-type))
-                   (send-recur
-                    (make 'set-in-index
-                          :node (aref content position)
-                          :index index)
-                    :stack (all-children-to-stack (rest chain)
-                                                  (aref content position)
-                                                  stack)))
+                   (recur :stack (all-children-to-stack (rest chain)
+                                                        (aref content position)
+                                                        stack)))
                   (t (iterate
                        (for i from 0 below position)
                        (push (list* chain (aref content i)) stack)
