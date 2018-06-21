@@ -121,10 +121,10 @@
 
 
 (defmethod aposteriori-set ((set apriori-set))
-  (let ((types (~>> (just-post (read-apriori-node set) (read-node set))
+  (let ((types (~>> (just-post (read-node set) (read-apriori-node set))
                     (map 'list #'read-type))))
     (make 'set-in-index
-          :node (apply #'node-at (read-index set) types)
+          :node (apply #'node-at-type (read-index set) types)
           :index (read-index set))))
 
 

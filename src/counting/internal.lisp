@@ -189,6 +189,11 @@
     (collect n at start)))
 
 
+(defun set-name (set)
+  (node-name (read-index set)
+             (read-node set)))
+
+
 (defun type-to-name (index type)
   (aref (access-reverse-mapping index)
         type))
