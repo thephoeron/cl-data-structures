@@ -16,7 +16,7 @@
     (finally (return i))))
 
 
-(defmethod type-count ((set apriori-set))
+(defmethod type-count ((set set-in-index))
   (type-count (read-node set)))
 
 
@@ -170,7 +170,7 @@
                                   (chain-node aposteriori-node))
                     (mapcar #'read-type)
                     remove-duplicates
-                    (apply #'node-at (read-index apriori)))))
+                    (apply #'node-at-type (read-index apriori)))))
     (or (and union
              (make 'apriori-set
                    :index (read-index apriori)

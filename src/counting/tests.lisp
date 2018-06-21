@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 13)
+(plan 19)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -19,8 +19,17 @@
   (ok (every (compose (curry #'<= 1)
                       #'cl-ds.counting:support)
              vector))
-  (let ((result (cl-ds.counting:find-association index '(1 3) '(4))))
+  (let* ((result (cl-ds.counting:find-association index '(1 3) '(4)))
+         (set1 (cl-ds.counting:find-set index 1 2))
+         (set2 (cl-ds.counting:find-set index 3 2))
+         (apriori-set (cl-ds.counting:make-apriori-set set1 set2)))
     (ok result)
+    (ok set1)
+    (ok set2)
+    (is (cl-ds.counting:type-count set1) 2)
+    (is (cl-ds.counting:type-count set2) 2)
+    (is (cl-ds.counting:type-count apriori-set) 3)
+    (is (cl-ds.counting:support apriori-set) 1)
     (is (cl-ds.counting:type-count result) 3)
     (is (cl-ds.counting:type-count index) 4)
     (is (sort (cl-ds.counting:content result) #'<) '(1 3 4) :test #'equal)
