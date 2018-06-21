@@ -11,7 +11,7 @@
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:apriori data 1))
        (result (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
-  (is (cl-ds:size result) 19)
+  (is (cl-ds:size result) 13)
   (is (length result)
       (length (remove-duplicates result
                                  :test 'equal
