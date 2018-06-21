@@ -121,10 +121,10 @@
          (no-frequency (- 1 yes-frequency))
          (yes-entropy (- (* yes-frequency (log yes-frequency 2))))
          (no-entropy (* no-frequency (log no-frequency 2)))
-         (total-size (read-total-size set)))
-    (/ (- (* total-size total-entropy)
-          (* (~> set read-apriori-node read-count)
-             (+ yes-entropy no-entropy)))
+         (total-size (read-total-size set))
+         (apriori-size (~> set read-apriori-node read-count)))
+    (/ (- (* (- total-size apriori-size) total-entropy)
+          (* apriori-size (+ yes-entropy no-entropy)))
        total-size)))
 
 
