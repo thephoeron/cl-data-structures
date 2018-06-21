@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 5)
+(plan 9)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -24,7 +24,8 @@
     (is (sort (cl-ds.counting:content result) #'<) '(1 3 4) :test #'equal)
     (is (sort (cl-ds.counting:content (cl-ds.counting:apriori-set result)) #'<) '(1 3) :test #'equal)
     (is (sort (cl-ds.counting:content (cl-ds.counting:aposteriori-set result)) #'<) '(4) :test #'equal)
-    (is (cl-ds.counting:support result) 1)))
+    (is (cl-ds.counting:support result) 1)
+    (is (cl-ds.counting:association-frequency result) 0.25 :test #'=)))
 
 
 (finalize)
