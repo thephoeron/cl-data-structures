@@ -40,9 +40,10 @@
 
 (defclass set-in-index ()
   ((%node :initarg :node
-          :type apriori-node
+          :type (or null apriori-node)
           :reader read-node)
    (%index :initarg :index
+           :initform nil
            :type apriori-index
            :reader read-index)))
 
@@ -50,7 +51,20 @@
 (defclass apriori-set (set-in-index)
   ((%apriori-node :initarg :apriori-node
                   :reader read-apriori-node
-                  :type apriori-node)))
+                  :initform nil
+                  :type (or null apriori-node))))
+
+
+(defclass empty-mixin ()
+  ())
+
+
+(defclass empty-set-in-index (empty-mixin set-in-index)
+  ())
+
+
+(defclass empty-apriori-set (empty-mixin apriori-set)
+  ())
 
 
 (defmethod initialize-instance :after ((node apriori-node)

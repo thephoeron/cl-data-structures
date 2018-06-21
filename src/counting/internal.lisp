@@ -154,9 +154,10 @@
     (finally (return node))))
 
 
-(defun node-at-with-names (index name &rest more-names)
+(defun node-at-names (index name &rest more-names)
   (let ((path (mapcar (curry #'name-to-type index) (cons name more-names))))
-    (apply #'node-at-type index path)))
+    (and (every #'identity path)
+         (apply #'node-at-type index path))))
 
 
 (defun entropy-from-node (parent)

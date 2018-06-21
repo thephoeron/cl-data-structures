@@ -21,6 +21,10 @@
   (type-count (read-node set)))
 
 
+(defmethod type-count ((set empty-mixin))
+  0)
+
+
 (defmethod association-frequency ((node apriori-node))
   (if-let ((parent (read-parent node)))
     (/ (read-count node) (read-count parent))
@@ -32,6 +36,10 @@
      (~> set read-apriori-node read-count)))
 
 
+(defmethod association-frequency ((set empty-apriori-set))
+  0)
+
+
 (defmethod find-association ((index apriori-index)
                              (apriori list)
                              (aposteriori list))
@@ -39,12 +47,14 @@
   (assert aposteriori)
   (let ((aposteriori (~> (add-to-list apriori aposteriori)
                          (remove-duplicates :test #'equal))))
-    (when-let ((node (apply #'node-at-with-names index aposteriori))
-               (apriori-node (apply #'node-at-with-names index apriori)))
+    (if-let ((aposteriori aposteriori)
+             (node (apply #'node-at-names index aposteriori))
+             (apriori-node (apply #'node-at-names index apriori)))
       (make 'apriori-set
             :apriori-node apriori-node
             :node node
-            :index index))))
+            :index index)
+      (make 'empty-apriori-set :index index))))
 
 
 (defmethod all-sets ((index apriori-index) minimal-frequency)
@@ -58,6 +68,10 @@
 
 (defmethod total-entropy ((index apriori-index))
   (entropy-from-node (read-parent index)))
+
+
+(defmethod all-super-sets ((set empty-mixin) minimal-frequency)
+  (all-sets (read-index set) minimal-frequency))
 
 
 (defmethod all-super-sets ((set apriori-set) minimal-frequency)
@@ -144,11 +158,31 @@
                     (mapcar #'read-type)
                     remove-duplicates
                     (apply #'node-at (read-index apriori)))))
-    (and union
-         (make 'apriori-set
-               :index (read-index apriori)
-               :node union
-               :apriori-node apriori-node))))
+    (or (and union
+             (make 'apriori-set
+                   :index (read-index apriori)
+                   :node union
+                   :apriori-node apriori-node))
+        (make 'empty-apriori-set :index (read-index apriori)))))
+
+
+(defmethod make-apriori-set ((apriori empty-mixin)
+                             (aposteriori empty-mixin))
+  apriori)
+
+
+(defmethod make-apriori-set ((apriori set-in-index)
+                             (aposteriori empty-mixin))
+  apriori)
+
+
+(defmethod make-apriori-set ((apriori empty-mixin)
+                             (aposteriori set-in-index))
+  aposteriori)
+
+
+(defmethod support ((object empty-mixin))
+  0)
 
 
 (defmethod support ((object apriori-index))
@@ -164,7 +198,8 @@
 
 
 (defmethod find-set ((index apriori-index) &rest content)
-  (when-let ((node (apply #'node-at-with-names index content)))
+  (if-let ((node (apply #'node-at-names index content)))
     (make 'set-in-index
           :node node
-          :index index)))
+          :index index)
+    (make 'empty-set-in-index :index index)))
