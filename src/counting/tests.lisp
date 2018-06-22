@@ -5,12 +5,13 @@
 
 (in-package #:apriori-tests)
 
-(plan 19)
+(plan 24)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:apriori data 1))
        (vector (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
+  (defparameter *index* index)
   (is (cl-ds:size vector) 13)
   (is (length vector)
       (length (remove-duplicates vector
@@ -26,6 +27,14 @@
     (ok result)
     (ok set1)
     (ok set2)
+    (let ((super-sets (cl-ds.alg:to-vector (cl-ds.counting:all-super-sets set1 0.0))))
+      (map-into super-sets 'cl-ds.counting:content super-sets)
+      (map-into super-sets (lambda (x) (sort x #'<)) super-sets)
+      (is (length super-sets) 3)
+      (setf super-sets (coerce super-sets 'list))
+      (ok (member '(1 2) super-sets :test 'equal))
+      (ok (member '(1 2 3) super-sets :test 'equal))
+      (ok (member '(1 2 4) super-sets :test 'equal)))
     (is (cl-ds.counting:type-count set1) 2)
     (is (cl-ds.counting:type-count set2) 2)
     (is (cl-ds.counting:type-count apriori-set) 3)

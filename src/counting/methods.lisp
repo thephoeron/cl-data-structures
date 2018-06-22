@@ -88,26 +88,22 @@
                (front (first chain))
                (content (read-sets parent)))
           (when (null front)
-            (send-recur (make 'set-in-index
-                              :index index
-                              :node parent)
-                        :stack (all-children-to-stack nil
-                                                      parent
-                                                      stack)))
+            (send-recur (make 'set-in-index :index index :node parent)
+                        :stack (all-children-to-stack nil parent stack)))
           (let ((position (lower-bound content
                                        (read-type front)
                                        #'<
                                        :key #'read-type)))
-            (cond ((= position (length content))
-                   (recur :stack stack))
-                  ((eql (read-type front) (~> content (aref position) read-type))
-                   (recur :stack (all-children-to-stack (rest chain)
-                                                        (aref content position)
-                                                        stack)))
-                  (t (iterate
-                       (for i from 0 below position)
-                       (push (list* chain (aref content i)) stack)
-                       (finally (recur :stack stack)))))))))))
+            (if  (= position (length content))
+                 (recur :stack stack)
+                 (when (eql (read-type front) (~> content (aref position) read-type))
+                   (push (list* (rest chain) (aref content position))
+                         stack)
+                   (iterate
+                     (for i from 0 below position)
+                     (push (list* chain (aref content i)) stack))
+                   (recur :stack stack)))))
+        (assert nil)))))
 
 
 (defmethod association-information-gain ((set apriori-set))
