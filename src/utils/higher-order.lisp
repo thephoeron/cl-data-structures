@@ -17,4 +17,3 @@
       (for result = (apply function rest))
       (always result)
       (finally (return result)))))
-
