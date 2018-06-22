@@ -74,13 +74,7 @@
 
 (defmethod all-super-sets ((set set-in-index) minimal-frequency)
   (bind ((index (read-index set))
-         (node (read-node set))
-         ((:flet all-children-to-stack (chain node stack))
-          (iterate
-            (with content = (read-sets node))
-            (for i from 0 below (length content))
-            (push (list* chain (aref content i)) stack)
-            (finally (return stack)))))
+         (node (read-node set)))
     (cl-ds:xpr (:stack (list (list* (chain-node node)
                                     (read-root index))))
       (when-let ((cell (pop stack)))
@@ -89,21 +83,25 @@
                (content (read-sets parent)))
           (when (null front)
             (send-recur (make 'set-in-index :index index :node parent)
-                        :stack (all-children-to-stack nil parent stack)))
+                        :stack (iterate
+                                 (for i from 0 below (length content))
+                                 (push (list* (rest chain) (aref content i)) stack)
+                                 (finally (return stack)))))
           (let ((position (lower-bound content
                                        (read-type front)
                                        #'<
                                        :key #'read-type)))
             (if  (= position (length content))
                  (recur :stack stack)
-                 (when (eql (read-type front) (~> content (aref position) read-type))
-                   (push (list* (rest chain) (aref content position))
-                         stack)
+                 (progn
+                   (when (eql (read-type front) (~> content (aref position) read-type))
+                     (push (list* (rest chain) (aref content position))
+                           stack))
                    (iterate
                      (for i from 0 below position)
                      (push (list* chain (aref content i)) stack))
-                   (recur :stack stack)))))
-        (assert nil)))))
+                   (recur :stack stack))))
+          (assert nil))))))
 
 
 (defmethod association-information-gain ((set apriori-set))
