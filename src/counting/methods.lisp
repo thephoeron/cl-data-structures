@@ -124,7 +124,7 @@
            (no-entropy (entropy-of-frequency no-frequency))
            (total-size (read-total-size index))
            (apriori-size (~> set read-apriori-node read-count)))
-      (/ (- (* (- total-size apriori-size) total-entropy)
+      (/ (- (* total-size total-entropy)
             (* apriori-size (+ yes-entropy no-entropy)))
          total-size))))
 

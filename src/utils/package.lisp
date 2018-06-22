@@ -12,6 +12,8 @@
    #:cartesian
    #:cases
    #:cond+
+   #:and*
+   #:or*
    #:cond-compare
    #:copy-without
    #:mref
