@@ -103,7 +103,9 @@
                  (progn
                    (when (eql (read-type front)
                               (~> content (aref position) read-type))
-                     (push (list* (rest chain) (aref content position))
+                     (push (list (rest chain)
+                                 (aref content position)
+                                 (1+ depth))
                            stack))
                    (iterate
                      (for i from 0 below position)
