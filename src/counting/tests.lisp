@@ -5,13 +5,18 @@
 
 (in-package #:apriori-tests)
 
-(plan 25)
+(plan 26)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:set-index data 1))
+       (single-sets (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.0 1)))
        (vector (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
-  (defparameter *index* index)
+  (is (sort (map 'vector #'cl-ds.counting:content single-sets)
+            (lambda (a b)
+              (< (first a) (first b))))
+      #((1) (2) (3) (4))
+      :test #'equalp)
   (is (cl-ds:size vector) 13)
   (is (length vector)
       (length (remove-duplicates vector
