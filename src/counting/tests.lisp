@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 23)
+(plan 25)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -39,6 +39,8 @@
     (is (cl-ds.counting:type-count set2) 2)
     (is (cl-ds.counting:type-count apriori-set) 3)
     (is (cl-ds.counting:support apriori-set) 1)
+    (is (sort (cl-ds.counting:content (cl-ds.counting:apriori-set apriori-set)) #'<) '(1 2) :test #'equal)
+    (is (sort (cl-ds.counting:content (cl-ds.counting:aposteriori-set apriori-set)) #'<) '(3) :test #'equal)
     (is (cl-ds.counting:type-count result) 3)
     (is (cl-ds.counting:type-count index) 4)
     (is (sort (cl-ds.counting:content result) #'<) '(1 3 4) :test #'equal)
