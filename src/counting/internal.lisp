@@ -215,7 +215,12 @@
 
 
 (defun name-to-type (index name)
-  (gethash name (access-mapping index)))
+  (lret ((result (gethash name (access-mapping index))))
+    (when (null result)
+      (error 'cl-ds:not-in-allowed-set
+             :text "Value not present in the set."
+             :value name
+             :bounds (hash-table-keys (access-mapping index))))))
 
 
 (defun just-post (apriori aposteriori)

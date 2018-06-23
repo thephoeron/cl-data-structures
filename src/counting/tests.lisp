@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 26)
+(plan 25)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -16,6 +16,7 @@
             (lambda (a b) (< (first a) (first b))))
       #((1) (2) (3) (4))
       :test #'equalp)
+  (is-error (cl-ds.counting:find-set index 0) 'cl-ds:not-in-allowed-set)
   (is (cl-ds:size vector) 13)
   (is (length vector)
       (length (remove-duplicates vector
@@ -51,12 +52,6 @@
     (is (sort (cl-ds.counting:content (cl-ds.counting:apriori-set result)) #'<) '(1 3) :test #'equal)
     (is (sort (cl-ds.counting:content (cl-ds.counting:aposteriori-set result)) #'<) '(4) :test #'equal)
     (is (cl-ds.counting:support result) 1)
-    (is (cl-ds.counting:association-frequency result) 0.25 :test #'=)
-    (is (cl-ds.counting:support (cl-ds.counting:find-set index 1 10)) 0)
-    (is (cl-ds.alg:to-vector (cl-ds.alg:on-each #'cl-ds.counting:content
-                                                (cl-ds.counting:all-super-sets (cl-ds.counting:find-set index 1 10)
-                                                                               0.1)))
-        (map 'vector #'cl-ds.counting:content vector)
-        :test #'equalp)))
+    (is (cl-ds.counting:association-frequency result) 0.25 :test #'=)))
 
 (finalize)

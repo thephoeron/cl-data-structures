@@ -39,6 +39,8 @@
    #:erase-if!
    #:expression
    #:field
+   #:not-in-allowed-set
+   #:argument-not-in-allowed-set
    #:force
    #:found
    #:make-of-size

@@ -41,8 +41,14 @@
 (defmethod find-association ((index set-index)
                              (apriori list)
                              (aposteriori list))
-  (assert apriori)
-  (assert aposteriori)
+  (when (emptyp apriori)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'apriori
+           :text "Empty apriori list."))
+  (when (emptyp aposteriori)
+    (error 'cl-ds:invalid-argument
+           :argument 'aposteriori
+           :text "Empty aposteriori list."))
   (let ((aposteriori (~> (add-to-list apriori aposteriori)
                          (remove-duplicates :test #'equal))))
     (if-let ((aposteriori aposteriori)
@@ -74,6 +80,20 @@
 
 (defmethod all-super-sets ((set set-in-index) minimal-frequency
                            &optional maximal-size)
+  (check-type minimal-frequency real)
+  (check-type maximal-size (or null integer))
+  (unless (<= 0 minimal-frequency 1)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'minimal-frequency
+           :bounds '(<= 0 1)
+           :value minimal-frequency
+           :text "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
+  (when (and maximal-size (<= maximal-size 0))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'maximal-size
+           :bounds '(> 0)
+           :value maximal-size
+           :text "MAXIMAL-SIZE is supposed to be above 0."))
   (bind ((index (read-index set))
          (node (read-node set)))
     (cl-ds:xpr (:stack (list (list (chain-node node)

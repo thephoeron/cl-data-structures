@@ -11,6 +11,7 @@
    #:all-sets
    #:aposteriori-set
    #:set-index
+   #:apriori-set
    #:association-frequency
    #:content
    #:find-association

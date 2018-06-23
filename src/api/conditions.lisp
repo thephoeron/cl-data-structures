@@ -53,8 +53,19 @@
             :reader read-bounds)))
 
 
+
+
 (define-condition argument-out-of-bounds (invalid-argument
                                           out-of-bounds)
+  ())
+
+
+(define-condition not-in-allowed-set (out-of-bounds)
+  ())
+
+
+(define-condition argument-not-in-allowed-set (not-in-allowed-set
+                                               invalid-argument)
   ())
 
 
@@ -73,6 +84,13 @@
 (defmethod print-object ((condition argument-out-of-bounds) stream)
   (format stream "Argument ~A has value ~a which is out of bounds ~a~%"
           (read-argument condition)
+          (read-value condition)
+          (read-bounds condition))
+  (call-next-method))
+
+
+(defmethod print-object ((condition not-in-allowed-set) stream)
+  (format stream "Value ~a is not in the set: ~{~a~^, ~}.~%"
           (read-value condition)
           (read-bounds condition))
   (call-next-method))
