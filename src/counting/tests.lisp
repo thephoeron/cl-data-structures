@@ -9,7 +9,7 @@
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
-       (index (cl-ds.counting:apriori data 1))
+       (index (cl-ds.counting:set-index data 1))
        (vector (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
   (defparameter *index* index)
   (is (cl-ds:size vector) 13)

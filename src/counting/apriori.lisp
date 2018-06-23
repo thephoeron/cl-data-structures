@@ -6,14 +6,14 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric apriori (range minimal-support &key key)
+(defgeneric set-index (range minimal-support &key key)
   (:generic-function-class set-index-function)
   (:method (range minimal-support &key (key #'identity))
     (ensure-functionf key)
     (check-type minimal-support positive-fixnum)
     (cl-ds.alg.meta:apply-aggregation-function
      range
-     #'apriori
+     #'set-index
      :minimal-support minimal-support
      :key key)))
 

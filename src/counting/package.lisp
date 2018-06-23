@@ -10,8 +10,7 @@
    #:all-super-sets
    #:all-sets
    #:aposteriori-set
-   #:apriori
-   #:apriori-set
+   #:set-index
    #:association-frequency
    #:content
    #:find-association
