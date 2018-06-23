@@ -64,10 +64,6 @@
                                :node x))))
 
 
-(defmethod total-entropy ((index apriori-index))
-  (entropy-from-node (read-parent index)))
-
-
 (defmethod all-super-sets ((set empty-mixin) minimal-frequency)
   (all-sets (read-index set) minimal-frequency))
 
@@ -102,31 +98,6 @@
                      (push (list* chain (aref content i)) stack))
                    (recur :stack stack))))
           (assert nil))))))
-
-
-(defmethod association-information-gain ((set apriori-set))
-  (declare (optimize (debug 3)))
-  (when (eq (read-node set) (read-apriori-node set))
-    (return-from association-information-gain 0.0))
-  (when (or (null (read-node set))
-            (null (read-apriori-node set)))
-    (return-from association-information-gain 0.0))
-  (let ((without-node (pure-aposteriori set)))
-    (when (null without-node)
-      (return-from association-information-gain 0.0))
-    (let* ((index (read-index set))
-           (total-frequency (/ (read-count without-node)
-                               (read-total-size index)))
-           (total-entropy (- (* total-frequency (log total-frequency 2))))
-           (yes-frequency (association-frequency set))
-           (no-frequency (- 1 yes-frequency))
-           (yes-entropy (entropy-of-frequency yes-frequency))
-           (no-entropy (entropy-of-frequency no-frequency))
-           (total-size (read-total-size index))
-           (apriori-size (~> set read-apriori-node read-count)))
-      (/ (- (* total-size total-entropy)
-            (* apriori-size (+ yes-entropy no-entropy)))
-         total-size))))
 
 
 (defmethod content ((set set-in-index))

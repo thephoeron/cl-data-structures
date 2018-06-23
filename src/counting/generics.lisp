@@ -3,15 +3,11 @@
 
 (defgeneric association-frequency (set))
 
-(defgeneric association-information-gain (set))
-
 (defgeneric type-count (object))
 
 (defgeneric find-association (index apriori aposteriori))
 
 (defgeneric find-set (index &rest content))
-
-(defgeneric total-entropy (object))
 
 (defgeneric all-super-sets (set minimal-frequency))
 
