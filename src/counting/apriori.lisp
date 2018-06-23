@@ -1,13 +1,13 @@
 (in-package cl-data-structures.counting)
 
 
-(defclass apriori-function (cl-ds.alg.meta:multi-aggregation-function)
+(defclass set-index-function (cl-ds.alg.meta:multi-aggregation-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
 (defgeneric apriori (range minimal-support &key key)
-  (:generic-function-class apriori-function)
+  (:generic-function-class set-index-function)
   (:method (range minimal-support &key (key #'identity))
     (ensure-functionf key)
     (check-type minimal-support positive-fixnum)
@@ -18,11 +18,11 @@
      :key key)))
 
 
-(defun apriori-algorithm (&key set-form minimal-support &allow-other-keys)
+(defun set-index-algorithm (&key set-form minimal-support &allow-other-keys)
   (bind (((_ total-size . table) set-form)
-         (index (make-apriori-index table
-                                    total-size
-                                    minimal-support))
+         (index (make-set-index table
+                                total-size
+                                minimal-support))
          (queue (lparallel.queue:make-queue)))
     (async-expand-node index (read-root index) 0 queue)
     (let ((reverse-mapping (make-array (hash-table-count table)))
@@ -45,7 +45,7 @@
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function apriori-function)
+    ((function set-index-function)
      &rest all
      &key minimal-support key &allow-other-keys)
   (declare (ignore all))
@@ -65,4 +65,4 @@
                           (funcall key data)))
           (incf (second state))
           state)
-        #'apriori-algorithm))
+        #'set-index-algorithm))

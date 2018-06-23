@@ -7,14 +7,14 @@
   node)
 
 
-(defun make-apriori-index (table total-size minimal-support)
+(defun make-set-index (table total-size minimal-support)
   (let* ((root-content
            (iterate
              (with result = (make-array (hash-table-count table)))
              (for i from 0)
              (for (key value) in-hashtable table)
              (for (id . positions) = value)
-             (setf (aref result i) (make 'apriori-node
+             (setf (aref result i) (make 'set-index-node
                                          :type id
                                          :locations positions))
              (finally
@@ -23,10 +23,10 @@
                                        :key #'read-count)
                             #'<
                             :key #'read-type)))))
-         (root (make-instance 'apriori-node
+         (root (make-instance 'set-index-node
                               :sets root-content
                               :count total-size))
-         (result (make 'apriori-index
+         (result (make 'set-index
                        :total-size total-size
                        :minimal-support minimal-support
                        :root root)))
@@ -34,7 +34,7 @@
     result))
 
 
-(-> combine-nodes (apriori-node) list)
+(-> combine-nodes (set-index-node) list)
 (defun combine-nodes (node)
   (let* ((last-elt node)
          (parent (read-parent last-elt))
@@ -52,8 +52,8 @@
 (with-compilation-unit nil
   (defun expand-node (index parent i queue)
     (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
-             (type apriori-index index)
-             (type apriori-node parent)
+             (type set-index index)
+             (type set-index-node parent)
              (type fixnum i)
              (type lparallel.queue:queue queue))
     (iterate
@@ -75,7 +75,7 @@
         (for intersection-size = (length intersection))
         (when (< intersection-size minimal-support)
           (next-iteration))
-        (for new-node = (make 'apriori-node
+        (for new-node = (make 'set-index-node
                               :locations intersection
                               :type (read-type superset)))
         (push-child node new-node))
@@ -89,7 +89,7 @@
         (lparallel.queue:push-queue queue))))
 
 
-(-> number-of-children (apriori-node) integer)
+(-> number-of-children (set-index-node) integer)
 (defun number-of-children (node)
   (~> node read-sets length))
 

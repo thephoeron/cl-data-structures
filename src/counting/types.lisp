@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.counting)
 
 
-(defclass apriori-node ()
+(defclass set-index-node ()
   ((%type :reader read-type
           :initarg :type
           :initform nil
@@ -23,7 +23,7 @@
             :reader read-parent)))
 
 
-(defclass apriori-index ()
+(defclass set-index ()
   ((%root :reader read-root
           :initarg :root)
    (%minimal-support :reader read-minimal-support
@@ -40,11 +40,11 @@
 
 (defclass set-in-index ()
   ((%node :initarg :node
-          :type (or null apriori-node)
+          :type (or null set-index-node)
           :reader read-node)
    (%index :initarg :index
            :initform nil
-           :type apriori-index
+           :type set-index
            :reader read-index)))
 
 
@@ -52,7 +52,7 @@
   ((%apriori-node :initarg :apriori-node
                   :reader read-apriori-node
                   :initform nil
-                  :type (or null apriori-node))))
+                  :type (or null set-index-node))))
 
 
 (defclass empty-mixin ()
@@ -67,7 +67,7 @@
   ())
 
 
-(defmethod initialize-instance :after ((node apriori-node)
+(defmethod initialize-instance :after ((node set-index-node)
                                        &key &allow-other-keys)
   (when (slot-boundp node '%locations)
     (setf (slot-value node '%count)

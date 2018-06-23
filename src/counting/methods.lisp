@@ -1,11 +1,11 @@
 (in-package #:cl-data-structures.counting)
 
 
-(defmethod type-count ((index apriori-index))
+(defmethod type-count ((index set-index))
   (~> index access-reverse-mapping length))
 
 
-(defmethod type-count ((node apriori-node))
+(defmethod type-count ((node set-index-node))
   (iterate
     (for i from 0)
     (for n
@@ -38,7 +38,7 @@
   0)
 
 
-(defmethod find-association ((index apriori-index)
+(defmethod find-association ((index set-index)
                              (apriori list)
                              (aposteriori list))
   (assert apriori)
@@ -47,15 +47,15 @@
                          (remove-duplicates :test #'equal))))
     (if-let ((aposteriori aposteriori)
              (node (apply #'node-at-names index aposteriori))
-             (apriori-node (apply #'node-at-names index apriori)))
+             (set-index-node (apply #'node-at-names index apriori)))
       (make 'apriori-set
-            :apriori-node apriori-node
+            :apriori-node set-index-node
             :node node
             :index index)
       (make 'empty-apriori-set :index index))))
 
 
-(defmethod all-sets ((index apriori-index) minimal-frequency
+(defmethod all-sets ((index set-index) minimal-frequency
                      &optional maximal-size)
   (data-range index
               minimal-frequency
@@ -150,9 +150,9 @@
 (defmethod make-apriori-set ((apriori set-in-index)
                              (aposteriori set-in-index))
   (assert (eq (read-index apriori) (read-index aposteriori)))
-  (let* ((apriori-node (read-node apriori))
+  (let* ((set-index-node (read-node apriori))
          (aposteriori-node (read-node aposteriori))
-         (union (~>> (add-to-list (chain-node apriori-node)
+         (union (~>> (add-to-list (chain-node set-index-node)
                                   (chain-node aposteriori-node))
                     (mapcar #'read-type)
                     remove-duplicates
@@ -161,7 +161,7 @@
              (make 'apriori-set
                    :index (read-index apriori)
                    :node union
-                   :apriori-node apriori-node))
+                   :apriori-node set-index-node))
         (make 'empty-apriori-set :index (read-index apriori)))))
 
 
@@ -190,7 +190,7 @@
   0)
 
 
-(defmethod support ((object apriori-index))
+(defmethod support ((object set-index))
   (read-total-size object))
 
 
@@ -198,11 +198,11 @@
   (support (read-node object)))
 
 
-(defmethod support ((object apriori-node))
+(defmethod support ((object set-index-node))
   (read-count object))
 
 
-(defmethod find-set ((index apriori-index) &rest content)
+(defmethod find-set ((index set-index) &rest content)
   (if-let ((node (apply #'node-at-names index content)))
     (make 'set-in-index
           :node node
