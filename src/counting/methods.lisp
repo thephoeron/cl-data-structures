@@ -55,13 +55,15 @@
       (make 'empty-apriori-set :index index))))
 
 
-(defmethod all-sets ((index apriori-index) minimal-frequency)
+(defmethod all-sets ((index apriori-index) minimal-frequency
+                     &optional maximal-size)
   (data-range index
               minimal-frequency
               (lambda (x)
                 (make-instance 'set-in-index
                                :index index
-                               :node x))))
+                               :node x))
+              maximal-size))
 
 
 (defmethod all-super-sets ((set empty-mixin) minimal-frequency)

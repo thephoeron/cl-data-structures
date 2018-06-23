@@ -117,8 +117,11 @@
                          :key #'read-type))
 
 
-(defun add-to-stack (stack node)
-  (add-to-list stack (read-sets node)))
+(defun add-to-stack (stack node depth)
+  (iterate
+    (for elt in-vector (read-sets node))
+    (push (list* elt depth) stack))
+  stack)
 
 
 (defun child-of-type (parent type)
@@ -170,17 +173,24 @@
     (finally (return (- result)))))
 
 
-(defun data-range (index minimal-frequency &optional (operation #'identity))
-  (cl-ds:xpr (:stack (list (read-root index)))
-    (let ((node (pop stack)))
-      (unless (null node)
-        (if (null (read-parent node))
-            (recur :stack (add-to-stack stack node))
-            (if (< (/ (support node) (read-total-size index))
-                   minimal-frequency)
-                (recur :stack (add-to-stack stack node))
-                (send-recur (funcall operation node)
-                            :stack (add-to-stack stack node))))))))
+(defun data-range (index minimal-frequency
+                   &optional (operation #'identity) maximal-size)
+  (cl-ds:xpr (:stack (list (list* (read-root index) 0)))
+    (bind ((cell (pop stack)))
+      (unless (null cell)
+        (bind (((node . depth) cell))
+          (if (and maximal-size (< maximal-size depth))
+              (recur :stack stack)
+              (if (null (read-parent node))
+                  (recur :stack (add-to-stack stack node
+                                              (1+ depth)))
+                  (if (< (/ (support node) (read-total-size index))
+                         minimal-frequency)
+                      (recur :stack (add-to-stack stack node
+                                                  (1+ depth)))
+                      (send-recur (funcall operation node)
+                                  :stack (add-to-stack stack node
+                                                       (1+ depth)))))))))))
 
 
 (defun chain-node (node)

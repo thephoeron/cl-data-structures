@@ -11,7 +11,7 @@
 
 (defgeneric all-super-sets (set minimal-frequency))
 
-(defgeneric all-sets (index minimal-frequency))
+(defgeneric all-sets (index minimal-frequency &optional maximal-size))
 
 (defgeneric apriori-set (set))
 
