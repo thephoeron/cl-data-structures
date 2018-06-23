@@ -9,7 +9,7 @@
 
 (defgeneric find-set (index &rest content))
 
-(defgeneric all-super-sets (set minimal-frequency))
+(defgeneric all-super-sets (set minimal-frequency &optional maximal-size))
 
 (defgeneric all-sets (index minimal-frequency &optional maximal-size))
 

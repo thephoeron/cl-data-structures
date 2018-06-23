@@ -66,24 +66,33 @@
               maximal-size))
 
 
-(defmethod all-super-sets ((set empty-mixin) minimal-frequency)
-  (all-sets (read-index set) minimal-frequency))
+(defmethod all-super-sets ((set empty-mixin) minimal-frequency
+                           &optional maximal-size)
+  (all-sets (read-index set) minimal-frequency
+            maximal-size))
 
 
-(defmethod all-super-sets ((set set-in-index) minimal-frequency)
+(defmethod all-super-sets ((set set-in-index) minimal-frequency
+                           &optional maximal-size)
   (bind ((index (read-index set))
          (node (read-node set)))
-    (cl-ds:xpr (:stack (list (list* (chain-node node)
-                                    (read-root index))))
+    (cl-ds:xpr (:stack (list (list (chain-node node)
+                                   (read-root index)
+                                   (type-count set))))
       (when-let ((cell (pop stack)))
-        (bind (((chain . parent) cell)
+        (bind (((chain parent depth) cell)
                (front (first chain))
                (content (read-sets parent)))
+          (when (and maximal-size (> depth maximal-size))
+            (recur :stack stack))
           (when (null front)
             (send-recur (make 'set-in-index :index index :node parent)
                         :stack (iterate
                                  (for i from 0 below (length content))
-                                 (push (list* (rest chain) (aref content i)) stack)
+                                 (push (list (rest chain)
+                                             (aref content i)
+                                             (1+ depth))
+                                       stack)
                                  (finally (return stack)))))
           (let ((position (lower-bound content
                                        (read-type front)
@@ -92,12 +101,13 @@
             (if  (= position (length content))
                  (recur :stack stack)
                  (progn
-                   (when (eql (read-type front) (~> content (aref position) read-type))
+                   (when (eql (read-type front)
+                              (~> content (aref position) read-type))
                      (push (list* (rest chain) (aref content position))
                            stack))
                    (iterate
                      (for i from 0 below position)
-                     (push (list* chain (aref content i)) stack))
+                     (push (list chain (aref content i) (1+ depth)) stack))
                    (recur :stack stack))))
           (assert nil))))))
 
