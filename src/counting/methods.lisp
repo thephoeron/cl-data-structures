@@ -158,6 +158,14 @@
         :index (read-index set)))
 
 
+(defmethod make-apriori-set :before ((apriori set-in-index)
+                                     (aposteriori set-in-index))
+  (unless (eq (read-index apriori)
+              (read-index aposteriori))
+    (error 'cl-ds:operation-not-allowed
+           :text "APRIORI and APOSTERIORI are not nested in the same index.")))
+
+
 (defmethod apriori-set ((set empty-apriori-set))
   set)
 
@@ -168,7 +176,6 @@
 
 (defmethod make-apriori-set ((apriori set-in-index)
                              (aposteriori set-in-index))
-  (assert (eq (read-index apriori) (read-index aposteriori)))
   (let* ((set-index-node (read-node apriori))
          (aposteriori-node (read-node aposteriori))
          (union (~>> (add-to-list (chain-node set-index-node)
