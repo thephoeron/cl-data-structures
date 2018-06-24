@@ -42,7 +42,7 @@
                              (apriori list)
                              (aposteriori list))
   (when (emptyp apriori)
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:invalid-argument
            :argument 'apriori
            :text "Empty apriori list."))
   (when (emptyp aposteriori)
