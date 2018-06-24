@@ -251,9 +251,3 @@
   (when-let ((types (~> (just-post (read-apriori-node set) (read-node set))
                         (map 'list #'read-type _))))
     (apply #'node-at-type (read-index set) types)))
-
-
-(defun entropy-of-frequency (frequency)
-  (if (zerop frequency)
-    0.0
-    (- (* frequency (log frequency 2)))))
