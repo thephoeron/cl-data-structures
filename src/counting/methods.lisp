@@ -49,16 +49,16 @@
     (error 'cl-ds:invalid-argument
            :argument 'aposteriori
            :text "Empty aposteriori list."))
-  (let ((aposteriori (~> (add-to-list apriori aposteriori)
-                         (remove-duplicates :test #'equal))))
-    (if-let ((aposteriori aposteriori)
-             (node (apply #'node-at-names index aposteriori))
-             (set-index-node (apply #'node-at-names index apriori)))
-      (make 'apriori-set
-            :apriori-node set-index-node
-            :node node
-            :index index)
-      (make 'empty-apriori-set :index index))))
+  (let* ((aposteriori (~> (add-to-list apriori aposteriori)
+                          (remove-duplicates :test #'equal)))
+         (node (apply #'node-at-names index aposteriori))
+         (set-index-node (apply #'node-at-names index apriori)))
+    (if (null set-index-node)
+        (make 'empty-apriori-set :index index)
+        (make 'apriori-set
+              :apriori-node set-index-node
+              :node node
+              :index index))))
 
 
 (defmethod all-sets ((index set-index) minimal-frequency
