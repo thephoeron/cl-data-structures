@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 25)
+(plan 27)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
@@ -16,7 +16,12 @@
             (lambda (a b) (< (first a) (first b))))
       #((1) (2) (3) (4))
       :test #'equalp)
+  (is (cl-ds.counting:type-count index) 4)
   (is-error (cl-ds.counting:find-set index 0) 'cl-ds:not-in-allowed-set)
+  (is-error (cl-ds.counting:find-set index 1 1) 'cl-ds:operation-not-allowed)
+  (let ((empty-set (cl-ds.counting:find-set index 1 2 3 4)))
+    (is (cl-ds.counting:support empty-set) 0)
+    (is (cl-ds.counting:type-count empty-set) 4))
   (is (cl-ds:size vector) 13)
   (is (length vector)
       (length (remove-duplicates vector

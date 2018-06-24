@@ -161,10 +161,21 @@
     (finally (return node))))
 
 
+(defun validate-unique-names (names)
+  (unless (iterate
+            (with table = (make-hash-table :test 'equal))
+            (for name in names)
+            (always (null #1=(gethash name table)))
+            (setf #1# t))
+    (error 'cl-ds:operation-not-allowed
+           :text "Duplicated values in the content of sets.")))
+
+
 (defun node-at-names (index name &rest more-names)
-  (let ((path (mapcar (curry #'name-to-type index) (cons name more-names))))
-    (and (every #'identity path)
-         (apply #'node-at-type index path))))
+  (let* ((names (cons name more-names))
+         (path (mapcar (curry #'name-to-type index) names)))
+    (validate-unique-names names)
+    (apply #'node-at-type index path)))
 
 
 (defun entropy-from-node (parent)

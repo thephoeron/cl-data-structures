@@ -56,7 +56,9 @@
 
 
 (defclass empty-mixin ()
-  ())
+  ((%type-count :initarg :type-count
+                :reader read-type-count
+                :type non-negative-fixnum)))
 
 
 (defclass empty-set-in-index (empty-mixin set-in-index)

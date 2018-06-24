@@ -21,7 +21,7 @@
 
 
 (defmethod type-count ((set empty-mixin))
-  0)
+  (read-type-count set))
 
 
 (defmethod association-frequency ((set apriori-set))
@@ -206,7 +206,9 @@
                    :index (read-index apriori)
                    :node union
                    :apriori-node set-index-node))
-        (make 'empty-apriori-set :index (read-index apriori)))))
+        (make 'empty-apriori-set
+              :index (read-index apriori)
+              :type-count (type-count aposteriori-node)))))
 
 
 (defmethod make-apriori-set ((apriori empty-mixin)
@@ -251,4 +253,6 @@
     (make 'set-in-index
           :node node
           :index index)
-    (make 'empty-set-in-index :index index)))
+    (make 'empty-set-in-index
+          :index index
+          :type-count (length content))))
