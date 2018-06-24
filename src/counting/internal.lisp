@@ -1,6 +1,7 @@
 (in-package #:cl-data-structures.counting)
 
 
+(-> sort-sets (set-index-node) set-index-node)
 (defun sort-sets (node)
   (write-sets (sort (read-sets node) #'< :key #'read-type)
               node)
@@ -49,13 +50,15 @@
       (collect elt at start))))
 
 
+(-> expand-node
+    (set-index set-index-node non-negative-fixnum lparallel.queue:queue)
+    t)
+(-> async-expand-node
+    (set-index set-index-node non-negative-fixnum lparallel.queue:queue)
+    t)
 (with-compilation-unit nil
   (defun expand-node (index parent i queue)
-    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
-             (type set-index index)
-             (type set-index-node parent)
-             (type fixnum i)
-             (type lparallel.queue:queue queue))
+    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
     (iterate
       (with minimal-support = (the fixnum (read-minimal-support index)))
       (for children-count = (the fixnum (number-of-children parent)))
@@ -94,6 +97,7 @@
   (~> node read-sets length))
 
 
+(-> child-at (set-index-node non-negative-fixnum) set-index-node)
 (defun child-at (node i)
   (~> node read-sets (aref i)))
 
