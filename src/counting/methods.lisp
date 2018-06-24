@@ -24,7 +24,7 @@
   (read-type-count set))
 
 
-(defmethod association-frequency ((set apriori-set))
+(defmethod association-frequency ((set association-set))
   (cond+ ((read-node set) (read-apriori-node set))
     ((t t) (/ (~> set read-node read-count)
               (~> set read-apriori-node read-count)))
@@ -34,7 +34,7 @@
     ((nil nil) 1)))
 
 
-(defmethod association-frequency ((set empty-apriori-set))
+(defmethod association-frequency ((set empty-association-set))
   0)
 
 
@@ -56,8 +56,8 @@
          (node (apply #'node-at-names index aposteriori))
          (set-index-node (apply #'node-at-names index apriori)))
     (if (null set-index-node)
-        (make 'empty-apriori-set :index index)
-        (make 'apriori-set
+        (make 'empty-association-set :index index)
+        (make 'association-set
               :apriori-node set-index-node
               :node node
               :index index))))
@@ -164,7 +164,7 @@
   nil)
 
 
-(defmethod aposteriori-set ((set apriori-set))
+(defmethod aposteriori-set ((set association-set))
   (let ((types (~>> (just-post (read-apriori-node set) (read-node set))
                     (map 'list #'read-type))))
     (make 'set-in-index
@@ -172,7 +172,7 @@
           :index (read-index set))))
 
 
-(defmethod apriori-set ((set apriori-set))
+(defmethod apriori-set ((set association-set))
   (make 'set-in-index
         :node (read-apriori-node set)
         :index (read-index set)))
@@ -186,11 +186,11 @@
            :text "APRIORI and APOSTERIORI are not nested in the same index.")))
 
 
-(defmethod apriori-set ((set empty-apriori-set))
+(defmethod apriori-set ((set empty-association-set))
   set)
 
 
-(defmethod aposteriori-set ((set empty-apriori-set))
+(defmethod aposteriori-set ((set empty-association-set))
   set)
 
 
@@ -204,11 +204,11 @@
                      remove-duplicates
                      (apply #'node-at-type (read-index apriori)))))
     (or (and union
-             (make 'apriori-set
+             (make 'association-set
                    :index (read-index apriori)
                    :node union
                    :apriori-node set-index-node))
-        (make 'empty-apriori-set
+        (make 'empty-association-set
               :index (read-index apriori)
               :type-count (type-count aposteriori-node)))))
 
@@ -220,7 +220,7 @@
 
 (defmethod make-apriori-set ((apriori set-in-index)
                              (aposteriori empty-mixin))
-  (make 'apriori-set
+  (make 'association-set
         :index (read-index apriori)
         :apriori-node (read-node apriori)
         :node nil))
@@ -228,7 +228,7 @@
 
 (defmethod make-apriori-set ((apriori empty-mixin)
                              (aposteriori set-in-index))
-  (make 'apriori-set
+  (make 'association-set
         :index (read-index apriori)
         :apriori-node nil
         :node (read-node aposteriori)))

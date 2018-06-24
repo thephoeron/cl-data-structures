@@ -48,7 +48,7 @@
            :reader read-index)))
 
 
-(defclass apriori-set (set-in-index)
+(defclass association-set (set-in-index)
   ((%apriori-node :initarg :apriori-node
                   :reader read-apriori-node
                   :initform nil
@@ -65,7 +65,7 @@
   ())
 
 
-(defclass empty-apriori-set (empty-mixin apriori-set)
+(defclass empty-association-set (empty-mixin association-set)
   ())
 
 
