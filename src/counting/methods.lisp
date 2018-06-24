@@ -154,8 +154,7 @@
 
 (defmethod content ((set set-in-index))
   (when-let ((node (read-node set)))
-    (~>> node
-         chain-node
+    (~>> node chain-node
          (mapcar (curry #'node-name (read-index set))))))
 
 

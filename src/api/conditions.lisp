@@ -90,9 +90,20 @@
 
 
 (defmethod print-object ((condition not-in-allowed-set) stream)
-  (format stream "Value ~a is not in the set: ~{~a~^, ~}.~%"
-          (read-value condition)
-          (read-bounds condition))
+  (let ((value (read-value condition))
+        (bounds (read-bounds condition))
+        (i 20))
+    (block out
+      (format stream "Value ~a is not in the set: " value)
+      (map nil
+           (lambda (x)
+             (if (zerop (decf i))
+                 (return-from out nil)
+                 (format stream "~A " x)))
+           bounds))
+    (unless (zerop i)
+      (format stream "(...)"))
+    (format stream "~%"))
   (call-next-method))
 
 

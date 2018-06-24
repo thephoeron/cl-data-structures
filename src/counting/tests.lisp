@@ -5,11 +5,12 @@
 
 (in-package #:apriori-tests)
 
-(plan 29)
+(plan 30)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
        (index (cl-ds.counting:set-index data 1))
+       (index2 (cl-ds.counting:set-index data 1))
        (single-sets (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.0 1)))
        (vector (cl-ds.alg:to-vector (cl-ds.counting:all-sets index 0.1))))
   (is (sort (map 'vector #'cl-ds.counting:content single-sets)
@@ -17,6 +18,9 @@
       #((1) (2) (3) (4))
       :test #'equalp)
   (is (cl-ds.counting:type-count index) 4)
+  (is-error (cl-ds.counting:make-apriori-set (cl-ds.counting:find-set index 1 3)
+                                             (cl-ds.counting:find-set index2 1 2))
+            'cl-ds:operation-not-allowed)
   (is-error (cl-ds.counting:find-set index 0) 'cl-ds:not-in-allowed-set)
   (is-error (cl-ds.counting:find-set index 1 1) 'cl-ds:operation-not-allowed)
   (let ((empty-set (cl-ds.counting:find-set index 1 2 3 4)))
