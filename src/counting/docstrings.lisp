@@ -21,4 +21,15 @@
      :arguments ((set "Set containing association."))))
 
   (function association-frequency
-    (:description "Returns frequency of association between aposteriori and apriori of association-set.")))
+    (:description "Returns frequency of association between aposteriori and apriori of association-set."
+     :returns "Value between 0 and 1."))
+
+  (function all-sets
+    (:description "Obtain all sets up to size from the index."
+     :arguments ((index "Index, containing all subsets.")
+                 (maximal-size "Integer, only return sets up-to this size.")
+                 (minimal-frequency "Real, only return sets with total frequency above this limit."))
+     :exceptional-situations ("Will signal type-errors if minimal-frequency is not real or maximal-size is not of type integer."
+                              "Will signal cl-ds:argument-out-of-bounds if minimal frequency is below 0 or above 1"
+                              "Will signal cl-ds:argument-out-of-bounds if maximal-size is not above 0.")
+     :returns "Forward range of SET-IN-INDEX objects.")))
