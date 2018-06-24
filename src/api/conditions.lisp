@@ -1,14 +1,18 @@
 (in-package #:cl-data-structures)
 
 
+(defgeneric print-condition (object stream))
+
+
 (define-condition textual-error (error)
   ((%text :initarg :text
           :type (or null string)
           :initform nil
-          :reader read-text)))
+          :reader read-text))
+  (:report print-condition))
 
 
-(defmethod print-object :around ((condition textual-error) stream)
+(defmethod print-condition :around ((condition textual-error) stream)
   (unless (null (read-text condition))
     (format stream "~a~%~%" (read-text condition)))
   (call-next-method))
@@ -29,7 +33,7 @@
   ())
 
 
-(defmethod print-object ((condition initialization-error) stream)
+(defmethod print-condition ((condition initialization-error) stream)
   (format stream "During initialization of ~a...~%"
           (read-class condition))
   (call-next-method))
@@ -51,8 +55,6 @@
            :reader read-value)
    (%bounds :initarg :bounds
             :reader read-bounds)))
-
-
 
 
 (define-condition argument-out-of-bounds (invalid-argument
@@ -81,7 +83,7 @@
   ())
 
 
-(defmethod print-object ((condition argument-out-of-bounds) stream)
+(defmethod print-condition ((condition argument-out-of-bounds) stream)
   (format stream "Argument ~A has value ~a which is out of bounds ~a~%"
           (read-argument condition)
           (read-value condition)
@@ -89,7 +91,7 @@
   (call-next-method))
 
 
-(defmethod print-object ((condition not-in-allowed-set) stream)
+(defmethod print-condition ((condition not-in-allowed-set) stream)
   (let ((value (read-value condition))
         (bounds (read-bounds condition))
         (i 20))
@@ -107,7 +109,7 @@
   (call-next-method))
 
 
-(defmethod print-object ((condition unexpected-argument) stream)
+(defmethod print-condition ((condition unexpected-argument) stream)
   (format stream "Argument ~A was not expected.~%"
           (read-argument condition))
   (call-next-method))
