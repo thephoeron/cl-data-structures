@@ -56,7 +56,8 @@
          (node (apply #'node-at-names index aposteriori))
          (set-index-node (apply #'node-at-names index apriori)))
     (if (null set-index-node)
-        (make 'empty-association-set :index index)
+        (make 'empty-association-set :index index
+                                     :type-count (length aposteriori))
         (make 'association-set
               :apriori-node set-index-node
               :node node
