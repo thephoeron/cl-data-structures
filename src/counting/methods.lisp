@@ -118,19 +118,18 @@
                                        (read-type front)
                                        #'<
                                        :key #'read-type)))
-            (if  (= position (length content))
-                 (recur :stack stack)
-                 (progn
-                   (when (eql (read-type front)
-                              (~> content (aref position) read-type))
-                     (push (list (rest chain)
-                                 (aref content position)
-                                 (1+ depth))
-                           stack))
-                   (iterate
-                     (for i from 0 below position)
-                     (push (list chain (aref content i) (1+ depth)) stack))
-                   (recur :stack stack))))
+            (when (= position (length content))
+              (recur :stack stack))
+            (when (eql (read-type front)
+                       (~> content (aref position) read-type))
+              (push (list (rest chain)
+                          (aref content position)
+                          (1+ depth))
+                    stack))
+            (iterate
+              (for i from 0 below position)
+              (push (list chain (aref content i) (1+ depth)) stack))
+            (recur :stack stack))
           (assert nil))))))
 
 
