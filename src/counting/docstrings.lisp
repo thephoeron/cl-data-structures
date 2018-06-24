@@ -18,4 +18,7 @@
 
   (function aposteriori-set
     (:description "Returns SET-IN-INDEX object containing aposteriori part of association."
-     :arguments ((set "Set containing association.")))))
+     :arguments ((set "Set containing association."))))
+
+  (function association-frequency
+    (:description "Returns frequency of association between aposteriori and apriori of association-set.")))
