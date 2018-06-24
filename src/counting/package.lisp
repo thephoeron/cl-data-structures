@@ -16,6 +16,6 @@
    #:content
    #:find-association
    #:find-set
-   #:make-apriori-set
+   #:make-association-set
    #:support
    #:type-count))

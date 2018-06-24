@@ -19,6 +19,6 @@
 
 (defgeneric content (set))
 
-(defgeneric make-apriori-set (apriori aposteriori))
+(defgeneric make-association-set (apriori aposteriori))
 
 (defgeneric support (object))

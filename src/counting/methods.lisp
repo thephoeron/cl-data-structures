@@ -178,8 +178,8 @@
         :index (read-index set)))
 
 
-(defmethod make-apriori-set :before ((apriori set-in-index)
-                                     (aposteriori set-in-index))
+(defmethod make-association-set :before ((apriori set-in-index)
+                                         (aposteriori set-in-index))
   (unless (eq (read-index apriori)
               (read-index aposteriori))
     (error 'cl-ds:operation-not-allowed
@@ -194,8 +194,8 @@
   set)
 
 
-(defmethod make-apriori-set ((apriori set-in-index)
-                             (aposteriori set-in-index))
+(defmethod make-association-set ((apriori set-in-index)
+                                 (aposteriori set-in-index))
   (let* ((set-index-node (read-node apriori))
          (aposteriori-node (read-node aposteriori))
          (union (~>> (add-to-list (chain-node set-index-node)
@@ -213,21 +213,21 @@
               :type-count (type-count aposteriori-node)))))
 
 
-(defmethod make-apriori-set ((apriori empty-mixin)
-                             (aposteriori empty-mixin))
+(defmethod make-association-set ((apriori empty-mixin)
+                                 (aposteriori empty-mixin))
   apriori)
 
 
-(defmethod make-apriori-set ((apriori set-in-index)
-                             (aposteriori empty-mixin))
+(defmethod make-association-set ((apriori set-in-index)
+                                 (aposteriori empty-mixin))
   (make 'association-set
         :index (read-index apriori)
         :apriori-node (read-node apriori)
         :node nil))
 
 
-(defmethod make-apriori-set ((apriori empty-mixin)
-                             (aposteriori set-in-index))
+(defmethod make-association-set ((apriori empty-mixin)
+                                 (aposteriori set-in-index))
   (make 'association-set
         :index (read-index apriori)
         :apriori-node nil
