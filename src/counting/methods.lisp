@@ -198,9 +198,9 @@
          (aposteriori-node (read-node aposteriori))
          (union (~>> (add-to-list (chain-node set-index-node)
                                   (chain-node aposteriori-node))
-                    (mapcar #'read-type)
-                    remove-duplicates
-                    (apply #'node-at-type (read-index apriori)))))
+                     (mapcar #'read-type)
+                     remove-duplicates
+                     (apply #'node-at-type (read-index apriori)))))
     (or (and union
              (make 'apriori-set
                    :index (read-index apriori)
