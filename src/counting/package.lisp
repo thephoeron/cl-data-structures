@@ -7,15 +7,15 @@
   (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:nicknames #:cl-ds.counting)
   (:export
-   #:all-super-sets
    #:all-sets
+   #:all-super-sets
    #:aposteriori-set
-   #:set-index
    #:apriori-set
    #:association-frequency
    #:content
    #:find-association
    #:find-set
    #:make-association-set
+   #:set-index
    #:support
    #:type-count))
