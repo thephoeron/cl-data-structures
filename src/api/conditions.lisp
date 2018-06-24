@@ -4,7 +4,7 @@
 (defgeneric print-condition (object stream))
 
 
-(define-condition textual-error (error)
+(define-condition textual-error (program-error)
   ((%text :initarg :text
           :type (or null string)
           :initform nil

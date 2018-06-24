@@ -168,6 +168,7 @@
                              (:file "internal")
                              (:file "apriori")
                              (:file "methods")
+                             (:file "docstrings")
                              (:test-file "tests")))
                (:module "metric-space"
                 :components ((:file "packages")

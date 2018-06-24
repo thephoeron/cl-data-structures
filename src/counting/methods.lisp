@@ -44,9 +44,11 @@
   (when (emptyp apriori)
     (error 'cl-ds:invalid-argument
            :argument 'apriori
+           :references '((:apriori find-association))
            :text "Empty apriori list."))
   (when (emptyp aposteriori)
     (error 'cl-ds:invalid-argument
+           :references '((:aposteriori find-association))
            :argument 'aposteriori
            :text "Empty aposteriori list."))
   (let* ((aposteriori (~> (add-to-list apriori aposteriori)
