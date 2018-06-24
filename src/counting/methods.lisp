@@ -63,23 +63,6 @@
 
 (defmethod all-sets ((index set-index) minimal-frequency
                      &optional maximal-size)
-  (data-range index
-              minimal-frequency
-              (lambda (x)
-                (make-instance 'set-in-index
-                               :index index
-                               :node x))
-              maximal-size))
-
-
-(defmethod all-super-sets ((set empty-mixin) minimal-frequency
-                           &optional maximal-size)
-  (all-sets (read-index set) minimal-frequency
-            maximal-size))
-
-
-(defmethod all-super-sets ((set set-in-index) minimal-frequency
-                           &optional maximal-size)
   (check-type minimal-frequency real)
   (check-type maximal-size (or null integer))
   (unless (<= 0 minimal-frequency 1)
@@ -94,6 +77,41 @@
            :bounds '(> 0)
            :value maximal-size
            :text "MAXIMAL-SIZE is supposed to be above 0."))
+  (data-range index
+              minimal-frequency
+              (lambda (x)
+                (make-instance 'set-in-index
+                               :index index
+                               :node x))
+              maximal-size))
+
+
+(defmethod all-super-sets :before (set minimal-frequency
+                                   &optional maximal-size)
+  (check-type minimal-frequency real)
+  (check-type maximal-size (or null integer))
+  (unless (<= 0 minimal-frequency 1)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'minimal-frequency
+           :bounds '(<= 0 1)
+           :value minimal-frequency
+           :text "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
+  (when (and maximal-size (<= maximal-size 0))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'maximal-size
+           :bounds '(> 0)
+           :value maximal-size
+           :text "MAXIMAL-SIZE is supposed to be above 0.")))
+
+
+(defmethod all-super-sets ((set empty-mixin) minimal-frequency
+                           &optional maximal-size)
+  (all-sets (read-index set) minimal-frequency
+            maximal-size))
+
+
+(defmethod all-super-sets ((set set-in-index) minimal-frequency
+                           &optional maximal-size)
   (bind ((index (read-index set))
          (node (read-node set)))
     (cl-ds:xpr (:stack (list (list (chain-node node)
