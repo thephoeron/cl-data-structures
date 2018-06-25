@@ -5,7 +5,7 @@
 
 (in-package #:apriori-tests)
 
-(plan 30)
+(plan 31)
 
 (let* ((data #((1 2) (1 4) (1 2 4) (3 4)
                (1 3) (1 3) (1 3 4) (1 3 2)))
