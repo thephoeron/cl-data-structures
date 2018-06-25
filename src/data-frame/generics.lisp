@@ -10,3 +10,4 @@
       (call-next-method))))
 (defgeneric (setf alias) (name data dimension position))
 (defgeneric alias (data dimension position))
+(defgeneric add-plane (data dimension plane))
