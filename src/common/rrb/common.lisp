@@ -183,7 +183,8 @@
                    (dynamic-extent indexes))
           (iterate
             (with size = (the non-negative-fixnum %size))
-            (for i from 0 below %shift)
+            (repeat %shift)
+            (for i from 0)
             (for position from (* +bit-count+ %shift) downto 0 by +bit-count+)
             (for index = (ldb (byte +bit-count+ position) size))
             (for node
@@ -330,7 +331,7 @@
   (declare (optimize (speed 3) (debug 0)
                      (safety 1) (space 0)))
   (iterate
-    (for i from 0 below shift)
+    (for i from (1- shift) downto 0)
     (for position = (aref indexes i))
     (for old-node = (aref path i))
     (for node

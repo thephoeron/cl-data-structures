@@ -174,8 +174,9 @@
 (defun node-at-names (index name &rest more-names)
   (let* ((names (cons name more-names))
          (path (mapcar (curry #'name-to-type index) names)))
-    (validate-unique-names names)
-    (apply #'node-at-type index path)))
+    (when (every #'identity path)
+      (validate-unique-names names)
+      (apply #'node-at-type index path))))
 
 
 (defun entropy-from-node (parent)
@@ -230,12 +231,7 @@
 
 
 (defun name-to-type (index name)
-  (lret ((result (gethash name (access-mapping index))))
-    (when (null result)
-      (error 'cl-ds:not-in-allowed-set
-             :text "Value not present in the set."
-             :value name
-             :bounds (hash-table-keys (access-mapping index))))))
+  (gethash name (access-mapping index)))
 
 
 (defun just-post (apriori aposteriori)

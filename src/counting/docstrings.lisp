@@ -9,7 +9,7 @@
      :arguments ((index "SET-INDEX instance.")
                  (apriori "List of content in the apriori set.")
                  (aposteriori "List of content the aposteriori set."))
-     :exceptional-situations ("Will signal cl-ds:not-in-allowed-set if at least one element in either apriori or aposteriori can't be find in the index."
+     :exceptional-situations ("Will return empty set if at least one element in either apriori or aposteriori can't be find in the index."
                               "Will return empty set if set does not exist in the index.")))
 
   (function apriori-set
