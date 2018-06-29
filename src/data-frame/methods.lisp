@@ -160,8 +160,13 @@
   (gethash (cons dimension position) (read-reverse-aliases container)))
 
 
-(defmethod plane ((data data-frame) &rest what)
-  (when (>= (length what) (cl-ds:dimensionality data))
-    (error 'cl-ds:dimensionality-error
-           :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
+(defmethod plane ((data data-frame) &rest more)
+  (let ((length (length more)))
+    (when (oddp length)
+      (error 'cl-ds:invalid-argument
+             :text "&rest arguments should come in even number!"
+             :argument 'more))
+    (when (>= (/ length 2) (cl-ds:dimensionality data))
+      (error 'cl-ds:dimensionality-error
+             :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame.")))
   )
