@@ -116,6 +116,7 @@
                              (:file "on-each")
                              (:file "count")
                              (:file "to-vector")
+                             (:file "shuffled-range")
                              (:file "common-range-category")
                              ;; (:file "summary")
                              (:file "change-each!")
