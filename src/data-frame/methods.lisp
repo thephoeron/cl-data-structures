@@ -172,9 +172,12 @@
   (iterate
     (with aliases = (read-aliases data))
     (for m on more)
-    (for (dimension position) = (first m))
+    (for p-m previous m)
     (for k initially nil then (not k))
-    (when k (setf (first m) (apply-alias aliases dimension position))))
+    (check-type dimension integer)
+    (check-type position (or symbol integer))
+    (when k
+      (setf (first m) (apply-alias aliases (first p-m) (first m)))))
   (let* ((locations (~> more (batches 2) (sort #'< :key #'car)))
          (optimized-slice (iterate
                             (for (dimension index) in locations)
