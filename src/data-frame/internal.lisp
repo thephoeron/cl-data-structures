@@ -37,16 +37,20 @@
                     (return address)))))
 
 
+(defun apply-alias (aliases dimension position)
+  (if (symbolp position)
+      (lret ((result (gethash (cons dimension position) aliases)))
+        (when (null result)
+          (error 'cl-ds:invalid-argument
+                 :text "Unkown alias."
+                 :argument position)))
+      position))
+
+
 (defun apply-aliases (aliases locations)
   (iterate
     (for loc on locations)
     (for x = (car loc))
     (for i from 0)
-    (when (symbolp x)
-      (let ((result (gethash (cons i x) aliases)))
-        (when (null result)
-          (error 'cl-ds:invalid-argument
-                 :text "Unkown alias."
-                 :argument x))
-        (setf (car loc) result)))
+    (setf (car loc) (apply-alias aliases i x))
     (finally (return locations))))

@@ -169,6 +169,12 @@
     (when (>= (/ length 2) (cl-ds:dimensionality data))
       (error 'cl-ds:dimensionality-error
              :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame.")))
+  (iterate
+    (with aliases = (read-aliases data))
+    (for m on more)
+    (for (dimension position) = (first m))
+    (for k initially nil then (not k))
+    (when k (setf (first m) (apply-alias aliases dimension position))))
   (let* ((locations (~> more (batches 2) (sort #'< :key #'car)))
          (optimized-slice (iterate
                             (for (dimension index) in locations)
