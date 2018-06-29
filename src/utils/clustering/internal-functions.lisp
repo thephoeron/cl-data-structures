@@ -347,11 +347,10 @@
     (setf %distance-matrix
           (cl-ds.utils:parallel-make-distance-matrix-from-vector
            %metric-type
-           (lambda (a b)
-             (funcall %metric-fn
-                      (funcall %key (aref %input-data a))
-                      (funcall %key (aref %input-data b))))
-           %indexes
+           %metric-fn
+           (lparallel:pmap 'vector
+                           (compose %key (curry #'aref %input-data))
+                           %indexes)
            :query-key (index-mapping-function state)))))
 
 
@@ -387,20 +386,26 @@
     (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
     (order-medoids state)
     (iterate
+      (with medoids = (lparallel:pmap
+                       'vector
+                       (lambda (x)
+                         (~>> x first-elt
+                              (aref %input-data)
+                              (funcall %key)))
+                       %cluster-contents))
       (for index in-vector %all-indexes)
+      (for some-data = (~>> index
+                            (aref %input-data)
+                            (funcall %key)))
       (unless (medoid-p state index)
         (iterate
           (with target = 0)
           (for j from 0)
           (for cluster in-vector %cluster-contents)
+          (for medoid in-vector medoids)
           (for distance = (funcall %metric-fn
-                                   (~>> index
-                                        (aref %input-data)
-                                        (funcall %key))
-                                   (~>> cluster
-                                        first-elt
-                                        (aref %input-data)
-                                        (funcall %key))))
+                                   medoid
+                                   some-data))
           (minimize distance into mini)
           (when (= distance mini)
             (setf target j))

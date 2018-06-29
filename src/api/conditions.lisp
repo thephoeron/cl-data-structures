@@ -120,5 +120,5 @@
   ())
 
 
-(define-condition not-implemented (error)
+(define-condition not-implemented (program-error)
   ())

@@ -106,7 +106,6 @@
   (%merge-threshold access-merge-threshold)
   (%unfinished-clusters access-unfinished-clusters)
   (%select-medoids-attempts-count access-select-medoids-attempts-count)
-  (%cluster-contents access-cluster-contents)
   (%indexes access-indexes)
   (%cluster-size access-cluster-size)
   (%metric-fn access-metric-fn)
