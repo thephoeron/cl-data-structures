@@ -70,9 +70,9 @@
 (defun assign-data-points-to-medoids (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (iterate
-      (with assignments = (lparallel:pmap '(vector (or null fixnum))
-                                          (curry #'closest-medoid state)
-                                          %indexes))
+      (with assignments = (map '(vector (or null fixnum))
+                               (curry #'closest-medoid state)
+                               %indexes))
       (for i in-vector %indexes)
       (for assignment in-vector assignments)
       (for medoid-p = (null assignment))
@@ -351,7 +351,8 @@
            (lparallel:pmap 'vector
                            (compose %key (curry #'aref %input-data))
                            %indexes)
-           :query-key (index-mapping-function state)))))
+           :query-key (index-mapping-function state)))
+    (cl-progress-bar:update 1)))
 
 
 (defun draw-clara-sample (state)
@@ -452,7 +453,8 @@
             (while (unfinished-clusters-p state))
             (repeat %split-merge-attempts-count)
             (recluster-clusters-with-invalid-size state)))
-        (update-result-cluster state))
+        (update-result-cluster state)
+        (cl-progress-bar:update 1))
       (setf %cluster-contents %result-cluster-contents)
       (assert %silhouette)
       state)))

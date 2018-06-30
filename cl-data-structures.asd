@@ -13,7 +13,8 @@
                 :more-conditions  :closer-mop
                 :lparallel        :flexichain
                 :metabang-bind    :bordeaux-threads
-                :fare-memoization :scribble)
+                :fare-memoization :scribble
+                :cl-progress-bar)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
