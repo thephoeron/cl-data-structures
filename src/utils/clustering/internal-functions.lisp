@@ -395,11 +395,11 @@
                               (funcall %key)))
                        %cluster-contents))
       (for index in-vector %all-indexes)
-      (for some-data = (~>> index
-                            (aref %input-data)
-                            (funcall %key)))
       (unless (medoid-p state index)
         (iterate
+          (with some-data = (~>> index
+                                 (aref %input-data)
+                                 (funcall %key)))
           (with target = 0)
           (for j from 0)
           (for cluster in-vector %cluster-contents)
