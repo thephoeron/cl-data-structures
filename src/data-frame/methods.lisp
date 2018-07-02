@@ -174,7 +174,7 @@
     (for m on more)
     (for p-m previous m)
     (for k initially nil then (not k))
-    (check-type dimension integer)
+    (check-type dimension integer) 
     (check-type position (or symbol integer))
     (when k
       (setf (first m) (apply-alias aliases (first p-m) (first m)))))

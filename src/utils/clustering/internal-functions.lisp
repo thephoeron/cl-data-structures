@@ -412,7 +412,8 @@
             (setf target j))
           (finally (vector-push-extend index
                                        (aref %cluster-contents
-                                             target))))))))
+                                             target)))))
+      (cl-progress-bar.progress:update-progress 1))))
 
 
 (defun build-clara-clusters (input-data
