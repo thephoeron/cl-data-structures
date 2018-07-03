@@ -392,7 +392,8 @@
                             (aref %input-data)
                             (funcall %key)))
                      %cluster-contents))
-           (cluster-mutex (map-into (copy-array %cluster-contents) #'bt:make-lock)))
+           (cluster-mutex (map-into (copy-array %cluster-contents)
+                                    #'bt:make-lock)))
       (lparallel:pmap
        nil
        (lambda (index)
@@ -412,6 +413,7 @@
              (when (= distance mini)
                (setf target j))
              (finally
+              (cl-progress-bar:update 1)
               (bt:with-lock-held ((aref cluster-mutex target))
                 (vector-push-extend index (aref %cluster-contents
                                                 target)))))))))))
