@@ -68,16 +68,15 @@
 
 
 (defun assign-data-points-to-medoids (state)
-  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (iterate
-      (with assignments = (map '(vector (or null fixnum))
-                               (curry #'closest-medoid state)
-                               %indexes))
-      (for i in-vector %indexes)
-      (for assignment in-vector assignments)
-      (for medoid-p = (null assignment))
-      (unless medoid-p
-        (vector-push-extend i (aref %cluster-contents assignment))))))
+  (iterate
+    (with assignments = (map '(vector (or null fixnum))
+                             (curry #'closest-medoid state)
+                             %indexes))
+    (for i in-vector %indexes)
+    (for assignment in-vector assignments)
+    (for medoid-p = (null assignment))
+    (unless medoid-p
+      (vector-push-extend i (aref %cluster-contents assignment)))))
 
 
 (-> intra-cluster-distances (pam-algorithm-state vector) single-float)
@@ -386,34 +385,36 @@
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
     (order-medoids state)
-    (iterate
-      (with medoids = (lparallel:pmap
-                       'vector
-                       (lambda (x)
-                         (~>> x first-elt
-                              (aref %input-data)
-                              (funcall %key)))
-                       %cluster-contents))
-      (for index in-vector %all-indexes)
-      (unless (medoid-p state index)
-        (iterate
-          (with some-data = (~>> index
-                                 (aref %input-data)
-                                 (funcall %key)))
-          (with target = 0)
-          (for j from 0)
-          (for cluster in-vector %cluster-contents)
-          (for medoid in-vector medoids)
-          (for distance = (funcall %metric-fn
-                                   medoid
-                                   some-data))
-          (minimize distance into mini)
-          (when (= distance mini)
-            (setf target j))
-          (finally (vector-push-extend index
-                                       (aref %cluster-contents
-                                             target)))))
-      (cl-progress-bar.progress:update-progress 1))))
+    (bind ((medoids (lparallel:pmap
+                     'vector
+                     (lambda (x)
+                       (~>> x first-elt
+                            (aref %input-data)
+                            (funcall %key)))
+                     %cluster-contents))
+           (cluster-mutex (map-into (copy-array %cluster-contents) #'bt:make-lock)))
+      (lparallel:pmap
+       nil
+       (lambda (index)
+         (unless (medoid-p state index)
+           (iterate
+             (with some-data = (~>> index
+                                    (aref %input-data)
+                                    (funcall %key)))
+             (with target = 0)
+             (for j from 0)
+             (for cluster in-vector %cluster-contents)
+             (for medoid in-vector medoids)
+             (for distance = (funcall %metric-fn
+                                      medoid
+                                      some-data))
+             (minimize distance into mini)
+             (when (= distance mini)
+               (setf target j))
+             (finally
+              (bt:with-lock-held ((aref cluster-mutex target))
+                (vector-push-extend index (aref %cluster-contents
+                                                target)))))))))))
 
 
 (defun build-clara-clusters (input-data
