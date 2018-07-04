@@ -68,6 +68,7 @@
                 (attempts 0)
                 split
                 merge)
+  (declare (optimize (debug 3)))
   (let ((state nil))
     (cl-progress-bar:with-progress-bar
         ((* 2 sample-count)

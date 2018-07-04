@@ -68,15 +68,16 @@
 
 
 (defun assign-data-points-to-medoids (state)
-  (iterate
-    (with assignments = (map '(vector (or null fixnum))
-                             (curry #'closest-medoid state)
-                             %indexes))
-    (for i in-vector %indexes)
-    (for assignment in-vector assignments)
-    (for medoid-p = (null assignment))
-    (unless medoid-p
-      (vector-push-extend i (aref %cluster-contents assignment)))))
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (iterate
+      (with assignments = (lparallel:pmap '(vector (or null fixnum))
+                                          (curry #'closest-medoid state)
+                                          %indexes))
+      (for i in-vector %indexes)
+      (for assignment in-vector assignments)
+      (for medoid-p = (null assignment))
+      (unless medoid-p
+        (vector-push-extend i (aref %cluster-contents assignment))))))
 
 
 (-> intra-cluster-distances (pam-algorithm-state vector) single-float)
@@ -393,10 +394,11 @@
                             (funcall %key)))
                      %cluster-contents))
            (cluster-mutex (map-into (copy-array %cluster-contents)
-                                    #'bt:make-lock)))
+                                    #'bt:make-lock))
+           (progress cl-progress-bar:*progress-bar*))
       (lparallel:pmap
        nil
-       (lambda (index)
+       (lambda (index &aux (cl-progress-bar:*progress-bar* progress))
          (unless (medoid-p state index)
            (iterate
              (with some-data = (~>> index
@@ -413,10 +415,11 @@
              (when (= distance mini)
                (setf target j))
              (finally
-              (cl-progress-bar:update 1)
               (bt:with-lock-held ((aref cluster-mutex target))
                 (vector-push-extend index (aref %cluster-contents
-                                                target)))))))))))
+                                                target))))))
+         (cl-progress-bar:update 1))
+       %indexes))))
 
 
 (defun build-clara-clusters (input-data
