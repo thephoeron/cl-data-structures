@@ -66,5 +66,9 @@
    #:try-find
    #:try-find-cell
    #:try-remove
+   #:lolol
    #:unfold-table
+   #:lparallel-future
+   #:with-rebind
+   #:rebind
    #:with-vectors))

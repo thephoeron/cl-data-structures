@@ -394,32 +394,34 @@
                             (funcall %key)))
                      %cluster-contents))
            (cluster-mutex (map-into (copy-array %cluster-contents)
-                                    #'bt:make-lock))
-           (progress cl-progress-bar:*progress-bar*))
-      (lparallel:pmap
-       nil
-       (lambda (index &aux (cl-progress-bar:*progress-bar* progress))
-         (unless (medoid-p state index)
-           (iterate
-             (with some-data = (~>> index
-                                    (aref %input-data)
-                                    (funcall %key)))
-             (with target = 0)
-             (for j from 0)
-             (for cluster in-vector %cluster-contents)
-             (for medoid in-vector medoids)
-             (for distance = (funcall %metric-fn
-                                      medoid
-                                      some-data))
-             (minimize distance into mini)
-             (when (= distance mini)
-               (setf target j))
-             (finally
-              (bt:with-lock-held ((aref cluster-mutex target))
-                (vector-push-extend index (aref %cluster-contents
-                                                target))))))
-         (cl-progress-bar:update 1))
-       %indexes))))
+                                    #'bt:make-lock)))
+      (cl-data-structures.utils:with-rebind (cl-progress-bar:*progress-bar*)
+        (lparallel:pmap
+         nil
+         (nest
+          (lambda (index))
+          (unless (medoid-p state index))
+          (cl-data-structures.utils:rebind)
+          (iterate
+            (with some-data = (~>> index
+                                   (aref %input-data)
+                                   (funcall %key)))
+            (with target = 0)
+            (for j from 0)
+            (for cluster in-vector %cluster-contents)
+            (for medoid in-vector medoids)
+            (for distance = (funcall %metric-fn
+                                     medoid
+                                     some-data))
+            (minimize distance into mini)
+            (when (= distance mini)
+              (setf target j))
+            (finally
+             (bt:with-lock-held ((aref cluster-mutex target))
+               (vector-push-extend index (aref %cluster-contents
+                                               target)))
+             (cl-progress-bar:update 1))))
+         %indexes)))))
 
 
 (defun build-clara-clusters (input-data

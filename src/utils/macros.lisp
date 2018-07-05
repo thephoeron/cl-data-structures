@@ -306,3 +306,25 @@
   (once-only (object)
     (let* ((slots (list-of-slots id)))
       `(with-accessors ,slots ,object ,@body))))
+
+
+(defmacro with-rebind (variables &body body)
+  (let* ((gensym-list (mapcar (lambda (x) (gensym (symbol-name x))) variables))
+         (let1 (mapcar #'list gensym-list variables))
+         (let2 (mapcar #'list variables gensym-list)))
+    `(let ,let1
+       (macrolet ((rebind (&body body)
+                    `(let ,',let2
+                       ,@body)))
+         ,@body))))
+
+
+(defmacro lolol (variables &body body)
+  (let* ((let-form (mapcar #'list variables variables)))
+    `(let ,let-form
+       ,@body)))
+
+
+(defmacro lparallel-future (variables &body body)
+  `(with-rebind ,variables
+     (lparallel:future (rebind ,@body))))
