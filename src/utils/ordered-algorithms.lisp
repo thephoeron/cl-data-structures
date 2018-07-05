@@ -62,21 +62,20 @@
     result))
 
 
-(declaim (inline lower-bound))
-(-> lower-bound (vector t (-> (t t) boolean) &key (:key function) (:start non-negative-fixnum)) index)
-(defun lower-bound (vector element comparsion &key (key #'identity) (start 0))
+(-> lower-bound (vector t (-> (t t) boolean)
+                        &key (:key function) (:start non-negative-fixnum) (:end non-negative-fixnum))
+    index)
+(defun lower-bound (vector element comparsion &key (key #'identity) (start 0) (end (length vector)))
   (declare (optimize (speed 3)))
-  (let ((length (length vector)))
-    (iterate
-      (with end = length)
-      (for current = (truncate (/ (+ end start) 2)))
-      (until (eql end start))
-      (if (funcall comparsion
-                   (funcall key (aref vector current))
-                   element)
-          (setf start (1+ current))
-          (setf end current))
-      (finally (return current)))))
+  (iterate
+    (for current = (truncate (/ (+ end start) 2)))
+    (until (eql end start))
+    (if (funcall comparsion
+                 (funcall key (aref vector current))
+                 element)
+        (setf start (1+ current))
+        (setf end current))
+    (finally (return current))))
 
 
 (defun on-ordered-intersection (function first-order second-order
@@ -179,9 +178,8 @@
                                :fill-pointer 0))
     (for v in-vector vector)
     (map-into indexes
-              (lambda (vector index) (lower-bound vector v compare-fn))
-              more-vectors
-              indexes)
+              (lambda (vector) (lower-bound vector v compare-fn))
+              more-vectors)
     (for not-present =
          (iterate
            (for other-vector in more-vectors)
@@ -199,29 +197,127 @@
   (iterate
     (for i from start below end)
     (for j from (1- end) downto start)
+    (while (< i j))
     (rotatef (aref vector i) (aref vector j)))
   vector)
 
 
-(defun block-exchange (vector l m r)
-  (revert-block vector l m)
-  (revert-block vector (1+ m) r)
-  (revert-block vector l r))
+(defun cyclic-shift (vector start end offset)
+  (check-type vector vector)
+  (check-type offset fixnum)
+  (if (eql offset 1)
+      (iterate
+        (with tmp = (aref vector (1- end)))
+        (for i from start below end)
+        (rotatef (aref vector i) tmp))
+      (progn
+        (revert-block vector start end)
+        (revert-block vector start offset)
+        (revert-block vector offset end)))
+  vector)
 
 
-(defun binary-search (vector predicate key value start end))
+(defun shift-right (vector start new-start end)
+  (cyclic-shift vector start end (- end start new-start)))
 
 
-(defun merge-in-place (vector l m r)
-  (let ((length-left (1+ (- m  l)))
-        (length-right (- r m)))
-    (if (< length-left length-right)
-        (unless (zerop length-left)
-          (let ((q1 (truncate (/ (+ m 1 r) 2)))
-                (q2 (binary-search))
-                (q3 (+ q1 q2 (- m) -1)))))
-        (unless (zerop length-right)
-          (let ((q1 (truncate (/ (+ l m) 2)))
-                (q2 (binary-search))
-                (q3 (+ q1 q2 (- m) -1))))))
-    vector))
+;; (defun merge-sort (vector predicate &key (key #'identity) (start 0) (end (length vector)))
+;;   (when (< start end)
+;;     (iterate
+;;       (for block-size initially 2 then (ash block-size 1))
+;;       (while (< block-size (- end start)))
+;;       (iterate
+;;         (for i from 0 by block-size)
+;;         (for block-end = (min end (+ i block-size)))
+;;         (for block-center = (truncate (/ (+ i block-end) 2)))
+;;         (merge-in-place vector predicate key i block-center block-end)
+;;         (until (eql block-end end)))))
+;;   vector)
+
+
+;; (iterative-mode (start end)
+;;                 (iterate
+;;                   (with length = (- end start))
+;;                   (with shift = 0)
+;;                   (for k = (iterate
+;;                              (with k = 0)
+;;                              (for p = (+ (expt 3 k) 1))
+;;                              (when (> p length)
+;;                                (leave k))
+;;                              (incf k)))
+;;                   (for length-first = (1+ (expt 3 (1- k))))
+;;                   (cycle-leader vector start (+ start length-first) shift)
+;;                   (for half-shift-start = (+ start (ash shift -1)))
+;;                   (for shift-start = (+ start shift))
+;;                   (for start-end = (+ start shift (ash length-first -1)))
+;;                   (revert-block vector half-shift-start shift-start)
+;;                   (revert-block vector shift-start start-end)
+;;                   (revert-block vector half-shift-start start-end)
+;;                   (incf shift length-first)
+;;                   (decf length length-first)
+;;                   (until (zerop length))))
+
+(defun largest-power-of-3 (size)
+  (if (< size 3)
+      0
+      (iterate
+        (for i initially 1 then (* 3 i))
+        (for p-i previous i initially 0)
+        (while (< i size))
+        (finally (return p-i)))))
+
+
+(defun next-index (j len)
+  (setf j (ash j 2))
+  (let ((m (1+ len)))
+    (iterate
+      (while (>= j m))
+      (decf j m)))
+  j)
+
+
+(defun rotate-cycle-leader (vector leader section-offset section-len)
+  (declare (optimize (debug 3)))
+  (iterate
+    (for i
+         initially (next-index leader section-len)
+         then (next-index i section-len))
+    (until (eql i leader))
+    (rotatef (aref vector (+ section-offset i -1))
+             (aref vector (+ section-offset leader -1))))
+  vector)
+
+
+(defun faro-shuffle (vector start end)
+  (labels ((recursive-mode (start end &aux (center (truncate (/ (+ start end) 2))))
+             (let ((length (- end start)))
+               (unless (> 3 length)
+                 (iterate
+                   (with m = (truncate (/ (- center start) 2)))
+                   (for i from (+ start m) below center)
+                   (for j from center below end)
+                   (rotatef (aref vector i) (aref vector j)))
+                 (recursive-mode start center)
+                 (recursive-mode center end))))
+           (iterative-mode (start end)
+             (unless (oddp (- end start))
+               (iterate
+                 (with m = 0)
+                 (with n = 1)
+                 (with position = start)
+                 (while (< m n))
+                 (for section-len = (- end position))
+                 (for h = (largest-power-of-3 section-len))
+                 (setf m (if (> h 1) (truncate (/ h 2)) 1)
+                       n (truncate (/ section-len 2)))
+                 (shift-right vector (+ start m) n (+ start n m))
+                 (iterate
+                   (for leader initially 1 then (* leader 3))
+                   (while (< leader (* 2 m)))
+                   (rotate-cycle-leader vector leader (- position start) (* 2 m)))
+                 (incf position (* 2 m))))))
+    (iterative-mode start end))
+  vector)
+
+(print (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10))
+(print (shift-right #(0 1 2 3 4 5 6 7 8 9 10 11 12 13) 0 4 14))

@@ -61,6 +61,9 @@
    #:read-size
    #:start-execution
    #:swap-if
+   #:faro-shuffle
+   #:cyclic-shift
+   #:cycle-leader
    #:swapop
    #:todo
    #:try-find

@@ -98,4 +98,3 @@
       (rotatef (aref vector i)
                (aref vector (decf end))))
     (finally (return result))))
-
