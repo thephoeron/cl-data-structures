@@ -23,25 +23,25 @@
          (index (make-set-index table
                                 total-size
                                 minimal-support))
-         (queue (lparallel.queue:make-queue)))
+         (queue (lparallel.queue:make-queue))
+         (reverse-mapping (make-array (hash-table-count table)))
+         (mapping (make-hash-table :size (hash-table-count table)
+                                   :test 'equal)))
     (async-expand-node index (read-root index) 0 queue)
-    (let ((reverse-mapping (make-array (hash-table-count table)))
-          (mapping (make-hash-table :size (hash-table-count table)
-                                    :test 'equal)))
-      (iterate
-        (for i from 0)
-        (for (key value) in-hashtable table)
-        (for (id . positions) = value)
-        (setf (aref reverse-mapping id) key
-              (gethash key mapping) i))
-      (setf (access-mapping index) mapping
-            (access-reverse-mapping index) reverse-mapping)
-      (iterate
-        (for (values f more) = (lparallel.queue:try-pop-queue queue))
-        (while more)
-        (lparallel:force f))
-      (reset-locations index)
-      index)))
+    (iterate
+      (for i from 0)
+      (for (key value) in-hashtable table)
+      (for (id . positions) = value)
+      (setf (aref reverse-mapping id) key
+            (gethash key mapping) i))
+    (setf (access-mapping index) mapping
+          (access-reverse-mapping index) reverse-mapping)
+    (iterate
+      (for (values f more) = (lparallel.queue:try-pop-queue queue))
+      (while more)
+      (lparallel:force f))
+    (reset-locations index)
+    index))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
