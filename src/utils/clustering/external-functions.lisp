@@ -28,14 +28,8 @@
                      :select-medoids-attempts-count select-medoids-attempts-count
                      :split-threshold split
                      :merge-threshold merge)))
-    (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-      (build-pam-clusters state)
-      (unless (null %split-merge-attempts-count)
-        (iterate
-          (scan-for-clusters-of-invalid-size state)
-          (while (unfinished-clusters-p state))
-          (repeat %split-merge-attempts-count)
-          (recluster-clusters-with-invalid-size state))))
+    (build-pam-clusters state t)
+    (assign-data-points-to-medoids state)
     (let ((silhouette (silhouette state)))
       (replace-indexes-in-clusters-with-data state)
       (the clustering-result
