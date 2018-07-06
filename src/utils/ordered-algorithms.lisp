@@ -258,34 +258,21 @@
 ;;                   (until (zerop length))))
 
 (defun largest-power-of-3 (size)
-  (if (< size 3)
-      0
-      (iterate
-        (for i initially 1 then (* 3 i))
-        (for p-i previous i initially 0)
-        (while (< i size))
-        (finally (return p-i)))))
+  (do ((i 1 (* i 3)))
+      ((>= (* i 3) size) i)))
 
 
 (defun next-index (j len)
-  (setf j (ash j 2))
-  (let ((m (1+ len)))
-    (iterate
-      (while (>= j m))
-      (decf j m)))
-  j)
+  (rem (ash j 1) (1+ len)))
 
 
-(defun rotate-cycle-leader (vector leader section-offset section-len)
+(defun rotate-cycle-leader (vector start leader section-offset section-len)
   (declare (optimize (debug 3)))
-  (iterate
-    (for i
-         initially (next-index leader section-len)
-         then (next-index i section-len))
-    (until (eql i leader))
-    (rotatef (aref vector (+ section-offset i -1))
-             (aref vector (+ section-offset leader -1))))
-  vector)
+  (do ((i (next-index leader section-len)
+          (next-index i section-len)))
+      ((eql i leader) vector)
+    (rotatef (aref vector (+ start section-offset i -1))
+             (aref vector (+ start section-offset leader -1)))))
 
 
 (defun faro-shuffle (vector start end)
@@ -308,14 +295,19 @@
                  (while (< m n))
                  (for section-len = (- end position))
                  (for h = (largest-power-of-3 section-len))
-                 (setf m (if (> h 1) (truncate (/ h 2)) 1)
-                       n (truncate (/ section-len 2)))
-                 (shift-right vector (+ start m) n (+ start n m))
+                 (setf m (if (> h 1) (ash h -1) 1)
+                       n (ash section-len -1))
+                 (for 2m = (ash m 1))
+                 (cyclic-shift vector (+ position m) (+ position n m) 2m)
                  (iterate
                    (for leader initially 1 then (* leader 3))
-                   (while (< leader (* 2 m)))
-                   (rotate-cycle-leader vector leader (- position start) (* 2 m)))
-                 (incf position (* 2 m))))))
+                   (while (< leader 2m))
+                   (rotate-cycle-leader vector
+                                        start
+                                        leader
+                                        (- position start)
+                                        2m))
+                 (incf position 2m)))))
     (iterative-mode start end))
   vector)
 
