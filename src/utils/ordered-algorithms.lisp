@@ -298,7 +298,8 @@
                  (setf m (if (> h 1) (ash h -1) 1)
                        n (ash section-len -1))
                  (for 2m = (ash m 1))
-                 (cyclic-shift vector (+ position m) (+ position n m) 2m)
+                 (unless (eql n m)
+                   (cyclic-shift vector (+ position m) (+ position n m) 2m))
                  (iterate
                    (for leader initially 1 then (* leader 3))
                    (while (< leader 2m))
