@@ -258,59 +258,64 @@
 ;;                   (until (zerop length))))
 
 (defun largest-power-of-3 (size)
-  (do ((i 1 (* i 3)))
-      ((>= (* i 3) size) i)))
+  (declare (type fixnum size)
+           (optimize (speed 3) (debug 0) (safety 0) (space 0)))
+  (do ((i 1 (the fixnum (* i 3))))
+      ((>= (the fixnum (* i 3)) size) i)))
 
 
 (defun next-index (j len)
-  (rem (ash j 1) (1+ len)))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0))
+           (type fixnum j len))
+  (let ((m (1+ len))
+        (j (ash j 1)))
+    (declare (type fixnum j m))
+    (iterate
+      (while (>= j m))
+      (setf j (the fixnum (- j m))))
+    j))
 
 
 (defun rotate-cycle-leader (vector start leader section-offset section-len)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
+           (type vector vector)
+           (type fixnum start leader section-offset section-len))
   (do ((i (next-index leader section-len)
           (next-index i section-len)))
       ((eql i leader) vector)
-    (rotatef (aref vector (+ start section-offset i -1))
-             (aref vector (+ start section-offset leader -1)))))
+    (let ((start+section-offset (+ start section-offset)))
+      (declare (type fixnum start+section-offset))
+      (rotatef (aref vector (the fixnum (1- (the fixnum (+ start+section-offset
+                                                           (the fixnum i))))))
+               (aref vector (the fixnum (1- (the fixnum (+ start+section-offset
+                                                           leader)))))))))
 
 
 (defun faro-shuffle (vector start end)
-  (labels ((recursive-mode (start end &aux (center (truncate (/ (+ start end) 2))))
-             (let ((length (- end start)))
-               (unless (> 3 length)
-                 (iterate
-                   (with m = (truncate (/ (- center start) 2)))
-                   (for i from (+ start m) below center)
-                   (for j from center below end)
-                   (rotatef (aref vector i) (aref vector j)))
-                 (recursive-mode start center)
-                 (recursive-mode center end))))
-           (iterative-mode (start end)
-             (unless (oddp (- end start))
-               (iterate
-                 (with m = 0)
-                 (with n = 1)
-                 (with position = start)
-                 (while (< m n))
-                 (for section-len = (- end position))
-                 (for h = (largest-power-of-3 section-len))
-                 (setf m (if (> h 1) (ash h -1) 1)
-                       n (ash section-len -1))
-                 (for 2m = (ash m 1))
-                 (unless (eql n m)
-                   (cyclic-shift vector (+ position m) (+ position n m) 2m))
-                 (iterate
-                   (for leader initially 1 then (* leader 3))
-                   (while (< leader 2m))
-                   (rotate-cycle-leader vector
-                                        start
-                                        leader
-                                        (- position start)
-                                        2m))
-                 (incf position 2m)))))
-    (iterative-mode start end))
+  (assert (evenp (- end start)))
+  (iterate
+    (with m = 0)
+    (with n = 1)
+    (with position = start)
+    (while (< m n))
+    (for section-len = (- end position))
+    (for h = (largest-power-of-3 section-len))
+    (setf m (if (> h 1) (ash h -1) 1)
+          n (ash section-len -1))
+    (for 2m = (ash m 1))
+    (unless (eql n m)
+      (cyclic-shift vector (+ position m) (+ position n m) 2m))
+    (iterate
+      (for leader initially 1 then (* leader 3))
+      (while (< leader 2m))
+      (rotate-cycle-leader vector
+                           start
+                           leader
+                           (- position start)
+                           2m))
+    (incf position 2m))
   vector)
 
-(print (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10))
-(print (shift-right #(0 1 2 3 4 5 6 7 8 9 10 11 12 13) 0 4 14))
+
+;; (print (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10))
+;; (print (shift-right #(0 1 2 3 4 5 6 7 8 9 10 11 12 13) 0 4 14))
