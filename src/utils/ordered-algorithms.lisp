@@ -271,7 +271,7 @@
         (j (ash j 1)))
     (declare (type fixnum j m))
     (iterate
-      (while (>= j m))
+      (until (< j m))
       (setf j (the fixnum (- j m))))
     j))
 
