@@ -264,16 +264,11 @@
       ((>= (the fixnum (* i 3)) size) i)))
 
 
-(defun next-index (j len)
+(defun next-index (j len &aux (m (1+ len)))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0))
-           (type fixnum j len))
-  (let ((m (1+ len))
-        (j (ash j 1)))
-    (declare (type fixnum j m))
-    (iterate
-      (until (< j m))
-      (setf j (the fixnum (- j m))))
-    j))
+           (type fixnum j len m))
+  (do ((k (the fixnum (ash j 1)) (the fixnum (- k m))))
+      ((< k m) k)))
 
 
 (defun rotate-cycle-leader (vector start leader section-offset section-len)
