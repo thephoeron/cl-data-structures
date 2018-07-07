@@ -232,30 +232,8 @@
 ;;         (for block-center = (truncate (/ (+ i block-end) 2)))
 ;;         (merge-in-place vector predicate key i block-center block-end)
 ;;         (until (eql block-end end)))))
-;;   vector)
+;;   vector
 
-
-;; (iterative-mode (start end)
-;;                 (iterate
-;;                   (with length = (- end start))
-;;                   (with shift = 0)
-;;                   (for k = (iterate
-;;                              (with k = 0)
-;;                              (for p = (+ (expt 3 k) 1))
-;;                              (when (> p length)
-;;                                (leave k))
-;;                              (incf k)))
-;;                   (for length-first = (1+ (expt 3 (1- k))))
-;;                   (cycle-leader vector start (+ start length-first) shift)
-;;                   (for half-shift-start = (+ start (ash shift -1)))
-;;                   (for shift-start = (+ start shift))
-;;                   (for start-end = (+ start shift (ash length-first -1)))
-;;                   (revert-block vector half-shift-start shift-start)
-;;                   (revert-block vector shift-start start-end)
-;;                   (revert-block vector half-shift-start start-end)
-;;                   (incf shift length-first)
-;;                   (decf length length-first)
-;;                   (until (zerop length))))
 
 (defun largest-power-of-3 (size)
   (declare (type fixnum size)
@@ -286,6 +264,10 @@
                                                            leader)))))))))
 
 
+(defun inverse-faro-shuffle (vector start end)
+  cl-ds.utils:todo)
+
+
 (defun faro-shuffle (vector start end)
   (assert (evenp (- end start)))
   (iterate
@@ -312,5 +294,5 @@
   vector)
 
 
-;; (print (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10))
+(print (inverse-faro-shuffle (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10) 0 10))
 ;; (print (shift-right #(0 1 2 3 4 5 6 7 8 9 10 11 12 13) 0 4 14))
