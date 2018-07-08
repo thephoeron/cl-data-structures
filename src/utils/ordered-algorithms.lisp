@@ -264,8 +264,35 @@
                                                            leader)))))))))
 
 
-(defun inverse-faro-shuffle (vector start end)
-  cl-ds.utils:todo)
+(flet ((cycle-leader (vector start shift len)
+         (do ((i 1 (* i 3)))
+             ((>= i len) vector)
+           (iterate
+             (with j = i)
+             (with item = (aref vector (+ start shift j)))
+             (setf j (if (oddp j)
+                         (+ (ash len -1) (ash j -1))
+                         (ash j -1)))
+             (rotatef (aref vector (+ start j shift))
+                      item)
+             (until (eql j i))))))
+  (defun inverse-faro-shuffle (vector start end)
+    (iterate
+      (with shift = 0)
+      (with len-remaining = (- end start))
+      (until (zerop len-remaining))
+      (for k = 0)
+      (iterate
+        (until (> (1+ (expt 3 k)) len-remaining))
+        (incf k))
+      (for len-first = (1+ (expt 3 (1- k))))
+      (decf len-remaining len-first)
+      (cycle-leader vector start shift len-first)
+      (revert-block vector (+ start (ash shift -1)) (+ start shift))
+      (revert-block vector (+ start shift) (+ start shift (ash len-first -1)))
+      (revert-block vector (+ start (ash shift -1)) (+ start shift (ash len-first -1)))
+      (incf shift len-first))
+    vector))
 
 
 (defun faro-shuffle (vector start end)
@@ -273,7 +300,7 @@
   (iterate
     (with m = 0)
     (with n = 1)
-    (with position = start)
+    (with position = (1+ start))
     (while (< m n))
     (for section-len = (- end position))
     (for h = (largest-power-of-3 section-len))
@@ -294,5 +321,6 @@
   vector)
 
 
+;; (print (inverse-faro-shuffle "a1b2c3d4e5f6g7" 0 14))
 ;; (print (inverse-faro-shuffle (faro-shuffle #(1 2 3 4 5 6 7 8 9 10) 0 10) 0 10))
 ;; (print (shift-right #(0 1 2 3 4 5 6 7 8 9 10 11 12 13) 0 4 14))
