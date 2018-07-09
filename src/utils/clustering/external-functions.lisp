@@ -118,7 +118,6 @@
         (final nil))
     (cl-progress-bar:with-progress-bar
         ((* (* 2 sample-count) (- (1+ to) from))
-         %all-indexes
          "Clustering data set of size ~a using CLARA algorithm searching for optimal medoids count (between ~a and ~a)."
          (length input-data)
          from to)
@@ -149,7 +148,7 @@
     (cl-progress-bar:with-progress-bar
         ((length input-data)
          "Assigning data set to ~a clusters."
-         (length (access-result-cluster-contents final)))
+         (length (access-all-indexes final)))
       (assign-clara-data-to-medoids final))
     (replace-indexes-in-clusters-with-data final)
     (obtain-result final (access-silhouette final))))

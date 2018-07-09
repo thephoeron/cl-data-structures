@@ -71,4 +71,5 @@
    #:lparallel-future
    #:with-rebind
    #:rebind
+   #:cycle-over-address
    #:with-vectors))
