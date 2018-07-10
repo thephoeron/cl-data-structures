@@ -83,7 +83,7 @@
     expected-counts))
 
 
-(defun chi-squared-on-table (fields &key class-counts &allow-other-keys)
+(defun chi-squared-on-table (&key fields class-counts &allow-other-keys)
   (let* ((marginal-counts (chi-square-marginal-counts class-counts))
          (independent-counts (independent-counts marginal-counts))
          (generator (cycle-over-address (array-dimensions class-counts))))
@@ -138,7 +138,7 @@
                        state
                        address))
               state)
-          (curry #'chi-squared-on-table fields)))))
+          #'chi-squared-on-table))))
 
 
 ;; (print (chi-squared (list #2A((4 2) (3 2)))
