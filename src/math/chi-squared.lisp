@@ -7,7 +7,7 @@
 
 
 (defgeneric chi-squared (range cell-value fields &key key)
-  (:generic-function-class chi-square-function)
+  (:generic-function-class chi-squared-function)
   (:method (range cell-value fields &key (key #'identity))
     (cl-ds.alg.meta:apply-aggregation-function range
                                                #'chi-squared
@@ -17,7 +17,7 @@
 
 
 (cl-ds:define-validation-for-fields
-    (chi-square-function (:name :key))
+    (chi-squared-function (:name :key))
   (:name :optional nil
          :type 'symbol)
   (:test :optional t
@@ -66,7 +66,7 @@
 
 
 (defun independent-counts (marginal-counts)
-  (let* ((total-counts (map 'vector (rcurry #'reduce #'+) marginal-counts))
+  (let* ((total-counts (map 'vector (curry #'reduce #'+) marginal-counts))
          (frequencies (map 'vector
                            (lambda (marginal-count total-count)
                              (map 'vector
@@ -83,7 +83,7 @@
     expected-counts))
 
 
-(defun chi-square-on-table (fields &key class-counts &rest-all)
+(defun chi-squared-on-table (fields &key class-counts &allow-other-keys)
   (let* ((marginal-counts (chi-square-marginal-counts class-counts))
          (independent-counts (independent-counts marginal-counts))
          (generator (cycle-over-address (array-dimensions class-counts))))
@@ -99,10 +99,11 @@
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function chi-square-function)
+    ((function chi-squared-function)
      &rest all
      &key key fields cell-value)
-  (declare (ignore key))
+  (declare (ignore key)
+           (optimize (debug 3)))
   (let* ((field-counts (mapcar (compose #'length (rcurry #'cl-ds:at :classes))
                                fields))
          (field-mapping (map '(vector hash-table)
@@ -119,11 +120,10 @@
         (for class-number from 0)
         (setf (gethash class mapping) class-number)))
     (let ((full-address-vector (map 'vector
-                                    (curry #'map 'list
-                                           (lambda (path)
-                                             (map 'vector #'gethash
-                                                  path
-                                                  field-mapping)))
+                                    (curry #'map
+                                           'list
+                                           (flip #'gethash)
+                                           field-mapping)
                                     full-path-vector)))
       (list (cl-ds.alg.meta:reduce-stage :class-counts
                 (make-array field-counts :element-type 'fixnum
@@ -138,7 +138,7 @@
                        state
                        address))
               state)
-          (curry #'chi-square-on-table fields)))))
+          (curry #'chi-squared-on-table fields)))))
 
 
 ;; (print (chi-squared (list #2A((4 2) (3 2)))
