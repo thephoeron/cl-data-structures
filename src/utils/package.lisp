@@ -38,6 +38,7 @@
    #:lower-bound
    #:make-half-matrix
    #:make-distance-matrix-from-vector
+   #:cartesian-table
    #:make-new-skip-vector
    #:add-to-list
    #:ordered-intersection

@@ -23,6 +23,7 @@
                 :components ((:file "package")
                              (:file "macros")
                              (:file "types")
+                             (:file "higher-order")
                              (:file "cartesian")
                              (:file "ordered-algorithms")
                              (:file "lists")
@@ -34,7 +35,6 @@
                              (:file "parallel-tools")
                              (:file "lambda-lists")
                              (:file "skip-vector")
-                             (:file "higher-order")
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
@@ -153,6 +153,7 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
+                             (:file "chi-squared")
                              (:file "bootstrap")
                              (:file "docstrings")
                              (:test-file "moments-tests")
