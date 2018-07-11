@@ -139,13 +139,3 @@
                        address))
               state)
           #'chi-squared-on-table))))
-
-
-;; (print (chi-squared (list #2A((4 2) (3 2)))
-;;                     #'aref
-;;                     (list (cl-ds:field :name :a1
-;;                                        :test #'eql
-;;                                        :classes '(0 1))
-;;                           (cl-ds:field :name :a2
-;;                                        :test #'eql
-;;                                        :classes '(0 1)))))

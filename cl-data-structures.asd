@@ -143,7 +143,10 @@
                              (:file "clara")
                              (:file "docstrings")))
                (:module "math"
-                :components ((:file "package")
+                :components ((:module "aux"
+                              :components ((:file "package")
+                                           (:file "gamma")))
+                             (:file "package")
                              (:file "average")
                              (:file "variance")
                              (:file "mutual-information")
