@@ -4,7 +4,7 @@
 (defpackage :cl-data-structures.metric-space
   (:use #:common-lisp #:serapeum
         #:alexandria #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:nicknames #:cl-ds.ms)
   (:export
    #:distance
@@ -19,7 +19,7 @@
   (:use #:common-lisp #:iterate #:alexandria #:serapeum
         #:metabang-bind #:cl-data-structures.common.hamt)
   (:nicknames #:cl-ds.ms.egnat)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:export
    #:make-mutable-egnat-metric-set
    #:mutable-egnat-metric-set

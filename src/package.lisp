@@ -5,7 +5,7 @@
   (:use #:common-lisp #:iterate #:alexandria
         #:serapeum #:metabang-bind)
   (:nicknames #:cl-ds)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:export
    #:across
    #:add
@@ -111,7 +111,7 @@
   (:use #:common-lisp #:iterate #:alexandria
         #:serapeum #:metabang-bind)
   (:nicknames #:cl-ds.meta)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
   (:export
    #:add!-function
    #:add-function

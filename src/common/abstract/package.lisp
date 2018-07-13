@@ -3,7 +3,7 @@
 
 (defpackage :cl-data-structures.common.abstract
   (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
   (:nicknames #:cl-ds.common.abstract)
   (:export
    #:acquire-ownership

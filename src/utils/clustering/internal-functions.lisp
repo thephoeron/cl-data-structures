@@ -319,7 +319,7 @@
                          :merge-threshold %merge-threshold
                          :split-merge-attempts-count %split-merge-attempts-count
                          :input-data %input-data)))
-      (build-pam-clusters fresh-state)
+      (build-pam-clusters fresh-state t)
       (decf (fill-pointer %cluster-contents) count-of-eliminated)
       (map nil
            (rcurry #'vector-push-extend %cluster-contents)

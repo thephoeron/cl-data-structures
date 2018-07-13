@@ -4,7 +4,7 @@
 (defpackage :cl-data-structures.sequences
   (:use #:common-lisp #:serapeum #:cl-ds.utils
         #:alexandria #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
   (:nicknames #:cl-ds.seqs)
   (:export
    #:fundamental-sequence
@@ -17,7 +17,7 @@
   (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
         #:metabang-bind #:cl-data-structures.common.hamt)
   (:nicknames #:cl-ds.seqs.rrb)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
   (:export
    #:functional-rrb-vector
    #:make-functional-rrb-vector

@@ -4,7 +4,7 @@
 (defpackage :cl-data-structures.dicts
   (:use #:common-lisp #:serapeum #:cl-ds.utils #:alexandria
         #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:fundamental-dictionary
@@ -31,7 +31,7 @@
         #:metabang-bind #:cl-data-structures.common.hamt
         #:cl-data-structures.common.abstract)
   (:nicknames #:cl-ds.dicts.hamt)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:export
    #:functional-hamt-dictionary
    #:hamt-dictionary

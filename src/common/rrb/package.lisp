@@ -4,7 +4,7 @@
 (defpackage :cl-data-structures.common.rrb
   (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind
         #:cl-data-structures.common.abstract)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
   (:nicknames #:cl-ds.common.rrb)
   (:export
    #:+bit-count+

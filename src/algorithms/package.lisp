@@ -4,7 +4,7 @@
 (defpackage :cl-data-structures.algorithms.meta
   (:use #:common-lisp #:serapeum #:cl-ds.utils
         #:alexandria #:iterate #:cl-ds #:bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:%key
@@ -46,7 +46,7 @@
 (defpackage :cl-data-structures.algorithms
   (:use #:common-lisp #:serapeum #:cl-ds.utils
         #:alexandria #:iterate #:cl-ds #:bind #:cl-ds.alg.meta)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum #:into)
   (:nicknames #:cl-ds.alg)
   (:export
    #:accumulate
