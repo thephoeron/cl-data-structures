@@ -2,9 +2,8 @@
 
 
 (defpackage :cl-data-structures.utils
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:metabang-bind)
+  (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils)
-  (:shadowing-import-from #:iterate #:collecting #:sum #:in #:into #:summing #:sum)
   (:export
    #:add-into-queue
    #:add-sinks

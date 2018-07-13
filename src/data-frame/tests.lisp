@@ -2,7 +2,7 @@
 
 (defpackage data-frame-tests
   (:use #:cl #:prove #:serapeum #:iterate #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum))
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum))
 
 (in-package #:data-frame-tests)
 

@@ -328,3 +328,4 @@
 (defmacro lparallel-future (variables &body body)
   `(with-rebind ,variables
      (lparallel:future (rebind ,@body))))
+

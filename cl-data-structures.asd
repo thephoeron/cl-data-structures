@@ -18,7 +18,8 @@
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
-  :components ((:file "package")
+  :components ((:file "aux-package")
+               (:file "package")
                (:module "utils"
                 :components ((:file "package")
                              (:file "macros")

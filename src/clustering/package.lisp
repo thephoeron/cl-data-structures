@@ -2,9 +2,7 @@
 
 
 (defpackage :cl-data-structures.clustering
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
-        #:alexandria #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:into #:sum)
+  (:use #:cl-data-structures.aux-package #:common-lisp)
   (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.cluster)
   (:export
