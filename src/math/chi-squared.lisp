@@ -82,6 +82,30 @@
               unfolded-counts)
     expected-counts))
 
+(defun gamma*aux (a z)
+  (do ((n    0.0 (1+ n))
+       (term 1.0
+             (/ (* term (- z))
+                (+ n 1.0)))
+       (sum  0.0))
+      ((progn (setq sum (+ sum (/ term (+ a n))))
+              (< (abs (/ term (+ a n))) 1.0E-7))
+       sum)))
+
+(defun gamma-function-incomplete (a x)
+  (labels ((impl (a x)
+             (if (< a 1.0)
+                 (/ (+ (impl (+ a 1.0) x)
+                       (* (expt x a) (exp (- x))))
+                    a)
+                 (* (expt x a) (gamma*aux a x)))))
+    (impl a x)))
+
+
+(defun chi-squared-pval (deegrees-of-freedom chi-squared)
+  (- 1.0 (gamma-function-incomplete (/ deegress-of-freedom 2)
+                                    (/ chi-squared 2))))
+
 
 (defun chi-squared-on-table (&key fields class-counts &allow-other-keys)
   (let* ((marginal-counts (chi-square-marginal-counts class-counts))
@@ -95,7 +119,17 @@
       (for expected = (apply #'aref independent-counts adr))
       (for existing = (apply #'aref class-counts adr))
       (sum (/ (expt (- expected existing) 2)
-              expected)))))
+              expected)
+           into result)
+      (finally
+       (return (chi-squared-pval
+                (reduce #'*
+                        fields
+                        :initial-value 1.0
+                        :key (compose #'1-
+                                      #'length
+                                      (rcurry #'cl-ds:at :classes)))
+                result))))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
