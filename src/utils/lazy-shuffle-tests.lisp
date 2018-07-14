@@ -1,11 +1,10 @@
 (in-package :cl-user)
-(defpackage :lazy-shuffe-test-suite (:use :prove))
+(defpackage :lazy-shuffe-test-suite (:use :prove :cl :iterate))
 (in-package :lazy-shuffe-test-suite)
-(cl-ds.utils:import-all-package-symbols :cl-ds.utils :lazy-shuffe-test-suite)
 
 (prove:plan 1)
 
-(let* ((generator (lazy-shuffle 0 5))
+(let* ((generator (cl-ds.utils:lazy-shuffle 0 5))
        (data (iterate
                (for elt = (funcall generator))
                (while elt)

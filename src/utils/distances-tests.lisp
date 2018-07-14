@@ -1,7 +1,6 @@
 (in-package :cl-user)
-(defpackage :distances-test-suite (:use :cl :prove))
+(defpackage :distances-test-suite (:use :cl :prove :iterate))
 (in-package :distances-test-suite)
-(cl-ds.utils:import-all-package-symbols :cl-ds.utils :distances-test-suite)
 
 (defun jaccard-metric (a b)
   (if (eql a b)
@@ -10,13 +9,13 @@
                  (logcount (logior a b)))
               'single-float)))
 
-(prove:plan 26)
+(plan 26)
 
 (iterate
   (for i from 0 below 5)
   (with prev = -1)
   (iterate (for j from (1+ i) below 5)
-    (for next = (index-in-content-of-distance-matrix 5 i j))
+    (for next = (cl-ds.utils::index-in-content-of-distance-matrix 5 i j))
     (is next (1+ prev))
     (setf prev next)))
 
@@ -37,4 +36,4 @@
     (setf (cl-ds.utils:mref matrix 1 2) 5.0)
     (is (cl-ds.utils:mref matrix 1 2) 5.0)))
 
-(prove:finalize)
+(finalize)

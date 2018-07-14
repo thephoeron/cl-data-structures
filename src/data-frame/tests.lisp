@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 56)
+(plan 55)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
