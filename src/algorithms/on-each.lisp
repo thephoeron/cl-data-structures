@@ -141,9 +141,9 @@
           :key key)))
 
 
-(defmethod cl-ds:apply-layer ((range fundamental-range)
-                              (fn on-each-function)
-                              &rest all &key function key)
+(defmethod apply-layer ((range fundamental-range)
+                        (fn on-each-function)
+                        &rest all &key function key)
   (declare (ignore all))
   (on-each-proxy-range-from-range range function key))
 

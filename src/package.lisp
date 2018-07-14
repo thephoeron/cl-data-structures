@@ -8,8 +8,6 @@
    #:across
    #:add
    #:add!
-   #:aggregate
-   #:apply-layer
    #:argument-out-of-bounds
    #:assert-one-dimension
    #:at
@@ -65,11 +63,9 @@
    #:lazy
    #:make-delay
    #:make-from-traversable
-   #:make-state
    #:mod-bind
    #:mutable
    #:mutablep
-   #:name
    #:near
    #:not-implemented
    #:operation-not-allowed

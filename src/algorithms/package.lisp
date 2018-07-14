@@ -3,6 +3,7 @@
 
 (defpackage :cl-data-structures.algorithms.meta
   (:use #:cl
+        #:cl-data-structures
         #:cl-data-structures.aux-package
         #:cl-data-structures.utils)
   (:nicknames #:cl-ds.alg.meta)
