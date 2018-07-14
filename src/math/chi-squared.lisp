@@ -22,7 +22,7 @@
          :type 'symbol)
   (:test :optional t
          :type 'function
-         :default #'eql)
+         :default 'eql)
   (:classes :optional t
             :default nil
             :type 'sequence))
@@ -82,18 +82,18 @@
               unfolded-counts)
     expected-counts))
 
-(defun gamma*aux (a z)
-  (do ((n    0.0 (1+ n))
-       (term 1.0
-             (/ (* term (- z))
-                (+ n 1.0)))
-       (sum  0.0))
-      ((progn (setq sum (+ sum (/ term (+ a n))))
-              (< (abs (/ term (+ a n))) 1.0E-7))
-       sum)))
 
 (defun gamma-function-incomplete (a x)
-  (labels ((impl (a x)
+  (labels ((gamma*aux (a z)
+             (do ((n    0.0 (1+ n))
+                  (term 1.0
+                        (/ (* term (- z))
+                           (+ n 1.0)))
+                  (sum  0.0))
+                 ((progn (setq sum (+ sum (/ term (+ a n))))
+                         (< (abs (/ term (+ a n))) 1.0E-7))
+                  sum)))
+           (impl (a x)
              (if (< a 1.0)
                  (/ (+ (impl (+ a 1.0) x)
                        (* (expt x a) (exp (- x))))
@@ -102,7 +102,7 @@
     (impl a x)))
 
 
-(defun chi-squared-pval (deegrees-of-freedom chi-squared)
+(defun chi-squared-pval (deegress-of-freedom chi-squared)
   (- 1.0 (gamma-function-incomplete (/ deegress-of-freedom 2)
                                     (/ chi-squared 2))))
 
