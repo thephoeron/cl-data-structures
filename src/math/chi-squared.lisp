@@ -17,9 +17,7 @@
 
 
 (cl-ds:define-validation-for-fields
-    (chi-squared-function (:name :key))
-  (:name :optional nil
-         :type 'symbol)
+    (chi-squared-function (:test :classes))
   (:test :optional t
          :type 'function
          :default 'eql)
