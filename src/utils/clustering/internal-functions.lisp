@@ -225,9 +225,7 @@
                   (clear-cluster-contents state)
                   (choose-initial-medoids state)
                   (order-medoids state)
-                  (assign-data-points-to-medoids state)
-                  ; (split-merge)
-                  )
+                  (assign-data-points-to-medoids state))
                 (choose-effective-medoids state)
                 (always (unfinished-clusters-p state))
                 (clear-cluster-contents state)
@@ -237,7 +235,6 @@
           (order-medoids state)
           (assign-data-points-to-medoids state)
           (split-merge)
-          (choose-effective-medoids state)
           (clear-unfinished-clusters state))))))
 
 
@@ -319,7 +316,7 @@
                          :merge-threshold %merge-threshold
                          :split-merge-attempts-count %split-merge-attempts-count
                          :input-data %input-data)))
-      (build-pam-clusters fresh-state t)
+      (build-pam-clusters fresh-state nil)
       (decf (fill-pointer %cluster-contents) count-of-eliminated)
       (map nil
            (rcurry #'vector-push-extend %cluster-contents)
