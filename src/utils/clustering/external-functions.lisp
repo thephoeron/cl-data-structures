@@ -126,7 +126,7 @@
         (for index from 0 below (length vector))
         (for i from from to to)
         (nest (setf (aref vector index))
-              (let ((i i)))
+              (cl-ds.utils:lolol (i))
               (bt:make-thread)
               (lambda ())
               (let ((cl-progress-bar:*progress-bar* progress-bar)))
