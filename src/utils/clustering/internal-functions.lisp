@@ -68,7 +68,11 @@
 
 
 (defun assign-data-points-to-medoids (state)
+  (declare (optimize (speed 3) (safety 0)))
+  (assert (unique-assigment state))
+  (order-medoids state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
     (iterate
       (with assignments = (lparallel:pmap '(vector (or null fixnum))
                                           (curry #'closest-medoid state)
@@ -90,8 +94,7 @@
          (for k in-vector cluster)
          (when (eql c k)
            (next-iteration))
-         (sum (cl-ds.utils:mref %distance-matrix
-                                c k)
+         (sum (cl-ds.utils:mref %distance-matrix c k)
               into sum)
          (finally (return (/ sum (length cluster))))) ; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
        into sum)
@@ -131,6 +134,7 @@
 
 
 (defun silhouette (state)
+  (assert (unique-assigment state))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (flet ((map-distance (function)
              (lparallel:pmap 'vector
@@ -203,39 +207,40 @@
               %cluster-contents)))
 
 
+(defun unique-assigment (state)
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (= (~> (apply #'concatenate 'vector (coerce %cluster-contents 'list))
+           remove-duplicates
+           length)
+       (reduce #'+ %cluster-contents :key #'length :initial-value 0))))
+
+
 (defun build-pam-clusters (state &optional split-merge)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (flet ((split-merge ()
-             (when split-merge
-               (unless (null %split-merge-attempts-count)
-                 (iterate
-                   (scan-for-clusters-of-invalid-size state)
-                   (while (unfinished-clusters-p state))
-                   (repeat %split-merge-attempts-count)
-                   (recluster-clusters-with-invalid-size state))))))
-      (let ((expired-attempts-limits
-              (iterate
-                (with attempts = %select-medoids-attempts-count)
-                (for i from 0)
-                (unless (null attempts)
-                  (unless (< i attempts)
-                    (leave t)))
-                (when (zerop (rem i 5))
-                  (clear-cluster-contents state)
-                  (choose-initial-medoids state)
-                  (order-medoids state)
-                  (assign-data-points-to-medoids state))
-                (choose-effective-medoids state)
-                (always (unfinished-clusters-p state))
-                (clear-cluster-contents state)
-                (clear-unfinished-clusters state))))
-        (when expired-attempts-limits
+             (when (and split-merge %split-merge-attempts-count)
+               (iterate
+                 (scan-for-clusters-of-invalid-size state)
+                 (while (unfinished-clusters-p state))
+                 (repeat %split-merge-attempts-count)
+                 (recluster-clusters-of-invalid-size state)))))
+      (iterate
+        (with attempts = %select-medoids-attempts-count)
+        (for i from 0)
+        (unless (null attempts)
+          (unless (< i attempts)
+            (leave t)))
+        (when (zerop (rem i 3))
           (clear-cluster-contents state)
-          (order-medoids state)
-          (assign-data-points-to-medoids state)
-          (split-merge)
-          (clear-unfinished-clusters state))))))
+          (choose-initial-medoids state)
+          (assign-data-points-to-medoids state))
+        (assert (unique-assigment state))
+        (clear-unfinished-clusters state)
+        (choose-effective-medoids state)
+        (always (unfinished-clusters-p state)))
+      (split-merge)
+      (clear-unfinished-clusters state))))
 
 
 (defun fill-reclustering-index-vector (state indexes count-of-eliminated)
@@ -300,8 +305,8 @@
        (expected-cluster-count)))))
 
 
-(defun recluster-clusters-with-invalid-size (state)
-  (declare (optimize (speed 2)))
+(defun recluster-clusters-of-invalid-size (state)
+  (declare (optimize (speed 1) (safety 3)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (setf %cluster-contents (shuffle %cluster-contents))
     (bind (((:values indexes count-of-eliminated expected-cluster-count)
@@ -310,10 +315,10 @@
                          'pam-algorithm-state
                          :indexes indexes
                          :distance-matrix %distance-matrix
+                         :merge-threshold %merge-threshold
                          :split-threshold %split-threshold
                          :number-of-medoids expected-cluster-count
                          :select-medoids-attempts-count %select-medoids-attempts-count
-                         :merge-threshold %merge-threshold
                          :split-merge-attempts-count %split-merge-attempts-count
                          :input-data %input-data)))
       (build-pam-clusters fresh-state nil)
@@ -321,6 +326,7 @@
       (map nil
            (rcurry #'vector-push-extend %cluster-contents)
            (access-cluster-contents fresh-state))
+      (assert (unique-assigment state))
       (order-medoids state))))
 
 

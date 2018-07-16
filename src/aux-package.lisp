@@ -235,6 +235,7 @@
   serapeum:unbox
   serapeum:vect
   serapeum:parse-number
+  serapeum:ensure
   serapeum:random-in-range
   serapeum:finc
   serapeum:make
@@ -248,6 +249,8 @@
   serapeum:plist-keys
   serapeum:plist-values
   serapeum:def
+  serapeum:round-to
+  serapeum:assure
 
   metabang.bind:bind
 
