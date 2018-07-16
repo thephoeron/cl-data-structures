@@ -2,9 +2,9 @@
 
 
 (defpackage :cl-data-structures.counting
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
-        #:alexandria #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package
+        #:cl-data-structures.utils)
   (:nicknames #:cl-ds.counting)
   (:export
    #:all-sets

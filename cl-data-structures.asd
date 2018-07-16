@@ -18,11 +18,13 @@
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
-  :components ((:file "package")
+  :components ((:file "aux-package")
+               (:file "package")
                (:module "utils"
                 :components ((:file "package")
                              (:file "macros")
                              (:file "types")
+                             (:file "higher-order")
                              (:file "cartesian")
                              (:file "ordered-algorithms")
                              (:file "lists")
@@ -34,7 +36,6 @@
                              (:file "parallel-tools")
                              (:file "lambda-lists")
                              (:file "skip-vector")
-                             (:file "higher-order")
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
@@ -143,7 +144,10 @@
                              (:file "clara")
                              (:file "docstrings")))
                (:module "math"
-                :components ((:file "package")
+                :components ((:module "aux"
+                              :components ((:file "package")
+                                           (:file "gamma")))
+                             (:file "package")
                              (:file "average")
                              (:file "variance")
                              (:file "mutual-information")
@@ -153,9 +157,11 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
+                             (:file "chi-squared")
                              (:file "bootstrap")
                              (:file "docstrings")
                              (:test-file "moments-tests")
+                             (:test-file "chi-squared-tests")
                              (:test-file "mutual-information-tests")
                              (:test-file "statistical-summary-tests")
                              (:test-file "simple-linear-regression-tests")))

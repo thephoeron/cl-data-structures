@@ -16,8 +16,8 @@
 
 (defun clear-cluster-contents (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
-    (setf (fill-pointer %cluster-contents) %number-of-medoids)))
+    (setf (fill-pointer %cluster-contents) %number-of-medoids)
+    (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)))
 
 
 (defun order-medoids (state)
@@ -51,7 +51,7 @@
 
 
 (defun closest-medoid (state index)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (unless (medoid-p state index)
       (iterate
@@ -192,33 +192,6 @@
     (order-medoids state)))
 
 
-(defun build-pam-clusters (state)
-  (declare (optimize (speed 3)))
-  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (let ((expired-attempts-limits
-            (iterate
-              (with attempts = %select-medoids-attempts-count)
-              (for i from 0)
-              (unless (null attempts)
-                (unless (< i attempts)
-                  (leave t)))
-              (when (zerop (rem i 5))
-                (clear-cluster-contents state)
-                (choose-initial-medoids state)
-                (clear-unfinished-clusters state))
-              (assign-data-points-to-medoids state)
-              (choose-effective-medoids state)
-              (always (unfinished-clusters-p state))
-              (clear-cluster-contents state)
-              (clear-unfinished-clusters state))))
-      (when expired-attempts-limits
-        (clear-cluster-contents state)
-        (order-medoids state)
-        (assign-data-points-to-medoids state)
-        (choose-effective-medoids state)
-        (clear-unfinished-clusters state)))))
-
-
 (defun scan-for-clusters-of-invalid-size (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (clear-unfinished-clusters state)
@@ -230,33 +203,74 @@
               %cluster-contents)))
 
 
+(defun build-pam-clusters (state &optional split-merge)
+  (declare (optimize (speed 3)))
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (flet ((split-merge ()
+             (when split-merge
+               (unless (null %split-merge-attempts-count)
+                 (iterate
+                   (scan-for-clusters-of-invalid-size state)
+                   (while (unfinished-clusters-p state))
+                   (repeat %split-merge-attempts-count)
+                   (recluster-clusters-with-invalid-size state))))))
+      (let ((expired-attempts-limits
+              (iterate
+                (with attempts = %select-medoids-attempts-count)
+                (for i from 0)
+                (unless (null attempts)
+                  (unless (< i attempts)
+                    (leave t)))
+                (when (zerop (rem i 5))
+                  (clear-cluster-contents state)
+                  (choose-initial-medoids state)
+                  (order-medoids state)
+                  (assign-data-points-to-medoids state))
+                (choose-effective-medoids state)
+                (always (unfinished-clusters-p state))
+                (clear-cluster-contents state)
+                (clear-unfinished-clusters state))))
+        (when expired-attempts-limits
+          (clear-cluster-contents state)
+          (order-medoids state)
+          (assign-data-points-to-medoids state)
+          (split-merge)
+          (clear-unfinished-clusters state))))))
+
+
 (defun fill-reclustering-index-vector (state indexes count-of-eliminated)
+  (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (iterate
-      (with index = 0)
+      (with position = 0)
       (for i from (~> %cluster-contents length 1-) downto 0)
       (repeat count-of-eliminated)
       (for cluster = (aref %cluster-contents i))
       (iterate
         (for value in-vector cluster)
-        (setf (aref indexes index) value)
-        (incf index))
+        (setf (aref indexes position) value)
+        (incf position))
       (finally
-       (assert (eql index (length indexes)))))
-    indexes))
+       (assert (eql position (length indexes)))
+       (assert (iterate
+                 (with data = (sort indexes #'<))
+                 (for i from 1 below (length data))
+                 (for a = (aref data i))
+                 (for p-a = (aref data (1- i)))
+                 (assert (not (eql a p-a)))
+                 (never (eql a p-a)))))))
+  indexes)
 
 
 (defun prepare-reclustering-index-vector (state)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (bind ((count-of-eliminated (cl-ds.utils:swap-if
-                                  %cluster-contents
-                                  (lambda (x)
-                                    (~> x
-                                        (clamp %merge-threshold
-                                               %split-threshold)
-                                        (= x)
-                                        not))
-                                  :key #'length))
+                                 %cluster-contents
+                                 (lambda (x)
+                                   (not (< %merge-threshold
+                                           x
+                                           %split-threshold)))
+                                 :key #'length))
            (count-of-elements (iterate
                                 (for i
                                      from (~> %cluster-contents length 1-)
@@ -287,7 +301,7 @@
 
 
 (defun recluster-clusters-with-invalid-size (state)
-  (declare (optimize (speed 1)))
+  (declare (optimize (speed 2)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (setf %cluster-contents (shuffle %cluster-contents))
     (bind (((:values indexes count-of-eliminated expected-cluster-count)
@@ -302,11 +316,12 @@
                          :merge-threshold %merge-threshold
                          :split-merge-attempts-count %split-merge-attempts-count
                          :input-data %input-data)))
-      (build-pam-clusters fresh-state)
+      (build-pam-clusters fresh-state nil)
       (decf (fill-pointer %cluster-contents) count-of-eliminated)
       (map nil
            (rcurry #'vector-push-extend %cluster-contents)
-           (access-cluster-contents fresh-state)))))
+           (access-cluster-contents fresh-state))
+      (order-medoids state))))
 
 
 (defun replace-indexes-in-cluster-with-data (state cluster)
@@ -394,32 +409,32 @@
                             (funcall %key)))
                      %cluster-contents))
            (cluster-mutex (map-into (copy-array %cluster-contents)
-                                    #'bt:make-lock))
-           (progress cl-progress-bar:*progress-bar*))
-      (lparallel:pmap
-       nil
-       (lambda (index &aux (cl-progress-bar:*progress-bar* progress))
-         (unless (medoid-p state index)
-           (iterate
-             (with some-data = (~>> index
-                                    (aref %input-data)
-                                    (funcall %key)))
-             (with target = 0)
-             (for j from 0)
-             (for cluster in-vector %cluster-contents)
-             (for medoid in-vector medoids)
-             (for distance = (funcall %metric-fn
-                                      medoid
-                                      some-data))
-             (minimize distance into mini)
-             (when (= distance mini)
-               (setf target j))
-             (finally
-              (bt:with-lock-held ((aref cluster-mutex target))
-                (vector-push-extend index (aref %cluster-contents
-                                                target))))))
-         (cl-progress-bar:update 1))
-       %indexes))))
+                                    #'bt:make-lock)))
+      (cl-data-structures.utils:with-rebind (cl-progress-bar:*progress-bar*)
+        (lparallel:pmap
+         nil
+         (lambda (index)
+           (cl-data-structures.utils:rebind
+            (unless (medoid-p state index)
+              (iterate
+                (with some-data = (~>> index
+                                       (aref %input-data)
+                                       (funcall %key)))
+                (with target = 0)
+                (for j from 0)
+                (for medoid in-vector medoids)
+                (for distance = (funcall %metric-fn
+                                         medoid
+                                         some-data))
+                (minimize distance into mini)
+                (when (= distance mini)
+                  (setf target j))
+                (finally
+                 (bt:with-lock-held ((aref cluster-mutex target))
+                   (vector-push-extend index
+                                       (aref %cluster-contents target))))))
+            (cl-progress-bar:update 1)))
+         %all-indexes)))))
 
 
 (defun build-clara-clusters (input-data
@@ -453,13 +468,7 @@
       (iterate
         (repeat %sample-count)
         (draw-clara-sample state)
-        (build-pam-clusters state)
-        (unless (null %split-merge-attempts-count)
-          (iterate
-            (scan-for-clusters-of-invalid-size state)
-            (while (unfinished-clusters-p state))
-            (repeat %split-merge-attempts-count)
-            (recluster-clusters-with-invalid-size state)))
+        (build-pam-clusters state t)
         (update-result-cluster state)
         (cl-progress-bar:update 1))
       (setf %cluster-contents %result-cluster-contents)

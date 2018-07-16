@@ -3,19 +3,27 @@
 
 (defun cartesian (sequence-of-sequences result-callback)
   (unless (some #'emptyp sequence-of-sequences)
-    (let* ((l (length sequence-of-sequences))
-           (lengths (map '(vector fixnum) #'length sequence-of-sequences))
-           (indexes (make-array l :element-type 'fixnum)))
+    (let* ((lengths (map 'list #'length sequence-of-sequences))
+           (generator (cycle-over-address lengths)))
       (iterate
-        (for i = (iterate
-                   (for i from 0 below l)
-                   (finding i such-that (not (eql (1+ (aref indexes i))
-                                                  (aref lengths i))))))
-        (for p-i previous i initially 0)
+        (for adr = (funcall generator))
+        (while adr)
         (apply result-callback
-               (map 'list #'elt sequence-of-sequences indexes))
-        (until (null i))
-        (when (not (eql i p-i))
-          (iterate (for j from 0 below i)
-            (setf (aref indexes j) 0)))
-        (incf (aref indexes i))))))
+               (map 'list #'elt sequence-of-sequences adr))))))
+
+
+(defun cartesian-table (sequence-of-sequences fn)
+  (unless (some #'emptyp sequence-of-sequences)
+    (let* ((lengths (map 'list #'length sequence-of-sequences))
+           (generator (cycle-over-address lengths))
+           (result-table (make-array lengths)))
+      (iterate
+        (for adr = (funcall generator))
+        (while adr)
+        (apply #'(setf aref)
+               (apply fn (map 'list #'elt sequence-of-sequences adr))
+               result-table
+               adr))
+      result-table)))
+
+

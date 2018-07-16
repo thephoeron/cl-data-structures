@@ -84,7 +84,7 @@
    (vector-push-extend
     element
     (aref (ensure (gethash key table)
-            (with-vectors ((result (~> ranges length 1+ make-array)))
+            (cl-ds.utils:with-vectors ((result (~> ranges length 1+ make-array)))
               (iterate
                 (for i from 0 below (length result))
                 (setf (result i) (vect)))

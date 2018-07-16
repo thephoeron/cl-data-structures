@@ -2,16 +2,12 @@
 
 
 (defpackage :cl-data-structures
-  (:use #:common-lisp #:iterate #:alexandria
-        #:serapeum #:metabang-bind)
+  (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:across
    #:add
    #:add!
-   #:aggregate
-   #:apply-layer
    #:argument-out-of-bounds
    #:assert-one-dimension
    #:at
@@ -67,11 +63,9 @@
    #:lazy
    #:make-delay
    #:make-from-traversable
-   #:make-state
    #:mod-bind
    #:mutable
    #:mutablep
-   #:name
    #:near
    #:not-implemented
    #:operation-not-allowed
@@ -108,10 +102,10 @@
 
 
 (defpackage :cl-data-structures.meta
-  (:use #:common-lisp #:iterate #:alexandria
-        #:serapeum #:metabang-bind)
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.meta)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum)
   (:export
    #:add!-function
    #:add-function

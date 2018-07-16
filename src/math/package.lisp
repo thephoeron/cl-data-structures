@@ -2,9 +2,7 @@
 
 
 (defpackage :cl-data-structures.math
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
-        #:alexandria #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:common-lisp #:cl-data-structures.aux-package)
   (:shadow #:variance #:standard-deviation)
   (:nicknames #:cl-ds.math)
   (:export
@@ -21,6 +19,7 @@
    #:mutual-information-matrix
    #:optimal-split-point
    #:simple-linear-regression
+   #:chi-squared
    #:standard-deviation
    #:statistical-summary
    #:variance))

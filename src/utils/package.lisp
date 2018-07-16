@@ -2,9 +2,8 @@
 
 
 (defpackage :cl-data-structures.utils
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:metabang-bind)
+  (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:add-into-queue
    #:add-sinks
@@ -38,6 +37,7 @@
    #:lower-bound
    #:make-half-matrix
    #:make-distance-matrix-from-vector
+   #:cartesian-table
    #:make-new-skip-vector
    #:add-to-list
    #:ordered-intersection
@@ -69,5 +69,10 @@
    #:try-find
    #:try-find-cell
    #:try-remove
+   #:lolol
    #:unfold-table
+   #:lparallel-future
+   #:with-rebind
+   #:rebind
+   #:cycle-over-address
    #:with-vectors))

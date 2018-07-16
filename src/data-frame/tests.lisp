@@ -2,11 +2,11 @@
 
 (defpackage data-frame-tests
   (:use #:cl #:prove #:serapeum #:iterate #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:shadowing-import-from #:iterate #:collecting #:summing #:in #:sum))
 
 (in-package #:data-frame-tests)
 
-(plan 56)
+(plan 55)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)

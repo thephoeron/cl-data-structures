@@ -2,9 +2,10 @@
 
 
 (defpackage :cl-data-structures.algorithms.meta
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
-        #:alexandria #:iterate #:cl-ds #:bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:cl
+        #:cl-data-structures
+        #:cl-data-structures.aux-package
+        #:cl-data-structures.utils)
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:%key
@@ -44,9 +45,10 @@
    #:transformation!-function))
 
 (defpackage :cl-data-structures.algorithms
-  (:use #:common-lisp #:serapeum #:cl-ds.utils
-        #:alexandria #:iterate #:cl-ds #:bind #:cl-ds.alg.meta)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:cl
+        #:cl-data-structures.algorithms.meta
+        #:cl-data-structures
+        #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.alg)
   (:export
    #:accumulate

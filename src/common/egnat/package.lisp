@@ -2,9 +2,7 @@
 
 
 (defpackage :cl-data-structures.common.egnat
-  (:use #:common-lisp #:iterate #:serapeum #:alexandria #:metabang-bind
-        #:cl-data-structures.common.abstract)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.common.egnat)
   (:export
    #:access-root

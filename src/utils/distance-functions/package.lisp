@@ -1,6 +1,5 @@
 (defpackage cl-data-structures.utils.distance
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:metabang-bind)
+  (:use #:cl #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils.distance)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:bhattacharyya-distance))

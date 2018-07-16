@@ -2,9 +2,9 @@
 
 
 (defpackage :cl-data-structures.dicts
-  (:use #:common-lisp #:serapeum #:cl-ds.utils #:alexandria
-        #:iterate #:metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package
+        #:cl-data-structures.utils)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:fundamental-dictionary
@@ -27,11 +27,12 @@
 
 
 (defpackage :cl-data-structures.dicts.hamt
-  (:use #:common-lisp #:iterate #:alexandria #:serapeum #:cl-ds.utils
-        #:metabang-bind #:cl-data-structures.common.hamt
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package
+        #:cl-data-structures.utils
+        #:cl-data-structures.common.hamt
         #:cl-data-structures.common.abstract)
   (:nicknames #:cl-ds.dicts.hamt)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in)
   (:export
    #:functional-hamt-dictionary
    #:hamt-dictionary
