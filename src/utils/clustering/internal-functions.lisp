@@ -84,22 +84,22 @@
         (vector-push-extend i (aref %cluster-contents assignment))))))
 
 
-(-> intra-cluster-distances (pam-algorithm-state vector) single-float)
+(-> intra-cluster-distances (pam-algorithm-state vector) (vector single-float))
 (defun intra-cluster-distances (state cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (iterate
-      (for c in-vector cluster)
-      (sum
-       (iterate
-         (for k in-vector cluster)
-         (when (eql c k)
-           (next-iteration))
-         (sum (cl-ds.utils:mref %distance-matrix c k)
-              into sum)
-         (finally (return (/ sum (length cluster))))) ; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
-       into sum)
-      (finally (return (coerce (/ sum (length cluster))
-                               'single-float))))))
+    (map '(vector single-float)
+         (lambda (c)
+           (iterate
+             (for k in-vector cluster)
+             (when (eql c k)
+               (next-iteration))
+             (sum (cl-ds.utils:mref %distance-matrix c k)
+                  into sum)
+             (finally (return (coerce (/ sum (length cluster))
+                                      'single-float))))
+           ;; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
+           )
+         cluster)))
 
 
 (-> sum-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
@@ -117,37 +117,49 @@
                                'single-float))))))
 
 
-(-> inter-cluster-distances (pam-algorithm-state vector) single-float)
+(-> inter-cluster-distances (pam-algorithm-state vector) (vector single-float))
 (defun inter-cluster-distances (state cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (cl-ds.utils:optimize-value ((mini < 0.0))
-      (iterate
-        (for other-cluster in-vector %cluster-contents)
-        (when (eq other-cluster cluster)
-          (next-iteration))
-        (mini (iterate
-                (for k in-vector cluster)
-                (sum (sum-distance-to-element state k other-cluster)
-                     into sum)
-                (finally (return (coerce (/ sum (length cluster))
-                                         'single-float)))))))))
+    (map '(vector single-float)
+         (lambda (k)
+           (cl-ds.utils:optimize-value ((mini < 0.0))
+             (iterate
+               (for other-cluster in-vector %cluster-contents)
+               (when (eq other-cluster cluster)
+                 (next-iteration))
+               (mini (iterate
+                       (sum (sum-distance-to-element state k other-cluster)
+                            into sum)
+                       (finally (return (coerce (/ sum (length cluster))
+                                                'single-float))))))))
+         cluster)))
 
 
 (defun silhouette (state)
-  (assert (unique-assigment state))
+  (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (flet ((map-distance (function)
-             (lparallel:pmap 'vector
-                             (curry function state)
-                             %cluster-contents))
-           (distance-difference (intra inter)
-             (if (zerop (max intra inter))
-                 -1.0
-                 (/ (- inter intra) (max intra inter)))))
-      (map '(vector number)
-           #'distance-difference
-           (map-distance #'intra-cluster-distances)
-           (map-distance #'inter-cluster-distances)))))
+    (labels ((map-distance (function)
+               (lparallel:pmap 'vector
+                               (curry function state)
+                               %cluster-contents))
+             (distance-difference (intra inter)
+               (if (= intra inter)
+                   0.0
+                   (coerce (/ (- inter intra) (max intra inter))
+                           'single-float)))
+             (silhouette-value (intra inter)
+               (map '(vector single-float)
+                    distance-difference
+                    intra inter)))
+      (iterate
+        (with data = (lparallel:pmap '(vector number)
+                                     #'silhouette-value
+                                     (map-distance #'intra-cluster-distances)
+                                     (map-distance #'inter-cluster-distances)))
+        (for sub in-vector data)
+        (with sum = 0.0)
+        (incf sum (reduce #'+ sub))
+        (finally (return (/ sum (reduce #'+ data :key #'length))))))))
 
 
 (-> choose-effective-medoid (pam-algorithm-state (vector t)) boolean)
@@ -217,30 +229,46 @@
 
 (defun build-pam-clusters (state &optional split-merge)
   (declare (optimize (speed 3) (safety 0)))
-  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (flet ((split-merge ()
-             (when (and split-merge %split-merge-attempts-count)
-               (iterate
-                 (scan-for-clusters-of-invalid-size state)
-                 (while (unfinished-clusters-p state))
-                 (repeat %split-merge-attempts-count)
-                 (recluster-clusters-of-invalid-size state)))))
-      (iterate
-        (with attempts = %select-medoids-attempts-count)
-        (for i from 0)
-        (unless (null attempts)
-          (unless (< i attempts)
-            (leave t)))
-        (when (zerop (rem i 3))
-          (clear-cluster-contents state)
-          (choose-initial-medoids state)
-          (assign-data-points-to-medoids state))
-        (assert (unique-assigment state))
-        (clear-unfinished-clusters state)
-        (choose-effective-medoids state)
-        (always (unfinished-clusters-p state)))
-      (split-merge)
-      (clear-unfinished-clusters state))))
+  (nest
+   (cl-ds.utils:with-slots-for (state pam-algorithm-state))
+   (let ((optimal-content nil)))
+   (cl-ds.utils:optimize-value ((clusters-with-optimal-size >)))
+   (flet ((split-merge ()
+            (when (and split-merge
+                       (not (zerop split-merge))
+                       %split-merge-attempts-count)
+              (iterate
+                (scan-for-clusters-of-invalid-size state)
+                (while (unfinished-clusters-p state))
+                (repeat %split-merge-attempts-count)
+                (recluster-clusters-of-invalid-size state)
+                (for right-size =
+                     (/ (count-if (lambda (x) (< %merge-threshold x %split-threshold))
+                                  %cluster-contents)
+                        (length %cluster-contents)))
+                (clusters-with-optimal-size right-size)
+                (when (= right-size clusetrs-with-optimal-size)
+                  (setf optimal-content (map 'vector
+                                             #'copy-array
+                                             %cluster-contents)))
+                (finally (setf %cluster-contents optimal-content))))))
+     (iterate
+       (with attempts = %select-medoids-attempts-count)
+       (for i from 0)
+       (unless (null attempts)
+         (unless (< i attempts)
+           (leave t)))
+       (when (zerop (rem i 3))
+         (clear-cluster-contents state)
+         (choose-initial-medoids state)
+         (assign-data-points-to-medoids state))
+       (assert (unique-assigment state))
+       (clear-unfinished-clusters state)
+       (choose-effective-medoids state)
+       (always (unfinished-clusters-p state))
+       (finally
+        (split-merge)
+        (clear-unfinished-clusters state))))))
 
 
 (defun fill-reclustering-index-vector (state indexes count-of-eliminated)
@@ -393,11 +421,10 @@
 
 (defun update-result-cluster (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (let* ((silhouette (silhouette state))
-           (mean-silhouette (mean silhouette)))
-      (when (> mean-silhouette %mean-silhouette)
+    (let ((silhouette (silhouette state)))
+      (when (or (null %silhouette)
+                (> silhouette %silhouette))
         (setf %silhouette silhouette
-              %mean-silhouette mean-silhouette
               %result-cluster-contents (map 'vector
                                             #'copy-array
                                             %cluster-contents))))))

@@ -60,9 +60,6 @@
      (%sample-size :initarg :sample-size
                    :type positive-integer
                    :accessor access-sample-size)
-     (%mean-silhouette :initform -10 ; silhouette is bound by definition in -1 to +1
-                       :type number
-                       :accessor access-mean-silhouette)
      (%silhouette :initform nil
                   :type (or null (vector number))
                   :accessor access-silhouette)))
@@ -117,8 +114,7 @@
   (%index-mapping access-index-mapping)
   (%sample-count access-sample-count)
   (%all-indexes access-all-indexes)
-  (%result-cluster-contents access-result-cluster-contents)
-  (%mean-silhouette access-mean-silhouette))
+  (%result-cluster-contents access-result-cluster-contents))
 
 
 (defun restart-pam (object)
