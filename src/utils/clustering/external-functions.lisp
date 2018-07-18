@@ -126,10 +126,10 @@
         (for index from 0 below (length vector))
         (for i from from to to)
         (nest (setf (aref vector index))
-              (cl-ds.utils:lolol (i))
+              (cl-ds.utils:with-rebind (cl-progress-bar:*progress-bar* i))
               (bt:make-thread)
               (lambda ())
-              (let ((cl-progress-bar:*progress-bar* progress-bar)))
+              (cl-ds.utils:rebind)
               (build-clara-clusters
                input-data i metric-type metric-fn
                sample-size sample-count
@@ -141,9 +141,9 @@
       (iterate
         (for thread in-vector vector)
         (for state = (bt:join-thread thread))
-        (for mean-silhouette = (~> state access-silhouette mean))
-        (maximize mean-silhouette into maximum)
-        (when (= mean-silhouette maximum)
+        (for silhouette = (access-silhouette state))
+        (maximize silhouette into maximum)
+        (when (= silhouette maximum)
           (setf final state))))
     (cl-progress-bar:with-progress-bar
         ((length input-data)

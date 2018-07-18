@@ -118,13 +118,13 @@
 
 
 (-> inter-cluster-distances (pam-algorithm-state vector) (vector single-float))
-(defun inter-cluster-distances (state cluster)
+(defun inter-cluster-distances (state sample cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (map '(vector single-float)
          (lambda (k)
            (cl-ds.utils:optimize-value ((mini < 0.0))
              (iterate
-               (for other-cluster in-vector %cluster-contents)
+               (for other-cluster in-vector sample)
                (when (eq other-cluster cluster)
                  (next-iteration))
                (mini (iterate
@@ -135,13 +135,28 @@
          cluster)))
 
 
+(defun select-random-cluster-subsets (state)
+  (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+    (let* ((sample-size 250)
+           (sample-ratio (min 1 (/ sample-size %sample-size))))
+      (map 'vector
+           (lambda (cluster)
+             (let* ((size (length cluster))
+                    (sample-size (ceiling (* size sample-ratio)))
+                    (result (make-array sample-size :element-type 'fixnum)))
+               (map-into result
+                         (compose (curry #'aref cluster)
+                                  (curry #'random size)))))
+           %cluster-contents))))
+
+
 (defun silhouette (state)
   (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (labels ((map-distance (function)
-               (lparallel:pmap 'vector
-                               (curry function state)
-                               %cluster-contents))
+    (labels ((map-distance (function sample)
+               (map 'vector
+                    (curry function state)
+                    sample))
              (distance-difference (intra inter)
                (if (= intra inter)
                    0.0
@@ -150,16 +165,25 @@
              (silhouette-value (intra inter)
                (map '(vector single-float)
                     distance-difference
-                    intra inter)))
-      (iterate
-        (with data = (lparallel:pmap '(vector number)
-                                     #'silhouette-value
-                                     (map-distance #'intra-cluster-distances)
-                                     (map-distance #'inter-cluster-distances)))
-        (for sub in-vector data)
-        (with sum = 0.0)
-        (incf sum (reduce #'+ sub))
-        (finally (return (/ sum (reduce #'+ data :key #'length))))))))
+                    intra inter))
+             (silhouette (sample)
+               (iterate
+                 (with sum = 0.0)
+                 (for sub in-vector sample)
+                 (for inter-distances = (~> (inter-cluster-distances state
+                                                                     sample
+                                                                     sub)
+                                            lparallel:future))
+                 (for intra-distances = (~> (intra-cluster-distances state sub)
+                                            lparallel:future))
+                 (iterate
+                   (for a in-vector (lparallel:force inter-distances))
+                   (for b in-vector (lparallel:force intra-distances))
+                   (incf sum (distance-difference b a)))
+                 (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
+      (~> (map-into (make-array 10) (curry #'select-random-cluster-subsets state))
+          (map 'vector #'silhouette _)
+          mean))))
 
 
 (-> choose-effective-medoid (pam-algorithm-state (vector t)) boolean)
