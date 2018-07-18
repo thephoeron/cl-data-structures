@@ -122,22 +122,17 @@
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (map '(vector single-float)
          (lambda (k)
-           (cl-ds.utils:optimize-value ((mini < 0.0))
-             (iterate
-               (for other-cluster in-vector sample)
-               (when (eq other-cluster cluster)
-                 (next-iteration))
-               (mini (iterate
-                       (sum (sum-distance-to-element state k other-cluster)
-                            into sum)
-                       (finally (return (coerce (/ sum (length cluster))
-                                                'single-float))))))))
+           (iterate
+             (for other-cluster in-vector sample)
+             (when (eq other-cluster cluster)
+               (next-iteration))
+             (minimize (sum-distance-to-element state k other-cluster))))
          cluster)))
 
 
 (defun select-random-cluster-subsets (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (let* ((sample-size 250)
+    (let* ((sample-size 500)
            (sample-ratio (min 1 (/ sample-size %sample-size))))
       (map 'vector
            (lambda (cluster)
