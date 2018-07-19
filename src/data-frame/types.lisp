@@ -1,8 +1,12 @@
 (in-package #:cl-data-structures.data-frame)
 
 
-(defclass fundamental-data-frame ()
-  ())
+(nest
+ (locally (declare (optimize (safety 3))))
+ (defclass fundamental-data-frame ())
+ ((%aliases :initform (make-hash-table :test 'equal)
+            :reader read-aliases
+            :type hash-table)))
 
 
 (nest
@@ -24,10 +28,17 @@
   (%reverse-alias :initarg :reverse-alias
                   :reader read-reverse-aliases
                   :type hash-table
-                  :initform (make-hash-table :test 'equal))
-  (%aliases :initform (make-hash-table :test 'equal)
-            :reader read-aliases
-            :type hash-table)))
+                  :initform (make-hash-table :test 'equal))))
+
+
+(nest
+ (locally (declare (optimize (safety 3))))
+ (defclass proxy-data-frame (fundamental-data-frame))
+ ((%inner-data-frame :initarg :inner-data-frame
+                     :reader read-inner-data-frame)
+  (%pinned-axis :initarg :pinned-axis
+                :type list
+                :reader read-pinned-axis)))
 
 
 (nest

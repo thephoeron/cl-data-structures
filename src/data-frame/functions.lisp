@@ -105,7 +105,8 @@
     result-frame))
 
 
-(defun range-stack (dimension range &key (key #'identity)))
+(defun range-stack (dimension range)
+  (apply #'stack dimension (coerce (cl-ds.alg:to-vector range) 'list)))
 
 
 (defun row (data number)

@@ -54,3 +54,39 @@
     (for i from 0)
     (setf (car loc) (apply-alias aliases i x))
     (finally (return locations))))
+
+
+(defun proxy-plane (data locations)
+  (make 'proxy-data-frame
+        :inner-data-frame data
+        :aliases (copy-hash-table (read-aliases data))
+        :pinned-axis locations))
+
+
+(defun at-data-frame (data-frame address)
+  (ensure-dimensionality data-frame address)
+  (ensure-in-frame data-frame address)
+  (at-data (access-data data-frame)
+           address))
+
+
+(defun set-at-data-frame (new-value data-frame address)
+  (ensure-dimensionality data-frame address)
+  (ensure-in-frame data-frame address)
+  (set-at-data new-value
+               (access-data data-frame)
+               address))
+
+
+(defun proxy-data-frame-effective-address (data-frame more)
+  (iterate
+    (with axis = (read-pinned-axis data-frame))
+    (with effective-address = (make-list (cl-ds:dimensionality data-frame)))
+    (for addr on effective-address)
+    (for i from 0)
+    (if (eql (caar axis) i)
+        (setf (car addr) (cadar axis)
+              axis (rest axis))
+        (setf (car addr) (first more)
+              more (rest more)))
+    (finally (return (apply-aliases data-frame effective-address)))))

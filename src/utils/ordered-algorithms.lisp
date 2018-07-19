@@ -195,33 +195,7 @@
                                    (fill-pointer result))))))
 
 
-(defun revert-block (vector start end)
-  (iterate
-    (for i from start below end)
-    (for j from (1- end) downto start)
-    (rotatef (aref vector i) (aref vector j)))
-  vector)
-
-
 (defun block-exchange (vector l m r)
   (revert-block vector l m)
   (revert-block vector (1+ m) r)
   (revert-block vector l r))
-
-
-(defun binary-search (vector predicate key value start end))
-
-
-(defun merge-in-place (vector l m r)
-  (let ((length-left (1+ (- m  l)))
-        (length-right (- r m)))
-    (if (< length-left length-right)
-        (unless (zerop length-left)
-          (let ((q1 (truncate (/ (+ m 1 r) 2)))
-                (q2 (binary-search))
-                (q3 (+ q1 q2 (- m) -1)))))
-        (unless (zerop length-right)
-          (let ((q1 (truncate (/ (+ l m) 2)))
-                (q2 (binary-search))
-                (q3 (+ q1 q2 (- m) -1))))))
-    vector))

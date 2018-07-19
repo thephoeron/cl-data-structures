@@ -34,22 +34,33 @@
 
 
 (defmethod cl-ds:at ((object data-frame) location &rest more)
-  (let ((more (cons location more)))
-    (apply-aliases (read-aliases object) more)
-    (ensure-dimensionality object more)
-    (ensure-in-frame object more)
-    (at-data (access-data object)
-             more)))
+  (push location more)
+  (apply-aliases (read-aliases object) more)
+  (at-data-frame object more))
 
 
 (defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
-  (let ((more (cons location more)))
-    (apply-aliases (read-aliases object) more)
-    (ensure-dimensionality object more)
-    (ensure-in-frame object more)
-    (set-at-data new-value
-                 (access-data object)
-                 more)))
+  (push location more)
+  (apply-aliases (read-aliases object) more)
+  (set-at-data-frame new-value object more))
+
+
+(defmethod cl-ds:at ((object proxy-data-frame) location &rest more)
+  (at-data-frame (read-inner-data-frame object)
+                 (proxy-data-frame-effective-address object
+                                                     (cons location more))))
+
+
+(defmethod (setf cl-ds:at) (new-value (object proxy-data-frame)
+                            location &rest more)
+  (set-at-data-frame new-value
+                     (read-inner-data-frame object)
+                     (proxy-data-frame-effective-address object
+                                                         (cons location more))))
+
+
+(defmethod cl-ds:dimensionality ((object proxy-data-frame))
+  (cl-ds:dimensionality (read-inner-data-frame object)))
 
 
 (-> mutable-data (cl-ds.seqs.rrb:mutable-rrb-vector non-negative-fixnum)
@@ -113,7 +124,7 @@
 
 
 (defmethod (setf alias) ((name symbol)
-                         (container data-frame)
+                         (container fundamental-data-frame)
                          dimension
                          position)
   (check-type dimension fixnum)
@@ -140,7 +151,7 @@
     result))
 
 
-(defmethod alias ((container data-frame) dimension position)
+(defmethod alias ((container fundamental-data-frame) dimension position)
   (check-type dimension fixnum)
   (check-type position fixnum)
   (unless (<= 0 dimension (1- (cl-ds:dimensionality container)))
@@ -161,28 +172,23 @@
 
 
 (defmethod plane ((data data-frame) &rest more)
-  (let ((length (length more)))
-    (when (oddp length)
-      (error 'cl-ds:invalid-argument
-             :text "&rest arguments should come in even number!"
-             :argument 'more))
-    (when (>= (/ length 2) (cl-ds:dimensionality data))
-      (error 'cl-ds:dimensionality-error
-             :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame.")))
-  (iterate
-    (with aliases = (read-aliases data))
-    (for m on more)
-    (for p-m previous m)
-    (for k initially nil then (not k))
-    (check-type dimension integer)
-    (check-type position (or symbol integer))
-    (when k
-      (setf (first m) (apply-alias aliases (first p-m) (first m)))))
-  (let* ((locations (~> more (batches 2) (sort #'< :key #'car)))
-         (optimized-slice (iterate
-                            (for (dimension index) in locations)
-                            (for prev-dimension previous dimension initially -1)
-                            (always (= (1+ prev-dimension) dimension)))))
-    (if optimized-slice
-        (optimized-plane data locations)
-        (proxy-plane data locations))))
+  (if (endp more)
+      data
+      (let ((length (length more)))
+        (when (oddp length)
+          (error 'cl-ds:invalid-argument
+                 :text "&rest arguments should come in even number!"
+                 :argument 'more))
+        (when (>= (/ length 2) (cl-ds:dimensionality data))
+          (error 'cl-ds:dimensionality-error
+                 :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
+        (iterate
+          (with aliases = (read-aliases data))
+          (for m on more)
+          (for p-m previous m)
+          (for k initially nil then (not k))
+          (when k
+            (check-type (first p-m) integer)
+            (check-type (first m) (or symbol integer))
+            (setf (first m) (apply-alias aliases (first p-m) (first m)))))
+        (proxy-plane data (~> more (batches 2) (sort #'< :key #'car))))))
