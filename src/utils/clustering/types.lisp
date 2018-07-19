@@ -20,6 +20,14 @@
      (%split-threshold :initarg :split-threshold
                        :accessor access-split-threshold
                        :initform nil)
+     (%silhouette-sample-size :initarg :silhouette-sample-size
+                              :reader read-silhouette-sample-size
+                              :type positive-integer
+                              :initform 500)
+     (%silhouette-sample-count :initarg :silhouette-sample-count
+                               :reader read-silhouette-sample-count
+                               :type positive-integer
+                               :initform 10)
      (%merge-threshold :initarg :merge-threshold
                        :accessor access-merge-threshold
                        :initform nil)
@@ -86,6 +94,8 @@
   (%distance-matrix access-distance-matrix)
   (%split-merge-attempts-count access-split-merge-attempts-count)
   (%split-threshold access-split-threshold)
+  (%silhouette-sample-size read-silhouette-sample-size)
+  (%silhouette-sample-count read-silhouette-sample-count)
   (%merge-threshold access-merge-threshold)
   (%unfinished-clusters access-unfinished-clusters)
   (%select-medoids-attempts-count access-select-medoids-attempts-count)
@@ -103,6 +113,8 @@
   (%merge-threshold access-merge-threshold)
   (%unfinished-clusters access-unfinished-clusters)
   (%select-medoids-attempts-count access-select-medoids-attempts-count)
+  (%silhouette-sample-size read-silhouette-sample-size)
+  (%silhouette-sample-count read-silhouette-sample-count)
   (%indexes access-indexes)
   (%cluster-size access-cluster-size)
   (%metric-fn access-metric-fn)

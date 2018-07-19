@@ -132,7 +132,7 @@
 
 (defun select-random-cluster-subsets (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (let* ((sample-size 500)
+    (let* ((sample-size %silhouette-sample-size)
            (sample-ratio (min 1 (/ sample-size %sample-size))))
       (map 'vector
            (lambda (cluster)
@@ -170,7 +170,7 @@
                    (for intra in-vector intra-distances)
                    (incf sum (distance-difference intra inter)))
                  (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
-      (~>> (map-into (make-array 10)
+      (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
            (lparallel:pmap 'vector #'silhouette)
            mean))))
@@ -361,6 +361,8 @@
                          :split-threshold %split-threshold
                          :number-of-medoids expected-cluster-count
                          :select-medoids-attempts-count %select-medoids-attempts-count
+                         :silhouette-sample-size %silhouette-sample-size
+                         :silhouette-sample-count %silhouette-sample-count
                          :split-merge-attempts-count %split-merge-attempts-count
                          :input-data %input-data)))
       (build-pam-clusters fresh-state nil)
@@ -493,6 +495,8 @@
                              &key
                                (key #'identity)
                                (select-medoids-attempts-count 50)
+                               (silhouette-sample-size 500)
+                               (silhouette-sample-count 10)
                                (attempts 0)
                                split
                                merge)
@@ -505,6 +509,8 @@
                      :split-merge-attempts-count attempts
                      :select-medoids-attempts-count select-medoids-attempts-count
                      :split-threshold split
+                     :silhouette-sample-size silhouette-sample-size
+                     :silhouette-sample-count silhouette-sample-count
                      :key key
                      :metric-fn metric-fn
                      :sample-count sample-count

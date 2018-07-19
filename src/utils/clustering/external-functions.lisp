@@ -7,6 +7,8 @@
                               &key
                               (:select-medoids-attempts-count (or null positive-fixnum))
                               (:attempts non-negative-fixnum)
+                              (:silhouette-sample-size positive-integer)
+                              (:silhouette-sample-count positive-integer)
                               (:split (or null positive-fixnum))
                               (:merge (or null positive-fixnum)))
     clustering-result)
@@ -16,6 +18,8 @@
                                  &key
                                    (select-medoids-attempts-count 50)
                                    (attempts 0)
+                                   (silhouette-sample-size 500)
+                                   (silhouette-sample-count 10)
                                    split
                                    merge)
   (when (or (zerop (length input-data)))
@@ -26,6 +30,8 @@
                      :distance-matrix distance-matrix
                      :split-merge-attempts-count attempts
                      :select-medoids-attempts-count select-medoids-attempts-count
+                     :silhouette-sample-size silhouette-sample-size
+                     :silhouette-sample-count silhouette-sample-count
                      :split-threshold split
                      :merge-threshold merge)))
     (build-pam-clusters state t)
@@ -46,6 +52,8 @@
            &key
            (:key (or symbol function))
            (:select-medoids-attempts-count (or null positive-fixnum))
+           (:silhouette-sample-size positive-integer)
+           (:silhouette-sample-count positive-integer)
            (:attempts non-negative-fixnum)
            (:split (or null positive-fixnum))
            (:merge (or null positive-fixnum)))
@@ -60,6 +68,8 @@
                 (key #'identity)
                 (select-medoids-attempts-count 50)
                 (attempts 0)
+                (silhouette-sample-size 500)
+                (silhouette-sample-count 10)
                 split
                 merge)
   (declare (optimize (debug 3)))
@@ -75,6 +85,8 @@
                    (ensure-function metric-fn) sample-size sample-count
                    :key (ensure-function key)
                    :select-medoids-attempts-count select-medoids-attempts-count
+                   :silhouette-sample-size silhouette-sample-size
+                   :silhouette-sample-count silhouette-sample-count
                    :attempts attempts :split split :merge merge)))
     (cl-progress-bar:with-progress-bar
         ((length input-data)
@@ -95,6 +107,8 @@
                                       &key
                                       (:key (or symbol function))
                                       (:select-medoids-attempts-count (or null positive-fixnum))
+                                      (:silhouette-sample-size positive-integer)
+                                      (:silhouette-sample-count positive-integer)
                                       (:attempts non-negative-fixnum)
                                       (:split (or null positive-fixnum))
                                       (:merge (or null positive-fixnum)))
@@ -109,6 +123,8 @@
                                            (key #'identity)
                                            (select-medoids-attempts-count 50)
                                            (attempts 0)
+                                           (silhouette-sample-size 500)
+                                           (silhouette-sample-count 10)
                                            split
                                            merge)
   (assert (< 0 from to))
@@ -134,6 +150,8 @@
                input-data i metric-type metric-fn
                sample-size sample-count
                :key key
+               :silhouette-sample-size silhouette-sample-size
+               :silhouette-sample-count silhouette-sample-count
                :select-medoids-attempts-count select-medoids-attempts-count
                :attempts attempts
                :split split
