@@ -58,7 +58,7 @@
 
 (defun proxy-plane (data locations)
   (let ((old-aliases (read-reverse-aliases data))
-        (old-dimensionality = (cl-ds:dimensionality data))
+        (old-dimensionality (cl-ds:dimensionality data))
         (new-aliases (make-hash-table :test 'eql))
         (new-reverse-alias (make-hash-table :test 'equal)))
     (iterate
