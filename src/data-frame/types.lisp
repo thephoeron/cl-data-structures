@@ -6,7 +6,11 @@
  (defclass fundamental-data-frame ())
  ((%aliases :initform (make-hash-table :test 'equal)
             :reader read-aliases
-            :type hash-table)))
+            :type hash-table)
+  (%reverse-alias :initarg :reverse-alias
+                  :reader read-reverse-aliases
+                  :type hash-table
+                  :initform (make-hash-table :test 'equal))))
 
 
 (nest
@@ -24,11 +28,7 @@
                  :type (vector non-negative-fixnum))
   (%upper-bounds :initarg :upper-bounds
                  :reader read-upper-bounds
-                 :type (vector non-negative-fixnum))
-  (%reverse-alias :initarg :reverse-alias
-                  :reader read-reverse-aliases
-                  :type hash-table
-                  :initform (make-hash-table :test 'equal))))
+                 :type (vector non-negative-fixnum))))
 
 
 (nest
@@ -36,6 +36,9 @@
  (defclass proxy-data-frame (fundamental-data-frame))
  ((%inner-data-frame :initarg :inner-data-frame
                      :reader read-inner-data-frame)
+  (%dimensionality :initarg :dimensionality
+                   :reader read-dimensionality
+                   :reader cl-ds:dimensionality)
   (%pinned-axis :initarg :pinned-axis
                 :type list
                 :reader read-pinned-axis)))

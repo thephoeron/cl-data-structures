@@ -57,10 +57,27 @@
 
 
 (defun proxy-plane (data locations)
-  (make 'proxy-data-frame
-        :inner-data-frame data
-        :aliases (copy-hash-table (read-aliases data))
-        :pinned-axis locations))
+  (let ((old-aliases (read-reverse-aliases data))
+        (old-dimensionality = (cl-ds:dimensionality data))
+        (new-aliases (make-hash-table :test 'eql))
+        (new-reverse-alias (make-hash-table :test 'equal)))
+    (iterate
+      (for (key value) in-hashtable old-aliases)
+      (for (dimension . position) = key)
+      (for found = (find (list dimension position) locations :test #'equal))
+      (when found
+        (next-iteration))
+      (for index = (or (position-if (lambda (x) (> x dimension))
+                                    locations
+                                    :key #'car)
+                       0)))
+    ;; TODO
+    (make 'proxy-data-frame
+          :inner-data-frame data
+          :aliases (~> data read-aliases copy-hash-table)
+          :dimensionality (- (cl-ds:dimensionality data)
+                             (length locations))
+          :pinned-axis locations)))
 
 
 (defun at-data-frame (data-frame address)
