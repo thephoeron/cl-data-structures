@@ -276,7 +276,7 @@
          (clear-cluster-contents state)
          (choose-initial-medoids state)
          (assign-data-points-to-medoids state))
-       (assert (unique-assigment state))
+       ;; (assert (unique-assigment state))
        (clear-unfinished-clusters state)
        (choose-effective-medoids state)
        (always (unfinished-clusters-p state))
