@@ -64,14 +64,15 @@
     (iterate
       (for (key value) in-hashtable old-aliases)
       (for (dimension . position) = key)
-      (for found = (find (list dimension position) locations :test #'equal))
+      (for found = (find dimension locations :key #'first))
       (when found
         (next-iteration))
       (for index = (or (position-if (lambda (x) (> x dimension))
                                     locations
                                     :key #'car)
-                       0)))
-    ;; TODO
+                       1))
+      (for new-dimension = (- dimension (1- index)))
+      (setf (gethash (cons new-dimension position) new-aliases) value))
     (make 'proxy-data-frame
           :inner-data-frame data
           :aliases (~> data read-aliases copy-hash-table)

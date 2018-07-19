@@ -99,3 +99,10 @@
                (aref vector (decf end))))
     (finally (return result))))
 
+
+(defun inverted-hash-table (table &key (test 'eql))
+  (iterate
+    (with result = (make-hash-table :test test))
+    (for (key value) in-hashtable table)
+    (setf (gethash value result) key)
+    (finally (return result))))

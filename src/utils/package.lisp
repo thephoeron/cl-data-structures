@@ -7,16 +7,17 @@
   (:export
    #:add-into-queue
    #:add-sinks
+   #:add-to-list
+   #:and*
    #:bind-lambda
    #:cartesian
+   #:cartesian-table
    #:cases
    #:cond+
-   #:and*
-   #:or*
    #:cond-compare
    #:copy-without
-   #:mref
-   #:half-matrix
+   #:cycle-over-address
+   #:define-list-of-slots
    #:draw-sample-vector
    #:each-in-matrix
    #:end-execution
@@ -24,41 +25,44 @@
    #:extendable-vector
    #:fill-distance-matrix-from-vector
    #:future-carousel
+   #:half-matrix
    #:if-else
-   #:ordered-exclusion
    #:import-all-package-symbols
    #:insert-or-replace
+   #:inverted-hash-table
    #:lambda-list-to-bindings
    #:lambda-list-to-call-form
    #:lazy-let
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
+   #:lolol
    #:lower-bound
-   #:make-half-matrix
+   #:lparallel-future
    #:make-distance-matrix-from-vector
-   #:cartesian-table
-   #:make-new-skip-vector
-   #:add-to-list
-   #:ordered-intersection
-   #:sref
-   #:skip-vector-without
-   #:make-skip-vector
    #:make-future-carousel
+   #:make-half-matrix
+   #:make-new-skip-vector
    #:make-pipe-fragment
+   #:make-skip-vector
    #:merge-ordered-vectors
    #:method-lambda-list-to-function-lambda-list
+   #:mref
    #:mutate-matrix
    #:on-ordered-intersection
    #:optimize-value
+   #:or*
+   #:ordered-exclusion
+   #:ordered-intersection
    #:ordered-p
    #:parallel-fill-distance-matrix-from-vector
-   #:define-list-of-slots
-   #:with-slots-for
    #:parallel-make-distance-matrix-from-vector
    #:pipe-fragment
    #:pop-last
    #:read-size
+   #:rebind
+   #:skip-vector-without
+   #:sref
    #:start-execution
    #:swap-if
    #:swapop
@@ -66,10 +70,7 @@
    #:try-find
    #:try-find-cell
    #:try-remove
-   #:lolol
    #:unfold-table
-   #:lparallel-future
    #:with-rebind
-   #:rebind
-   #:cycle-over-address
+   #:with-slots-for
    #:with-vectors))

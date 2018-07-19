@@ -148,7 +148,7 @@
     (cl-progress-bar:with-progress-bar
         ((length input-data)
          "Assigning data set to ~a clusters."
-         (length (access-all-indexes final)))
+         (length (access-cluster-contents final)))
       (assign-clara-data-to-medoids final))
     (replace-indexes-in-clusters-with-data final)
     (obtain-result final (access-silhouette final))))
