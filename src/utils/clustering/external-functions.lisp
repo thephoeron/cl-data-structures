@@ -55,6 +55,7 @@
            (:silhouette-sample-size positive-integer)
            (:silhouette-sample-count positive-integer)
            (:attempts non-negative-fixnum)
+           (:minimal-cluster-size positive-fixnum)
            (:split (or null positive-fixnum))
            (:merge (or null positive-fixnum)))
     clustering-result)
@@ -70,6 +71,7 @@
                 (attempts 0)
                 (silhouette-sample-size 500)
                 (silhouette-sample-count 10)
+                (minimal-cluster-size 10)
                 split
                 merge)
   (declare (optimize (debug 3)))
@@ -86,6 +88,7 @@
                    :key (ensure-function key)
                    :select-medoids-attempts-count select-medoids-attempts-count
                    :silhouette-sample-size silhouette-sample-size
+                   :minimal-cluster-size minimal-cluster-size
                    :silhouette-sample-count silhouette-sample-count
                    :attempts attempts :split split :merge merge)))
     (cl-progress-bar:with-progress-bar
@@ -93,6 +96,7 @@
          "Assigning data set to ~a clusters."
          (length (access-result-cluster-contents state)))
       (assign-clara-data-to-medoids state))
+    (reassign-data-points-from-subminimal-clusters state)
     (replace-indexes-in-clusters-with-data state)
     (obtain-result state (access-silhouette state))))
 
@@ -110,6 +114,7 @@
                                       (:silhouette-sample-size positive-integer)
                                       (:silhouette-sample-count positive-integer)
                                       (:attempts non-negative-fixnum)
+                                      (:minimal-cluster-size positive-fixnum)
                                       (:split (or null positive-fixnum))
                                       (:merge (or null positive-fixnum)))
     clustering-result)
@@ -125,6 +130,7 @@
                                            (attempts 0)
                                            (silhouette-sample-size 500)
                                            (silhouette-sample-count 10)
+                                           (minimal-cluster-size 10)
                                            split
                                            merge)
   (assert (< 0 from to))
@@ -153,6 +159,7 @@
                :silhouette-sample-size silhouette-sample-size
                :silhouette-sample-count silhouette-sample-count
                :select-medoids-attempts-count select-medoids-attempts-count
+               :minimal-cluster-size minimal-cluster-size
                :attempts attempts
                :split split
                :merge merge)))
@@ -168,5 +175,6 @@
          "Assigning data set to ~a clusters."
          (length (access-cluster-contents final)))
       (assign-clara-data-to-medoids final))
+    (reassign-data-points-from-subminimal-clusters final)
     (replace-indexes-in-clusters-with-data final)
     (obtain-result final (access-silhouette final))))

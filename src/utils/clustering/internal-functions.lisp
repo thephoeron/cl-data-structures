@@ -296,16 +296,7 @@
       (iterate
         (for value in-vector cluster)
         (setf (aref indexes position) value)
-        (incf position))
-      (finally
-       (assert (eql position (length indexes)))
-       (assert (iterate
-                 (with data = (sort indexes #'<))
-                 (for i from 1 below (length data))
-                 (for a = (aref data i))
-                 (for p-a = (aref data (1- i)))
-                 (assert (not (eql a p-a)))
-                 (never (eql a p-a)))))))
+        (incf position))))
   indexes)
 
 
@@ -450,8 +441,8 @@
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (map nil (curry #'(setf fill-pointer) 1) %cluster-contents)
     (order-medoids state)
-    (bind ((medoids (lparallel:pmap
-                     'vector
+    (bind ((medoids (lparallel:pmap-into
+                     (copy-array %cluster-contents)
                      (lambda (x)
                        (~>> x first-elt
                             (aref %input-data)
@@ -484,6 +475,48 @@
                                        (aref %cluster-contents target))))))
             (cl-progress-bar:update 1)))
          %all-indexes)))))
+
+
+(defgeneric reassign-data-points-from-cluster (state)
+  (:method ((state clara-algorithm-state))
+    (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+      (let ((length (length %cluster-contents))
+            (last-cluster (last-elt %cluster-contents)))
+        (when (eql 1 length)
+          (error 'program-error "Can't eleminate subminimal cluster, because it is the only one left."))
+        (decf (fill-pointer %cluster-contents))
+        (iterate
+          (with sample = (lret ((sample (select-random-cluster-subsets state)))
+                           (map nil
+                                (lambda (s)
+                                  (map-into s
+                                            (compose %key
+                                                     (curry #'aref %input-data))
+                                            s))
+                                sample)))
+          (for x in-vector last-cluster)
+          (for elt = (funcall %key (aref %input-data x)))
+          (iterate
+            (with result = nil)
+            (for cluster in-vector sample)
+            (for real-cluster in-vector %cluster-contents)
+            (for mean-distance = (mean (map 'vector
+                                            (curry %metric-fn elt)
+                                            cluster)))
+            (minimize mean-distance into mini)
+            (when (= mean-distance mini)
+              (setf result real-cluster))
+            (finally (vector-push-extend x result))))))))
+
+
+(defun reassign-data-points-from-subminimal-clusters (state)
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (iterate
+      (for count = (cl-ds.utils:swap-if %cluster-contents
+                                        (rcurry #'< %minimal-cluster-size)
+                                        :key #'length))
+      (until (zerop count))
+      (reassign-data-points-from-cluster state))))
 
 
 (defun build-clara-clusters (input-data

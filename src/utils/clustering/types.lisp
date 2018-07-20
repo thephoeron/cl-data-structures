@@ -33,6 +33,9 @@
                        :initform nil)
      (%unfinished-clusters :initarg :improvements
                            :accessor access-unfinished-clusters)
+     (%minimal-cluster-size :initarg :minimal-cluster-size
+                            :initform 1
+                            :reader read-minimal-cluster-size)
      (%cluster-size :initarg :cluster-size
                     :type non-negative-fixnum
                     :accessor access-cluster-size)
@@ -96,6 +99,7 @@
   (%split-threshold access-split-threshold)
   (%silhouette-sample-size read-silhouette-sample-size)
   (%silhouette-sample-count read-silhouette-sample-count)
+  (%minimal-cluster-size read-minimal-cluster-size)
   (%merge-threshold access-merge-threshold)
   (%unfinished-clusters access-unfinished-clusters)
   (%select-medoids-attempts-count access-select-medoids-attempts-count)
@@ -106,6 +110,7 @@
 
 (cl-ds.utils:define-list-of-slots clara-algorithm-state
   (%input-data access-input-data)
+  (%minimal-cluster-size read-minimal-cluster-size)
   (%number-of-medoids access-number-of-medoids)
   (%distance-matrix access-distance-matrix)
   (%split-merge-attempts-count access-split-merge-attempts-count)
