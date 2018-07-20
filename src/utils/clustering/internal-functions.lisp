@@ -481,10 +481,9 @@
   (:method ((state clara-algorithm-state))
     (cl-ds.utils:with-slots-for (state pam-algorithm-state)
       (let ((length (length %cluster-contents))
-            (last-cluster (last-elt %cluster-contents)))
-        (when (eql 1 length)
+            (last-cluster (cl-ds.utils:pop-last %cluster-contents)))
+        (when (emptyp %cluster-contents)
           (error 'program-error "Can't eleminate subminimal cluster, because it is the only one left."))
-        (decf (fill-pointer %cluster-contents))
         (iterate
           (with sample = (lret ((sample (select-random-cluster-subsets state)))
                            (map nil
