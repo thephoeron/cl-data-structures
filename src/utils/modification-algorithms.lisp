@@ -106,3 +106,7 @@
     (for (key value) in-hashtable table)
     (setf (gethash value result) key)
     (finally (return result))))
+
+
+(defun adjust-size-to-fill-pointer (array)
+  (adjust-array array (fill-pointer array)))

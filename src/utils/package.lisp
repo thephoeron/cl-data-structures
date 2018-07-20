@@ -8,6 +8,7 @@
    #:add-into-queue
    #:add-sinks
    #:add-to-list
+   #:adjust-size-to-fill-pointer
    #:and*
    #:bind-lambda
    #:cartesian
