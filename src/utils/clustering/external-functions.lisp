@@ -8,6 +8,7 @@
                               (:select-medoids-attempts-count (or null positive-fixnum))
                               (:attempts non-negative-fixnum)
                               (:silhouette-sample-size positive-integer)
+                              (:minimal-cluster-size positive-fixnum)
                               (:silhouette-sample-count positive-integer)
                               (:cluster-sample-size positive-integer)
                               (:split (or null positive-fixnum))
@@ -22,6 +23,7 @@
                                    (silhouette-sample-size 500)
                                    (silhouette-sample-count 10)
                                    (cluster-sample-size 1000)
+                                   (minimal-cluster-size 10)
                                    split
                                    merge)
   (when (or (zerop (length input-data)))
@@ -35,10 +37,12 @@
                      :cluster-sample-size cluster-sample-size
                      :silhouette-sample-size silhouette-sample-size
                      :silhouette-sample-count silhouette-sample-size
+                     :minimal-cluster-size minimal-cluster-size
                      :split-threshold split
                      :merge-threshold merge)))
     (build-pam-clusters state t)
     (assign-data-points-to-medoids state)
+    (reassign-data-points-from-subminimal-clusters state)
     (let ((silhouette (silhouette state)))
       (replace-indexes-in-clusters-with-data state)
       (the clustering-result

@@ -42,6 +42,8 @@
      (%indexes :initarg :indexes
                :type (vector non-negative-fixnum)
                :accessor access-indexes)
+     (%cluster-sample-size :initarg :cluster-sample-size
+                           :reader read-cluster-sample-size)
      (%cluster-contents :initarg :cluster-contents
                         :type vector
                         :accessor access-cluster-contents)))
@@ -68,8 +70,6 @@
      (%index-mapping :initform nil
                      :accessor access-index-mapping
                      :type (or null (simple-array non-negative-fixnum (*))))
-     (%cluster-sample-size :initarg :cluster-sample-size
-                           :reader read-cluster-sample-size)
      (%sample-size :initarg :sample-size
                    :type positive-integer
                    :initform 0
@@ -98,6 +98,7 @@
   (%input-data access-input-data)
   (%number-of-medoids access-number-of-medoids)
   (%distance-matrix access-distance-matrix)
+  (%cluster-sample-size read-cluster-sample-size)
   (%split-merge-attempts-count access-split-merge-attempts-count)
   (%split-threshold access-split-threshold)
   (%silhouette-sample-size read-silhouette-sample-size)

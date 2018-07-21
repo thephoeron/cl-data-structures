@@ -6,7 +6,7 @@
 (defun metric (a b)
   (abs (- a b)))
 
-(plan 3)
+(plan 4)
 
 (let* ((data (concatenate 'vector
                           (map-into (make-array 100)
@@ -47,14 +47,22 @@
                                     (cl-ds.utils:lazy-shuffle 500 800))
                           (map-into (make-array 100)
                                     (cl-ds.utils:lazy-shuffle 200 300))))
-       (clusters (cl-ds.utils.cluster:clara data 5
-                                            'fixnum
-                                            #'metric
-                                            150 25
-                                            :attempts 5
-                                            :split 75
-                                            :minimal-cluster-size 150
-                                            :merge 50)))
+       (distance-matrix (cl-ds.utils:make-distance-matrix-from-vector
+                         'fixnum #'metric
+                         data))
+       (clusters (cl-ds.utils.cluster:partition-around-medoids
+                  data distance-matrix 10 :attempts 5 :split 105 :merge 50
+                                          :minimal-cluster-size 150))
+       (clara-clusters (cl-ds.utils.cluster:clara data 5
+                                                  'fixnum
+                                                  #'metric
+                                                  150 25
+                                                  :attempts 5
+                                                  :split 75
+                                                  :minimal-cluster-size 150
+                                                  :merge 50)))
+  (ok (every (lambda (x) (>= (length x) 150))
+             (cl-ds.utils.cluster:read-cluster-contents clara-clusters)))
   (ok (every (lambda (x) (>= (length x) 150))
              (cl-ds.utils.cluster:read-cluster-contents clusters))))
 

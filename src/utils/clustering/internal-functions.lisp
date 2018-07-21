@@ -117,10 +117,10 @@
                                'single-float))))))
 
 
-(-> inter-cluster-distances (pam-algorithm-state vector vector) (vector single-float))
+(-> inter-cluster-distances (pam-algorithm-state vector vector) vector)
 (defun inter-cluster-distances (state sample cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (map '(vector single-float)
+    (map 'vector
          (lambda (k)
            (iterate
              (for other-cluster in-vector sample)
