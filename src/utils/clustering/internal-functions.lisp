@@ -133,7 +133,7 @@
 (defun select-random-cluster-subsets (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (let* ((sample-size %silhouette-sample-size)
-           (sample-ratio (min 1 (/ sample-size %sample-size))))
+           (sample-ratio (min 1 (/ sample-size (length %input-data)))))
       (map 'vector
            (lambda (cluster)
              (let* ((size (length cluster))
@@ -262,9 +262,9 @@
                         (length %cluster-contents)))
                 (clusters-with-optimal-size right-size)
                 (when (= right-size clusetrs-with-optimal-size)
-                  (setf optimal-content (map 'vector
-                                             #'copy-array
-                                             %cluster-contents)))
+                  (setf optimal-content (map-into (copy-array %cluster-contents)
+                                                  #'copy-array
+                                                  %cluster-contents)))
                 (finally (setf %cluster-contents optimal-content))))))
      (iterate
        (with attempts = %select-medoids-attempts-count)
@@ -432,9 +432,9 @@
       (when (or (null %silhouette)
                 (> silhouette %silhouette))
         (setf %silhouette silhouette
-              %result-cluster-contents (map 'vector
-                                            #'copy-array
-                                            %cluster-contents))))))
+              %result-cluster-contents (map-into (copy-array %cluster-contents)
+                                                 #'copy-array
+                                                 %cluster-contents))))))
 
 
 (defun assign-clara-data-to-medoids (state)
@@ -477,35 +477,72 @@
          %all-indexes)))))
 
 
-(defgeneric reassign-data-points-from-cluster (state)
+(defgeneric draw-cluster-sample (state)
   (:method ((state clara-algorithm-state))
+    (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+      (map 'vector
+           (lambda (s)
+             (map-into (make-array %cluster-sample-size)
+                       (lambda ()
+                         (~> (length s)
+                             random
+                             (aref s _)
+                             (aref %input-data _)
+                             (funcall %key _)))))
+           %cluster-contents)))
+  (:method ((state pam-algorithm-state))
     (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-      (let ((length (length %cluster-contents))
-            (last-cluster (cl-ds.utils:pop-last %cluster-contents)))
-        (when (emptyp %cluster-contents)
-          (error 'program-error "Can't eleminate subminimal cluster, because it is the only one left."))
+      (map 'vector
+           (lambda (s)
+             (map-into (make-array %cluster-sample-size)
+                       (lambda ()
+                         (~> (length s)
+                             random
+                             (aref s _)))))
+           %cluster-contents))))
+
+
+(defgeneric mean-distance-to-cluster (state element cluster)
+  (:method ((state clara-algorithm-state) element cluster)
+    (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+      (mean (map 'vector
+                 (curry %metric-fn element)
+                 cluster))))
+  (:method ((state pam-algorithm-state) element cluster)
+    (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+      (mean (map 'vector
+                 (curry #'cl-ds.utils:mref %distance-matrix element)
+                 cluster)))))
+
+
+(defgeneric for-distance-calculation (state index)
+  (:method ((state clara-algorithm-state) index)
+    (cl-ds.utils:with-slots-for (state clara-algorithm-state)
+      (funcall %key (aref %input-data index))))
+  (:method ((state pam-algorithm-state) index)
+    index))
+
+
+(defun reassign-data-points-from-cluster (state)
+  (cl-ds.utils:with-slots-for (state pam-algorithm-state)
+    (let ((last-cluster (cl-ds.utils:pop-last %cluster-contents)))
+      (when (emptyp %cluster-contents)
+        (error 'program-error "Can't eleminate subminimal cluster, because it is the only one left."))
+      (iterate
+        (with sample = (draw-cluster-sample state))
+        (for x in-vector last-cluster)
+        (for elt = (for-distance-calculation state x))
         (iterate
-          (with sample = (lret ((sample (select-random-cluster-subsets state)))
-                           (map nil
-                                (lambda (s)
-                                  (map-into s
-                                            (compose %key
-                                                     (curry #'aref %input-data))
-                                            s))
-                                sample)))
-          (for x in-vector last-cluster)
-          (for elt = (funcall %key (aref %input-data x)))
-          (iterate
-            (with result = nil)
-            (for cluster in-vector sample)
-            (for real-cluster in-vector %cluster-contents)
-            (for mean-distance = (mean (map 'vector
-                                            (curry %metric-fn elt)
-                                            cluster)))
-            (minimize mean-distance into mini)
-            (when (= mean-distance mini)
-              (setf result real-cluster))
-            (finally (vector-push-extend x result))))))))
+          (with result = nil)
+          (for cluster in-vector sample)
+          (for real-cluster in-vector %cluster-contents)
+          (for mean-distance = (mean-distance-to-cluster state
+                                                         elt
+                                                         cluster))
+          (minimize mean-distance into mini)
+          (when (= mean-distance mini)
+            (setf result real-cluster))
+          (finally (vector-push-extend x result)))))))
 
 
 (defun reassign-data-points-from-subminimal-clusters (state)
@@ -529,7 +566,9 @@
                                (select-medoids-attempts-count 50)
                                (silhouette-sample-size 500)
                                (silhouette-sample-count 10)
+                               (cluster-sample-size 1000)
                                (attempts 0)
+                               (minimal-cluster-size 10)
                                split
                                merge)
   (when (emptyp input-data)
@@ -543,6 +582,8 @@
                      :split-threshold split
                      :silhouette-sample-size silhouette-sample-size
                      :silhouette-sample-count silhouette-sample-count
+                     :cluster-sample-size cluster-sample-size
+                     :minimal-cluster-size minimal-cluster-size
                      :key key
                      :metric-fn metric-fn
                      :sample-count sample-count

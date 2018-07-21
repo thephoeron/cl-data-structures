@@ -6,7 +6,7 @@
 (defun metric (a b)
   (abs (- a b)))
 
-(plan 2)
+(plan 3)
 
 (let* ((data (concatenate 'vector
                           (map-into (make-array 100)
@@ -39,5 +39,23 @@
   (is (sort clara-total #'<)
       (sort data #'<)
       :test #'serapeum:vector=))
+
+(let* ((data (concatenate 'vector
+                          (map-into (make-array 100)
+                                    (cl-ds.utils:lazy-shuffle 0 100))
+                          (map-into (make-array 100)
+                                    (cl-ds.utils:lazy-shuffle 500 800))
+                          (map-into (make-array 100)
+                                    (cl-ds.utils:lazy-shuffle 200 300))))
+       (clusters (cl-ds.utils.cluster:clara data 5
+                                            'fixnum
+                                            #'metric
+                                            150 25
+                                            :attempts 5
+                                            :split 75
+                                            :minimal-cluster-size 150
+                                            :merge 50)))
+  (ok (every (lambda (x) (>= (length x) 150))
+             (cl-ds.utils.cluster:read-cluster-contents clusters))))
 
 (finalize)

@@ -9,6 +9,7 @@
                               (:attempts non-negative-fixnum)
                               (:silhouette-sample-size positive-integer)
                               (:silhouette-sample-count positive-integer)
+                              (:cluster-sample-size positive-integer)
                               (:split (or null positive-fixnum))
                               (:merge (or null positive-fixnum)))
     clustering-result)
@@ -20,6 +21,7 @@
                                    (attempts 0)
                                    (silhouette-sample-size 500)
                                    (silhouette-sample-count 10)
+                                   (cluster-sample-size 1000)
                                    split
                                    merge)
   (when (or (zerop (length input-data)))
@@ -30,8 +32,9 @@
                      :distance-matrix distance-matrix
                      :split-merge-attempts-count attempts
                      :select-medoids-attempts-count select-medoids-attempts-count
+                     :cluster-sample-size cluster-sample-size
                      :silhouette-sample-size silhouette-sample-size
-                     :silhouette-sample-count silhouette-sample-count
+                     :silhouette-sample-count silhouette-sample-size
                      :split-threshold split
                      :merge-threshold merge)))
     (build-pam-clusters state t)
@@ -55,6 +58,7 @@
            (:silhouette-sample-size positive-integer)
            (:silhouette-sample-count positive-integer)
            (:attempts non-negative-fixnum)
+           (:cluster-sample-size positive-integer)
            (:minimal-cluster-size positive-fixnum)
            (:split (or null positive-fixnum))
            (:merge (or null positive-fixnum)))
@@ -71,6 +75,7 @@
                 (attempts 0)
                 (silhouette-sample-size 500)
                 (silhouette-sample-count 10)
+                (cluster-sample-size 1000)
                 (minimal-cluster-size 10)
                 split
                 merge)
@@ -88,8 +93,9 @@
                    :key (ensure-function key)
                    :select-medoids-attempts-count select-medoids-attempts-count
                    :silhouette-sample-size silhouette-sample-size
+                   :cluster-sample-size cluster-sample-size
                    :minimal-cluster-size minimal-cluster-size
-                   :silhouette-sample-count silhouette-sample-count
+                   :silhouette-sample-count silhouette-sample-size
                    :attempts attempts :split split :merge merge)))
     (cl-progress-bar:with-progress-bar
         ((length input-data)
@@ -113,6 +119,7 @@
                                       (:select-medoids-attempts-count (or null positive-fixnum))
                                       (:silhouette-sample-size positive-integer)
                                       (:silhouette-sample-count positive-integer)
+                                      (:cluster-sample-size positive-integer)
                                       (:attempts non-negative-fixnum)
                                       (:minimal-cluster-size positive-fixnum)
                                       (:split (or null positive-fixnum))
@@ -131,6 +138,7 @@
                                            (silhouette-sample-size 500)
                                            (silhouette-sample-count 10)
                                            (minimal-cluster-size 10)
+                                           (cluster-sample-size 1000)
                                            split
                                            merge)
   (assert (< 0 from to))
@@ -157,8 +165,9 @@
                sample-size sample-count
                :key key
                :silhouette-sample-size silhouette-sample-size
-               :silhouette-sample-count silhouette-sample-count
+               :silhouette-sample-count silhouette-sample-size
                :select-medoids-attempts-count select-medoids-attempts-count
+               :cluster-sample-size cluster-sample-size
                :minimal-cluster-size minimal-cluster-size
                :attempts attempts
                :split split

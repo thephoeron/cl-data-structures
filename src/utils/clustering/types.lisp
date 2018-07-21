@@ -68,8 +68,11 @@
      (%index-mapping :initform nil
                      :accessor access-index-mapping
                      :type (or null (simple-array non-negative-fixnum (*))))
+     (%cluster-sample-size :initarg :cluster-sample-size
+                           :reader read-cluster-sample-size)
      (%sample-size :initarg :sample-size
                    :type positive-integer
+                   :initform 0
                    :accessor access-sample-size)
      (%silhouette :initform nil
                   :type (or null (vector number))
@@ -110,6 +113,7 @@
 
 (cl-ds.utils:define-list-of-slots clara-algorithm-state
   (%input-data access-input-data)
+  (%cluster-sample-size read-cluster-sample-size)
   (%minimal-cluster-size read-minimal-cluster-size)
   (%number-of-medoids access-number-of-medoids)
   (%distance-matrix access-distance-matrix)
