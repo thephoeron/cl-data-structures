@@ -38,6 +38,9 @@
 
 
 (defun apply-alias (aliases dimension position)
+  (when (null position)
+    (error 'type-error :expected-type '(or symbol fixnum)
+           :datum position))
   (if (symbolp position)
       (lret ((result (gethash (cons dimension position) aliases)))
         (when (null result)
@@ -59,11 +62,11 @@
 (defun proxy-plane (data locations)
   (let ((old-aliases (read-reverse-aliases data))
         (old-dimensionality (cl-ds:dimensionality data))
-        (new-aliases (make-hash-table :test 'eql))
-        (new-reverse-alias (make-hash-table :test 'equal)))
+        (revert-aliases (make-hash-table :test 'equal))
+        (new-aliases (make-hash-table :test 'equal)))
     (iterate
-      (for (key value) in-hashtable old-aliases)
-      (for (dimension . position) = key)
+      (for (key position) in-hashtable old-aliases)
+      (for (dimension . name) = key)
       (for found = (find dimension locations :key #'first))
       (when found
         (next-iteration))
@@ -72,17 +75,19 @@
                                     :key #'car)
                        1))
       (for new-dimension = (- dimension (1- index)))
-      (setf (gethash (cons new-dimension position) new-aliases) value))
+      (setf (gethash (cons new-dimension position) revert-aliases) name
+            (gethash (cons new-dimension name) new-aliases) position))
     (make 'proxy-data-frame
+          :reverse-alias revert-aliases
+          :dimensionality (- old-dimensionality (length locations))
+          :aliases new-aliases
           :inner-data-frame data
-          :aliases (~> data read-aliases copy-hash-table)
-          :dimensionality (- (cl-ds:dimensionality data)
-                             (length locations))
           :pinned-axis locations)))
 
 
 (defun at-data-frame (data-frame address)
   (ensure-dimensionality data-frame address)
+  (apply-aliases (read-aliases data-frame) address)
   (ensure-in-frame data-frame address)
   (at-data (access-data data-frame)
            address))
@@ -90,21 +95,25 @@
 
 (defun set-at-data-frame (new-value data-frame address)
   (ensure-dimensionality data-frame address)
+  (apply-aliases (read-aliases data-frame) address)
   (ensure-in-frame data-frame address)
   (set-at-data new-value
                (access-data data-frame)
                address))
 
 
-(defun proxy-data-frame-effective-address (data-frame more)
-  (iterate
-    (with axis = (read-pinned-axis data-frame))
-    (with effective-address = (make-list (cl-ds:dimensionality data-frame)))
-    (for addr on effective-address)
-    (for i from 0)
-    (if (eql (caar axis) i)
-        (setf (car addr) (cadar axis)
-              axis (rest axis))
-        (setf (car addr) (first more)
-              more (rest more)))
-    (finally (return (apply-aliases data-frame effective-address)))))
+(defun insert-pinned-axis (object address)
+  (lret ((result (~> object
+                     read-inner-data-frame
+                     cl-ds:dimensionality
+                     make-list)))
+    (iterate
+      (with axis = (read-pinned-axis object))
+      (for dimension = (caar axis))
+      (for cell on result)
+      (for i from 0)
+      (if (eql i dimension)
+          (setf (car cell) (cadar axis)
+                axis (rest axis))
+          (setf (car cell) (first address)
+                address (rest address))))))

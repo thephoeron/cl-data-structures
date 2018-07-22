@@ -13,6 +13,10 @@
     :bounds #1#)))
 
 
+(defun fixnump (x)
+  (typep x 'fixnum))
+
+
 (defun ensure-in-frame (object more)
   (iterate
     (for m in more)
@@ -35,28 +39,31 @@
 
 (defmethod cl-ds:at ((object data-frame) location &rest more)
   (push location more)
-  (apply-aliases (read-aliases object) more)
   (at-data-frame object more))
 
 
 (defmethod (setf cl-ds:at) (new-value (object data-frame) location &rest more)
   (push location more)
-  (apply-aliases (read-aliases object) more)
   (set-at-data-frame new-value object more))
 
 
 (defmethod cl-ds:at ((object proxy-data-frame) location &rest more)
-  (at-data-frame (read-inner-data-frame object)
-                 (proxy-data-frame-effective-address object
-                                                     (cons location more))))
+  (push location more)
+  (ensure-dimensionality object more)
+  (apply-aliases object more)
+  (setf more (insert-pinned-axis object more))
+  (at-data-frame (read-inner-data-frame object) more))
 
 
 (defmethod (setf cl-ds:at) (new-value (object proxy-data-frame)
                             location &rest more)
+  (push location more)
+  (ensure-dimensionality object more)
+  (apply-aliases object more)
+  (setf more (insert-pinned-axis object more))
   (set-at-data-frame new-value
                      (read-inner-data-frame object)
-                     (proxy-data-frame-effective-address object
-                                                         (cons location more))))
+                     (proxy-data-frame-effective-address object more)))
 
 
 (defmethod cl-ds:dimensionality ((object proxy-data-frame))

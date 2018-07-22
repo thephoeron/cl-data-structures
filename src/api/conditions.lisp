@@ -83,6 +83,10 @@
   ())
 
 
+(defmethod print-condition ((condition dimensionality-error) stream)
+  (format stream "Dimensionality is ~a." (read-bounds condition)))
+
+
 (defmethod print-condition ((condition argument-out-of-bounds) stream)
   (format stream "Argument ~A has value ~a which is out of bounds ~a~%"
           (read-argument condition)

@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 55)
+(plan 59)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -38,8 +38,8 @@
     (cl-ds.df:mutate! frame
                       1
                       (lambda () (iterate
-                              (for j from 0 below 3)
-                              (is (cl-ds.df:cell j) (incf i)))))))
+                                   (for j from 0 below 3)
+                                   (is (cl-ds.df:cell j) (incf i)))))))
 
 (let ((frame (cl-ds.df:stack 0 #(1 2 3) #(3 4 5))))
   (is (cl-ds:dimensionality frame) 2)
@@ -86,5 +86,12 @@
 
 (is-error (cl-ds.df:stack 0.2 #(1 2 3) #(3 4 5))
           'cl:type-error)
+
+(let* ((frame (cl-ds.df:stack 0 #(1 2 3) #(4 5 6) #(7 8 9)))
+       (slice (cl-ds.df:plane frame 1 0)))
+  (is (cl-ds:dimensionality slice) 1)
+  (is (cl-ds:at slice 0) 1)
+  (is (cl-ds:at slice 1) 4)
+  (is (cl-ds:at slice 2) 7))
 
 (finalize)

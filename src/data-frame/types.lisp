@@ -6,6 +6,7 @@
  (defclass fundamental-data-frame ())
  ((%aliases :initform (make-hash-table :test 'equal)
             :reader read-aliases
+            :initarg :aliases
             :type hash-table)
   (%reverse-alias :initarg :reverse-alias
                   :reader read-reverse-aliases
