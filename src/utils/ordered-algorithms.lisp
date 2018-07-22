@@ -14,8 +14,8 @@
      (always (funcall fn pelt elt))))) ()
 
 
-(-> merge-ordered-vectors (symbol (-> (t t) boolean) vector &rest vector) vector)
-(defun merge-ordered-vectors (result-type compare-fn vector &rest vectors)
+(-> merge-ordered-vectors (vector (-> (t t) boolean) vector &rest vector) vector)
+(defun merge-ordered-vectors (result compare-fn vector &rest vectors)
   "Take few ordered vectors (by function compare-fn) and create new vector of element-type RESULT-TYPE by copying values from vectors in such way that it is also ordered. Return new vector.
 
  @b(Arguments and values:)
@@ -28,10 +28,7 @@
 
  @b(Side effects:) none."
   (let* ((vectors (cons vector vectors))
-         (result (make-array 0
-                             :adjustable t
-                             :element-type result-type
-                             :fill-pointer 0))
+         (position 0)
          (index.vector (make-array 0
                                    :element-type 'list
                                    :adjustable t
@@ -42,6 +39,7 @@
                                            index.vector)))
          vectors)
     (iterate
+      (while (< position (length result)))
       (for item = (iterate
                     (for current index-of-vector index.vector)
                     (for (index . vector) = (aref index.vector current))
@@ -53,7 +51,8 @@
                     (finally (return minimum))))
       (while item)
       (for (minimum . index) = item)
-      (vector-push-extend minimum result)
+      (setf (aref result position) minimum)
+      (incf position)
       (for current = (aref index.vector index))
       (when  (= (incf (car current))
                 (array-dimension (cdr current)
