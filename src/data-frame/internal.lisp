@@ -59,7 +59,38 @@
     (finally (return locations))))
 
 
+(defun select-bounds (bounds locations)
+  (iterate
+    (with j = 0)
+    (with result = (~> bounds
+                       length
+                       (- (length locations))
+                       (make-array :element-type 'non-negative-fixnum)))
+    (for i from 0)
+    (for val in-vector bounds)
+    (when (eql i (caar locations))
+      (setf locations (rest locations))
+      (next-iteration))
+    (setf (aref result j) val)
+    (incf j)
+    (finally (return result))))
+
+
 (defun proxy-plane (data locations)
+  (iterate
+    (for (axis position) in locations)
+    (unless (< axis (cl-ds:dimensionality data))
+      (error 'cl-ds:dimensionality-error
+             :value axis
+             :bounds `(0 ,(cl-ds:dimensionality data))
+             :text "No such axis in the frame."))
+    (unless (<= #1=(aref (read-lower-bounds data) axis)
+                position
+                #2=(1- (aref (read-upper-bounds data) axis)))
+      (error 'cl-ds:argument-out-of-bounds
+             :value position
+             :bounds (list #1# #2#)
+             :text "No such position on axis.")))
   (let ((old-aliases (read-reverse-aliases data))
         (old-dimensionality (cl-ds:dimensionality data))
         (revert-aliases (make-hash-table :test 'equal))
@@ -78,6 +109,10 @@
       (setf (gethash (cons new-dimension position) revert-aliases) name
             (gethash (cons new-dimension name) new-aliases) position))
     (make 'proxy-data-frame
+          :lower-bounds (select-bounds (read-lower-bounds data)
+                                       locations)
+          :upper-bounds (select-bounds (read-upper-bounds data)
+                                       locations)
           :reverse-alias revert-aliases
           :dimensionality (- old-dimensionality (length locations))
           :aliases new-aliases
