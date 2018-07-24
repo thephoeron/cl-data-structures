@@ -104,10 +104,10 @@
       (for index = (or (position-if (lambda (x) (> x dimension))
                                     locations
                                     :key #'car)
-                       1))
-      (for new-dimension = (- dimension (1- index)))
-      (setf (gethash (cons new-dimension position) revert-aliases) name
-            (gethash (cons new-dimension name) new-aliases) position))
+                       0))
+      (for new-dimension = (- dimension index))
+      (setf (gethash (cons new-dimension position) new-aliases) name
+            (gethash (cons new-dimension name) revert-aliases) position))
     (make 'proxy-data-frame
           :lower-bounds (select-bounds (read-lower-bounds data)
                                        locations)
