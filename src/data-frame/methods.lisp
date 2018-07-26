@@ -66,10 +66,6 @@
                      (proxy-data-frame-effective-address object more)))
 
 
-(defmethod cl-ds:dimensionality ((object proxy-data-frame))
-  (cl-ds:dimensionality (read-inner-data-frame object)))
-
-
 (-> mutable-data (cl-ds.seqs.rrb:mutable-rrb-vector non-negative-fixnum)
     cl-ds.seqs.rrb:transactional-rrb-vector)
 (defun transactional-data (data count)

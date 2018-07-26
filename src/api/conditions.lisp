@@ -116,6 +116,11 @@
   (call-next-method))
 
 
+(defmethod print-condition ((condition invalid-argument) stream)
+  (format stream "Invalid argument ~a."
+          (read-argument condition)))
+
+
 (defmethod print-condition ((condition unexpected-argument) stream)
   (format stream "Argument ~A was not expected.~%"
           (read-argument condition))

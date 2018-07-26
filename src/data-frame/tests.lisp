@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 59)
+(plan 70)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -107,7 +107,11 @@
   (is (cl-ds:at slice 1) 4)
   (is (cl-ds:at slice 2) 7)
   (setf (cl-ds.df:alias frame 0 0) :column0)
+  (setf (cl-ds.df:alias frame 0 1) :column1)
   (setf slice (cl-ds.df:plane frame 1 0))
-  (is (cl-ds.df:alias slice 0 0) :column0))
+  (is (cl-ds.df:alias slice 0 0) :column0)
+  (is (cl-ds.df:alias slice 0 1) :column1)
+  (is (cl-ds:at slice :column0) 1)
+  (is (cl-ds:at slice :column1) 4))
 
 (finalize)
