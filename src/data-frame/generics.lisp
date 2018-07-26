@@ -11,3 +11,5 @@
 (defgeneric (setf alias) (name data dimension position))
 (defgeneric alias (data dimension position))
 (defgeneric add-plane (data dimension plane))
+(defgeneric at-cell (object location &rest more-locations))
+(defgeneric (setf at-cell) (new-value object location &rest more-locations))

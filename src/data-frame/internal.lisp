@@ -154,13 +154,11 @@
                 address (rest address))))))
 
 
-(defun common-mutate! (dimension accessor data function ranges)
+(defun common-mutate! (from to accessor function ranges)
   (let ((*active-data* accessor))
     (block outer
       (iterate
-        (for i
-             from (~> data read-lower-bounds (aref dimension))
-             below (~> data read-upper-bounds (aref dimension)))
+        (for i from from below to)
         (for extra-data =
              (iterate
                (for range in ranges)

@@ -99,7 +99,9 @@
          (new-instance (transactional-data old-instance
                                            (cl-ds:dimensionality data)))
          (accessor (make-data-accessor new-instance data dimension)))
-    (common-mutate! dimension accessor data function ranges)
+    (common-mutate! (~> data read-lower-bounds (aref dimension))
+                    (~> data read-upper-bounds (aref dimension))
+                    accessor function ranges)
     (setf (access-data data)
           (mutable-data new-instance
                         (cl-ds:dimensionality data)))
@@ -113,7 +115,9 @@
                                                read-inner-data-frame
                                                cl-ds:dimensionality)))
          (accessor (make-data-accessor new-instance data dimension)))
-    (common-mutate! dimension accessor data function ranges)
+    (common-mutate! (~> data read-lower-bounds (aref dimension))
+                    (~> data read-upper-bounds (aref dimension))
+                    accessor function ranges)
     (setf (~> data read-inner-data-frame access-data)
           (mutable-data new-instance
                         (~> data
@@ -197,3 +201,64 @@
             (check-type (first m) (or symbol integer))
             (setf (first m) (apply-alias aliases (first p-m) (first m)))))
         (proxy-plane data (~> more (batches 2) (sort #'< :key #'car))))))
+
+
+(defmethod at-cell ((object data-accessor)
+                    location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases object) location)
+    (ensure-dimensionality frame location)
+    (ensure-in-frame frame location)
+    (nth-value 0 (at-data (read-data object) location))))
+
+
+(defmethod (setf at-cell) (new-value
+                           (object data-accessor)
+                           location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases object) location)
+    (ensure-dimensionality frame location)
+    (ensure-in-frame frame location)
+    (set-at-data new-value (read-data object) location)
+    (cl-ds:force new-value)))
+
+
+(defmethod at-cell ((object proxy-data-accessor)
+                    location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases frame) location)
+    (ensure-dimensionality frame location)
+    (ensure-in-frame frame location)
+    (setf location (insert-pinned-axis frame location))
+    (setf location (proxy-data-frame-effective-address object location))
+    (apply-aliases (~> frame read-inner-data-frame read-aliases)
+                   location)
+    (at-data (read-data object) location)))
+
+
+(defmethod (setf at-cell) (new-value
+                           (object proxy-data-accessor)
+                           location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases frame) location)
+    (ensure-dimensionality frame location)
+    (setf location (insert-pinned-axis frame location))
+    (ensure-in-frame frame location)
+    (setf location (proxy-data-frame-effective-address object location))
+    (apply-aliases (~> frame read-inner-data-frame read-aliases)
+                   location)
+    (set-at-data new-value
+                 (read-data object)
+                 location)))

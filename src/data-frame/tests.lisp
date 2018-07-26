@@ -112,6 +112,23 @@
   (is (cl-ds.df:alias slice 0 0) :column0)
   (is (cl-ds.df:alias slice 0 1) :column1)
   (is (cl-ds:at slice :column0) 1)
-  (is (cl-ds:at slice :column1) 4))
+  (is (cl-ds:at slice :column1) 4)
+  (let ((i 0))
+    (cl-ds.df:mutate! slice
+                      0
+                      (lambda ()
+                        (iterate
+                          (for j from 0 below 3)
+                          (is (cl-ds.df:cell j) (incf i))))))
+  (is (cl-ds:at slice 0) 1)
+  (is (cl-ds:at slice 1) 2)
+  (is (cl-ds:at slice 2) 3)
+  (is (cl-ds:at frame 0 0) 1)
+  (is (cl-ds:at frame 0 1) 2)
+  (is (cl-ds:at frame 0 2) 3)
+  (is (cl-ds:at frame 1 0) 2)
+  (is (cl-ds:at frame 1 1) 5)
+  (is (cl-ds:at frame 1 2) 8)
+  )
 
 (finalize)
