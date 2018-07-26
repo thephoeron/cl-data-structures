@@ -50,7 +50,7 @@
 (defmethod cl-ds:at ((object proxy-data-frame) location &rest more)
   (push location more)
   (ensure-dimensionality object more)
-  (apply-aliases object more)
+  (apply-aliases (read-aliases object) more)
   (setf more (insert-pinned-axis object more))
   (at-data-frame (read-inner-data-frame object) more))
 
@@ -59,7 +59,7 @@
                             location &rest more)
   (push location more)
   (ensure-dimensionality object more)
-  (apply-aliases object more)
+  (apply-aliases (read-aliases object) more)
   (setf more (insert-pinned-axis object more))
   (set-at-data-frame new-value
                      (read-inner-data-frame object)
@@ -102,28 +102,30 @@
   (bind ((old-instance (access-data data))
          (new-instance (transactional-data old-instance
                                            (cl-ds:dimensionality data)))
-         (*active-data* (make-data-accessor new-instance data dimension)))
-    (block outer
-      (iterate
-        (for i
-             from (~> data read-lower-bounds (aref dimension))
-             below (~> data read-upper-bounds (aref dimension)))
-        (for extra-data =
-             (iterate
-               (for range in ranges)
-               (for (values value more) = (cl-ds:consume-front range))
-               (unless more
-                 (return-from outer))
-               (collect value)))
-        (setf (access-position *active-data*) i)
-        (apply function extra-data)))
+         (accessor (make-data-accessor new-instance data dimension)))
+    (common-mutate! dimension accessor data function ranges)
     (setf (access-data data)
           (mutable-data new-instance
                         (cl-ds:dimensionality data)))
     data))
 
 
-(defmethod cl-ds:size ((container data-frame))
+(defmethod mutate! ((data proxy-data-frame) dimension function &rest ranges)
+  (bind ((old-instance (~> data read-inner-data-frame access-data))
+         (new-instance (transactional-data old-instance
+                                           (~> data
+                                               read-inner-data-frame
+                                               cl-ds:dimensionality)))
+         (accessor (make-data-accessor new-instance data dimension)))
+    (common-mutate! dimension accessor data function ranges)
+    (setf (~> data read-inner-data-frame access-data)
+          (mutable-data new-instance
+                        (~> data
+                            read-inner-data-frame
+                            cl-ds:dimensionality)))))
+
+
+(defmethod cl-ds:size ((container fundamental-data-frame))
   (iterate
     (for u in-vector (read-upper-bounds container))
     (for l in-vector (read-lower-bounds container))

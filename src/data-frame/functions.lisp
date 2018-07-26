@@ -117,7 +117,14 @@
   (plane data number nil))
 
 
-(defun at-cell (object location &rest more-locations)
+(defgeneric at-cell (object location &rest more-locations))
+
+
+(defgeneric (setf at-cell) (new-value object location &rest more-locations))
+
+
+(defmethod at-cell ((object data-accessor)
+                    location &rest more-locations)
   (let ((frame (read-frame object))
         (location (location-list (cons location more-locations)
                                  (read-dimension object)
@@ -128,7 +135,9 @@
     (nth-value 0 (at-data (read-data object) location))))
 
 
-(defun (setf at-cell) (new-value object location &rest more-locations)
+(defmethod (setf at-cell) (new-value
+                           (object data-accessor)
+                           location &rest more-locations)
   (let ((frame (read-frame object))
         (location (location-list (cons location more-locations)
                                  (read-dimension object)
@@ -138,6 +147,41 @@
     (ensure-in-frame frame location)
     (set-at-data new-value (read-data object) location)
     (cl-ds:force new-value)))
+
+
+(defmethod at-cell ((object proxy-data-accessor)
+                    location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases frame) location)
+    (ensure-dimensionality frame location)
+    (ensure-in-frame frame location)
+    (setf location (insert-pinned-axis frame location))
+    (setf location (proxy-data-frame-effective-address object location))
+    (apply-aliases (~> frame read-inner-data-frame read-aliases)
+                   location)
+    (at-data (read-data object) location)))
+
+
+(defmethod (setf at-cell) (new-value
+                           (object proxy-data-accessor)
+                           location &rest more-locations)
+  (let ((frame (read-frame object))
+        (location (location-list (cons location more-locations)
+                                 (read-dimension object)
+                                 (access-position object))))
+    (apply-aliases (read-aliases frame) location)
+    (ensure-dimensionality frame location)
+    (ensure-in-frame frame location)
+    (setf location (insert-pinned-axis frame location))
+    (setf location (proxy-data-frame-effective-address object location))
+    (apply-aliases (~> frame read-inner-data-frame read-aliases)
+                   location)
+    (set-at-data new-value
+                 (read-data object)
+                 location)))
 
 
 (defun cell (&rest locations)

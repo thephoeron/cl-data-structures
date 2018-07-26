@@ -68,6 +68,12 @@
 
 (nest
  (locally (declare (optimize (safety 3))))
+ (defclass proxy-data-accessor (data-accessor))
+ ())
+
+
+(nest
+ (locally (declare (optimize (safety 3))))
  (defclass fundamental-frame-dimension (cl-ds:fundamental-random-access-range))
  ((%dimension :initarg :dimension
               :reader read-dimension
@@ -85,9 +91,16 @@
           :type cl-ds:fundamental-random-access-range)))
 
 
-(defun make-data-accessor (data instance dimension)
-  (make 'data-accessor
-        :frame instance
-        :aliases (read-aliases instance)
-        :dimension dimension
-        :data data))
+(defgeneric make-data-accessor (data instance dimension)
+  (:method (data (instance data-frame) dimension)
+    (make 'data-accessor
+          :frame instance
+          :aliases (read-aliases instance)
+          :dimension dimension
+          :data data))
+  (:method (data (instance proxy-data-frame) dimension)
+    (make 'proxy-data-accessor
+          :frame instance
+          :aliases (read-aliases instance)
+          :dimension dimension
+          :data data)))
