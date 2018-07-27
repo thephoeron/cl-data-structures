@@ -1,42 +1,6 @@
 (in-package #:cl-data-structures.data-frame)
 
 
-(defun ensure-dimensionality (object more)
-  (nest
-   (unless (= #1=(cl-ds:dimensionality object) #2=(length more)))
-   (error
-    'cl-ds:dimensionality-error
-    :text (format nil
-                  "Passed ~a arguments but data-frame dimensionality is ~a."
-                  #2# #1#)
-    :value #2#
-    :bounds #1#)))
-
-
-(defun fixnump (x)
-  (typep x 'fixnum))
-
-
-(defun ensure-in-frame (object more)
-  (iterate
-    (for m in more)
-    (unless (fixnump m)
-      (error 'cl:type-error :datum m
-                            :expected-type 'non-negative-fixnum)))
-  (when (some (curry #'> 0) more)
-    (error 'cl-ds:argument-out-of-bounds
-           :bounds "Must be non negative."
-           :argument 'location
-           :value more
-           :text "Part of location is negative."))
-  (unless (every #'< more #1=(read-upper-bounds object))
-    (error 'cl-ds:argument-out-of-bounds
-           :bounds #1#
-           :value more
-           :argument 'location
-           :text "No such position in the data frame.")))
-
-
 (defmethod cl-ds:at ((object data-frame) location &rest more)
   (push location more)
   (at-data-frame object more))
@@ -117,7 +81,9 @@
          (accessor (make-data-accessor new-instance data dimension)))
     (common-mutate! (~> data read-lower-bounds (aref dimension))
                     (~> data read-upper-bounds (aref dimension))
-                    accessor function ranges)
+                    accessor
+                    function
+                    ranges)
     (setf (~> data read-inner-data-frame access-data)
           (mutable-data new-instance
                         (~> data
@@ -231,15 +197,16 @@
 
 (defmethod at-cell ((object proxy-data-accessor)
                     location &rest more-locations)
-  (let ((frame (read-frame object))
-        (location (location-list (cons location more-locations)
-                                 (read-dimension object)
-                                 (access-position object))))
+  (let* ((frame (read-frame object))
+         (inner-data-frame (read-inner-data-frame frame))
+         (location (location-list (cons location more-locations)
+                                  (read-dimension object)
+                                  (access-position object))))
     (apply-aliases (read-aliases frame) location)
-    (ensure-dimensionality frame location)
-    (ensure-in-frame frame location)
+    (ensure-dimensionality inner-data-frame location)
+    (ensure-in-frame inner-data-frame location)
     (setf location (insert-pinned-axis frame location))
-    (setf location (proxy-data-frame-effective-address object location))
+    (setf location (proxy-data-frame-effective-address frame location))
     (apply-aliases (~> frame read-inner-data-frame read-aliases)
                    location)
     (at-data (read-data object) location)))
@@ -248,15 +215,16 @@
 (defmethod (setf at-cell) (new-value
                            (object proxy-data-accessor)
                            location &rest more-locations)
-  (let ((frame (read-frame object))
-        (location (location-list (cons location more-locations)
-                                 (read-dimension object)
-                                 (access-position object))))
+  (let* ((frame (read-frame object))
+         (inner-data-frame (read-inner-data-frame frame))
+         (location (location-list (cons location more-locations)
+                                  (read-dimension object)
+                                  (access-position object))))
     (apply-aliases (read-aliases frame) location)
-    (ensure-dimensionality frame location)
+    (ensure-dimensionality inner-data-frame location)
+    (ensure-in-frame inner-data-frame location)
     (setf location (insert-pinned-axis frame location))
-    (ensure-in-frame frame location)
-    (setf location (proxy-data-frame-effective-address object location))
+    (setf location (proxy-data-frame-effective-address frame location))
     (apply-aliases (~> frame read-inner-data-frame read-aliases)
                    location)
     (set-at-data new-value

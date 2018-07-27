@@ -122,4 +122,4 @@
 
 
 (defun (setf cell) (new-value &rest locations)
-  (apply #'(setf at-cell) new-value locations))
+  (apply #'(setf at-cell) new-value *active-data* locations))

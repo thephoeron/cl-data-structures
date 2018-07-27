@@ -1,6 +1,57 @@
 (in-package #:cl-data-structures.data-frame)
 
 
+(defun proxy-data-frame-effective-address (object location)
+  (let* ((axis (read-pinned-axis object))
+         (frame (read-inner-data-frame object)))
+    (iterate
+      (with result = (make-list (cl-ds:dimensionality frame)))
+      (for r on result)
+      (for i from 0)
+      (if (eql (caar axis) i)
+          (setf (car r) (cadar axis)
+                axis (rest axis))
+          (setf (car r) (first location)
+                location (rest location)))
+      (finally (return result)))))
+
+
+(defun ensure-dimensionality (object more)
+  (nest
+   (unless (= #1=(cl-ds:dimensionality object) #2=(length more)))
+   (error
+    'cl-ds:dimensionality-error
+    :text (format nil
+                  "Passed ~a arguments but data-frame dimensionality is ~a."
+                  #2# #1#)
+    :value #2#
+    :bounds #1#)))
+
+
+(defun fixnump (x)
+  (typep x 'fixnum))
+
+
+(defun ensure-in-frame (object more)
+  (iterate
+    (for m in more)
+    (unless (fixnump m)
+      (error 'cl:type-error :datum m
+                            :expected-type 'non-negative-fixnum)))
+  (when (some (curry #'> 0) more)
+    (error 'cl-ds:argument-out-of-bounds
+           :bounds "Must be non negative."
+           :argument 'location
+           :value more
+           :text "Part of location is negative."))
+  (unless (every #'< more #1=(read-upper-bounds object))
+    (error 'cl-ds:argument-out-of-bounds
+           :bounds #1#
+           :value more
+           :argument 'location
+           :text "No such position in the data frame.")))
+
+
 (defun at-data (data location)
   (if (endp location)
       data

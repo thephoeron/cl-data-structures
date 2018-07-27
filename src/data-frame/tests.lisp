@@ -117,18 +117,16 @@
     (cl-ds.df:mutate! slice
                       0
                       (lambda ()
-                        (iterate
-                          (for j from 0 below 3)
-                          (is (cl-ds.df:cell j) (incf i))))))
-  (is (cl-ds:at slice 0) 1)
-  (is (cl-ds:at slice 1) 2)
-  (is (cl-ds:at slice 2) 3)
-  (is (cl-ds:at frame 0 0) 1)
+                        (setf (cl-ds.df:cell i) (* 10 (incf i))))))
+  (is (cl-ds:at slice 0) 10)
+  (is (cl-ds:at slice 1) 20)
+  (is (cl-ds:at slice 2) 30)
+  (is (cl-ds:at frame 0 0) 10)
+  (is (cl-ds:at frame 1 0) 20)
+  (is (cl-ds:at frame 2 0) 30)
   (is (cl-ds:at frame 0 1) 2)
-  (is (cl-ds:at frame 0 2) 3)
-  (is (cl-ds:at frame 1 0) 2)
   (is (cl-ds:at frame 1 1) 5)
-  (is (cl-ds:at frame 1 2) 8)
+  (is (cl-ds:at frame 2 1) 8)
   )
 
 (finalize)
