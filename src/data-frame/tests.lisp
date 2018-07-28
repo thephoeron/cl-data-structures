@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 88)
+(plan 91)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -25,6 +25,7 @@
 
 (let ((frame (cl-ds.df:stack 1 #(1 2 3) #(4 5 6))))
   (is (cl-ds:dimensionality frame) 2)
+  (is (cl-ds:size frame) 6)
   (is-error (cl-ds:at frame 0 0 0) 'cl-ds:dimensionality-error)
   (is-error (cl-ds:at frame 9 0) 'cl-ds:argument-out-of-bounds)
   (is (cl-ds:at frame 0 0) 1)
@@ -109,6 +110,7 @@
   (setf (cl-ds.df:alias frame 0 0) :column0)
   (setf (cl-ds.df:alias frame 0 1) :column1)
   (setf slice (cl-ds.df:plane frame 1 0))
+  (is (cl-ds:size slice) 3)
   (is (cl-ds.df:alias slice 0 0) :column0)
   (is (cl-ds.df:alias slice 0 1) :column1)
   (is (cl-ds:at slice :column0) 1)
@@ -131,6 +133,7 @@
   (setf (cl-ds:at slice 1) 4)
   (setf (cl-ds:at slice 2) 7)
   (setf slice (cl-ds.df:plane frame 0 0))
+  (is (cl-ds:size slice) 3)
   (let ((i 0))
     (cl-ds.df:mutate! slice
                       0
