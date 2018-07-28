@@ -6,7 +6,7 @@
 
 (in-package #:data-frame-tests)
 
-(plan 97)
+(plan 88)
 
 (let ((frame (make 'cl-ds.df:data-frame
                    :upper-bounds (~> '(5 3)
@@ -128,26 +128,8 @@
   (is (cl-ds:at frame 1 1) 5)
   (is (cl-ds:at frame 2 1) 8)
   (setf (cl-ds:at slice 0) 1)
-  (setf (cl-ds:at slice 1) 2)
-  (setf (cl-ds:at slice 2) 3)
-  (setf slice (cl-ds.df:plane frame 0 0))
-  (let ((i 0))
-    (cl-ds.df:mutate! slice
-                      0
-                      (lambda ()
-                        (setf (cl-ds.df:cell i) (* 10 (incf i))))))
-  (is (cl-ds:at slice 0) 10)
-  (is (cl-ds:at slice 1) 20)
-  (is (cl-ds:at slice 2) 30)
-  (is (cl-ds:at frame 0 0) 10)
-  (is (cl-ds:at frame 1 0) 20)
-  (is (cl-ds:at frame 2 0) 30)
-  (is (cl-ds:at frame 0 1) 2)
-  (is (cl-ds:at frame 1 1) 5)
-  (is (cl-ds:at frame 2 1) 8)
-  (setf (cl-ds:at slice 0) 1)
-  (setf (cl-ds:at slice 1) 2)
-  (setf (cl-ds:at slice 2) 3)
+  (setf (cl-ds:at slice 1) 4)
+  (setf (cl-ds:at slice 2) 7)
   (setf slice (cl-ds.df:plane frame 0 0))
   (let ((i 0))
     (cl-ds.df:mutate! slice

@@ -3,6 +3,8 @@
 
 (defun proxy-data-frame-effective-address (object location)
   (let* ((axis (read-pinned-axis object))
+         (a axis)
+         (l location)
          (frame (read-inner-data-frame object)))
     (iterate
       (with result = (make-list (cl-ds:dimensionality frame)))
