@@ -146,17 +146,52 @@
   (gethash (cons dimension position) (read-reverse-aliases container)))
 
 
+(defun validate-plane-address (data more)
+  (let ((length (length more)))
+    (when (oddp length)
+      (error 'cl-ds:invalid-argument
+             :text "&rest arguments should come in even number!"
+             :argument 'more))
+    (when (>= (/ length 2) (cl-ds:dimensionality data))
+      (error 'cl-ds:dimensionality-error
+             :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
+    (iterate
+      (with aliases = (read-aliases data))
+      (for m on more)
+      (for p-m previous m)
+      (for k initially nil then (not k))
+      (when k
+        (check-type (first p-m) integer)
+        (check-type (first m) (or symbol integer))
+        (setf (first m) (apply-alias aliases (first p-m) (first m)))))))
+
+
 (defmethod plane ((data data-frame) &rest more)
   (if (endp more)
       data
-      (let ((length (length more)))
-        (when (oddp length)
-          (error 'cl-ds:invalid-argument
-                 :text "&rest arguments should come in even number!"
-                 :argument 'more))
-        (when (>= (/ length 2) (cl-ds:dimensionality data))
-          (error 'cl-ds:dimensionality-error
-                 :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
+      (progn (validate-plane-address data more)
+             (iterate
+               (with aliases = (read-aliases data))
+               (for m on more)
+               (for p-m previous m)
+               (for k initially nil then (not k))
+               (when k
+                 (check-type (first p-m) integer)
+                 (check-type (first m) (or symbol integer))
+                 (setf (first m) (apply-alias aliases (first p-m) (first m)))))
+             (proxy-plane data
+                          (~> more
+                              (batches 2)
+                              (sort #'< :key #'car))))))
+
+
+(defmethod plane ((data proxy-data-frame) &rest more)
+  cl-ds.utils:todo
+  (if (endp more)
+      data
+      (let* ((internal-frame (read-inner-data-frame data))
+             (axis (read-pinned-axis data)))
+        (validate-plane-address data more)
         (iterate
           (with aliases = (read-aliases data))
           (for m on more)
@@ -166,7 +201,12 @@
             (check-type (first p-m) integer)
             (check-type (first m) (or symbol integer))
             (setf (first m) (apply-alias aliases (first p-m) (first m)))))
-        (proxy-plane data (~> more (batches 2) (sort #'< :key #'car))))))
+        ;; TODO incorrect, must change axis to be relative to those already present in the parent proxy 
+        (proxy-plane internal-frame
+                     (~> more
+                         (batches 2)
+                         (append axis)
+                         (sort #'< :key #'car))))))
 
 
 (defmethod at-cell ((object data-accessor)
