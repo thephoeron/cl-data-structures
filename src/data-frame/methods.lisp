@@ -179,14 +179,13 @@
                  (check-type (first p-m) integer)
                  (check-type (first m) (or symbol integer))
                  (setf (first m) (apply-alias aliases (first p-m) (first m)))))
-             (proxy-plane data
-                          (~> more
-                              (batches 2)
-                              (sort #'< :key #'car))))))
+             (~> more
+                 (batches 2)
+                 (sort #'< :key #'car)
+                 (proxy-plane data _)))))
 
 
 (defmethod plane ((data proxy-data-frame) &rest more)
-  cl-ds.utils:todo
   (if (endp more)
       data
       (let* ((internal-frame (read-inner-data-frame data))
@@ -194,19 +193,28 @@
         (validate-plane-address data more)
         (iterate
           (with aliases = (read-aliases data))
+          (with unpinned-axis =
+                (iterate
+                  (with result = (make-array (cl-ds:dimensionality data)))
+                  (with j = 0)
+                  (for i from 0 below (cl-ds:dimensionality internal-frame))
+                  (unless (member i axis :key #'car)
+                    (setf (aref result j) i)
+                    (incf j))
+                  (finally (return result))))
           (for m on more)
           (for p-m previous m)
           (for k initially nil then (not k))
           (when k
             (check-type (first p-m) integer)
             (check-type (first m) (or symbol integer))
-            (setf (first m) (apply-alias aliases (first p-m) (first m)))))
-        ;; TODO incorrect, must change axis to be relative to those already present in the parent proxy 
-        (proxy-plane internal-frame
-                     (~> more
-                         (batches 2)
-                         (append axis)
-                         (sort #'< :key #'car))))))
+            (setf (first m) (apply-alias aliases (first p-m) (first m))
+                  (first p-m) (aref unpinned-axis (first p-m)))))
+        (~> more
+            (batches 2)
+            (append axis)
+            (sort #'< :key #'car)
+            (proxy-plane internal-frame _)))))
 
 
 (defmethod at-cell ((object data-accessor)
