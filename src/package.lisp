@@ -54,7 +54,6 @@
    #:hash-content
    #:hash-content-hash
    #:hash-content-location
-   #:ice-error
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert

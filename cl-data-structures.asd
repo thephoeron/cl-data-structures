@@ -14,7 +14,7 @@
                 :lparallel        :flexichain
                 :metabang-bind    :bordeaux-threads
                 :fare-memoization :scribble
-                :cl-progress-bar)
+                :cl-progress-bar  :trivial-garbage)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
@@ -139,6 +139,9 @@
                              (:test-file "chain-tests")
                              (:test-file "on-each-tests")
                              (:test-file "zip-tests")))
+               (:module "file-system"
+                :components ((:file "package")
+                             (:file "line-by-line")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
