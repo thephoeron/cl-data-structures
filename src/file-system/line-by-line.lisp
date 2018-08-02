@@ -14,7 +14,8 @@
                       :reader read-initial-position)))
 
 
-(defmethod initialize-instance :after ((range line-by-line-range) &rest all)
+(defmethod initialize-instance :after ((range line-by-line-range)
+                                       &rest all)
   (declare (ignore all))
   (trivial-garbage:finalize (read-input-stream range) #'close))
 
@@ -44,7 +45,8 @@
 
 (defmethod cl-ds:peek-front ((range line-by-line-range))
   (let ((file-position (~> range read-input-stream file-position))
-        (line (~> range read-input-stream (read-line :eof-value nil))))
+        (line (~> range read-input-stream
+                  (read-line :eof-value nil))))
     (if (null line)
         (values nil nil)
         (progn
@@ -56,7 +58,8 @@
 
 
 (defmethod cl-ds:consume-front ((range line-by-line-range))
-  (let ((line (~> range read-input-stream (read-line :eof-value nil))))
+  (let ((line (~> range read-input-stream
+                  (read-line :eof-value nil))))
     (if (null line)
         (values nil nil)
         (values line t))))
@@ -64,7 +67,9 @@
 
 (defmethod cl-ds:traverse (function (range line-by-line-range))
   (iterate
-    (with initial-position = (~> range read-initial-position file-position))
+    (with initial-position = (~> range
+                                 read-initial-position
+                                 file-position))
     (with stream = (read-input-stream range))
     (for line = (read-line stream :eof-value nil))
     (until (null line))
