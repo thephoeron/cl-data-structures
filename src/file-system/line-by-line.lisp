@@ -66,20 +66,18 @@
 
 
 (defmethod cl-ds:traverse (function (range line-by-line-range))
-  (iterate
-    (with initial-position = (~> range
-                                 read-initial-position
-                                 file-position))
-    (with stream = (read-input-stream range))
-    (for line = (read-line stream :eof-value nil))
-    (until (null line))
-    (funcall function line)
-    (finally
-     (unless (file-position (read-input-stream range)
-                            initial-position)
-       (error 'cl-ds:textual-error
-              :text "Can't change position in the stream."))
-     (return range))))
+  (let ((initial-position (~> range
+                              read-initial-position
+                              file-position)))
+    (with-open-file (stream (read-path range))
+      (unless (file-position stream initial-position)
+        (error 'cl-ds:textual-error
+               :text "Can't change position in the stream."))
+      (iterate
+        (for line = (read-line stream :eof-value nil))
+        (until (null line))
+        (funcall function line)
+        (finally (return range))))))
 
 
 (defun line-by-line (path)
