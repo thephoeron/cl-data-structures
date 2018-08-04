@@ -74,10 +74,10 @@
 
 (defmethod mutate! ((data proxy-data-frame) dimension function &rest ranges)
   (bind ((old-instance (~> data read-inner-data-frame access-data))
-         (new-instance (transactional-data old-instance
-                                           (~> data
-                                               read-inner-data-frame
-                                               cl-ds:dimensionality)))
+         (new-instance (~> data
+                           read-inner-data-frame
+                           cl-ds:dimensionality
+                           (transactional-data old-instance _)))
          (accessor (make-data-accessor new-instance data dimension)))
     (common-mutate! (~> data read-lower-bounds (aref dimension))
                     (~> data read-upper-bounds (aref dimension))
