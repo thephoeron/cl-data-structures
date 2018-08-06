@@ -87,7 +87,6 @@
    #:transactionalp
    #:traversable
    #:traverse
-   #:traverse-through
    #:unexpected-argument
    #:update
    #:update!

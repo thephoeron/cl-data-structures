@@ -30,10 +30,6 @@
     :bounds #1#)))
 
 
-(defun fixnump (x)
-  (typep x 'fixnum))
-
-
 (defun ensure-in-frame (object more)
   (iterate
     (for m in more)
