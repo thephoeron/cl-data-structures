@@ -17,15 +17,19 @@
 
 
 (defmacro with-file-ranges (bindings &body body)
-  `(let ,(mapcar (lambda (x) (list (first x) nil)) bindings)
-     (unwind-protect
-          (progn
-            ,@(mapcar (lambda (x) `(setf ,(first x) ,(second x))) bindings)
-            ,@body)
-       (progn
-         ,@(mapcar (lambda (x) `(unless (null ,(first x))
-                             (close-inner-stream ,(first x))))
-                   bindings)))))
+  (with-gensyms (!tmp)
+    `(let ,(mapcar (lambda (x) (list (first x) nil)) bindings)
+       (unwind-protect
+            (progn
+              ,@(mapcar (lambda (x) `(setf ,(first x)
+                                      (lret ((,!tmp ,(second x)))
+                                        (check-type ,!tmp file-range-mixin))))
+                        bindings)
+              ,@body)
+         (progn
+           ,@(mapcar (lambda (x) `(unless (null ,(first x))
+                               (close-inner-stream ,(first x))))
+                     bindings))))))
 
 
 (flet ((enclose-finalizer (stream)
