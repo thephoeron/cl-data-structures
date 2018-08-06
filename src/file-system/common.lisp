@@ -32,9 +32,8 @@
                      bindings))))))
 
 
-(flet ((enclose-finalizer (stream)
-         (lambda () (when stream (close stream)))))
-  (defmethod initialize-instance :after ((range file-range-mixin)
-                                         &rest all)
-    (declare (ignore all))
-    (trivial-garbage:finalize range (enclose-finalizer (read-stream range)))))
+(defmethod initialize-instance :after ((range file-range-mixin)
+                                       &rest all)
+  (declare (ignore all))
+  (unless (null (read-stream range))
+    (trivial-garbage:finalize range (curry #'close (read-stream range)))))
