@@ -11,12 +11,6 @@
                       :reader read-initial-position)))
 
 
-(defmethod initialize-instance :after ((range line-by-line-range)
-                                       &rest all)
-  (declare (ignore all))
-  (trivial-garbage:finalize (read-stream range) #'close))
-
-
 (defmethod cl-ds:clone ((range line-by-line-range))
   (let ((stream (~> range read-path open))
         (position (~> range read-stream file-position)))

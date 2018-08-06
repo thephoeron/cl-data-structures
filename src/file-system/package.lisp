@@ -6,4 +6,5 @@
   (:nicknames #:cl-ds.fs)
   (:export
    #:line-by-line
+   #:close-inner-stream
    #:with-file-ranges))
