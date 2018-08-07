@@ -26,7 +26,13 @@
           :initial-position position)))
 
 
+(defun ensure-stream (range)
+  (when (~> range read-stream null)
+    (setf (slot-value range '%stream) (~> range read-path open))))
+
+
 (defmethod cl-ds:reset! ((range line-by-line-range))
+  (ensure-stream range)
   (unless (file-position (read-stream range)
                          (read-initial-position range))
     (error 'cl-ds:textual-error
@@ -49,35 +55,43 @@
 
 
 (defmethod cl-ds:consume-front ((range line-by-line-range))
-  (let ((line (~> range read-stream
-                  (read-line nil nil))))
-    (if (null line)
-        (values nil nil)
-        (values line t))))
+  (if (~> range read-stream null)
+      (values nil nil)
+      (let ((line (~> range read-stream
+                      (read-line nil nil))))
+        (if (null line)
+            (progn
+              (close-stream range)
+              (values nil nil))
+            (values line t)))))
 
 
 (defmethod cl-ds:traverse (function (range line-by-line-range))
-  (iterate
-    (with stream = (read-stream range))
-    (for line = (read-line stream nil nil))
-    (until (null line))
-    (funcall function line)
-    (finally (return range))))
+  (unless (~> range read-stream null)
+    (iterate
+      (with stream = (read-stream range))
+      (for line = (read-line stream nil nil))
+      (until (null line))
+      (funcall function line)
+      (finally (prog
+                   (close-stream range)
+                  (return range))))))
 
 
 (defmethod cl-ds:across (function (range line-by-line-range))
-  (let ((initial-position (~> range
-                              read-stream
-                              file-position)))
-    (with-open-file (stream (read-path range))
-      (unless (file-position stream initial-position)
-        (error 'cl-ds:textual-error
-               :text "Can't change position in the stream."))
-      (iterate
-        (for line = (read-line stream nil nil))
-        (until (null line))
-        (funcall function line)
-        (finally (return range))))))
+  (unless (~> range read-stream null)
+    (let ((initial-position (~> range
+                                read-stream
+                                file-position)))
+      (with-open-file (stream (read-path range))
+        (unless (file-position stream initial-position)
+          (error 'cl-ds:textual-error
+                 :text "Can't change position in the stream."))
+        (iterate
+          (for line = (read-line stream nil nil))
+          (until (null line))
+          (funcall function line)
+          (finally (return range)))))))
 
 
 (defun line-by-line (path)

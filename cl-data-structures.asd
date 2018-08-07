@@ -141,6 +141,7 @@
                              (:test-file "zip-tests")))
                (:module "file-system"
                 :components ((:file "package")
+                             (:file "common")
                              (:file "line-by-line")))
                (:module "clustering"
                 :components ((:file "package")

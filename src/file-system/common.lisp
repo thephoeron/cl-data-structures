@@ -37,3 +37,10 @@
   (declare (ignore all))
   (unless (null (read-stream range))
     (trivial-garbage:finalize range (curry #'close (read-stream range)))))
+
+
+(defun close-stream (range)
+  (unless (~> range read-stream null)
+    (handler-case (~> range read-stream close)
+      (error (e) (declare (ignore e)))) ; in case if closing already close streams produces error
+    (setf (slot-value range '%stream) nil)))
