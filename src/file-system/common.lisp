@@ -8,10 +8,15 @@
             :reader read-stream)))
 
 
+(defun close-silence-errors (stream) ; in case if closing already close streams produces error
+  (handler-case (close stream)
+    (error (e) (declare (ignore e)))))
+
+
 (defgeneric close-inner-stream (range)
   (:method ((range file-range-mixin))
     (when-let ((stream (read-stream range)))
-      (close stream)
+      (close-silence-errors stream)
       (setf (slot-value range '%stream) nil))
     range))
 
@@ -30,11 +35,6 @@
            ,@(mapcar (lambda (x) `(unless (null ,(first x))
                                (close-inner-stream ,(first x))))
                      bindings))))))
-
-
-(defun close-silence-errors (stream) ; in case if closing already close streams produces error
-  (handler-case (close stream)
-    (error (e) (declare (ignore e)))))
 
 
 (defmethod initialize-instance :after ((range file-range-mixin)
