@@ -1,9 +1,9 @@
 (in-package #:cl-data-structures.utils.metric)
 
 
-(-> wasserstien-metric ((simple-array single-float (*)) (simple-array single-float (*)))
+(-> wasserstein-metric ((simple-array single-float (*)) (simple-array single-float (*)))
     single-float)
-(defun wasserstien-metric (a b)
+(defun wasserstein-metric (a b)
   (declare (optimize (speed 3) (safety 1) (space 0) (debug 0)))
   (let ((a-length (length a))
         (b-length (length b)))
