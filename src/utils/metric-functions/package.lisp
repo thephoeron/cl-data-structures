@@ -3,4 +3,5 @@
   (:nicknames #:cl-ds.utils.metric)
   (:export
    #:hellinger-metric
-   #:levenshtein-metric))
+   #:levenshtein-metric
+   #:wasserstein-metric))
