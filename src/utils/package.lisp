@@ -20,6 +20,8 @@
    #:cycle-over-address
    #:define-list-of-slots
    #:draw-sample-vector
+   #:all-parents
+   #:as-cons-tree
    #:each-in-matrix
    #:end-execution
    #:erase-from-vector

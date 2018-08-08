@@ -32,6 +32,7 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
+                             (:file "trees")
                              (:file "bind")
                              (:file "parallel-tools")
                              (:file "lambda-lists")
