@@ -4,4 +4,4 @@
   (:export
    #:hellinger-metric
    #:levenshtein-metric
-   #:wasserstein-metric))
+   #:earth-mover-metric))

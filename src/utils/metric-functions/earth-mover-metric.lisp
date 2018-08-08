@@ -1,9 +1,9 @@
 (in-package #:cl-data-structures.utils.metric)
 
 
-(-> wasserstein-metric ((simple-array single-float (*)) (simple-array single-float (*)))
+(-> earth-mover-metric ((simple-array single-float (*)) (simple-array single-float (*)))
     single-float)
-(defun wasserstein-metric (a b)
+(defun earth-mover-metric (a b)
   (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (let ((a-length (length a))
         (b-length (length b)))

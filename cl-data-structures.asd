@@ -48,7 +48,7 @@
                               :components ((:file "package")
                                            (:file "levenshtein")
                                            (:file "hellinger")
-                                           (:file "wasserstein-metric")
+                                           (:file "earth-mover-metric")
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
