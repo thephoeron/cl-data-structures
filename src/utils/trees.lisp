@@ -23,3 +23,13 @@
                    (list parent
                          (map 'list #'impl children))))))
     (impl root)))
+
+
+(defun ancestor-p (all-ancestors-vector test-fn child ancestor)
+  (let ((list-of-ancestors (find child all-ancestors-vector :test test-fn)))
+    (when (null list-of-ancestors)
+      (error 'program-error "No such node"))
+    (null (eq (find ancestor
+                    (rest list-of-ancestors)
+                    :test test-fn)
+              nil))))

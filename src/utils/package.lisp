@@ -45,6 +45,7 @@
    #:make-distance-matrix-from-vector
    #:make-future-carousel
    #:make-half-matrix
+   #:ancestor-p
    #:make-new-skip-vector
    #:make-pipe-fragment
    #:make-skip-vector

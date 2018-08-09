@@ -15,10 +15,13 @@
      :returns "Function."))
 
   (function lower-bound
-            (:description "Find position in the VECTOR of the first element not larger then ELEMENT."))
+    (:description "Find position in the VECTOR of the first element not larger then ELEMENT."))
 
   (function all-parents
-            (:description "Scans tree with CHILDREN-FN (is supposed to return children of the PARENT as CL:SEQUENCE). Will return ALIST mapping node to list of all parents of nodes. Resulting data structure is useful as a way to lookup for partial order in the tree."))
+    (:description "Scans tree with CHILDREN-FN (is supposed to return children of the PARENT as CL:SEQUENCE). Will return ALIST mapping node to list of all parents of nodes. Resulting data structure is useful as a way to lookup for partial order in the tree."))
+
+  (function ancestor-p
+    (:description "Checks if ANCESTOR is ancestor of CHILD in tree represented as ALL-ANCESTORS-VECTOR. ALL-ANCESTORS-VECTOR should be constructed by ALL-PARENTS function."))
 
   (function as-cons-tree
             (:description "Scans tree of arbitrary objects (CHILDREN-FN is supposed to return CL:SEQUENCE of children nodes) and returns it as a tree composed of cons cells.")))
