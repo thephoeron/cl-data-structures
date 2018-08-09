@@ -24,4 +24,4 @@
     (:description "Checks if ANCESTOR is ancestor of CHILD in tree represented as ALL-ANCESTORS-VECTOR. ALL-ANCESTORS-VECTOR should be constructed by ALL-PARENTS function."))
 
   (function as-cons-tree
-            (:description "Scans tree of arbitrary objects (CHILDREN-FN is supposed to return CL:SEQUENCE of children nodes) and returns it as a tree composed of cons cells.")))
+    (:description "Scans tree of arbitrary objects (CHILDREN-FN is supposed to return CL:SEQUENCE of children nodes) and returns it as a tree composed of cons cells.")))
