@@ -10,7 +10,11 @@
   (%result %test-functions)
 
   ((&key test-functions &allow-other-keys)
-   (setf %test-functions test-functions))
+   (setf %test-functions test-functions
+         %result (make-array (make-list (length %test-functions)
+                                        :initial-element 2)
+                             :element-type 'non-negative-integer
+                             :initial-element 0)))
 
   ((element)
    (let* ((address (map 'list
