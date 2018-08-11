@@ -19,7 +19,7 @@
 (cl-ds:define-validation-for-fields
     (chi-squared-function (:test :classes))
   (:test :optional t
-         :type 'function
+         :type '(or symbol function)
          :default 'eql)
   (:classes :optional nil
             :type 'sequence))
