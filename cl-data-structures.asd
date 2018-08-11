@@ -160,6 +160,7 @@
                              (:file "simple-linear-regression")
                              (:file "median-absolute-deviation")
                              (:file "hodges-lehmann")
+                             (:file "co-occurence-table")
                              (:file "standard-deviation")
                              (:file "moments")
                              (:file "statistical-summary")
