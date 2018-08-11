@@ -81,6 +81,9 @@
     expected-counts))
 
 
+(define-constant +epsilon+ 1.19e-07 :test '=)
+
+
 (defun gamma-function-incomplete (a x)
   (labels ((gamma*aux (a z)
              (do ((n    0.0 (1+ n))
@@ -89,7 +92,7 @@
                            (+ n 1.0)))
                   (sum  0.0))
                  ((progn (setq sum (+ sum (/ term (+ a n))))
-                         (< (abs (/ term (+ a n))) 1.0E-7))
+                         (< (abs (/ term (+ a n))) +epsilon+))
                   sum)))
            (impl (a x)
              (if (< a 1.0)
