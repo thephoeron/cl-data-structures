@@ -61,7 +61,7 @@
      :returns "Range, allowing to access value for each field by quering cl-ds:at with label of field."))
 
   (function chi-squared
-    (:description "Performs chi-squared test on range. Programmer is expected to provide information about expected classes as fields passed to the algorithm. The combination of classes is then passed to the KEY function with each element of the range. Returned value is expected to be the count of elements of class. This, in practice allows to use this function with classes being integer values and input being cooccurrence table."
+    (:description "Performs chi-squared test on range. Programmer is expected to provide information about expected classes as fields passed to the algorithm. The combination of classes is then passed to the KEY function with each element of the range. Returned value is expected to be the count of elements of class. This, in practice allows to use this function with classes being integers and input being cooccurrence table."
      :returns "P-Value of chi-squared test."))
 
   (function moments

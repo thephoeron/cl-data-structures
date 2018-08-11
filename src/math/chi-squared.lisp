@@ -21,8 +21,7 @@
   (:test :optional t
          :type 'function
          :default 'eql)
-  (:classes :optional t
-            :default nil
+  (:classes :optional nil
             :type 'sequence))
 
 
