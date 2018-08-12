@@ -72,3 +72,22 @@
           (leave))
         (finally (return-from cl-ds:consume-front (values value t))))
       (finally (return (values nil nil))))))
+
+
+(defclass latch-function (layer-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric latch (range latch &rest more-latches)
+  (:generic-function-class latch-function)
+  (:method (range latch &rest more-latches)
+    (apply-range-function range #'latch :latches (cons latch more-latches))))
+
+
+(defmethod apply-layer ((range fundamental-forward-range)
+                        (function latch-function)
+                        &rest all &key latches)
+  (declare (ignore all))
+  (make 'forward-latch-proxy
+        :latches (coerce latches 'vector)))

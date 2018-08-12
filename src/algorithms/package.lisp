@@ -57,21 +57,22 @@
    #:count-elements-function
    #:count-elements-if
    #:count-elements-if-function
+   #:flatten-lists
    #:gather-prior-states
    #:group-by
    #:group-by-function
    #:hash-join
+   #:latch
    #:make-hash-table-range
    #:make-proxy
    #:on-each
    #:only
-   #:shuffled-range
    #:proxy-box-range
    #:proxy-range
    #:proxy-range-aggregator-outer-fn
+   #:shuffled-range
    #:split-into-chunks
    #:to-vector
    #:without
    #:without-function
-   #:flatten-lists
    #:zip))
