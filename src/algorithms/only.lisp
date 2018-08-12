@@ -18,43 +18,6 @@
   ())
 
 
-(defclass only-aggregator (cl-ds.alg.meta:fundamental-aggregator)
-  ((%key :initarg :key
-         :reader read-key)
-   (%predicate :initarg :predicate
-               :reader read-predicate)
-   (%outer :initarg :outer
-           :reader read-outer)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator only-aggregator)
-                                               element)
-  (unless (funcall (read-predicate aggregator)
-                   (funcall (read-key aggregator) element))
-    (cl-ds.alg.meta:pass-to-aggregation (read-outer aggregator)
-                                        element)))
-
-
-(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator only-aggregator))
-  (cl-ds.alg.meta:aggregator-finished-p (read-outer aggregator)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator only-aggregator))
-  (cl-ds.alg.meta:end-aggregation (read-outer aggregator)))
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator only-aggregator))
-  (cl-ds.alg.meta:begin-aggregation (read-outer aggregator)))
-
-
-(defmethod cl-ds.alg.meta:extract-result ((aggregator only-aggregator))
-  (cl-ds.alg.meta:extract-result (read-outer aggregator)))
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator only-aggregator))
-  (cl-ds.alg.meta:expects-content-p (read-outer aggregator)))
-
-
 (defmethod cl-ds:peek-front ((aggregator forward-only-proxy))
   (fbind ((key (read-key aggregator))
           (predicate (read-predicate aggregator)))
@@ -103,21 +66,6 @@
         (return (values nil nil)))
       (unless (predicate (key value))
         (leave (values value more))))))
-
-
-(defmethod cl-ds.alg.meta:construct-aggregator ((range only-proxy)
-                                                key
-                                                (function cl-ds.alg.meta:aggregation-function)
-                                                outer-fn
-                                                (arguments list))
-  (make 'only-aggregator :key (read-key range)
-                            :predicate (read-predicate range)
-                            :outer (funcall (proxy-range-aggregator-outer-fn
-                                             range
-                                             key
-                                             function
-                                             outer-fn
-                                             arguments))))
 
 
 (defmethod clone ((range only-proxy))

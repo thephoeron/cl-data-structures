@@ -128,6 +128,7 @@
                              (:file "group-by")
                              (:file "without")
                              (:file "only")
+                             (:file "latch")
                              (:file "split-into-chunks")
                              (:file "hash-join")
                              (:file "chain")
