@@ -201,5 +201,5 @@
                            :key (cl-ds.alg.meta:read-key aggregator))
 
           (access-final-result aggregator)
-          (list* (aref samples-vector lower-percentail
-                       (aref samples-vector higher-percentail))))))
+          (list* (aref samples-vector lower-percentail)
+                 (aref samples-vector higher-percentail)))))
