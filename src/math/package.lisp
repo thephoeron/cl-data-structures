@@ -19,6 +19,7 @@
    #:mutual-information-matrix
    #:optimal-split-point
    #:simple-linear-regression
+   #:co-occurence-table
    #:chi-squared
    #:standard-deviation
    #:statistical-summary
