@@ -195,9 +195,11 @@
                (let* ((sample (bootstrap-sample whole-content sample-size))
                       (fresh-aggregator (funcall outer-fn)))
                  (aggregate-sample fresh-aggregator sample function))))
-    (setf samples-vector (lparallel:psort samples-vector
-                                          (read-compare aggregator)
-                                          :key (cl-ds.alg.meta:read-key aggregator)))
-    (setf (access-final-result aggregator)
-          (list* (aref samples-vector lower-percentail)
-                 (aref samples-vector higher-percentail)))))
+    (setf samples-vector
+          (lparallel:psort samples-vector
+                           (read-compare aggregator)
+                           :key (cl-ds.alg.meta:read-key aggregator))
+
+          (access-final-result aggregator)
+          (list* (aref samples-vector lower-percentail
+                       (aref samples-vector higher-percentail))))))
