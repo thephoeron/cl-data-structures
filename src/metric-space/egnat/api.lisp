@@ -22,7 +22,8 @@
 
 
 (defun make-mutable-egnat-metric-set (same-function distance-function distance-type
-                                      &key (branching-factor 20) (node-size 50))
+                                      &key (branching-factor 20) (node-size 50)
+                                      &allow-other-keys)
   (ensure-functionf same-function distance-function)
   (make 'egnat-metric-set
         :metric-fn distance-function
@@ -38,7 +39,7 @@
   (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
-                                                   nil
+                                                   (second (member :parallel arguments))
                                                    sequence)))
     (setf (cl-ds.common.egnat:access-root container) root
           (cl-ds.common.egnat:access-size container) (cl-ds:size sequence))
@@ -51,7 +52,7 @@
   (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
-                                                   nil
+                                                   (second (member :parallel arguments))
                                                    sequence)))
     (setf (cl-ds.common.egnat:access-root container) root
           (cl-ds.common.egnat:access-size container) (cl-ds:size sequence))
