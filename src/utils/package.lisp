@@ -39,6 +39,8 @@
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
+   #:normalize-sequence-to-sum
+   #:normalize-sequence-to-span
    #:lolol
    #:lower-bound
    #:lparallel-future

@@ -140,3 +140,23 @@
   (reduce (flip #'cons)
           data
           :initial-value list))
+
+
+(defun normalize-sequence-to-sum (sequence sum)
+  (declare (type sequence sequence)
+           (type number sum))
+  (let* ((current-sum (reduce #'+ sequence))
+         (ratio (/ sum current-sum)))
+    (map-into sequence (curry #'* ratio) sequence)))
+
+
+(defun normalize-sequence-to-span (sequence min max)
+  (declare (type sequence sequence)
+           (type number min max))
+  (assert (< min max))
+  (let* ((current-min (reduce #'min sequence))
+         (current-max (reduce #'max sequence))
+         (current-span (- current-max current-min))
+         (ratio (/ (- max min) current-span)))
+    (map-into sequence (curry #'+ (abs current-min)) sequence)
+    (map-into sequence (curry #'* ratio) sequence)))
