@@ -157,6 +157,10 @@
   (let* ((current-min (reduce #'min sequence))
          (current-max (reduce #'max sequence))
          (current-span (- current-max current-min))
+         (diff (- 0 current-min))
          (ratio (/ (- max min) current-span)))
-    (map-into sequence (curry #'+ (abs current-min)) sequence)
-    (map-into sequence (curry #'* ratio) sequence)))
+    (map-into sequence
+              (compose (curry #'+ min)
+                       (curry #'* ratio)
+                       (curry #'+ diff))
+              sequence)))
