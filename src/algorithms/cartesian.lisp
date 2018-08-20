@@ -6,13 +6,7 @@
              :type vector
              :reader read-content)
    (%function :initarg :function
-              :reader read-function)
-   (%pivot-index :initform 0
-                 :initarg :pivot-index
-                 :accessor access-pivot-index)
-   (%original-pivot-index :initform 0
-                          :initarg :original-pivot-index
-                          :reader read-original-pivot-index)))
+              :reader read-function)))
 
 
 (defmethod cl-ds:reset! ((range forward-cartesian-range))
@@ -24,74 +18,39 @@
 (defmethod cl-ds:clone ((range forward-cartesian-range))
   (make (type-of range)
         :function (read-function range)
-        :pivot-index (access-pivot-index range)
-        :original-pivot-index (access-pivot-index range)
         :content (map 'vector #'cl-ds:clone (read-content range))))
 
 
-(defun cartesian-consume-front-cycle (range)
-  (bind (((:slots %content %pivot-index) range))
-    (unless (nth-value 1 (cl-ds:peek-front (aref %content %pivot-index)))
-      (incf %pivot-index))
-    (if (eql %pivot-index (length %content))
-        (progn (setf (access-pivot-index range) (length %content))
-               (values nil nil))
-        (iterate
-          (for i from 0 below %pivot-index)
-          (cl-ds:reset! (aref %content i))
-          (finally
-           (cl-ds:consume-front (aref %content %pivot-index))
-           (if (nth-value 1 (cl-ds:peek-front (aref %content %pivot-index)))
-               (return (cl-ds:consume-front range))
-               (progn
-                 (setf (access-pivot-index range) (length %content))
-                 (return (values nil nil)))))))))
-
-
-(defun cartesian-peek-front-cycle (range)
-  (bind (((:slots %content %pivot-index) range)
-         (content (copy-array %content))
-         (pivot-index %pivot-index))
-    (unless (nth-value 1 (cl-ds:peek-front (aref content pivot-index)))
-      (incf pivot-index))
-    (iterate
-      (for i from 0 below pivot-index)
-      (cl-ds:reset! (aref content i)))
-    (if (eql pivot-index (length content))
-        (values nil nil)
-        (progn
-          (setf #1=(aref content pivot-index) (cl-ds:clone #1#))
-          (cl-ds:consume-front (aref content pivot-index))
-          (values (apply (read-function range) (map 'list #'cl-ds:peek-front content))
-                  t)))))
-
-
 (defmethod cl-ds:consume-front ((range forward-cartesian-range))
-  (if (eql (access-pivot-index range) (~> range read-content length))
-      (values nil nil)
-      (bind (((:slots %content) range)
-             (pivot-range (aref %content 0))
-             ((:values _ more) (cl-ds:peek-front pivot-range)))
-        (if more
-            (multiple-value-prog1
-                (values (apply (read-function range)
-                               (map 'list #'cl-ds:peek-front %content))
-                        t)
-              (cl-ds:consume-front pivot-range))
-            (cartesian-consume-front-cycle range)))))
+  (bind ((content (read-content range))
+         (data (map 'list (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
+                    content))
+         (more (every #'second data)))
+    (if more
+        (let ((result (apply (read-function range) (mapcar #'first data))))
+          (iterate
+            (for i from 0 below (length content))
+            (for c in-vector content)
+            (cl-ds:consume-front c)
+            (when (nth-value 1 (cl-ds:peek-front c))
+              (iterate
+                (for j from 0 below i)
+                (for c in-vector content)
+                (cl-ds:reset! c))
+              (finish)))
+          (values result t))
+        (values nil nil))))
 
 
 (defmethod cl-ds:peek-front ((range forward-cartesian-range))
-  (if (eql (access-pivot-index range) (~> range read-content length))
-      (values nil nil)
-      (bind (((:slots %content) range)
-             (pivot-range (aref %content 0))
-             ((:values _ more) (cl-ds:peek-front pivot-range)))
-        (if more
-            (values (apply (read-function range)
-                           (map 'list #'cl-ds:peek-front %content))
-                    t)
-            (cartesian-peek-front-cycle range)))))
+  (bind ((content (read-content range))
+         (data (map 'list (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
+                    content))
+         (more (every #'second data)))
+    (if more
+        (let ((result (apply (read-function range) (mapcar #'first data))))
+          (values result t))
+        (values nil nil))))
 
 
 (defun cartesian (function range &rest more-ranges)
