@@ -149,7 +149,7 @@ Range releated functions.
       (for i from 0)
       (for (values value more) = (consume-front range))
       (while more)
-      (finally (return i)))))
+      (finally (return (values range i))))))
 
 (defgeneric drop-back (range count)
   (:method ((range fundamental-bidirectional-range) count)
@@ -159,7 +159,7 @@ Range releated functions.
       (for i from 0)
       (for (values value more) = (consume-back range))
       (while more)
-      (finally (return i)))))
+      (finally (return (values range i))))))
 
 (defgeneric clone (range))
 
