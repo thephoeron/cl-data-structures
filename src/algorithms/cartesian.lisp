@@ -23,7 +23,8 @@
 
 (defmethod cl-ds:consume-front ((range forward-cartesian-range))
   (bind ((content (read-content range))
-         (data (map 'list (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
+         (data (map 'list
+                    (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
                     content))
          (more (every #'second data)))
     (if more
@@ -44,12 +45,13 @@
 
 (defmethod cl-ds:peek-front ((range forward-cartesian-range))
   (bind ((content (read-content range))
-         (data (map 'list (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
+         (data (map 'list
+                    (lambda (x) (multiple-value-list (cl-ds:peek-front x)))
                     content))
          (more (every #'second data)))
     (if more
-        (let ((result (apply (read-function range) (mapcar #'first data))))
-          (values result t))
+        (values (apply (read-function range) (mapcar #'first data))
+                t)
         (values nil nil))))
 
 
