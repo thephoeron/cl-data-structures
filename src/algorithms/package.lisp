@@ -52,6 +52,7 @@
   (:nicknames #:cl-ds.alg)
   (:export
    #:accumulate
+   #:cartesian
    #:chain
    #:count-elements
    #:count-elements-function
