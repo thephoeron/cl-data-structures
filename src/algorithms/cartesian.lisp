@@ -11,7 +11,6 @@
 
 (defmethod cl-ds:reset! ((range forward-cartesian-range))
   (map nil #'cl-ds:reset! (read-content range))
-  (setf (access-pivot-index range) (read-original-pivot-index range))
   range)
 
 
