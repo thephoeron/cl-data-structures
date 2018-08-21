@@ -6,6 +6,7 @@
              :type vector
              :reader read-content)
    (%function :initarg :function
+              :type 'function
               :reader read-function)))
 
 
@@ -56,6 +57,7 @@
 
 (defun cartesian (function range &rest more-ranges)
   (declare (dynamic-extent more-ranges))
+  (ensure-functionf function)
   (check-type range fundamental-range)
   (iterate
     (for r in more-ranges)
