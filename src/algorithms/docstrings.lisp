@@ -71,6 +71,14 @@
                  (key "Key function used to extract value for predicate.")
                  (range "Range argument."))))
 
+  (function cartesian
+    (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
+     :arguments ((function "Function used to combine input ranges.")
+                 (range "First input range.")
+                 (more-ranges "All other ranges."))
+     :exceptional-situations "Will raise type-errors if any of arguments is of the wrong type."
+     :returns "FORWARD-RANGE"))
+
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change content of RANGE, but it will force aggregation to be performed on every group independently."
      :arguments ((range "Range that is supposed to be groupped.")
