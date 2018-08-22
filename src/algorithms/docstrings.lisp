@@ -85,6 +85,9 @@
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
      :returns "FORWARD-RANGE"))
 
+  (function latch
+    (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from primary range, where, on corresponding positions, each of the latch ranges contains non-nil value."))
+
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
      :arguments ((function "Function used to combine input ranges.")
