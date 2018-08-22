@@ -80,7 +80,10 @@
      :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function flatten-lists
-    (:description "Layer function. Flattens each list in the input range to the atoms."))
+    (:description "Layer function. Flattens each list in the input range to the atoms."
+     :arguments ((range "Input range.")
+                 (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
+     :returns "FORWARD-RANGE"))
 
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."

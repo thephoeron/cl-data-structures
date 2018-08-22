@@ -108,6 +108,7 @@
 (defgeneric flatten-lists (range &key key)
   (:generic-function-class flatten-lists-function)
   (:method (range &key (key #'identity))
+    (ensure-functionf key)
     (apply-range-function range #'flatten-lists :key key)))
 
 
