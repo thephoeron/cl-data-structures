@@ -14,6 +14,12 @@
 
 
 (defun shuffled-range (from to)
+  (check-type from integer)
+  (check-type to integer)
+  (unless (< from to)
+    (error 'cl-ds:incompatible-argument
+           :argument '(from to)
+           :text "FROM must be smaller then TO."))
   (make 'shuffled-range
         :index from
         :from from

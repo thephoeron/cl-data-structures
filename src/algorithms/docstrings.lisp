@@ -53,6 +53,12 @@
   (function chain
     (:description "Joins multiple ranges sequentially into one."))
 
+  (function shuffled-range
+    (:description "Creates range of shuffled integers from FROM, to TO."
+     :exceptional-situations ("Raises type-error if from or to is not integer."
+                              "TO must be greater then FROM, otherwise incompatible-argument error is signaled.")
+     :returns "FORWARD-RANGE"))
+
   ;; (function summary
   ;;   (:description "Summary is a function that allows to perform multiple aggregations in one form."
   ;;    :arguments ((range "Range to aggregate.")

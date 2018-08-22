@@ -8,6 +8,7 @@
    #:across
    #:add
    #:add!
+   #:argument-not-in-allowed-set
    #:argument-out-of-bounds
    #:assert-one-dimension
    #:at
@@ -29,17 +30,12 @@
    #:empty-container
    #:erase
    #:erase!
-   #:traverse-multiple
-   #:iota-range
    #:erase-if
    #:erase-if!
    #:expression
    #:field
-   #:not-in-allowed-set
-   #:argument-not-in-allowed-set
    #:force
    #:found
-   #:make-of-size
    #:functional
    #:functionalp
    #:fundamental-assignable-forward-range
@@ -54,19 +50,23 @@
    #:hash-content
    #:hash-content-hash
    #:hash-content-location
+   #:incompatible-argument
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
    #:invalid-argument
+   #:iota-range
    #:key-value-range
    #:lazy
    #:make-delay
    #:make-from-traversable
+   #:make-of-size
    #:mod-bind
    #:mutable
    #:mutablep
    #:near
    #:not-implemented
+   #:not-in-allowed-set
    #:operation-not-allowed
    #:out-of-bounds
    #:peek-back
@@ -87,6 +87,7 @@
    #:transactionalp
    #:traversable
    #:traverse
+   #:traverse-multiple
    #:unexpected-argument
    #:update
    #:update!
@@ -108,6 +109,7 @@
    #:add!-function
    #:add-function
    #:destructive-counterpart
+   #:destructive-function
    #:erase!-function
    #:erase-function
    #:erase-if!-function
@@ -117,14 +119,15 @@
    #:functional-counterpart
    #:functional-erase-function
    #:functional-erase-if-function
+   #:functional-function
    #:functional-insert-function
    #:functional-put-function
    #:functional-take-out-function
    #:functional-update-function
    #:functional-update-if-function
    #:grow-bucket
-   #:grow-function
    #:grow-bucket!
+   #:grow-function
    #:grow-function
    #:insert!-function
    #:insert-function
@@ -144,6 +147,4 @@
    #:update!-function
    #:update-function
    #:update-if!-function
-   #:destructive-function
-   #:functional-function
    #:update-if-function))

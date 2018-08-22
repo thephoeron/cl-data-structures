@@ -50,6 +50,10 @@
   ())
 
 
+(define-condition incompatible-argument (invalid-argument)
+  ())
+
+
 (define-condition out-of-bounds (textual-error)
   ((%value :initarg :value
            :reader read-value)
