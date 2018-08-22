@@ -69,13 +69,15 @@
     (:description "Layer funciton. Creates range that skips elements that return NIL when passed to the PREDICATE function through key function."
      :arguments ((predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract value for predicate.")
-                 (range "Range argument."))))
+                 (range "Range argument."))
+     :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function without
     (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
      :arguments ((predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract value for predicate.")
-                 (range "Range argument."))))
+                 (range "Range argument."))
+     :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
