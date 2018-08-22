@@ -59,38 +59,31 @@
   range)
 
 
+(defun peek-or-consume (current latches)
+  (iterate
+    (for (values value more) = (cl-ds:consume-front current))
+    (while more)
+    (for r = t)
+    (iterate
+      (for latch in-vector latches)
+      (for (values open more) = (cl-ds:consume-front latch))
+      (unless more
+        (return-from peek-or-consume (values nil nil)))
+      (setf r (and open r))
+      (finally (when r (return-from peek-or-consume (values value t)))))
+    (finally (return (values nil nil)))))
+
+
 (defmethod cl-ds:peek-front ((range forward-latch-proxy))
   (let ((current (cl-ds:clone (read-original-range range)))
-        (latches (cl-ds:clone (read-latches range))))
-    (iterate
-      (for (values value more) = (cl-ds:consume-front current))
-      (while more)
-      (iterate
-        (for latch in-vector latches)
-        (for (values open more) = (cl-ds:consume-front latch))
-        (unless more
-          (return-from cl-ds:peek-front (values nil nil)))
-        (when (null open)
-          (leave))
-        (finally (return-from cl-ds:peek-front (values value t))))
-      (finally (return (values nil nil))))))
+        (latches (map 'vector #'cl-ds:clone (read-latches range))))
+    (peek-or-consume current latches)))
 
 
 (defmethod cl-ds:consume-front ((range forward-latch-proxy))
   (let ((current (read-original-range range))
         (latches (read-latches range)))
-    (iterate
-      (for (values value more) = (cl-ds:consume-front current))
-      (while more)
-      (for r = t)
-      (iterate
-        (for latch in-vector latches)
-        (for (values open more) = (cl-ds:consume-front latch))
-        (unless more
-          (return-from cl-ds:consume-front (values nil nil)))
-        (setf r (and open r))
-        (finally (when r (return-from cl-ds:consume-front (values value t)))))
-      (finally (return (values nil nil))))))
+    (peek-or-consume current latches)))
 
 
 (defclass latch-function (layer-function)
