@@ -79,6 +79,9 @@
                  (range "Range argument."))
      :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
+  (function flatten-lists
+    (:description "Layer function. Flattens each list in the input range to the atoms."))
+
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
      :arguments ((function "Function used to combine input ranges.")

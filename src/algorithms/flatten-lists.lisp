@@ -57,7 +57,7 @@
                    (for elt in element)
                    (for result = (value elt))
                    (until result)
-                   (finally (return result))))))
+                   (finally (return (reverse result)))))))
          (result (value current)))
     (if (null result)
         (bind ((fresh-clone (cl-ds:clone (read-original-range range))))
