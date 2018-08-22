@@ -57,7 +57,7 @@
                    (for elt in element)
                    (for result = (value elt))
                    (until result)
-                   (finally (return (reverse result)))))))
+                   (finally (return result))))))
          (result (value current)))
     (if (null result)
         (bind ((fresh-clone (cl-ds:clone (read-original-range range))))
@@ -76,8 +76,7 @@
          ((:accessors (current access-current)) range)
          ((:labels value ())
           (cond ((null current) nil)
-                ((atom current) (progn (setf current nil)
-                                       current))
+                ((atom current) (shiftf current nil))
                 ((listp current)
                  (iterate
                    (for elt = (first current))
