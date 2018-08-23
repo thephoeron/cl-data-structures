@@ -37,6 +37,7 @@
                              (:file "parallel-tools")
                              (:file "lambda-lists")
                              (:file "skip-vector")
+                             (:file "embedding")
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")

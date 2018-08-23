@@ -9,7 +9,10 @@
    #:add-sinks
    #:add-to-list
    #:adjust-size-to-fill-pointer
+   #:all-parents
+   #:ancestor-p
    #:and*
+   #:as-cons-tree
    #:bind-lambda
    #:cartesian
    #:cartesian-table
@@ -19,9 +22,8 @@
    #:copy-without
    #:cycle-over-address
    #:define-list-of-slots
+   #:draw-random-vector
    #:draw-sample-vector
-   #:all-parents
-   #:as-cons-tree
    #:each-in-matrix
    #:end-execution
    #:erase-from-vector
@@ -39,15 +41,12 @@
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
-   #:normalize-sequence-to-sum
-   #:normalize-sequence-to-span
    #:lolol
    #:lower-bound
    #:lparallel-future
    #:make-distance-matrix-from-vector
    #:make-future-carousel
    #:make-half-matrix
-   #:ancestor-p
    #:make-new-skip-vector
    #:make-pipe-fragment
    #:make-skip-vector
@@ -55,6 +54,8 @@
    #:method-lambda-list-to-function-lambda-list
    #:mref
    #:mutate-matrix
+   #:normalize-sequence-to-span
+   #:normalize-sequence-to-sum
    #:on-ordered-intersection
    #:optimize-value
    #:or*
