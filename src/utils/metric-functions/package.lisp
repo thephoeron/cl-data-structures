@@ -4,4 +4,5 @@
   (:export
    #:hellinger-metric
    #:levenshtein-metric
-   #:earth-mover-metric))
+   #:earth-mover-metric
+   #:euclid-metric))
