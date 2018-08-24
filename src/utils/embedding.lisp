@@ -8,9 +8,15 @@
   (ensure-functionf distance-fn)
   (bind ((length (length vector-of-elements))
          (embeddings (make-array length))
-         (k (ceiling (/ (log length) (1- (log 2)))))
-         (sample (make-array (ash 1 k) :fill-pointer 0))
+         (k (ceiling (1- (/ (log length) (log 2)))))
+         (element-type (array-element-type vector-of-elements))
+         (sample (make-array (ash 1 k)
+                             :fill-pointer 0
+                             :element-type element-type))
          (top (ceiling (log length))))
+    (declare (type non-negative-fixnum top k)
+             (type non-negative-fixnum length)
+             (type vector sample))
     (map-into embeddings (curry #'make-array top
                                 :element-type embedding-type
                                 :fill-pointer 0))
