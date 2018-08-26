@@ -8,11 +8,9 @@
          (let* (,@all-symbols
                 (,!next (funcall ,body (1+ depth)))
                 (,!depth depth)
-                (,!this nil))
-           (setf ,!this
-                 (lambda ()
-                   (if (some #'reached-end '(,@all-symbols))
-                       (values nil nil)
-                       (funcall ,!next))))
+                (,!this (lambda ()
+                          (if (some #'reached-end '(,@all-symbols))
+                              (values nil nil)
+                              (funcall ,!next)))))
            ,(initialize-bindings-form bindings !this !depth)
            ,!this)))))
