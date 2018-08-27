@@ -1,13 +1,16 @@
 (in-package #:cl-data-structures.constraints)
 
 
+(defvar *depth* 0)
+
+
 (defmacro derive (bindings body)
   (with-gensyms (!depth !next !this)
     (let ((all-symbols (mapcar #'first bindings)))
-      `(lambda (&optional (depth 0))
+      `(lambda ()
          (let* (,@all-symbols
-                (,!next (funcall ,body (1+ depth)))
-                (,!depth depth)
+                (,!next (let ((*depth* (1+ *depth*)))
+                          (funcall ,body)))
                 (,!this (lambda ()
                           (if (some #'reached-end '(,@all-symbols))
                               (values nil nil)
