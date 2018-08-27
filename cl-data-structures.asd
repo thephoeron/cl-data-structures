@@ -50,8 +50,9 @@
                               :components ((:file "package")
                                            (:file "levenshtein")
                                            (:file "hellinger")
-                                           (:file "euclid-metric")
-                                           (:file "earth-mover-metric")
+                                           (:file "hausdorff")
+                                           (:file "euclid")
+                                           (:file "earth-mover")
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
