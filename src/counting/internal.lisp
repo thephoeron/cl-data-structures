@@ -63,7 +63,7 @@
       (with minimal-support = (the fixnum (read-minimal-support index)))
       (for children-count = (the fixnum (number-of-children parent)))
       (while (< i children-count))
-      (unless (eql (1+ i) children-count)
+      (unless (eql (the fixnum (1+ i)) children-count)
         (async-expand-node index parent (1+ i) queue))
       (for node = (child-at parent i))
       (for supersets = (combine-nodes node))

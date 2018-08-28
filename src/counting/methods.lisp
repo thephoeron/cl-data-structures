@@ -259,3 +259,10 @@
     (make 'empty-set-in-index
           :index index
           :type-count (length content))))
+
+
+(defmethod cl-ds:at ((index set-index) location &rest more-locations)
+  (let ((result (apply #'find-set index (cons location more-locations))))
+    (if (typep result 'empty-set-in-index)
+        (values nil nil)
+        (values result t))))
