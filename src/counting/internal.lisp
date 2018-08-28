@@ -179,16 +179,6 @@
       (apply #'node-at-type index path))))
 
 
-(defun entropy-from-node (parent)
-  (iterate
-    (with content = (read-sets parent))
-    (for node in-vector content)
-    (for frequency = (frequency node))
-    (sum (* frequency (log frequency 2))
-         into result)
-    (finally (return (- result)))))
-
-
 (defun data-range (index minimal-frequency
                    &optional (operation #'identity) maximal-size)
   (cl-ds:xpr (:stack (list (list* (read-root index) 0)))
