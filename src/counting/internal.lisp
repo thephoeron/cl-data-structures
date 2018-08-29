@@ -168,7 +168,8 @@
             (always (null #1=(gethash name table)))
             (setf #1# t))
     (error 'cl-ds:operation-not-allowed
-           :text "Duplicated values in the content of sets.")))
+           :text "Duplicated values in the content of sets."))
+  names)
 
 
 (defun node-at-names (index name &rest more-names)
