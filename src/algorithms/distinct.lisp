@@ -29,6 +29,23 @@
           :original-range (read-original-range range))))
 
 
+(defmethod cl-ds:drop-front ((range distinct-proxy) count)
+  (iterate
+    (repeat count)
+    (iterate
+      (with seen = (read-seen range))
+      (with range = (read-original-range range))
+      (with key = (read-key range))
+      (for (values data more) = (cl-ds:consume-front seen))
+      (unless more
+        (return-from drop-front (values nil nil)))
+      (for key-value = (funcall key data))
+      (cl-ds:mod-bind (dict found) (cl-ds:add! seen key-value t)
+        (unless found
+          (leave (values data t))))))
+  range)
+
+
 (defmethod cl-ds:traverse (function (range distinct-proxy))
   (bind (((:slots %seen %key) range)
          (original (read-original-range range)))
