@@ -58,6 +58,7 @@
    #:count-elements-function
    #:count-elements-if
    #:count-elements-if-function
+   #:distinct
    #:flatten-lists
    #:gather-prior-states
    #:group-by
@@ -75,5 +76,4 @@
    #:split-into-chunks
    #:to-vector
    #:without
-   #:without-function
    #:zip))
