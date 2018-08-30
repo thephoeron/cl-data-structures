@@ -83,7 +83,13 @@
                               :type (read-type superset)))
         (push-child node new-node))
       (sort-sets node)
-      (setf parent node i 0)))
+      (setf parent node i 0)
+      (finally (bt:with-lock-held ((read-mutex parent))
+                 (when (eql (incf (access-finished-count parent))
+                            children-count)
+                   (slot-makunbound parent '%mutex)
+                   (slot-makunbound parent '%finished-count)
+                   (slot-makunbound parent '%locations))))))
 
 
   (defun async-expand-node (index parent i queue)

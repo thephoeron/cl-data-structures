@@ -40,7 +40,6 @@
       (for (values f more) = (lparallel.queue:try-pop-queue queue))
       (while more)
       (lparallel:force f))
-    (reset-locations index)
     index))
 
 

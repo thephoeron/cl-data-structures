@@ -12,6 +12,10 @@
    (%count :reader read-count
            :initarg :count
            :type integer)
+   (%mutex :reader read-mutex
+           :initform (bt:make-lock))
+   (%finished-count :accessor access-finished-count
+                    :initform 0)
    (%sets :reader read-sets
           :writer write-sets
           :type vector

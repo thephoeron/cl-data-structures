@@ -42,7 +42,7 @@
                                                     queue))))
          (thread (bt:make-thread fn :name "buffer-range thread"))
          (all-good nil))
-    (handler-case
+    (unwind-protect
         (iterate
           (for (data . more) = (lparallel.queue:pop-queue queue))
           (while more)
