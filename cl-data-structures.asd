@@ -139,16 +139,6 @@
                              (:module "egnat"
                               :components ((:file "api")
                                            (:test-file "tests")))))
-               (:module "data-frame"
-                :components ((:file "packages")
-                             (:file "variables")
-                             (:file "internal")
-                             (:file "types")
-                             (:file "generics")
-                             (:file "functions")
-                             (:file "macros")
-                             (:file "methods")
-                             (:test-file "tests")))
                (:module "algorithms"
                 :components ((:file "package")
                              (:module "meta"
@@ -229,4 +219,14 @@
                              (:file "apriori")
                              (:file "methods")
                              (:file "docstrings")
+                             (:test-file "tests")))
+               (:module "data-frame"
+                :components ((:file "packages")
+                             (:file "variables")
+                             (:file "internal")
+                             (:file "types")
+                             (:file "generics")
+                             (:file "functions")
+                             (:file "macros")
+                             (:file "methods")
                              (:test-file "tests")))))
