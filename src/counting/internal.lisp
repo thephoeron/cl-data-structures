@@ -84,6 +84,8 @@
         (push-child node new-node))
       (sort-sets node)
       (setf parent node i 0)
+      ;; Below is done in order to preserve memory...
+      ;; TODO this can be done better by passing locations from function to function instead of keeping it in node.
       (finally (bt:with-lock-held ((read-mutex parent))
                  (when (eql (incf (access-finished-count parent))
                             children-count)
