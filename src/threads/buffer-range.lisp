@@ -40,12 +40,17 @@
                                  og-range)
                         (lparallel.queue:push-queue '(nil)
                                                     queue))))
-         (thread (bt:make-thread fn :name "buffer-range thread")))
-    (iterate
-      (for (data . more) = (lparallel.queue:pop-queue queue))
-      (while more)
-      (funcall function data))
-    (bt:join-thread thread)
+         (thread (bt:make-thread fn :name "buffer-range thread"))
+         (all-good nil))
+    (handler-case
+        (iterate
+          (for (data . more) = (lparallel.queue:pop-queue queue))
+          (while more)
+          (funcall function data)
+          (finally (bt:join-thread thread)
+                   (setf all-good t)))
+      (unless all-good
+        (bt:destroy-thread thread)))
     range))
 
 
