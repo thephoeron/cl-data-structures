@@ -4,4 +4,5 @@
 (defpackage :cl-data-structures.threads
   (:use #:cl-data-structures.aux-package #:common-lisp)
   (:nicknames #:cl-ds.threads)
-  (:export))
+  (:export
+   #:thread-buffer))

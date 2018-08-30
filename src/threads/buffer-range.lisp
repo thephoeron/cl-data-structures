@@ -21,34 +21,43 @@
 
 
 (defmethod cl-ds:clone ((range buffer-range))
-  (lret ((result (call-next-method range)))
-    (setf (slot-value result '%limit) (read-limit range)
-          (slot-value result '%context-function) (read-context-function range))))
+  (make (type-of range)
+        :limit (read-limit range)
+        :context-function (read-context-function range)
+        :original-range (cl-ds.alg:read-original-range range)))
 
 
-(defmethod cl-ds:traverse (function (range buffer-range))
+(defun traverse/accross (traverse/accross range function)
   (let* ((queue (lparallel.queue:make-queue :fixed-capacity (read-limit range)))
-         (orginal-range (cl-ds.alg::read-original-range range))
+         (og-range (cl-ds.alg::read-original-range range))
          (context-function (read-context-function range))
-         (function (funcall context-function
-                            (lambda ()
-                              (iterate
-                                (for (values data more) =
-                                     (cl-ds:consume-front original-range))
-                                (while more)
-                                (lparallel.queue:push-queue (list* data more)
-                                                            queue)
-                                (finally (lparallel.queue:push-queue '(nil)
-                                                                     queue))))))
-         (thread (bt:make-thread function)))
+         (fn (funcall context-function
+                      (lambda ()
+                        (funcall traverse/accross
+                                 (lambda (data)
+                                   (lparallel.queue:push-queue (list* data t)
+                                                               queue))
+                                 og-range)
+                        (lparallel.queue:push-queue '(nil)
+                                                    queue))))
+         (thread (bt:make-thread fn :name "buffer-range thread")))
     (iterate
       (for (data . more) = (lparallel.queue:pop-queue queue))
       (while more)
       (funcall function data))
+    (bt:join-thread thread)
     range))
 
 
-(defclass thread-buffer-function (layer-function)
+(defmethod cl-ds:traverse (function (range buffer-range))
+  (traverse/accross #'cl-ds:traverse range function))
+
+
+(defmethod cl-ds:across (function (range buffer-range))
+  (traverse/accross #'cl-ds:across range function))
+
+
+(defclass thread-buffer-function (cl-ds.alg.meta:layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -56,9 +65,9 @@
 (defgeneric thread-buffer (range limit &key context-function)
   (:generic-function-class thread-buffer-function)
   (:method (range limit &key (context-function #'identity))
-    (apply-range-function range #'thread-buffer
-                          :limit limit
-                          :context-function context-function)))
+    (cl-ds.alg.meta:apply-range-function range #'thread-buffer
+                                         :limit limit
+                                         :context-function context-function)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
