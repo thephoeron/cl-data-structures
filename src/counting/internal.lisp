@@ -57,51 +57,59 @@
 
 
 (-> expand-node
-    (set-index set-index-node vector non-negative-fixnum
+    (set-index set-index-node simple-vector non-negative-fixnum
      lparallel.queue:queue)
     t)
 (-> async-expand-node
-    (set-index set-index-node vector non-negative-fixnum
+    (set-index set-index-node simple-vector non-negative-fixnum
      lparallel.queue:queue)
     t)
 (with-compilation-unit nil
   (defun expand-node (index parent children i queue)
-    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
-    (iterate
-      (with new-children = (vect))
-      (with minimal-support = (the fixnum (read-minimal-support index)))
-      (for children-count = (length children))
-      (while (< i children-count))
-      (unless (eql (the fixnum (1+ i)) children-count)
-        (async-expand-node index parent children (1+ i) queue))
-      (for node = (child-at parent i))
-      (for supersets = (combine-nodes node children))
-      (for locations = (the (vector fixnum) (aref children i)))
-      (for count = (length (the vector locations)))
+    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
+             (type set-index-node parent)
+             (type simple-vector children)
+             (type non-negative-fixnum i))
+    (flet ((sort-key (x)
+             (read-type (car x))))
+      (declare (dynamic-extent #'sort-key))
       (iterate
-        (for (node . node-locations) in supersets)
-        (for intersection = (the (vector fixnum) (ordered-intersection
-                                                  #'< #'eql
-                                                  locations
-                                                  node-locations)))
-        (for intersection-size = (length intersection))
-        (when (< intersection-size minimal-support)
-          (next-iteration))
-        (for new-node = (make 'set-index-node
-                              :count intersection-size
-                              :type (read-type node)))
-        (vector-push-extend (list* new-node intersection)
-                            new-children))
-      (setf new-children
-            (sort new-children #'<
-                  :key (compose #'read-type #'car)))
-      (map nil
-           (compose (curry #'push-child node) #'car)
-           new-children)
-      (setf parent (the set-index-node node)
-            i 0
-            children (map 'vector #'cdr new-children)
-            (fill-pointer new-children) 0)))
+        (with new-children = (vect))
+        (with minimal-support = (read-minimal-support index))
+        (declare (type vector new-children)
+                 (type fixnum minimal-support))
+        (for children-count = (length children))
+        (while (< i children-count))
+        (unless (eql (the fixnum (1+ i)) children-count)
+          (async-expand-node index parent children (1+ i) queue))
+        (for node = (the set-index-node (child-at parent i)))
+        (for supersets = (the list (combine-nodes node children)))
+        (for locations = (the (vector fixnum) (aref children i)))
+        (for count = (length locations))
+        (iterate
+          (declare (type (vector fixnum) node-locations))
+          (for (node . node-locations) in supersets)
+          (for intersection = (the (vector fixnum) (ordered-intersection
+                                                    #'< #'eql
+                                                    locations
+                                                    node-locations)))
+          (for intersection-size = (length intersection))
+          (when (< intersection-size minimal-support)
+            (next-iteration))
+          (for new-node = (make 'set-index-node
+                                :count intersection-size
+                                :type (read-type node)))
+          (vector-push-extend (list* new-node intersection)
+                              new-children))
+        (setf new-children
+              (sort new-children #'<
+                    :key #'sort-key))
+        (map nil (lambda (x) (push-child node (car x)))
+             new-children)
+        (setf parent (the set-index-node node)
+              i 0
+              children (map 'vector #'cdr new-children)
+              (fill-pointer new-children) 0))))
 
 
   (defun async-expand-node (index parent children i queue)
