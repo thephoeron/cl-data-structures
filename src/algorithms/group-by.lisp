@@ -15,12 +15,12 @@
 
 
 (defclass bidirectional-group-by-proxy (forward-group-by-proxy
-                                        fundamental-bidirectional-range)
+                                        bidirectional-proxy-range)
   ())
 
 
 (defclass random-access-group-by-proxy (bidirectional-group-by-proxy
-                                        fundamental-random-access-range)
+                                        random-access-proxy-range)
   ())
 
 

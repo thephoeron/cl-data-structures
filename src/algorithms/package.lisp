@@ -70,7 +70,9 @@
    #:on-each
    #:only
    #:proxy-box-range
+   #:read-original-range
    #:proxy-range
+   #:forward-proxy-range
    #:proxy-range-aggregator-outer-fn
    #:shuffled-range
    #:split-into-chunks

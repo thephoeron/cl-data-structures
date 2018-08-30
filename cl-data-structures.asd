@@ -180,6 +180,9 @@
                 :components ((:file "package")
                              (:file "common")
                              (:file "line-by-line")))
+               (:module "threads"
+                :components ((:file "package")
+                             (:file "buffer-range")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
