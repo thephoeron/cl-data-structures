@@ -6,16 +6,9 @@
           :initarg :type
           :initform nil
           :type (or null integer))
-   (%locations :reader read-locations
-               :initarg :locations
-               :type (vector fixnum))
    (%count :reader read-count
            :initarg :count
            :type integer)
-   (%mutex :reader read-mutex
-           :initform (bt:make-lock))
-   (%finished-count :accessor access-finished-count
-                    :initform 0)
    (%sets :reader read-sets
           :writer write-sets
           :type vector
@@ -71,10 +64,3 @@
 
 (defclass empty-association-set (empty-mixin association-set)
   ())
-
-
-(defmethod initialize-instance :after ((node set-index-node)
-                                       &key &allow-other-keys)
-  (when (slot-boundp node '%locations)
-    (setf (slot-value node '%count)
-          (length (read-locations node)))))

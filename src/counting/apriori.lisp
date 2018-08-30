@@ -20,14 +20,14 @@
 
 (defun set-index-algorithm (&key set-form minimal-support &allow-other-keys)
   (bind (((_ total-size . table) set-form)
-         (index (make-set-index table
-                                total-size
-                                minimal-support))
+         ((:values index children) (make-set-index table
+                                                   total-size
+                                                   minimal-support))
          (queue (lparallel.queue:make-queue))
          (reverse-mapping (make-array (hash-table-count table)))
          (mapping (make-hash-table :size (hash-table-count table)
                                    :test 'equal)))
-    (async-expand-node index (read-root index) 0 queue)
+    (async-expand-node index (read-root index) children 0 queue)
     (iterate
       (for i from 0)
       (for (key value) in-hashtable table)
