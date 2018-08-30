@@ -70,7 +70,7 @@
              (type set-index-node parent)
              (type simple-vector children)
              (type non-negative-fixnum i))
-    (flet ((sort-key (x)
+    (flet ((sort-key (x) (declare (type list x))
              (read-type (car x))))
       (declare (dynamic-extent #'sort-key))
       (iterate
