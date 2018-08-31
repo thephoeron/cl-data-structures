@@ -34,14 +34,17 @@
          (og-range (cl-ds.alg::read-original-range range))
          (context-function (read-context-function range))
          (fn (lambda ()
-               (handler-case
-                   (funcall (funcall
-                             context-function
-                             (lambda ()
-                               (funcall traverse/accross
-                                        (compose #'enque (rcurry #'list* t))
-                                        og-range))))
-                 (condition (e) (enque (list e :error))))
+               (block nil
+                 (handler-case
+                     (funcall (funcall
+                               context-function
+                               (lambda ()
+                                 (funcall traverse/accross
+                                          (compose #'enque (rcurry #'list* t))
+                                          og-range))))
+                   (condition (e)
+                     (enque (list e :error))
+                     (return nil))))
                (enque '(nil))))
          (thread (bt:make-thread fn :name "buffer-range thread"))
          (all-good nil))
