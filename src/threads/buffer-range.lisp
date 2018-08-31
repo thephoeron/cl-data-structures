@@ -28,24 +28,30 @@
 
 
 (defun traverse/accross (traverse/accross range function)
-  (let* ((queue (lparallel.queue:make-queue :fixed-capacity (read-limit range)))
+  (bind ((queue (lparallel.queue:make-queue :fixed-capacity (read-limit range)))
+         ((:flet enque (data))
+          (lparallel.queue:push-queue data queue))
          (og-range (cl-ds.alg::read-original-range range))
          (context-function (read-context-function range))
-         (fn (funcall context-function
-                      (lambda ()
-                        (funcall traverse/accross
-                                 (lambda (data)
-                                   (lparallel.queue:push-queue (list* data t)
-                                                               queue))
-                                 og-range)
-                        (lparallel.queue:push-queue '(nil)
-                                                    queue))))
+         (fn (lambda ()
+               (handler-case
+                   (funcall (funcall
+                             context-function
+                             (lambda ()
+                               (funcall traverse/accross
+                                        (compose #'enque (rcurry #'list* t))
+                                        og-range))))
+                 (condition (e) (enque (list e :error))))
+               (enque '(nil))))
          (thread (bt:make-thread fn :name "buffer-range thread"))
          (all-good nil))
     (unwind-protect
         (iterate
           (for (data . more) = (lparallel.queue:pop-queue queue))
           (while more)
+          (when (eql more :error)
+            (error data)
+            (finish))
           (funcall function data)
           (finally (bt:join-thread thread)
                    (setf all-good t)))
