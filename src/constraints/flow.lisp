@@ -10,7 +10,8 @@
                            (return-from ,',!block (monadic-value nil ,value))
                            (error "Can't reject something that is not input."))))
                   (accept (&rest result)
-                    `(return-from ,',!block (monadic-value (list ,@result)))))
+                    `(return-from ,',!block (monadic-value (list ,@result)
+                                                           nil))))
          (list (progn ,@body)
                nil)))))
 
@@ -38,13 +39,18 @@
     (setf monads (mapcar #'funcall monads))
     (&rest all)
   (iterate
+    (with result = nil)
+    (with rejection-list = nil)
     (for monad in monads)
     (for (vals rejected) = (apply monad all))
     (when (not rejected)
-      (leave (monadic-value vals)))
+      (setf result (cl-ds.utils:add-to-list result vals)))
     (when rejected
-      (collect rejected into rejection-list at start))
-    (finally (return (apply #'monadic-value nil rejection-list)))))
+      (setf rejection-list (cl-ds.utils:add-to-list rejection-list
+                                                    rejected)))
+    (finally (return (if (endp result)
+                         (rejected-monadic-value (first rejection-list))
+                         (accepted-monadic-value result))))))
 
 
 (defmon .and
@@ -52,27 +58,11 @@
     (setf monads (mapcar #'funcall monads))
     (&rest all)
   (iterate
-    (for monad in monads)
-    (for (vals rejected) = (apply monad all))
-    (for p-vals previous vals)
-    (when rejected
-      (reject rejected))
-    (finally (return (monadic-value p-vals)))))
-
-
-(defmon .skip-rejected
-    (&rest monads)
-    (setf monads (mapcar #'funcall monads))
-    (&rest all)
-  (iterate
-    (with accepted = nil)
     (with result = nil)
     (for monad in monads)
     (for (vals rejected) = (apply monad all))
-    (when (not rejected)
-      (setf accepted t)
-      (setf result (cl-ds.utils:add-to-list result vals)))
-    (collect rejected into rejection-list at start)
-    (finally (if accepted
-                 (return (monadic-value result))
-                 (return (apply #'monadic-value nil rejection-list))))))
+    (when rejected
+      (leave (rejected-monadic-value rejected)))
+    (setf result (cl-ds.utils:add-to-list result vals))
+    (finally (return (accepted-monadic-value result)))))
+

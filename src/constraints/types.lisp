@@ -38,18 +38,12 @@
                                           (mapcar #'read-range deps)))))))
 
 
-(defun monadic-value (value &rest rejected)
-  (list value
-        (iterate
-          (with shallow = nil)
-          (for rej in rejected)
-          (for depth = (read-depth rej))
-          (minimize depth into min)
-          (when (eql min depth)
-            (setf shallow rej))
-          (finally (return shallow)))))
+(defun monadic-value (value rejected)
+  (list value rejected))
 
 
-(defun accepted-monadic-value (value &rest values)
-  (list (cons value values)
-        nil))
+(defun accepted-monadic-value (values)
+  (list values nil))
+
+(defun rejected-monadic-value (rejected)
+  (list nil rejected))

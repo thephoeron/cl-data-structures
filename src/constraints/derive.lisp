@@ -5,14 +5,13 @@
 
 
 (eval-always
-  (defun construct-binding-form (name deps form this)
+  (defun construct-binding-form (name deps form)
     `(,name (make-input '(,@deps)
-                        ,this
                         *depth*
                         (lambda (,@deps)
                           ,form))))
 
-  (defun construct-bindings-form (bindings this)
+  (defun construct-bindings-form (bindings)
     (declare (type list bindings))
     (cons 'setf
           (apply #'append
@@ -23,7 +22,7 @@
                    (collect (if (null deps)
                                 `(,name ,form)
                                 (construct-binding-form name deps
-                                                        form this))))))))
+                                                        form))))))))
 
 
 (defmacro derive (bindings body)
@@ -36,7 +35,8 @@
                 (,!depth *depth*)
                 (,!this (lambda ()
                           (tagbody ,!this
-                             (if (some #'reached-end '(,@all-symbols))
+                             (if (or ,@(mapcar (lambda (x) `(reached-end ,x))
+                                               all-symbols))
                                  (values nil nil)
                                  (bind ((values-rejected (funcall ,!next))
                                         ((values rejected) values-status))
@@ -46,5 +46,5 @@
                                        (progn
                                          (cl-ds:consume-front (read-range rejected))
                                          (go ,!this)))))))))
-           ,(construct-bindings-form bindings !this)
+           ,(construct-bindings-form bindings)
            ,!this)))))
