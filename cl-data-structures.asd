@@ -50,8 +50,9 @@
                               :components ((:file "package")
                                            (:file "levenshtein")
                                            (:file "hellinger")
-                                           (:file "euclid-metric")
-                                           (:file "earth-mover-metric")
+                                           (:file "hausdorff")
+                                           (:file "euclid")
+                                           (:file "earth-mover")
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
@@ -109,6 +110,35 @@
                                            (:file "methods")
                                            (:file "docstrings")
                                            (:test-file "tests")))))
+               (:module "dicts"
+                :components ((:file "packages")
+                             (:file "trait-classes")
+                             (:file "common")
+                             (:file "api")
+                             (:file "docstrings")
+                             (:module "hamt"
+                              :components ((:file "api")
+                                           (:file "docstrings")
+                                           (:test-file "transactions-tests")
+                                           (:test-file "range-test")
+                                           (:test-file "lazy-tests")))
+                             (:test-file "functional-dictionary-test-suite")
+                             (:test-file "mutable-dictionary-test-suite")
+                             (:test-file "transactional-dictionary-test-suite")))
+               (:module "sequences"
+                :components ((:file "packages")
+                             (:file "common")
+                             (:module "rrb"
+                              :components ((:file "api")
+                                           (:test-file "tests")))))
+               (:module "metric-space"
+                :components ((:file "packages")
+                             (:file "trait-classes")
+                             (:file "common")
+                             (:file "api")
+                             (:module "egnat"
+                              :components ((:file "api")
+                                           (:test-file "tests")))))
                (:module "algorithms"
                 :components ((:file "package")
                              (:module "meta"
@@ -137,6 +167,7 @@
                              (:file "chain")
                              (:file "zip")
                              (:file "flatten-lists")
+                             (:file "distinct")
                              (:file "docstrings")
                              (:test-file "split-into-chunks-test")
                              (:test-file "hash-join-tests")
@@ -149,6 +180,9 @@
                 :components ((:file "package")
                              (:file "common")
                              (:file "line-by-line")))
+               (:module "threads"
+                :components ((:file "package")
+                             (:file "buffer-range")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
@@ -189,35 +223,6 @@
                              (:file "methods")
                              (:file "docstrings")
                              (:test-file "tests")))
-               (:module "metric-space"
-                :components ((:file "packages")
-                             (:file "trait-classes")
-                             (:file "common")
-                             (:file "api")
-                             (:module "egnat"
-                              :components ((:file "api")
-                                           (:test-file "tests")))))
-               (:module "dicts"
-                :components ((:file "packages")
-                             (:file "trait-classes")
-                             (:file "common")
-                             (:file "api")
-                             (:file "docstrings")
-                             (:module "hamt"
-                              :components ((:file "api")
-                                           (:file "docstrings")
-                                           (:test-file "transactions-tests")
-                                           (:test-file "range-test")
-                                           (:test-file "lazy-tests")))
-                             (:test-file "functional-dictionary-test-suite")
-                             (:test-file "mutable-dictionary-test-suite")
-                             (:test-file "transactional-dictionary-test-suite")))
-               (:module "sequences"
-                :components ((:file "packages")
-                             (:file "common")
-                             (:module "rrb"
-                              :components ((:file "api")
-                                           (:test-file "tests")))))
                (:module "data-frame"
                 :components ((:file "packages")
                              (:file "variables")

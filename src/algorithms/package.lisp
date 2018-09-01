@@ -58,6 +58,7 @@
    #:count-elements-function
    #:count-elements-if
    #:count-elements-if-function
+   #:distinct
    #:flatten-lists
    #:gather-prior-states
    #:group-by
@@ -69,11 +70,12 @@
    #:on-each
    #:only
    #:proxy-box-range
+   #:read-original-range
    #:proxy-range
+   #:forward-proxy-range
    #:proxy-range-aggregator-outer-fn
    #:shuffled-range
    #:split-into-chunks
    #:to-vector
    #:without
-   #:without-function
    #:zip))

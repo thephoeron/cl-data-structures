@@ -152,7 +152,7 @@
          (for i from 0 below position)
          (push (list chain (aref content i) (1+ depth)) stack))
        (recur :stack stack))
-     (assert nil))))
+      (assert nil))))
 
 
 (defmethod content ((set set-in-index))
@@ -162,6 +162,10 @@
 
 
 (defmethod content ((set empty-mixin))
+  nil)
+
+
+(defmethod content ((set set-index))
   nil)
 
 
@@ -193,6 +197,11 @@
 
 (defmethod aposteriori-set ((set empty-association-set))
   set)
+
+
+(defmethod make-association-set ((apriori set-index)
+                                 (aposteriori set-in-index))
+  aposteriori)
 
 
 (defmethod make-association-set ((apriori set-in-index)
@@ -259,3 +268,29 @@
     (make 'empty-set-in-index
           :index index
           :type-count (length content))))
+
+
+(defmethod find-set ((set set-in-index) &rest content)
+  (bind ((index (read-index set))
+         (types1 (~>> set read-node chain-node
+                      (mapcar #'read-type)))
+         (types2 (~>> content validate-unique-names
+                      (mapcar (curry #'name-to-type index))))
+         (types (~> types1
+                    (cl-ds.utils:add-to-list types2)
+                    remove-duplicates)))
+    (if-let ((node (and (every #'identity types)
+                        (apply #'node-at-type index types))))
+      (make 'set-in-index
+            :node node
+            :index index)
+      (make 'empty-set-in-index
+            :index index
+            :type-count types))))
+
+
+(defmethod cl-ds:at ((index set-index) location &rest more-locations)
+  (let ((result (apply #'find-set index (cons location more-locations))))
+    (if (typep result 'empty-set-in-index)
+        (values nil nil)
+        (values result t))))

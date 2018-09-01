@@ -9,21 +9,24 @@
 
 
 (defun make-set-index (table total-size minimal-support)
-  (let* ((root-content
-           (iterate
-             (with result = (make-array (hash-table-count table)))
-             (for i from 0)
-             (for (key value) in-hashtable table)
-             (for (id . positions) = value)
-             (setf (aref result i) (make 'set-index-node
-                                         :type id
-                                         :locations positions))
-             (finally
-              (return (sort (delete-if (rcurry #'< minimal-support)
-                                       result
-                                       :key #'read-count)
-                            #'<
-                            :key #'read-type)))))
+  (bind (((:values root-content children)
+          (iterate
+            (with result = (make-array (hash-table-count table)))
+            (for i from 0)
+            (for (key value) in-hashtable table)
+            (for (id . positions) = value)
+            (setf (aref result i) (list* (make 'set-index-node
+                                               :type id
+                                               :count (length positions))
+                                         positions))
+            (finally
+             (let* ((effective (~> (delete-if (rcurry #'< minimal-support)
+                                              result
+                                              :key (compose #'read-count #'car))
+                                   (sort #'< :key (compose #'read-type #'car))))
+                    (children (map 'vector #'cdr effective)))
+               (map-into effective #'car effective)
+               (return (values effective children))))))
          (root (make-instance 'set-index-node
                               :sets root-content
                               :count total-size))
@@ -32,18 +35,26 @@
                        :minimal-support minimal-support
                        :root root)))
     (map nil (curry #'write-parent root) root-content)
-    result))
+    (values result children)))
 
 
-(-> combine-nodes (set-index-node) list)
-(defun combine-nodes (node)
+(-> sort-key (list) fixnum)
+(defun sort-key (x)
+  (read-type (car x)))
+
+
+(-> combine-nodes (set-index-node vector) list)
+(defun combine-nodes (node children)
+  (declare (optimize (speed 3) (safety 0)))
   (let* ((last-elt node)
          (parent (read-parent last-elt))
-         (content (read-sets parent))
+         (content (map 'vector #'list*
+                       (the vector (read-sets parent))
+                       children))
          (lower-bound (lower-bound (the vector content)
                                    (the fixnum (read-type last-elt))
                                    #'<
-                                   :key #'read-type)))
+                                   :key #'sort-key)))
     (iterate
       (for i from (1+ lower-bound) below (length content))
       (for elt = (aref content i))
@@ -51,43 +62,60 @@
 
 
 (-> expand-node
-    (set-index set-index-node non-negative-fixnum lparallel.queue:queue)
+    (set-index set-index-node simple-vector non-negative-fixnum
+     lparallel.queue:queue)
     t)
 (-> async-expand-node
-    (set-index set-index-node non-negative-fixnum lparallel.queue:queue)
+    (set-index set-index-node simple-vector non-negative-fixnum
+     lparallel.queue:queue)
     t)
 (with-compilation-unit nil
-  (defun expand-node (index parent i queue)
-    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
+  (defun expand-node (index parent children i queue)
+    (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
+             (type set-index-node parent)
+             (type simple-vector children)
+             (type non-negative-fixnum i))
     (iterate
-      (with minimal-support = (the fixnum (read-minimal-support index)))
-      (for children-count = (the fixnum (number-of-children parent)))
+      (with new-children = (vect))
+      (with minimal-support = (read-minimal-support index))
+      (declare (type vector new-children)
+               (type fixnum minimal-support))
+      (for children-count = (length children))
       (while (< i children-count))
-      (unless (eql (1+ i) children-count)
-        (async-expand-node index parent (1+ i) queue))
-      (for node = (child-at parent i))
-      (for supersets = (combine-nodes node))
-      (for count = (the fixnum (read-count node)))
-      (for locations = (the (vector fixnum) (read-locations node)))
+      (unless (eql (the fixnum (1+ i)) children-count)
+        (async-expand-node index parent children (1+ i) queue))
+      (for node = (the set-index-node (child-at parent i)))
+      (for supersets = (the list (combine-nodes node children)))
+      (for locations = (the (vector fixnum) (aref children i)))
+      (for count = (length locations))
       (iterate
-        (for superset in supersets)
+        (declare (type (vector fixnum) node-locations))
+        (for (node . node-locations) in supersets)
         (for intersection = (the (vector fixnum) (ordered-intersection
                                                   #'< #'eql
                                                   locations
-                                                  (read-locations superset))))
+                                                  node-locations)))
         (for intersection-size = (length intersection))
         (when (< intersection-size minimal-support)
           (next-iteration))
         (for new-node = (make 'set-index-node
-                              :locations intersection
-                              :type (read-type superset)))
-        (push-child node new-node))
-      (sort-sets node)
-      (setf parent node i 0)))
+                              :count intersection-size
+                              :type (read-type node)))
+        (vector-push-extend (list* new-node intersection)
+                            new-children))
+      (setf new-children
+            (sort new-children #'<
+                  :key #'sort-key))
+      (map nil (lambda (x) (push-child node (car x)))
+           new-children)
+      (setf parent (the set-index-node node)
+            i 0
+            children (map 'vector #'cdr new-children)
+            (fill-pointer new-children) 0)))
 
 
-  (defun async-expand-node (index parent i queue)
-    (~> (expand-node index parent i queue)
+  (defun async-expand-node (index parent children i queue)
+    (~> (expand-node index parent children i queue)
         lparallel:future
         (lparallel.queue:push-queue queue))))
 
@@ -168,7 +196,8 @@
             (always (null #1=(gethash name table)))
             (setf #1# t))
     (error 'cl-ds:operation-not-allowed
-           :text "Duplicated values in the content of sets.")))
+           :text "Duplicated values in the content of sets."))
+  names)
 
 
 (defun node-at-names (index name &rest more-names)
@@ -177,16 +206,6 @@
     (when (every #'identity path)
       (validate-unique-names names)
       (apply #'node-at-type index path))))
-
-
-(defun entropy-from-node (parent)
-  (iterate
-    (with content = (read-sets parent))
-    (for node in-vector content)
-    (for frequency = (frequency node))
-    (sum (* frequency (log frequency 2))
-         into result)
-    (finally (return (- result)))))
 
 
 (defun data-range (index minimal-frequency

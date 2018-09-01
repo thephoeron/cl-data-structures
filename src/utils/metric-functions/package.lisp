@@ -2,7 +2,8 @@
   (:use #:cl #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils.metric)
   (:export
-   #:hellinger-metric
-   #:levenshtein-metric
    #:earth-mover-metric
-   #:euclid-metric))
+   #:euclid-metric
+   #:hausdorff-metric
+   #:hellinger-metric
+   #:levenshtein-metric))

@@ -13,6 +13,9 @@
   (function hash-join
     (:description "Joins multiple ranges into one using JOIN-FUNCTION."))
 
+  (function distinct
+    (:description "Returns forward range that skips elements that were already seen."))
+
   (function split-into-chunks
     (:description "Divides aggregation process into partitions upto size."
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
