@@ -2,6 +2,7 @@
 
 
 (defvar *depth* 0)
+(defvar *all-inputs*)
 
 
 (eval-always
@@ -37,14 +38,18 @@
                           (tagbody ,!this
                              (if (or ,@(mapcar (lambda (x) `(reached-end ,x))
                                                all-symbols))
-                                 (values nil nil)
-                                 (bind ((values-rejected (funcall ,!next))
-                                        ((values rejected) values-status))
-                                   (if (or (null rejected)
-                                           (not (same-depth rejected ,!depth)))
-                                       values-rejected
-                                       (progn
-                                         (cl-ds:consume-front (read-range rejected))
-                                         (go ,!this)))))))))
+                                 :end
+                                 (bind ((values-rejected (funcall ,!next)))
+                                   (if (eql :end values-rejected)
+                                       :end
+                                       (bind (((values rejected) values-rejected))
+                                         (if (or (null rejected)
+                                                 (not (same-depth rejected ,!depth)))
+                                             values-rejected
+                                             (progn
+                                               (cl-ds:consume-front (read-range rejected))
+                                               (go ,!this)))))))))))
            ,(construct-bindings-form bindings)
+           ,@(mapcar (lambda (x) `(vector-push-extend ,x *all-inputs*))
+                     all-symbols)
            ,!this)))))

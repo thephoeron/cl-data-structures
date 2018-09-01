@@ -6,7 +6,10 @@
          :reader read-key)
    (%current :initform nil
              :initarg :current
-             :accessor access-current)))
+             :accessor access-current)
+   (%original-current :initarg :original-current
+                      :initform nil
+                      :reader read-original-current)))
 
 
 (defclass forward-flatten-proxy (flatten-proxy
@@ -18,6 +21,7 @@
   (make (type-of range)
         :key (read-key range)
         :current (access-current range)
+        :original-current (access-current range)
         :original-range (read-original-range range)))
 
 
@@ -42,7 +46,7 @@
 
 
 (defmethod cl-ds:reset! ((range flatten-proxy))
-  (setf (access-current range) nil)
+  (setf (access-current range) (read-original-current range))
   (call-next-method))
 
 

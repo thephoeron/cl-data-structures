@@ -3,9 +3,23 @@
 
 (defclass input ()
   ((%range :initarg :range
-           :reader read-range)
+           :reader read-range
+           :writer write-range)
    (%depth :initarg :depth
            :reader read-depth)))
+
+
+(defclass constrainted-range ()
+  ((%constructor :initarg :constructor
+                 :reader read-constructor)
+   (%monad :initarg :monad
+           :accessor access-monad)
+   (%current :initarg :current
+             :accessor access-current)
+   (%original-current :initarg :original-current
+                      :reader read-original-current)
+   (%inputs :initarg :inputs
+            :reader read-inputs)))
 
 
 (defun same-depth (input depth)
