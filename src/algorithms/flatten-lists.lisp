@@ -47,8 +47,7 @@
 
 
 (defmethod cl-ds:peek-front ((range forward-flatten-proxy))
-  (bind ((key (read-key range))
-         (current (access-current range))
+  (bind ((current (access-current range))
          ((:labels value (element))
           (cond ((null element) nil)
                 ((atom element) element)
@@ -60,14 +59,7 @@
                    (finally (return result))))))
          (result (value current)))
     (if (null result)
-        (bind ((fresh-clone (cl-ds:clone (read-original-range range))))
-          (iterate
-            (for (values value more) = (cl-ds:consume-front fresh-clone))
-            (when (not more)
-              (leave (values nil nil)))
-            (for result = (value (funcall key value)))
-            (unless (null result)
-              (leave (values result t)))))
+        (~> range cl-ds:clone cl-ds:consume-front)
         (values result t))))
 
 
