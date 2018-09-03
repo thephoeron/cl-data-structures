@@ -43,11 +43,10 @@
   (read-type (car x)))
 
 
-(-> combine-nodes (set-index-node vector) list)
-(defun combine-nodes (node children)
+(-> combine-nodes (set-index-node set-index-node vector) list)
+(defun combine-nodes (node parent children)
   (declare (optimize (speed 3) (safety 0)))
   (let* ((last-elt node)
-         (parent (read-parent last-elt))
          (content (map 'vector #'list*
                        (the vector (read-sets parent))
                        children))
@@ -85,7 +84,7 @@
       (unless (eql (the fixnum (1+ i)) children-count)
         (async-expand-node index parent children (1+ i) queue))
       (for node = (the set-index-node (child-at parent i)))
-      (for supersets = (the list (combine-nodes node children)))
+      (for supersets = (the list (combine-nodes node parent children)))
       (for locations = (the (vector fixnum) (aref children i)))
       (for count = (length locations))
       (iterate
