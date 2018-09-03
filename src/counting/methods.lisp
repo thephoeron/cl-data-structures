@@ -83,9 +83,11 @@
   (data-range index
               minimal-frequency
               (lambda (x)
-                (make-instance 'set-in-index
-                               :index index
-                               :node x))
+                (bind (((node _ . _) x))
+                  (make-instance 'set-in-index
+                                 :index index
+                                 :node node
+                                 :path (coerce (chain-cells x) 'vector))))
               maximal-size))
 
 

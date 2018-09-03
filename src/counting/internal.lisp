@@ -148,10 +148,11 @@
                          :key #'read-type))
 
 
-(defun add-to-stack (stack node depth)
+(defun add-to-stack (stack cell depth)
   (iterate
+    (with node = (first cell))
     (for elt in-vector (read-sets node))
-    (push (list* elt depth node) stack))
+    (push (list* elt depth cell) stack))
   stack)
 
 
@@ -216,13 +217,22 @@
           (if (and maximal-size (< maximal-size depth))
               (recur :stack stack)
               (if (null parent)
-                  (recur :stack (add-to-stack stack node (1+ depth)))
+                  (recur :stack (add-to-stack stack cell (1+ depth)))
                   (if (< (/ (support node) (read-total-size index))
                          minimal-frequency)
-                      (recur :stack (add-to-stack stack node (1+ depth)))
-                      (send-recur (funcall operation node)
-                                  :stack (add-to-stack stack node
+                      (recur :stack (add-to-stack stack cell (1+ depth)))
+                      (send-recur (funcall operation cell)
+                                  :stack (add-to-stack stack cell
                                                        (1+ depth)))))))))))
+
+
+(defun chain-cells (cell)
+  (iterate
+    (for (n depth . parent)
+         initially cell
+         then parent)
+    (collect n at start)
+    (unitl (endp parent))))
 
 
 (defun chain-node (node)
@@ -255,8 +265,8 @@
     (cl-ds.utils:ordered-exclusion
      (lambda (a b) (< (read-type a) (read-type b)))
      (lambda (a b) (eql (read-type a) (read-type b)))
-     (~> aposteriori chain-node (coerce 'vector))
-     (~> apriori chain-node (coerce 'vector)))))
+     (read-path apriori)
+     (read-path aposteriori))))
 
 
 (defun pure-aposteriori (set)

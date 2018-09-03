@@ -39,6 +39,9 @@
   ((%node :initarg :node
           :type (or null set-index-node)
           :reader read-node)
+   (%path :initarg :path
+          :type vector
+          :reader read-path)
    (%index :initarg :index
            :initform nil
            :type set-index
@@ -49,7 +52,9 @@
   ((%apriori-node :initarg :apriori-node
                   :reader read-apriori-node
                   :initform nil
-                  :type (or null set-index-node))))
+                  :type (or null set-index-node))
+   (%apriori-path :initarg :apriori-path
+                  :reader read-apriori-path)))
 
 
 (defclass empty-mixin ()
