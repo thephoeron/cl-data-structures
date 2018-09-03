@@ -151,7 +151,7 @@
 (defun add-to-stack (stack node depth)
   (iterate
     (for elt in-vector (read-sets node))
-    (push (list* elt depth) stack))
+    (push (list* elt depth node) stack))
   stack)
 
 
@@ -209,19 +209,17 @@
 
 (defun data-range (index minimal-frequency
                    &optional (operation #'identity) maximal-size)
-  (cl-ds:xpr (:stack (list (list* (read-root index) 0)))
+  (cl-ds:xpr (:stack (list (list* (read-root index) 0 nil)))
     (bind ((cell (pop stack)))
       (unless (null cell)
-        (bind (((node . depth) cell))
+        (bind (((node depth . parent) cell))
           (if (and maximal-size (< maximal-size depth))
               (recur :stack stack)
-              (if (null (read-parent node))
-                  (recur :stack (add-to-stack stack node
-                                              (1+ depth)))
+              (if (null parent)
+                  (recur :stack (add-to-stack stack node (1+ depth)))
                   (if (< (/ (support node) (read-total-size index))
                          minimal-frequency)
-                      (recur :stack (add-to-stack stack node
-                                                  (1+ depth)))
+                      (recur :stack (add-to-stack stack node (1+ depth)))
                       (send-recur (funcall operation node)
                                   :stack (add-to-stack stack node
                                                        (1+ depth)))))))))))
