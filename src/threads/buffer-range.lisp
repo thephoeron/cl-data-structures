@@ -43,7 +43,7 @@
                                           (compose #'enque (rcurry #'list* t))
                                           og-range))))
                    (condition (e)
-                     (enque (list e :error))
+                     (enque (list* e :error))
                      (return nil))))
                (enque '(nil))))
          (thread (bt:make-thread fn :name "buffer-range thread"))
