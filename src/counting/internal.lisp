@@ -168,15 +168,19 @@
       (aref content lower-bound))))
 
 
-(defun node-at-type (index &rest more-types)
+(defun node-at-type (index types)
+  (declare (type list types))
   (iterate
-    (with path = (sort more-types #'<))
+    (with path = (sort types #'<))
     (with node = (read-root index))
+    (with result-path = (make-array (length types) node))
     (while path)
+    (for i from 1)
     (setf node (child-of-type node (first path))
           path (rest path))
     (while node)
-    (finally (return node))))
+    (setf (aref result-path i) node)
+    (finally (return (values node result-path)))))
 
 
 (defun node-at (index i &rest more-i)
@@ -205,7 +209,7 @@
          (path (mapcar (curry #'name-to-type index) names)))
     (when (every #'identity path)
       (validate-unique-names names)
-      (apply #'node-at-type index path))))
+      (node-at-type index path))))
 
 
 (defun data-range (index minimal-frequency
@@ -272,4 +276,4 @@
 (defun pure-aposteriori (set)
   (when-let ((types (~> (just-post (read-apriori-node set) (read-node set))
                         (map 'list #'read-type _))))
-    (apply #'node-at-type (read-index set) types)))
+    (node-at-type (read-index set) types)))

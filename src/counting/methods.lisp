@@ -216,7 +216,7 @@
                                   (read-path aposteriori))
                      (map 'list #'read-type)
                      remove-duplicates
-                     (apply #'node-at-type (read-index apriori)))))
+                     (node-at-type (read-index apriori)))))
     (or (and union
              (make 'association-set
                    :index (read-index apriori)
