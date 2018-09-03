@@ -119,8 +119,9 @@
                            &optional maximal-size)
   (nest
    (bind ((index (read-index set))
-          (node (read-node set))))
-   (cl-ds:xpr (:stack (list (list (chain-node node)
+          (node (read-node set))
+          (chain (coerce (read-path set) 'list))))
+   (cl-ds:xpr (:stack (list (list chain
                                   (read-root index)
                                   (type-count set)))))
    (when-let ((cell (pop stack))))
@@ -159,8 +160,8 @@
 
 (defmethod content ((set set-in-index))
   (when-let ((node (read-node set)))
-    (~>> node chain-node
-         (mapcar (curry #'node-name (read-index set))))))
+    (~>> node read-path
+         (map 'list (curry #'node-name (read-index set))))))
 
 
 (defmethod content ((set empty-mixin))
@@ -210,14 +211,16 @@
                                  (aposteriori set-in-index))
   (let* ((set-index-node (read-node apriori))
          (aposteriori-node (read-node aposteriori))
-         (union (~>> (add-to-list (chain-node set-index-node)
-                                  (chain-node aposteriori-node))
-                     (mapcar #'read-type)
+         (union (~>> (concatenate 'vector
+                                  (read-path apriori)
+                                  (read-path aposteriori))
+                     (map 'list #'read-type)
                      remove-duplicates
                      (apply #'node-at-type (read-index apriori)))))
     (or (and union
              (make 'association-set
                    :index (read-index apriori)
+                   :path (read-path apriori)
                    :node union
                    :apriori-node set-index-node))
         (make 'empty-association-set
