@@ -10,7 +10,7 @@
   (:range hash-fn epsilon gamma &key key)
   (:range hash-fn epsilon gamma &key (key #'identity))
 
-  (%width %i %depth %hash-fn %epsilon %gamma %aj %bj %total %counters %hashes)
+  (%width %depth %hash-fn %epsilon %gamma %aj %bj %total %counters %hashes)
 
   ((&key hash-fn epsilon gamma)
    (setf %hash-fn hash-fn
@@ -18,7 +18,6 @@
          %depth (ceiling (log (/ 1 gamma)))
          %gamma gamma
          %total 0
-         %i 0
          %epsilon epsilon
          %counters (make-array (list %depth %width) :element-type 'fixnum)
          %hashes (make-array (list %depth 2) :element-type 'fixnum))
@@ -28,7 +27,7 @@
                                     (1- most-positive-fixnum)))))))
 
   ((element)
-   (setf %total (+ %total %i))
+   (incf %total)
    (iterate
      (with hash = (funcall %hash-fn element))
      (for j from 0 below %depth)
@@ -37,7 +36,6 @@
                         (+ (aref %hashes j 1))
                         (rem +long-prime+)
                         (rem %width)))
-     (incf (aref %counters j hashval) %i))
-   (incf %i))
+     (incf (aref %counters j hashval))))
 
   (cl-ds.utils:todo))
