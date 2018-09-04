@@ -32,7 +32,8 @@
       (rem width)))
 
 
-(defmethod cl-ds:at ((container approximated-counts) location &rest more-locations)
+(defmethod cl-ds:at ((container approximated-counts) location
+                     &rest more-locations)
   (unless (endp more-locations)
     (error 'cl-ds:dimensionality-error
            :bounds '(1)
