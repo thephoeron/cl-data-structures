@@ -213,6 +213,7 @@
                (:module "streaming-algorithms"
                 :components ((:file "package")
                              (:file "approximated-set-cardinality")
+                             (:file "approximated-counts")
                              (:file "docstrings")))
                (:module "counting"
                 :components ((:file "package")

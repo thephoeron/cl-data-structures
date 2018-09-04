@@ -5,4 +5,5 @@
   (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.sa)
   (:export
-   #:approximated-set-cardinality))
+   #:approximated-set-cardinality
+   #:approximated-counts))
