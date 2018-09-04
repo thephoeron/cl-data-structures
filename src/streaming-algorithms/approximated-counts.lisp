@@ -19,7 +19,7 @@
          %gamma gamma
          %total 0
          %epsilon epsilon
-         %counters (make-array (list %depth %width) :element-type 'fixnum)
+         %counters (make-array (list %depth %width) :initial-element 0)
          %hashes (make-array (list %depth 2) :element-type 'fixnum))
    (map-into (cl-ds.utils:unfold-table %hashes)
              (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
