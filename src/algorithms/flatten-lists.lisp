@@ -27,7 +27,8 @@
                  (map nil #'impl x)
                  (funcall function x))))
     (declare (dynamic-extent (function impl)))
-    (cl-ds:traverse #'impl (read-original-range range))
+    (cl-ds:traverse (compose #'impl (read-key range))
+                    (read-original-range range))
     range))
 
 
@@ -37,7 +38,8 @@
                  (map nil #'impl x)
                  (funcall function x))))
     (declare (dynamic-extent (function impl)))
-    (cl-ds:across #'impl (read-original-range range))
+    (cl-ds:across (compose #'impl (read-key range))
+                  (read-original-range range))
     range))
 
 
@@ -82,7 +84,7 @@
     (if (null result)
         (iterate
           (with outer = (read-original-range range))
-          (for (values value more) = (cl-ds:consume-front outer))
+          (for (values f-val more) = (cl-ds:consume-front outer))
           (when (not more)
             (leave (values nil nil)))
           (setf current (funcall key value))
