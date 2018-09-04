@@ -13,6 +13,22 @@
   (%width %depth %hash-fn %epsilon %gamma %aj %bj %total %counters %hashes)
 
   ((&key hash-fn epsilon gamma)
+   (check-type epsilon real)
+   (check-type gamma real)
+   (ensure-functionf hash-fn)
+   (unless (and (<= 0.009 epsilon)
+                (< epsilon 1))
+     (error 'cl-ds:argument-out-of-bounds
+            :bounds '(0.009 1)
+            :value epsilon
+            :argument 'epsilon
+            :text "Epsilon out of bounds."))
+   (unless (< 0 gamma 1)
+     (error 'cl-ds:argument-out-of-bounds
+            :bounds '(0 1)
+            :value gamma
+            :argument 'gamma
+            :text "Gamma out of bounds."))
    (setf %hash-fn hash-fn
          %width (ceiling (/ (exp 1) epsilon))
          %depth (ceiling (log (/ 1 gamma)))
