@@ -22,6 +22,8 @@
              :type function)))
 
 
+(-> hashval ((simple-array fixnum (* 2)) fixnum non-negative-fixnum fixnum)
+    fixnum)
 (defun hashval (hashes width j hash)
   (~> (aref hashes j 0)
       (* hash)
