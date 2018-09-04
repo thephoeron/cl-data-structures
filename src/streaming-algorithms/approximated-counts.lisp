@@ -32,9 +32,10 @@
 
 (defmethod cl-ds:at ((container approximated-counts) location &rest more-locations)
   (unless (endp more-locations)
-    (error 'cl-ds:dimensionality-error :bounds '(1)
-                                       :value (1+ (length more-locations))
-                                       :text "Approximated-counts does not accept more-locations"))
+    (error 'cl-ds:dimensionality-error
+           :bounds '(1)
+           :value (1+ (length more-locations))
+           :text "Approximated-counts does not accept more-locations"))
   (iterate
     (with hash = (funcall (read-hash-fn container) location))
     (with counts = (read-counters container))
