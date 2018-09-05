@@ -46,17 +46,26 @@
     (finally (return (values min t)))))
 
 
+(defun make-min-counting-hash-array (gamma)
+  (map-into (make-array (list (ceiling (log (/ 1 gamma))) 2)
+                        :element-type 'fixnum)
+            (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
+                                           +long-prime+)
+                                        (1- most-positive-fixnum)))))))
+
+
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-  (:range hash-fn epsilon gamma &key key)
-  (:range hash-fn epsilon gamma &key (key #'identity))
+  (:range hash-fn epsilon gamma &key key hashes)
+  (:range hash-fn epsilon gamma &key (key #'identity) hashes)
 
   (%width %depth %hash-fn %epsilon %gamma %total %counters %hashes)
 
-  ((&key hash-fn epsilon gamma)
+  ((&key hash-fn epsilon gamma hashes)
    (check-type epsilon real)
    (check-type gamma real)
+   (check-type hashes (or null (simple-array fixnum (* 2))))
    (ensure-functionf hash-fn)
    (unless (and (<= 0.009 epsilon)
                 (< epsilon 1))
@@ -78,11 +87,11 @@
          %total 0
          %epsilon epsilon
          %counters (make-array (list %depth %width) :initial-element 0)
-         %hashes (make-array (list %depth 2) :element-type 'fixnum))
-   (map-into (cl-ds.utils:unfold-table %hashes)
-             (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
-                                            +long-prime+)
-                                         (1- most-positive-fixnum)))))))
+         %hashes (or hashes (make-min-counting-hash-array gamma)))
+   (unless (eql %depth (array-dimension %hashes 0))
+     (error 'cl-ds:invalid-argument
+            :argument 'hashes
+            :text "Invalid first dimension of %hashes")))
 
   ((element)
    (incf %total)

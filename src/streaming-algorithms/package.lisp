@@ -6,4 +6,5 @@
   (:nicknames #:cl-ds.sa)
   (:export
    #:approximated-set-cardinality
-   #:approximated-counts))
+   #:approximated-counts
+   #:make-min-counting-hash-array))
