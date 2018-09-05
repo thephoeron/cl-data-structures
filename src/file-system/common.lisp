@@ -27,8 +27,9 @@
        (unwind-protect
             (progn
               ,@(mapcar (lambda (x) `(setf ,(first x)
-                                      (lret ((,!tmp ,(second x)))
-                                        (check-type ,!tmp file-range-mixin))))
+                                      (let ((,!tmp ,(second x)))
+                                        (check-type ,!tmp file-range-mixin)
+                                        ,!tmp)))
                         bindings)
               ,@body)
          (progn
