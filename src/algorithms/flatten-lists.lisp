@@ -22,19 +22,19 @@
 
 
 (labels ((impl (function x)
-           (labels ((impl (x)
+           (labels ((inner (x)
                       (if (listp x)
-                          (map nil #'impl x)
+                          (map nil #'inner x)
                           (funcall function x))))
-             (impl x))))
+             (inner x))))
   (defmethod cl-ds:traverse (function (range flatten-proxy))
-    (cl-ds:traverse (compose (curry function #'impl) (read-key range))
+    (cl-ds:traverse (compose (curry #'impl function) (read-key range))
                     (read-original-range range))
     range)
 
 
   (defmethod cl-ds:across (function (range flatten-proxy))
-    (cl-ds:across (compose (curry function #'impl) (read-key range))
+    (cl-ds:across (compose (curry #'impl function) (read-key range))
                   (read-original-range range))
     range))
 
