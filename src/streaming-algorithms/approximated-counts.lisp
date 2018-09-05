@@ -52,7 +52,7 @@
   (:range hash-fn epsilon gamma &key key)
   (:range hash-fn epsilon gamma &key (key #'identity))
 
-  (%width %depth %hash-fn %epsilon %gamma %aj %bj %total %counters %hashes)
+  (%width %depth %hash-fn %epsilon %gamma %total %counters %hashes)
 
   ((&key hash-fn epsilon gamma)
    (check-type epsilon real)
