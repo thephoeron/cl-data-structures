@@ -47,11 +47,12 @@
 
 
 (defun make-min-counting-hash-array (gamma)
-  (map-into (make-array (list (ceiling (log (/ 1 gamma))) 2)
-                        :element-type 'fixnum)
-            (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
-                                           +long-prime+)
-                                        (1- most-positive-fixnum)))))))
+  (lret ((result (make-array (list (ceiling (log (/ 1 gamma))) 2)
+                             :element-type 'fixnum)))
+    (map-into (cl-ds.utils:unfold-table result)
+              (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
+                                        +long-prime+)
+                                     (1- most-positive-fixnum))))))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
