@@ -21,18 +21,20 @@
         :original-range (read-original-range range)))
 
 
-(labels ((impl (x)
-           (if (listp x)
-               (map nil #'impl x)
-               (funcall function x))))
+(labels ((impl (function x)
+           (labels ((impl (x)
+                      (if (listp x)
+                          (map nil #'impl x)
+                          (funcall function x))))
+             (impl x))))
   (defmethod cl-ds:traverse (function (range flatten-proxy))
-    (cl-ds:traverse (compose #'impl (read-key range))
+    (cl-ds:traverse (compose (curry function #'impl) (read-key range))
                     (read-original-range range))
     range)
 
 
   (defmethod cl-ds:across (function (range flatten-proxy))
-    (cl-ds:across (compose #'impl (read-key range))
+    (cl-ds:across (compose (curry function #'impl) (read-key range))
                   (read-original-range range))
     range))
 
