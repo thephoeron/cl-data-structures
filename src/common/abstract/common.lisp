@@ -12,7 +12,14 @@
                    :initarg :ownership-tag)))
 
 
-(defstruct tagged-node ownership-tag)
+(defclass tagged-node ()
+  ((%ownership-tag :initarg :ownership-tag
+                   :reader read-ownership-tag)))
+
+
+(defun tagged-node-ownership-tag (node)
+  (declare (optimize (speed 3) (safety 0)))
+  (slot-value node '%ownership-tag))
 
 
 (declaim (inline acquire-ownership))
@@ -21,7 +28,8 @@
   (declare (optimize (speed 3)))
   (etypecase node
     (list (eq (cdr node) ownership-tag))
-    (tagged-node (eq (tagged-node-ownership-tag node) ownership-tag))))
+    (tagged-node (eq (tagged-node-ownership-tag node) ownership-tag))
+    (t nil)))
 
 
 (defun reset-ownership-tag (object)
