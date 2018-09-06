@@ -23,7 +23,7 @@
 
 
 (declaim (inline acquire-ownership))
-(-> acquire-ownership (t (or list tagged-node)) boolean)
+(-> acquire-ownership (t (or list tagged-node t)) boolean)
 (defun acquire-ownership (node ownership-tag)
   (declare (optimize (speed 3)))
   (etypecase node
