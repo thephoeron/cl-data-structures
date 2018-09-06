@@ -16,6 +16,7 @@
 (defpackage :cl-data-structures.sequences.rrb-vector
   (:use #:common-lisp
         #:cl-ds.utils
+        #:cl-data-structures.common.rrb
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.seqs.rrb)
   (:export
