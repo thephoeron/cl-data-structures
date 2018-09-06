@@ -35,6 +35,6 @@
                  (hash-fn "Hashing function. SXHASH will do for strings.")
                  (depth "Positive integer. Along with WIDTH controls size of the internal counters table.")
                  (width "Positive integer. Along with DEPTH controls size of the internal counters table."))
-     :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it."
+     :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
              "Sensitive to a hash function. Large avalanche factor is very helpful."))))

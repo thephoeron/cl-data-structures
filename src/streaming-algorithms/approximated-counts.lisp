@@ -17,6 +17,9 @@
    (%width :initarg :width
            :type fixnum
            :reader read-width)
+   (%size :initarg :size
+          :type integer
+          :reader cl-ds:size)
    (%hash-fn :initarg :hash-fn
              :reader read-hash-fn
              :type function)))
@@ -91,4 +94,5 @@
          :counters %counters
          :depth %depth
          :width %width
+         :size %total
          :hashes %hashes)))
