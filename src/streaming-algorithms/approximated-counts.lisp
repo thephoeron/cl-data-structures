@@ -46,9 +46,8 @@
     (finally (return (values min t)))))
 
 
-(defun make-min-counting-hash-array (gamma)
-  (lret ((result (make-array (list (ceiling (log (/ 1 gamma))) 2)
-                             :element-type 'fixnum)))
+(defun make-min-counting-hash-array (depth)
+  (lret ((result (make-array (list depth 2) :element-type 'fixnum)))
     (map-into (cl-ds.utils:unfold-table result)
               (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
                                         +long-prime+)
@@ -58,37 +57,22 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-  (:range hash-fn epsilon gamma &key key hashes)
-  (:range hash-fn epsilon gamma &key (key #'identity) hashes)
+  (:range hash-fn depth width &key key hashes)
+  (:range hash-fn depth width &key (key #'identity) hashes)
 
-  (%width %depth %hash-fn %epsilon %gamma %total %counters %hashes)
+  (%width %depth %hash-fn %total %counters %hashes)
 
-  ((&key hash-fn epsilon gamma hashes)
-   (check-type epsilon real)
-   (check-type gamma real)
+  ((&key hash-fn depth width hashes)
+   (check-type depth positive-fixnum)
+   (check-type width positive-fixnum)
    (check-type hashes (or null (simple-array fixnum (* 2))))
    (ensure-functionf hash-fn)
-   (unless (and (<= 0.009 epsilon)
-                (< epsilon 1))
-     (error 'cl-ds:argument-out-of-bounds
-            :bounds '(0.009 1)
-            :value epsilon
-            :argument 'epsilon
-            :text "Epsilon out of bounds."))
-   (unless (< 0 gamma 1)
-     (error 'cl-ds:argument-out-of-bounds
-            :bounds '(0 1)
-            :value gamma
-            :argument 'gamma
-            :text "Gamma out of bounds."))
    (setf %hash-fn hash-fn
-         %width (ceiling (/ (exp 1) epsilon))
-         %depth (ceiling (log (/ 1 gamma)))
-         %gamma gamma
+         %width width
+         %depth depth
          %total 0
-         %epsilon epsilon
          %counters (make-array (list %depth %width) :initial-element 0)
-         %hashes (or hashes (make-min-counting-hash-array gamma)))
+         %hashes (or hashes (make-min-counting-hash-array depth)))
    (unless (eql %depth (array-dimension %hashes 0))
      (error 'cl-ds:invalid-argument
             :argument 'hashes
