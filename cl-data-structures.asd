@@ -179,7 +179,8 @@
                (:module "file-system"
                 :components ((:file "package")
                              (:file "common")
-                             (:file "line-by-line")))
+                             (:file "line-by-line")
+                             (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")
                              (:file "buffer-range")))
