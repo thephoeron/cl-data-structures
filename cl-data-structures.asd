@@ -183,7 +183,8 @@
                              (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")
-                             (:file "buffer-range")))
+                             (:file "buffer-range")
+                             (:file "docstrings")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
