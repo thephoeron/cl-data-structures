@@ -80,4 +80,5 @@
    #:unfold-table
    #:with-rebind
    #:with-slots-for
+   #:remove-fill-pointer
    #:with-vectors))
