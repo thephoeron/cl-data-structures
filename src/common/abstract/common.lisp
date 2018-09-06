@@ -26,7 +26,7 @@
 (-> acquire-ownership (t (or list tagged-node t)) boolean)
 (defun acquire-ownership (node ownership-tag)
   (declare (optimize (speed 3)))
-  (etypecase node
+  (typecase node
     (list (eq (cdr node) ownership-tag))
     (tagged-node (eq (tagged-node-ownership-tag node) ownership-tag))
     (t nil)))
