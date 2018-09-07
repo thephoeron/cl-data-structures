@@ -37,4 +37,8 @@
                  (width "Positive integer. Along with DEPTH controls size of the internal counters table."))
      :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
-             "Sensitive to a hash function. Large avalanche factor is very helpful."))))
+             "Sensitive to a hash function. Large avalanche factor is very helpful.")))
+
+  (function
+    bloom-filter
+    (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if item is absent from the range (if at returns nil, item is certainly absent, if at returns t item either present or not).")))
