@@ -7,4 +7,5 @@
   (:export
    #:approximated-set-cardinality
    #:approximated-counts
-   #:make-min-counting-hash-array))
+   #:bloom-filter
+   #:make-hash-array))

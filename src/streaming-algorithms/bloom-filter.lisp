@@ -1,9 +1,9 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass approximated-counts ()
+(defclass bloom-filter ()
   ((%counters :initarg :counters
-              :type vector
+              :type simple-bit-vector
               :reader read-counters)
    (%hashes :initarg :hashes
             :type vector
@@ -22,7 +22,7 @@
              :type function)))
 
 
-(defmethod cl-ds:at ((container approximated-counts) location &rest more-locations)
+(defmethod cl-ds:at ((container bloom-filter) location &rest more-locations)
   (unless (endp more-locations)
     (error 'cl-ds:dimensionality-error :bounds '(1)
                                        :value (1+ (length more-locations))
@@ -33,13 +33,14 @@
     (with hashes = (read-hashes container))
     (with width = (read-width container))
     (for j from 0 below (read-depth container))
-    (minimize (aref counts j (hashval hashes width j hash))
-              into min)
-    (finally (return (values min t)))))
+    (for value = (aref counts j (hashval hashes width j hash)))
+    (when (zerop value)
+      (leave (values nil t)))
+    (finally (return (values t t)))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
-    approximated-counts approximated-counts-function
+    bloom-filter bloom-filter-function
 
   (:range hash-fn depth width &key key hashes)
   (:range hash-fn depth width &key (key #'identity) hashes)
@@ -55,7 +56,7 @@
          %width width
          %depth depth
          %total 0
-         %counters (make-array (list %depth %width) :initial-element 0)
+         %counters (make-array (list %depth %width) :element-type 'bit)
          %hashes (or hashes (make-hash-array depth)))
    (unless (eql %depth (array-dimension %hashes 0))
      (error 'cl-ds:invalid-argument
@@ -68,9 +69,9 @@
      (with hash = (funcall %hash-fn element))
      (for j from 0 below %depth)
      (for hashval = (hashval %hashes %width j hash))
-     (incf (aref %counters j hashval))))
+     (setf (aref %counters j hashval) 1)))
 
-  ((make 'approximated-counts
+  ((make 'bloom-filter
          :hash-fn %hash-fn
          :counters %counters
          :depth %depth
