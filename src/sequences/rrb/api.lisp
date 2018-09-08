@@ -191,7 +191,7 @@
                             initially (cl-ds.common.rrb:access-root container)
                             then (cl-ds.common.rrb:nref node i))
                        (finally (return node))))
-               (last-array (car node))
+               (last-array (rrb-node-content node))
                (bucket (change-bucket (aref last-array last-index))))
           (setf (aref last-array last-index) bucket))
         (let* ((offset (- index size))
@@ -467,7 +467,7 @@
                                         (next-value (change-bucket bucket))
                                         (content (if (eql shift owned-depth)
                                                      (aref path shift)
-                                                     (copy-array (car (aref path shift))))))
+                                                     (copy-array (rrb-node-content (aref path shift))))))
                                    (setf (aref content (aref index shift)) next-value)
                                    (if (eql shift owned-depth)
                                        (aref path shift)
@@ -540,7 +540,7 @@
                         initially (let* ((bucket (cl-ds.common.rrb:nref (aref path shift)
                                                                         (aref index shift)))
                                          (next-value (change-bucket bucket))
-                                         (content (copy-array (car (aref path shift)))))
+                                         (content (copy-array (rrb-node-content (aref path shift)))))
                                     (setf (aref content (aref index shift))
                                           next-value)
                                     (cl-ds.common.rrb:make-rrb-node :ownership-tag tag
@@ -685,14 +685,11 @@
                      shift)))))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
-                                        traversable
-                                        &rest arguments)
+(defun mutable-from-traversable (traversable tag arguments)
   (declare (optimize (speed 3)))
   (bind ((content (vect))
          (size 0)
          (element-type (getf arguments :element-type t))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
     (cl-ds:across (lambda (x)
@@ -710,7 +707,7 @@
               content)
     (bind ((tail-size (logand size (lognot cl-ds.common.rrb:+tail-mask+)))
            (tree-size (- size tail-size))
-           (tail (if (zerop tail-size) nil (~> content pop-last car)))
+           (tail (if (zerop tail-size) nil (~> content pop-last rrb-node-content)))
            ((:values root shift) (fold-rrb-content content tag)))
       (make 'mutable-rrb-vector
             :root root
@@ -723,24 +720,26 @@
             :size tree-size))))
 
 
+(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
+                                        traversable
+                                        &rest arguments)
+  (declare (optimize (speed 3)))
+  (mutable-from-traversable traversable nil arguments))
+
+
+
 (defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
                                         traversable
                                         &rest arguments)
-  (bind ((result (apply #'cl-ds:make-from-traversable
-                        'mutable-rrb-vector
-                        traversable
-                        arguments)))
+  (bind ((result (mutable-from-traversable traversable nil arguments)))
     (cl-ds:become-functional result)))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
                                         traversable
                                         &rest arguments)
-  (bind ((result (apply #'cl-ds:make-from-traversable
-                        'mutable-rrb-vector
-                        traversable
-                        arguments))
-         (tag (cl-ds.common.abstract:read-ownership-tag result))
+  (bind ((tag (cl-ds.common.abstract:make-ownership-tag))
+         (result (mutable-from-traversable traversable tag arguments))
          (transactional (cl-ds:become-transactional result)))
     (cl-ds.common.abstract:write-ownership-tag tag transactional)
     transactional))
@@ -755,11 +754,11 @@
 
 
 (defun make-transactional-rrb-vector ()
-  (make 'transactional-rrb-vector))
+  (make 'transactional-rrb-vector
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
 
 
-(defmethod cl-ds:make-of-size ((class (eql 'mutable-rrb-vector))
-                               size &rest arguments)
+(defun make-mutable-of-size (size tag arguments)
   (declare (optimize (speed 3)))
   (let* ((number-of-leafs (~> size
                               (/ cl-ds.common.rrb:+maximum-children-count+)
@@ -768,7 +767,6 @@
                        number-of-leafs))
          (tail-size (- size tree-size))
          (element-type (getf arguments :element-type t))
-         (tag (cl-ds.common.abstract:make-ownership-tag))
          (leafs (make-array number-of-leafs :fill-pointer number-of-leafs)))
     (iterate
       (for i from 0 below number-of-leafs)
@@ -788,18 +786,23 @@
             :size tree-size))))
 
 
+(defmethod cl-ds:make-of-size ((class (eql 'mutable-rrb-vector))
+                               size &rest arguments)
+  (make-mutable-of-size size nil arguments))
+
+
 (defmethod cl-ds:make-of-size ((class (eql 'functional-rrb-vector))
                                size &rest arguments)
   (declare (optimize (speed 3)))
-  (~> (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments)
+  (~> (make-mutable-of-size size nil arguments)
       cl-ds:become-functional))
 
 
 (defmethod cl-ds:make-of-size ((class (eql 'transactional-rrb-vector))
                                size &rest arguments)
   (declare (optimize (speed 3)))
-  (bind ((mutable (apply #'cl-ds:make-of-size 'mutable-rrb-vector size arguments))
-         (tag (cl-ds.common.abstract:read-ownership-tag mutable))
+  (bind ((tag (cl-ds.common.abstract:make-ownership-tag))
+         (mutable (make-mutable-of-size size tag arguments))
          (transactional (cl-ds:become-transactional mutable)))
     (cl-ds.common.abstract:write-ownership-tag tag transactional)
     transactional))

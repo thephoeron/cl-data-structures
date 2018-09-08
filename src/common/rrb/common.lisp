@@ -16,7 +16,7 @@
 (deftype node-content ()
   `(simple-vector ,+maximum-children-count+))
 (deftype rrb-node ()
-  'list)
+  `(or node-content list))
 (deftype node-size ()
   `(integer 0 ,+maximum-children-count+))
 (deftype shift ()
@@ -34,21 +34,33 @@
 
 
 (defun make-rrb-node (&key (content (make-node-content)) ownership-tag)
-  (cons content ownership-tag))
+  (if (null ownership-tag)
+      content
+      (cons content ownership-tag)))
+
+
+(defun rrb-node-content (node)
+  (if (listp node)
+      (car node)
+      node))
 
 
 (defun rrb-node-deep-copy (node ownership-tag)
   (lret ((result (copy-array node)))
-    (cons result ownership-tag)))
+    (make-rrb-node result ownership-tag)))
 
 
 (defun nref (node position)
-  (aref (car node) position))
+  (if (listp node)
+      (aref (car node) position)
+      (aref node position)))
 
 
 (defun (setf nref) (new-value node position)
-  (setf (aref (car node) position)
-        new-value))
+  (if (listp node)
+      (setf (aref (car node) position)
+            new-value)
+      (setf (aref node position) new-value)))
 
 
 (defun rrb-node-push! (node position element)
@@ -57,7 +69,7 @@
 
 
 (defun rrb-node-push-into-copy (node position element ownership-tag)
-  (let* ((source-content (car node))
+  (let* ((source-content (rrb-node-content node))
          (result-content (make-node-content (array-element-type source-content))))
     (setf (aref result-content position) element)
     (iterate
@@ -69,7 +81,7 @@
 
 (defun rrb-node-pop-in-the-copy (node position ownership-tag)
   (unless (zerop position)
-    (let* ((source-content (car node))
+    (let* ((source-content (rrb-node-content node))
            (result-content (copy-array source-content)))
       (setf (aref result-content position) nil)
       (make-rrb-node :ownership-tag ownership-tag
@@ -171,7 +183,7 @@
                       next))
           (finally
            (bind ((root (make-rrb-node :ownership-tag ownership-tag))
-                  ((:vectors content) (car root)))
+                  ((:vectors content) (rrb-node-content root)))
              (setf (content 0) %root
                    (content 1) node)
              (return (values root t)))))
@@ -354,7 +366,7 @@
                                    (- (* %shift +bit-count+)))
                               1)))
     (if (zerop %shift)
-        (values nil (car %root) nil)
+        (values nil (rrb-node-content %root) nil)
         (iterate
           (with last = (1- (the non-negative-fixnum %size)))
           (repeat %shift)
@@ -373,7 +385,7 @@
               (if root-underflow
                   (nref %root 0)
                   %root)
-              (car node)
+              (rrb-node-content node)
               root-underflow)))))))
 
 
@@ -384,10 +396,10 @@
 
 (labels ((impl (function node depth)
            (if (zerop depth)
-               (map nil function (car node))
+               (map nil function (rrb-node-content node))
                (map nil
                     (lambda (x) (impl function x (1- depth)))
-                    (car node)))))
+                    (rrb-node-content node)))))
   (defmethod cl-ds:traverse (function (object rrb-container))
     (let ((root (access-root object)))
       (unless (null root)
@@ -457,7 +469,7 @@
                             (<= start-range from to end-range))
                    (if (zerop depth)
                        (flexichain:push-end %content
-                                            (the node-content (car node)))
+                                            (the node-content (rrb-node-content node)))
                        (iterate
                          (for i from 0 below +maximum-children-count+)
                          (for d from difference by difference)

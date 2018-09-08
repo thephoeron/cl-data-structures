@@ -58,11 +58,12 @@
 (defun cartesian (function range &rest more-ranges)
   (declare (dynamic-extent more-ranges))
   (ensure-functionf function)
-  (check-type range fundamental-range)
-  (iterate
-    (for r in more-ranges)
-    (check-type r fundamental-range))
   (make 'forward-cartesian-range
         :function function
-        :content (~> (cons range more-ranges)
-                     (coerce 'vector))))
+        :content (~>> (cons range more-ranges)
+                      (map 'vector
+                           (lambda (x)
+                             (etypecase x
+                               (cl-ds:fundamental-forward-range x)
+                               (cl-ds:fundamental-container (cl-ds:whole-range x))
+                               (cl:sequence (cl-ds:whole-range x))))))))

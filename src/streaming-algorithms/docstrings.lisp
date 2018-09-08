@@ -7,23 +7,38 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function
-   approximated-set-cardinality
-   (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory."
-    :arguments ((range "Object to aggregate.")
-                (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are prefered for accurate results.")
-                (hash-fn "Hashing function. SXHASH will do for strings.")
-                (key "Function used to extract extract value from each element."))
-    :notes ("This algorithm gives solid estimates for large sets, not so good for small sets."
-            "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
-            "Can be used to (for instance) estimate number of keys for hash table before creating one. Good estimate will minimize rehashing and reduce both memory that needs to allocated and time required to fill hash table.")
-    :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
-    :examples [(let ((data (cl-ds:xpr (:i 0)
-                             (when (< i 500000)
-                               (send-recur (random 99999999999) :i (1+ i))))))
-                 (prove:ok (< 490000
-                              (cl-ds:value
-                               (cl-data-structures.streaming-algorithms:approximated-set-cardinality
-                                data
-                                20
-                                #'sxhash))
-                              510000)))])))
+    approximated-set-cardinality
+    (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory."
+     :arguments ((range "Object to aggregate.")
+                 (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are prefered for accurate results.")
+                 (hash-fn "Hashing function. SXHASH will do for strings.")
+                 (key "Function used to extract extract value from each element."))
+     :notes ("This algorithm gives solid estimates for large sets, not so good for small sets."
+             "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
+             "Can be used to (for instance) estimate number of keys for hash table before creating one. Good estimate will minimize rehashing and reduce both memory that needs to allocated and time required to fill hash table.")
+     :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
+     :examples [(let ((data (cl-ds:xpr (:i 0)
+                              (when (< i 500000)
+                                (send-recur (random 99999999999) :i (1+ i))))))
+                  (prove:ok (< 490000
+                               (cl-ds:value
+                                (cl-data-structures.streaming-algorithms:approximated-set-cardinality
+                                 data
+                                 20
+                                 #'sxhash))
+                               510000)))]))
+
+  (function
+    approximated-counts
+    (:description "Calculates estimated counts using Min-Count sketch alogrithm. This requiret only a constant ammount of memory."
+     :arguments ((range "Object to aggregate.")
+                 (hash-fn "Hashing function. SXHASH will do for strings.")
+                 (depth "Positive integer. Along with WIDTH controls size of the internal counters table.")
+                 (width "Positive integer. Along with DEPTH controls size of the internal counters table."))
+     :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
+     :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
+             "Sensitive to a hash function. Large avalanche factor is very helpful.")))
+
+  (function
+    bloom-filter
+    (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if item is absent from the range (if at returns nil, item is certainly absent, if at returns t item either present or not).")))

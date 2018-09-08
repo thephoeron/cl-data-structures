@@ -68,14 +68,14 @@
 
 (defmethod cl-ds:traverse (function (range line-by-line-range))
   (unless (~> range read-stream null)
-    (iterate
-      (with stream = (read-stream range))
-      (for line = (read-line stream nil nil))
-      (until (null line))
-      (funcall function line)
-      (finally (prog
-                   (close-stream range)
-                  (return range))))))
+    (unwind-protect
+         (iterate
+           (with stream = (read-stream range))
+           (for line = (read-line stream nil nil))
+           (until (null line))
+           (funcall function line)
+           (finally (return range)))
+      (close-stream range))))
 
 
 (defmethod cl-ds:across (function (range line-by-line-range))

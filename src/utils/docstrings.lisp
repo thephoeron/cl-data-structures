@@ -28,6 +28,11 @@
      :exceptional-situations "Assert: (< MIN MAX)"
      :side-effects "Mutates SEQUENCE."))
 
+  (function remove-fill-pointer
+    (:description "Accepts vector. Will return vector with the same content, but without fill-pointer."
+     :exceptional-situations "TYPE-ERROR if VECTOR is not of type CL:VECTOR."
+     :returns "VECTOR"))
+
   (function all-parents
     (:description "Scans tree with CHILDREN-FN (is supposed to return children of the PARENT as CL:SEQUENCE). Will return ALIST mapping node to list of all parents of nodes. Resulting data structure is useful as a way to lookup for partial order in the tree."))
 

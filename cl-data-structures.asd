@@ -179,10 +179,12 @@
                (:module "file-system"
                 :components ((:file "package")
                              (:file "common")
-                             (:file "line-by-line")))
+                             (:file "line-by-line")
+                             (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")
-                             (:file "buffer-range")))
+                             (:file "buffer-range")
+                             (:file "docstrings")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
@@ -212,7 +214,10 @@
                              (:test-file "simple-linear-regression-tests")))
                (:module "streaming-algorithms"
                 :components ((:file "package")
+                             (:file "common")
                              (:file "approximated-set-cardinality")
+                             (:file "approximated-counts")
+                             (:file "bloom-filter")
                              (:file "docstrings")))
                (:module "counting"
                 :components ((:file "package")

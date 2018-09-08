@@ -21,23 +21,21 @@
         :original-range (read-original-range range)))
 
 
-(defmethod cl-ds:traverse (function (range flatten-proxy))
-  (labels ((impl (x)
-             (if (listp x)
-                 (map nil #'impl x)
-                 (funcall function x))))
-    (declare (dynamic-extent (function impl)))
-    (cl-ds:traverse #'impl (read-original-range range))
-    range))
+(labels ((impl (function x)
+           (labels ((inner (x)
+                      (if (listp x)
+                          (map nil #'inner x)
+                          (funcall function x))))
+             (inner x))))
+  (defmethod cl-ds:traverse (function (range flatten-proxy))
+    (cl-ds:traverse (compose (curry #'impl function) (read-key range))
+                    (read-original-range range))
+    range)
 
 
-(defmethod cl-ds:across (function (range flatten-proxy))
-  (labels ((impl (x)
-             (if (listp x)
-                 (map nil #'impl x)
-                 (funcall function x))))
-    (declare (dynamic-extent (function impl)))
-    (cl-ds:across #'impl (read-original-range range))
+  (defmethod cl-ds:across (function (range flatten-proxy))
+    (cl-ds:across (compose (curry #'impl function) (read-key range))
+                  (read-original-range range))
     range))
 
 
@@ -82,7 +80,7 @@
     (if (null result)
         (iterate
           (with outer = (read-original-range range))
-          (for (values value more) = (cl-ds:consume-front outer))
+          (for (values f-val more) = (cl-ds:consume-front outer))
           (when (not more)
             (leave (values nil nil)))
           (setf current (funcall key value))

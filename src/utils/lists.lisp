@@ -164,3 +164,10 @@
                        (curry #'* ratio)
                        (curry #'+ diff))
               sequence)))
+
+
+(defun remove-fill-pointer (vector)
+  (check-type vector vector)
+  (if (array-has-fill-pointer-p vector)
+      (map `(vector ,(array-element-type vector)) #'identity vector)
+      vector))

@@ -13,7 +13,6 @@
    #:+tail-mask+
    #:access-last-size
    #:access-lower-bound
-   #:nref
    #:access-root
    #:access-shift
    #:access-size
@@ -31,11 +30,13 @@
    #:make-node-content
    #:make-rrb-node
    #:node-content
+   #:nref
    #:read-element-type
    #:remove-tail
    #:rrb-at
    #:rrb-container
    #:rrb-node
+   #:rrb-node-content
    #:rrb-node-push!
    #:rrb-node-push-into-copy
    #:rrb-range

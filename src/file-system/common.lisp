@@ -22,19 +22,26 @@
 
 
 (defmacro with-file-ranges (bindings &body body)
-  (with-gensyms (!tmp)
-    `(let ,(mapcar (lambda (x) (list (first x) nil)) bindings)
-       (unwind-protect
-            (progn
-              ,@(mapcar (lambda (x) `(setf ,(first x)
-                                      (lret ((,!tmp ,(second x)))
-                                        (check-type ,!tmp file-range-mixin))))
-                        bindings)
-              ,@body)
-         (progn
-           ,@(mapcar (lambda (x) `(unless (null ,(first x))
-                               (close-inner-stream ,(first x))))
-                     bindings))))))
+  (let ((extra-vars (mapcar (lambda (x) (gensym)) bindings))
+        (prime-vars (mapcar #'first bindings)))
+    (with-gensyms (!tmp)
+      `(let (,@extra-vars)
+         (declare (ignorable ,@extra-vars))
+         (unwind-protect
+              (progn
+                ,@(mapcar (lambda (extra x)
+                            `(setf ,extra
+                                   (let ((,!tmp ,(second x)))
+                                     (check-type ,!tmp file-range-mixin)
+                                     ,!tmp)))
+                          extra-vars
+                          bindings)
+                (let ,(mapcar #'list prime-vars extra-vars)
+                  ,@body))
+           (progn
+             ,@(mapcar (lambda (x) `(unless (null ,x)
+                                 (close-inner-stream ,x)))
+                       extra-vars)))))))
 
 
 (defmethod initialize-instance :after ((range file-range-mixin)
