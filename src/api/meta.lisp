@@ -49,9 +49,53 @@
   ())
 
 
+(defclass take-out-back-function (shrink-function)
+  ())
+
+
+(defclass take-out-front-function (shrink-function)
+  ())
+
+
+(defclass put-back-function (grow-function)
+  ())
+
+
+(defclass put-front-function (grow-function)
+  ())
+
+
 (defclass take-out!-function (closer-mop:standard-generic-function
                               destructive-function
                               take-out-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass take-out-back!-function (closer-mop:standard-generic-function
+                                   destructive-function
+                                   take-out-back-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass take-out-front!-function (closer-mop:standard-generic-function
+                                    destructive-function
+                                    take-out-front-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass put-back!-function (closer-mop:standard-generic-function
+                              destructive-function
+                              put-back-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass put-front!-function (closer-mop:standard-generic-function
+                               destructive-function
+                               put-front-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -108,6 +152,34 @@
 (defclass functional-take-out-function (closer-mop:standard-generic-function
                                         functional-function
                                         take-out-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass functional-take-out-back-function (closer-mop:standard-generic-function
+                                             functional-function
+                                             take-out-back-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass functional-take-out-front-function (closer-mop:standard-generic-function
+                                              functional-function
+                                              take-out-front-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass functional-put-back-function (closer-mop:standard-generic-function
+                                        functional-function
+                                        put-back-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass functional-put-front-function (closer-mop:standard-generic-function
+                                         functional-function
+                                         put-front-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -211,5 +283,6 @@
 
 
 (defgeneric functional-counterpart (operation))
+
 
 (defgeneric destructive-counterpart (operation))

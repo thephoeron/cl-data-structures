@@ -73,6 +73,11 @@
    #:peek-front
    #:put
    #:put!
+   #:put-back
+   #:put-back!
+   #:put-front
+   #:put-front!
+   #:read-arguments
    #:read-arguments
    #:read-bounds
    #:read-class
@@ -81,6 +86,10 @@
    #:size
    #:take-out
    #:take-out!
+   #:take-out-back
+   #:take-out-back!
+   #:take-out-front
+   #:take-out-front!
    #:textual-error
    #:too-many-dimensions
    #:transactional
@@ -121,7 +130,11 @@
    #:functional-erase-if-function
    #:functional-function
    #:functional-insert-function
+   #:functional-put-back-function
+   #:functional-put-front-function
    #:functional-put-function
+   #:functional-take-out-back-function
+   #:functional-take-out-front-function
    #:functional-take-out-function
    #:functional-update-function
    #:functional-update-if-function
@@ -138,11 +151,15 @@
    #:null-bucket-p
    #:position-modification
    #:put!-function
+   #:put-back!-function
+   #:put-front!-function
    #:put-function
    #:shrink-bucket
    #:shrink-bucket!
    #:shrink-function
    #:take-out!-function
+   #:take-out-back!-function
+   #:take-out-front!-function
    #:take-out-function
    #:update!-function
    #:update-function

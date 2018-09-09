@@ -25,11 +25,35 @@
 (defgeneric put (container item)
   (:generic-function-class cl-ds.meta:functional-put-function))
 
+(defgeneric put-back (container item)
+  (:generic-function-class cl-ds.meta:functional-put-back-function))
+
+(defgeneric put-front (container item)
+  (:generic-function-class cl-ds.meta:functional-put-front-function))
+
+(defgeneric put-back! (container item)
+  (:generic-function-class cl-ds.meta:put-back!-function))
+
+(defgeneric put-front! (container item)
+  (:generic-function-class cl-ds.meta:put-front!-function))
+
 (defgeneric take-out! (container)
   (:generic-function-class cl-ds.meta:take-out!-function))
 
 (defgeneric take-out (container)
   (:generic-function-class cl-ds.meta:functional-take-out-function))
+
+(defgeneric take-out-back (container)
+  (:generic-function-class cl-ds.meta:functional-take-out-back-function))
+
+(defgeneric take-out-front (container)
+  (:generic-function-class cl-ds.meta:functional-take-out-front-function))
+
+(defgeneric take-out-back! (container)
+  (:generic-function-class cl-ds.meta:take-out-back!-function))
+
+(defgeneric take-out-front! (container)
+  (:generic-function-class cl-ds.meta:take-out-front!-function))
 
 (defgeneric near (container item maximal-distance))
 
@@ -196,6 +220,18 @@ Range releated functions.
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update!-function))
   #'update)
 
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:take-out-back!-function))
+  #'take-out-back)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:take-out-front!-function))
+  #'take-out-front)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:put-front!-function))
+  #'put-front)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:put-back!-function))
+  #'put-back)
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:destructive-function))
   operation)
 
@@ -219,6 +255,18 @@ Range releated functions.
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-function))
   #'take-out!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-back-function))
+  #'take-out-back!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-front-function))
+  #'take-out-front!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-front-function))
+  #'put-front!)
+
+(defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-back-function))
+  #'put-back!)
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-function))
   #'update!)
