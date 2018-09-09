@@ -5,19 +5,8 @@
   (~> index access-reverse-mapping length))
 
 
-(defmethod type-count ((node set-index-node))
-  (iterate
-    (for i from 0)
-    (for n
-         initially node
-         then (read-parent n))
-    (for type = (read-type n))
-    (while type)
-    (finally (return i))))
-
-
 (defmethod type-count ((set set-in-index))
-  (type-count (read-node set)))
+  (length (read-path set)))
 
 
 (defmethod type-count ((set empty-mixin))
@@ -51,16 +40,18 @@
            :references '((:aposteriori find-association))
            :argument 'aposteriori
            :text "Empty aposteriori list."))
-  (let* ((aposteriori (~> (add-to-list apriori aposteriori)
+  (bind ((aposteriori (~> (add-to-list apriori aposteriori)
                           (remove-duplicates :test #'equal)))
-         (node (apply #'node-at-names index aposteriori))
-         (set-index-node (apply #'node-at-names index apriori)))
+         ((:values node path) (node-at-names index aposteriori))
+         ((:values set-index-node apriori-path) (node-at-names index apriori)))
     (if (null set-index-node)
         (make 'empty-association-set :index index
                                      :type-count (length aposteriori))
         (make 'association-set
               :apriori-node set-index-node
               :node node
+              :path path
+              :apriori-path apriori-path
               :index index))))
 
 
@@ -123,20 +114,31 @@
           (chain (coerce (read-path set) 'list))))
    (cl-ds:xpr (:stack (list (list chain
                                   (read-root index)
-                                  (type-count set)))))
+                                  (type-count set)
+                                  nil))))
    (when-let ((cell (pop stack))))
-   (bind (((chain parent depth) cell)
+   (bind (((chain parent depth prev) cell)
           (front (first chain))
           (content (read-sets parent)))
      (when (and maximal-size (> depth maximal-size))
        (recur :stack stack))
      (when (null front)
-       (send-recur (make 'set-in-index :index index :node parent)
+       (send-recur (make 'set-in-index :index index
+                                       :node parent
+                                       :path (iterate
+                                               (with path = (vect))
+                                               (for (chain node depth parent)
+                                                    initially cell
+                                                    then parent)
+                                               (until (null parent))
+                                               (vector-push-extend node path)
+                                               (finally (return path))))
                    :stack (iterate
                             (for i from 0 below (length content))
                             (push (list (rest chain)
                                         (aref content i)
-                                        (1+ depth))
+                                        (1+ depth)
+                                        cell)
                                   stack)
                             (finally (return stack)))))
      (let ((position (lower-bound content
@@ -149,18 +151,21 @@
                   (~> content (aref position) read-type))
          (push (list (rest chain)
                      (aref content position)
-                     (1+ depth))
+                     (1+ depth)
+                     cell)
                stack))
        (iterate
          (for i from 0 below position)
-         (push (list chain (aref content i) (1+ depth)) stack))
+         (push (list chain (aref content i) (1+ depth) cell) stack))
        (recur :stack stack))
-      (assert nil))))
+     (assert nil))))
 
 
 (defmethod content ((set set-in-index))
+  (declare (optimize (debug 3)))
   (when-let ((node (read-node set)))
-    (~>> node read-path
+    (~>> set read-path
+         (remove nil _ :key #'read-type)
          (map 'list (curry #'node-name (read-index set))))))
 
 
@@ -173,16 +178,27 @@
 
 
 (defmethod aposteriori-set ((set association-set))
-  (let ((types (~>> (just-post (read-apriori-node set) (read-node set))
-                    (map 'list #'read-type))))
+  (bind ((apriori (read-apriori-node set))
+         (aposteriori (read-node set))
+         (types (and apriori
+                     aposteriori
+                     (~>> (cl-ds.utils:ordered-exclusion
+                           (lambda (a b) (< (read-type a) (read-type b)))
+                           (lambda (a b) (eql (read-type a) (read-type b)))
+                           (read-path set)
+                           (read-apriori-path set))
+                          (map 'list #'read-type))))
+         ((:values result-node path) (node-at-type (read-index set) types)))
     (make 'set-in-index
-          :node (apply #'node-at-type (read-index set) types)
+          :node result-node
+          :path path
           :index (read-index set))))
 
 
 (defmethod apriori-set ((set association-set))
   (make 'set-in-index
         :node (read-apriori-node set)
+        :path (read-apriori-path set)
         :index (read-index set)))
 
 
@@ -209,23 +225,25 @@
 
 (defmethod make-association-set ((apriori set-in-index)
                                  (aposteriori set-in-index))
-  (let* ((set-index-node (read-node apriori))
-         (aposteriori-node (read-node aposteriori))
-         (union (~>> (concatenate 'vector
-                                  (read-path apriori)
-                                  (read-path aposteriori))
-                     (map 'list #'read-type)
-                     remove-duplicates
-                     (node-at-type (read-index apriori)))))
+  (declare (optimize (debug 3)))
+  (bind ((effective-path (~> (concatenate 'vector
+                                          (read-path apriori)
+                                          (read-path aposteriori))
+                             (remove-duplicates :key #'read-type)))
+         ((:values union aposteriori-path)
+          (~>> effective-path
+               (map 'list #'read-type)
+               (node-at-type (read-index apriori)))))
     (or (and union
              (make 'association-set
                    :index (read-index apriori)
-                   :path (read-path apriori)
+                   :path aposteriori-path
+                   :apriori-path (read-path apriori)
                    :node union
-                   :apriori-node set-index-node))
+                   :apriori-node (read-node apriori)))
         (make 'empty-association-set
               :index (read-index apriori)
-              :type-count (type-count aposteriori-node)))))
+              :type-count (length effective-path)))))
 
 
 (defmethod make-association-set ((apriori empty-mixin)
@@ -237,6 +255,7 @@
                                  (aposteriori empty-mixin))
   (make 'association-set
         :index (read-index apriori)
+        :path (read-path apriori)
         :apriori-node (read-node apriori)
         :node nil))
 
@@ -245,6 +264,7 @@
                                  (aposteriori set-in-index))
   (make 'association-set
         :index (read-index apriori)
+        :path (read-path aposteriori)
         :apriori-node nil
         :node (read-node aposteriori)))
 
@@ -266,32 +286,35 @@
 
 
 (defmethod find-set ((index set-index) &rest content)
-  (if-let ((node (apply #'node-at-names index content)))
-    (make 'set-in-index
-          :node node
-          :index index)
-    (make 'empty-set-in-index
-          :index index
-          :type-count (length content))))
+  (bind (((:values node path) (node-at-names index content)))
+    (if node
+        (make 'set-in-index
+              :node node
+              :path path
+              :index index)
+        (make 'empty-set-in-index
+              :index index
+              :type-count (length content)))))
 
 
 (defmethod find-set ((set set-in-index) &rest content)
   (bind ((index (read-index set))
-         (types1 (~>> set read-node chain-node
-                      (mapcar #'read-type)))
+         (types1 (~>> set read-path (mapcar #'read-type)))
          (types2 (~>> content validate-unique-names
                       (mapcar (curry #'name-to-type index))))
          (types (~> types1
                     (cl-ds.utils:add-to-list types2)
                     remove-duplicates)))
-    (if-let ((node (and (every #'identity types)
-                        (apply #'node-at-type index types))))
-      (make 'set-in-index
-            :node node
-            :index index)
-      (make 'empty-set-in-index
-            :index index
-            :type-count types))))
+    (bind (((:values node path) (and (every #'identity types)
+                                     (apply #'node-at-type index types))))
+      (if node
+          (make 'set-in-index
+                :node node
+                :path path
+                :index index)
+          (make 'empty-set-in-index
+                :index index
+                :type-count types)))))
 
 
 (defmethod cl-ds:at ((index set-index) location &rest more-locations)

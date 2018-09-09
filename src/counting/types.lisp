@@ -13,11 +13,7 @@
           :writer write-sets
           :type vector
           :initarg :sets
-          :initform (vect))
-   (%parent :initarg :parent
-            :initform nil
-            :writer write-parent
-            :reader read-parent)))
+          :initform (vect))))
 
 
 (defclass set-index ()

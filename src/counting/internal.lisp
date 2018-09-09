@@ -34,7 +34,6 @@
                        :total-size total-size
                        :minimal-support minimal-support
                        :root root)))
-    (map nil (curry #'write-parent root) root-content)
     (values result children)))
 
 
@@ -130,8 +129,7 @@
 
 
 (defun push-child (parent child)
-  (vector-push-extend child (read-sets parent))
-  (write-parent parent child))
+  (vector-push-extend child (read-sets parent)))
 
 
 (defun reset-locations (index)
@@ -173,9 +171,9 @@
   (iterate
     (with path = (sort types #'<))
     (with node = (read-root index))
-    (with result-path = (make-array (length types) node))
+    (with result-path = (make-array (length types)))
     (while path)
-    (for i from 1)
+    (for i from 0)
     (setf node (child-of-type node (first path))
           path (rest path))
     (while node)
@@ -204,9 +202,8 @@
   names)
 
 
-(defun node-at-names (index name &rest more-names)
-  (let* ((names (cons name more-names))
-         (path (mapcar (curry #'name-to-type index) names)))
+(defun node-at-names (index names)
+  (let ((path (mapcar (curry #'name-to-type index) names)))
     (when (every #'identity path)
       (validate-unique-names names)
       (node-at-type index path))))
@@ -236,14 +233,7 @@
          initially cell
          then parent)
     (collect n at start)
-    (unitl (endp parent))))
-
-
-(defun chain-node (node)
-  (iterate
-    (for n initially node then (read-parent n))
-    (while (read-type n))
-    (collect n at start)))
+    (until (endp parent))))
 
 
 (defun set-name (set)
@@ -262,18 +252,3 @@
 
 (defun name-to-type (index name)
   (gethash name (access-mapping index)))
-
-
-(defun just-post (apriori aposteriori)
-  (when (and apriori aposteriori)
-    (cl-ds.utils:ordered-exclusion
-     (lambda (a b) (< (read-type a) (read-type b)))
-     (lambda (a b) (eql (read-type a) (read-type b)))
-     (read-path apriori)
-     (read-path aposteriori))))
-
-
-(defun pure-aposteriori (set)
-  (when-let ((types (~> (just-post (read-apriori-node set) (read-node set))
-                        (map 'list #'read-type _))))
-    (node-at-type (read-index set) types)))
