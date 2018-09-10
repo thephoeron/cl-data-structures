@@ -12,6 +12,13 @@
     nil))
 
 
+(defclass fundamental-finger-tree (cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ((%root :initarg :root
+          :initform nil
+          :accessor access-root
+          :type finger-tree-node)))
+
+
 (defclass 1-content ()
   ((%content-1 :initarg :content-1
                :type content-1
@@ -34,6 +41,26 @@
 (defclass 3-node (2-node 2-content)
   ((%center :initarg :center
             :accessor access-center)))
+
+
+(defclass tagged-2-node
+    (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ())
+
+
+(defclass tagged-3-node
+    (3-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ())
+
+
+(defclass tagged-1-content
+    (1-content cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ())
+
+
+(defclass tagged-2-content
+    (2-content cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ())
 
 
 (defgeneric insert-front (new node overflow-buffer))
@@ -86,31 +113,6 @@
                      :content-2 (access-content-2 node)
                      :center (access-center node)
                      :right (access-right node)))))
-
-
-
-(defclass tagged-2-node
-    (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ())
-
-
-(defclass tagged-3-node
-    (3-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ())
-
-
-(defun full-3-node (node)
-  (macrolet ((all-boundp (&body forms)
-               `(and ,@(mapcar (lambda (x) `(slot-boundp node ',x))
-                               forms))))
-    (all-boundp %left %right %center %content-1 %content-2)))
-
-
-(defclass fundamental-finger-tree (cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ((%root :initarg :root
-          :initform nil
-          :accessor access-root
-          :type finger-tree-node)))
 
 
 (defun push-front (new tree)
