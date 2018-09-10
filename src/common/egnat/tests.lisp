@@ -158,6 +158,7 @@
                 (cl-ds.common.egnat::read-content last-node))))
     (multiple-value-bind (container status)
         (cl-ds.common.egnat::egnat-grow! container
+                                         container
                                          #'(setf cl-ds:at)
                                          (aref data 5)
                                          nil)
@@ -168,7 +169,7 @@
                                     :branching-factor 5
                                     :content-count-in-node 10)))
       (multiple-value-bind (container status)
-          (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) 1 nil)
+          (cl-ds.common.egnat::egnat-grow! container container #'(setf cl-ds:at) 1 nil)
         (is (cl-ds:found status) nil)
         (is (cl-ds:value status) nil)
         (is (cl-ds:size container) 1)
@@ -178,7 +179,8 @@
                          (aref 0))
             1)))
     (multiple-value-bind (container status)
-        (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at)
+        (cl-ds.common.egnat::egnat-grow! container container
+                                         #'(setf cl-ds:at)
                                          5005 nil)
       (is (cl-ds:found status) nil)
       (is (cl-ds:value status) nil)
@@ -262,7 +264,7 @@
   (iterate
     (for elt in-vector data)
     (for i from 1)
-    (cl-ds.common.egnat::egnat-grow! container #'(setf cl-ds:at) elt nil)
+    (cl-ds.common.egnat::egnat-grow! container container #'(setf cl-ds:at) elt nil)
     (is (cl-ds:size container) i)
     (iterate
       (for j from 0 below i)

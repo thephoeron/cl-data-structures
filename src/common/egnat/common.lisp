@@ -378,12 +378,12 @@
   node)
 
 
-(-> splitting-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
+(-> splitting-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun splitting-grow! (container operation item additional-arguments)
+(defun splitting-grow! (structure container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
-    (bind (((:slots %root %branching-factor %size %metric-type) container)
+    (bind (((:slots %root %branching-factor %size %metric-type) structure)
            ((:dflet closest-index (array))
             (let ((result 0))
               (cl-ds.utils:optimize-value ((mini <))
@@ -425,7 +425,7 @@
                     (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
-  (values container
+  (values structure
           cl-ds.common:empty-eager-modification-operation-status))
 
 
@@ -440,6 +440,7 @@
 
 
 (-> egnat-replace! (mutable-egnat-container
+                    t
                     cl-ds.meta:grow-function
                     t
                     egnat-node
@@ -447,7 +448,7 @@
                     list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-replace! (container operation
+(defun egnat-replace! (structure container operation
                        item last-node
                        paths
                        additional-arguments)
@@ -474,12 +475,12 @@
     (values container status)))
 
 
-(-> egnat-push! (mutable-egnat-container
+(-> egnat-push! (mutable-egnat-container t
                  cl-ds.meta:grow-function t
                  egnat-node hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-push! (container operation
+(defun egnat-push! (structure container operation
                     item node paths
                     additional-arguments)
   (bind ((content (read-content node))
@@ -495,20 +496,20 @@
     (unless (null parent.index)
       (optimize-parents-partial! container (car parent.index)
                                  paths (cdr parent.index) item))
-    (values container
+    (values structure
             cl-ds.common:empty-eager-modification-operation-status)))
 
 
-(-> egnat-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
+(-> egnat-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-grow! (container operation item additional-arguments)
+(defun egnat-grow! (structure container operation item additional-arguments)
   (if (~> container access-root null) ; border case. nil is valid value for root
       (initialize-root! container operation item additional-arguments)
       (bind (((:slots %metric-f %same-fn %content-count-in-node
                       %size %root %branching-factor)
-              container)
-             ((:values paths found last-node) (find-destination-node container
+              structure)
+             ((:values paths found last-node) (find-destination-node structure
                                                                      item)))
         #|
 following cases need to be considered:
@@ -523,7 +524,7 @@ following cases need to be considered:
    has been added.
         |#
         (if found ; case number 1, easy to handle
-            (egnat-replace! container operation
+            (egnat-replace! structure container operation
                             item last-node
                             paths
                             additional-arguments)
@@ -538,10 +539,10 @@ following cases need to be considered:
                ;; checking if it is the case number 2
                (if (null result)
                    ;; case 3, it will be messy...
-                   (return (splitting-grow! container operation item
+                   (return (splitting-grow! structure container operation item
                                             additional-arguments))
                    ;; the case number 2, just one push-extend and we are done
-                   (return (egnat-push! container operation item result
+                   (return (egnat-push! structure container operation item result
                                         paths additional-arguments)))))))))
 
 

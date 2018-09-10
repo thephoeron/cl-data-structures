@@ -2,8 +2,8 @@
 
 
 (defmethod cl-ds:put! ((container mutable-metric-space-set) item)
-  (cl-ds.meta:position-modification #'cl-ds:put! container item))
+  (cl-ds.meta:position-modification #'cl-ds:put! container container item))
 
 
 (defmethod cl-ds:erase! ((container mutable-metric-space-set) item)
-  (cl-ds.meta:position-modification #'cl-ds:erase! container item))
+  (cl-ds.meta:position-modification #'cl-ds:erase! container container item))
