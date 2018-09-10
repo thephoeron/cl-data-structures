@@ -233,34 +233,56 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defgeneric pass-bucket-operation (operation container &rest arguments))
+
+
+(defgeneric pass-bucket-query (container &rest arguments))
+
+
 (defgeneric grow-bucket (operation container bucket location
                          &rest all
-                         &key &allow-other-keys))
+                         &key &allow-other-keys)
+  (:method (operation container bucket location &rest all)
+    (apply #'pass-bucket-operation container operation
+           bucket location all)))
 
 
 (defgeneric shrink-bucket (operation container bucket location
                            &rest all
-                           &key &allow-other-keys))
+                           &key &allow-other-keys)
+  (:method (operation container bucket location &rest all)
+    (apply #'pass-bucket-operation container operation
+           bucket location all)))
 
 
 (defgeneric make-bucket (operation container location
                          &rest all
-                         &key &allow-other-keys))
+                         &key &allow-other-keys)
+  (:method (operation container location &rest all)
+    (apply #'pass-bucket-operation container operation location all)))
 
 
 (defgeneric make-bucket-from-multiple (operation container data
                                        &rest all
-                                       &key &allow-other-keys))
+                                       &key &allow-other-keys)
+  (:method (operation container data &rest all)
+    (apply #'pass-bucket-operation container operation data all)))
 
 
 (defgeneric grow-bucket! (operation container bucket location
                           &rest all
-                          &key &allow-other-keys))
+                          &key &allow-other-keys)
+  (:method (operation container bucket location &rest all)
+    (apply #'pass-bucket-operation container operation
+           bucket location all)))
 
 
 (defgeneric shrink-bucket! (operation container bucket location
                             &rest all
-                            &key &allow-other-keys))
+                            &key &allow-other-keys)
+  (:method (operation container bucket location &rest all)
+    (apply #'pass-bucket-operation container operation
+           bucket location all)))
 
 
 (defgeneric map-bucket (container bucket function)
@@ -268,7 +290,9 @@
     (map nil function bucket)))
 
 
-(defgeneric full-bucket-p (container bucket))
+(defgeneric full-bucket-p (container bucket)
+  (:method (container bucket)
+    (pass-bucket-query container bucket)))
 
 
 (defgeneric position-modification (operation
