@@ -5,13 +5,6 @@
   ())
 
 
-(defgeneric 2-3-node-p (object)
-  (:method ((object 2-3-node))
-    t)
-  (:method (object)
-    nil))
-
-
 (defclass fundamental-finger-tree (cl-ds.common.abstract:fundamental-ownership-tagged-object)
   ((%root :initarg :root
           :initform nil
@@ -103,10 +96,10 @@
                                  :content-1 (access-content-1 left)
                                  :right (make '1-content :content-1 (access-content-2 left)))
                      :content-1 (access-content-1 node)
-                     :right(make '2-node
-                                 :left (access-center node)
-                                 :content-1 (access-content-2 node)
-                                 :right (access-right node)))
+                     :right (make '2-node
+                                  :left (access-center node)
+                                  :content-1 (access-content-2 node)
+                                  :right (access-right node)))
       (make-instance '3-node
                      :left result
                      :content-1 (access-content-1 node)
