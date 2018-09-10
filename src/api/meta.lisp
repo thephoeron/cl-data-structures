@@ -303,6 +303,9 @@
                                    &key &allow-other-keys))
 
 
+(def null-bucket 'null-bucket)
+
+
 (defun null-bucket-p (bucket)
   (eq bucket 'null-bucket))
 
