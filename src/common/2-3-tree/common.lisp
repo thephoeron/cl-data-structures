@@ -77,22 +77,13 @@
 
 (defun insert-front-handle-nil (new-node old-node new)
   (if (null new-node)
-      (make '2-node
-            :left (make '1-content :content-1 (funcall new))
-            :content-1 (access-content-1 old-node)
-            :right (make '1-content :content-1 (access-content-2 old-node)))
+      (progn
+        (check-type old-node 2-content)
+        (make '2-node
+              :left (make '1-content :content-1 (funcall new))
+              :content-1 (access-content-1 old-node)
+              :right (make '1-content :content-1 (access-content-2 old-node))))
       new-node))
-
-
-(defmethod insert-front-handle-nil ((new-node (eql nil))
-                                    (old-node (eql nil)))
-  (error "Not possible."))
-
-
-(defmethod insert-front-handle-nil ((new-node (eql nil))
-                                    (old-node 2-content))
-  (make '1-content
-        :content-1 (funcall new)))
 
 
 (defmethod insert-front (new (node 2-node))
