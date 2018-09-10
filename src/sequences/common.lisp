@@ -104,67 +104,71 @@
 
 
 (defmethod cl-ds.meta:position-modification ((function cl-ds.meta:put-back!-function)
-                                             (container mutable-sequence)
+                                             (structure mutable-sequence)
+                                             container
                                              location
                                              &key value)
-  (cl-ds.meta:position-modification #'cl-ds:put! container nil :value value))
+  (cl-ds.meta:position-modification #'cl-ds:put! structure container nil :value value))
 
 
 (defmethod cl-ds.meta:position-modification ((function cl-ds.meta:functional-put-back-function)
-                                             (container functional-sequence)
+                                             (structure functional-sequence)
+                                             container
                                              location
                                              &key value)
-  (cl-ds.meta:position-modification #'cl-ds:put container nil :value value))
+  (cl-ds.meta:position-modification #'cl-ds:put structure container nil :value value))
 
 
 (defmethod cl-ds.meta:position-modification ((function cl-ds.meta:functional-take-out-back-function)
-                                             (container functional-sequence)
+                                             (structure functional-sequence)
+                                             container
                                              location
                                              &key value)
-  (cl-ds.meta:position-modification #'cl-ds:take-out container nil :value value))
+  (cl-ds.meta:position-modification #'cl-ds:take-out structure container nil :value value))
 
 
 (defmethod cl-ds.meta:position-modification ((function cl-ds.meta:take-out-back!-function)
-                                             (container mutable-sequence)
+                                             (structure mutable-sequence)
+                                             container
                                              location
                                              &key value)
-  (cl-ds.meta:position-modification #'cl-ds:take-out! container nil :value value))
+  (cl-ds.meta:position-modification #'cl-ds:take-out! structure container nil :value value))
 
 
 (defmethod cl-ds:put-back ((container functional-sequence) item)
-  (cl-ds.meta:position-modification #'cl-ds:put container nil :value item))
+  (cl-ds.meta:position-modification #'cl-ds:put container container nil :value item))
 
 
 (defmethod cl-ds:put-back! ((container mutable-sequence) item)
-  (cl-ds.meta:position-modification #'cl-ds:put! container nil :value item))
+  (cl-ds.meta:position-modification #'cl-ds:put! container container nil :value item))
 
 
 (defmethod cl-ds:put ((container functional-sequence) item)
-  (cl-ds.meta:position-modification #'cl-ds:put container nil :value item))
+  (cl-ds.meta:position-modification #'cl-ds:put container container nil :value item))
 
 
 (defmethod cl-ds:put! ((container mutable-sequence) item)
-  (cl-ds.meta:position-modification #'cl-ds:put! container nil :value item))
+  (cl-ds.meta:position-modification #'cl-ds:put! container container nil :value item))
 
 
 (defmethod cl-ds:take-out! ((container mutable-sequence))
-  (cl-ds.meta:position-modification #'cl-ds:take-out! container nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out! container container nil))
 
 
 (defmethod cl-ds:take-out ((container functional-sequence))
-  (cl-ds.meta:position-modification #'cl-ds:take-out container nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out container container nil))
 
 
 (defmethod cl-ds:take-out-back ((container functional-sequence))
-  (cl-ds.meta:position-modification #'cl-ds:take-out container nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out container container nil))
 
 
 (defmethod cl-ds:take-out-back! ((container mutable-sequence))
-  (cl-ds.meta:position-modification #'cl-ds:take-out! container nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out! container container nil))
 
 
 (defmethod cl-ds:update ((container functional-sequence) location new-value)
-  (cl-ds.meta:position-modification #'cl-ds:update container location
+  (cl-ds.meta:position-modification #'cl-ds:update container container location
                                     :value new-value))
 
 
@@ -172,7 +176,8 @@
                             location
                             new-value
                             condition-fn)
-  (cl-ds.meta:position-modification #'cl-ds:update-if container location
+  (cl-ds.meta:position-modification #'cl-ds:update-if
+                                    container container location
                                     :value new-value
                                     :condition-fn condition-fn))
 
@@ -181,7 +186,8 @@
                              location
                              new-value
                              condition-fn)
-  (cl-ds.meta:position-modification #'cl-ds:update-if! container location
+  (cl-ds.meta:position-modification #'cl-ds:update-if!
+                                    container container location
                                     :value new-value
                                     :condition-fn condition-fn))
 
@@ -190,7 +196,8 @@
                             location &rest more-locations)
   (cl-ds:assert-one-dimension more-locations)
   (cl-ds.meta:position-modification #'(setf cl-ds:at)
-                                    container location :value new-value)
+                                    container container location
+                                    :value new-value)
   new-value)
 
 

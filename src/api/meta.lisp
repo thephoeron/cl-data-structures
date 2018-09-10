@@ -272,6 +272,7 @@
 
 
 (defgeneric position-modification (operation
+                                   structure
                                    container
                                    location
                                    &rest all

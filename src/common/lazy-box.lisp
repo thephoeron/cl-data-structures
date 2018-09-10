@@ -76,6 +76,7 @@
                               (apply #'cl-ds.meta:position-modification
                                      t-operation
                                      instance
+                                     instance
                                      location
                                      args))))
              (if (slot-boundp lazy-status '%eager-status)
@@ -86,7 +87,9 @@
                                (read-value status))))
                  (setf (access-eager-status lazy-status) eager-status))
              eager-status))))
-  (defmethod cl-ds.meta:position-modification (operation (container lazy-box-container)
+  (defmethod cl-ds.meta:position-modification (operation
+                                               (structure lazy-box-container)
+                                               container
                                                location &rest args
                                                &key &allow-other-keys)
     (bind (((:accessors (operations access-operations)
