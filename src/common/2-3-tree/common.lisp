@@ -57,23 +57,47 @@
   ())
 
 
-(defgeneric insert-front (new node overflow-buffer))
+(defgeneric insert-front (new node))
 
 
-(defmethod insert-front (new (node 1-content) overflow-buffer)
+(defmethod insert-front (new (node 1-content))
   (make '2-content
         :content-1 (funcall new)
         :content-2 (access-content-1 node)))
 
 
-(defmethod insert-front (new (node 2-content) overflow-buffer)
-  (declare (type overflow-buffer overflow-buffer))
+(defmethod insert-front (new (node (eql nil)))
+  (make '1-CONTENT
+        :content-1 (funcall new)))
+
+
+(defmethod insert-front (new (node 2-content))
   nil)
 
 
-(defmethod insert-front (new (node 2-node) overflow-buffer)
+(defun insert-front-handle-nil (new-node old-node new)
+  (if (null new-node)
+      (make '2-node
+            :left (make '1-content :content-1 (funcall new))
+            :content-1 (access-content-1 old-node)
+            :right (make '1-content :content-1 (access-content-2 old-node)))
+      new-node))
+
+
+(defmethod insert-front-handle-nil ((new-node (eql nil))
+                                    (old-node (eql nil)))
+  (error "Not possible."))
+
+
+(defmethod insert-front-handle-nil ((new-node (eql nil))
+                                    (old-node 2-content))
+  (make '1-content
+        :content-1 (funcall new)))
+
+
+(defmethod insert-front (new (node 2-node))
   (let* ((left (access-left node))
-         (result (insert-front new (access-left node) overflow-buffer)))
+         (result (insert-front new (access-left node))))
     (if (null result)
         (make-instance
          '3-node
@@ -89,9 +113,9 @@
          :right (access-right node)))))
 
 
-(defmethod insert-front (new (node 3-node) overflow-buffer)
+(defmethod insert-front (new (node 3-node))
   (let* ((left (access-left node))
-         (result (insert-front new (access-left node) overflow-buffer)))
+         (result (insert-front new (access-left node))))
     (if (null result)
         (make-instance
          '2-node
@@ -111,31 +135,3 @@
          :content-2 (access-content-2 node)
          :center (access-center node)
          :right (access-right node)))))
-
-
-(defun push-front (new tree)
-  (let ((overflow-buffer #(nil nil nil nil)))
-    (declare (dynamic-extent overflow-buffer))
-    (labels ((push-front-3-node (node)
-               ())
-             (impl (node)
-               (bind (((:values node overflow)
-                       (typecase node
-                         (2-node
-                          (if (slot-boundp node '%right)
-                              (values
-                               (make '3-node
-                                     :left (funcall new)
-                                     :content-1 (access-right node)
-                                     :content-2 (access-content node))
-                               nil)
-                              (values
-                               (make '2-node
-                                     :left (funcall new)
-                                     :content (access-left node)
-                                     :right (access-content node))
-                               nil)))
-                         (3-node (push-front-3-node node))
-                         (t (values (make '2-node
-                                          :left (funcall new)
-                                          :content node))))))))))))
