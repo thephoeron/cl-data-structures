@@ -5,7 +5,8 @@
   ())
 
 
-(defclass fundamental-finger-tree (cl-ds.common.abstract:fundamental-ownership-tagged-object)
+(defclass fundamental-finger-tree
+    (cl-ds.common.abstract:fundamental-ownership-tagged-object)
   ((%root :initarg :root
           :initform nil
           :accessor access-root
