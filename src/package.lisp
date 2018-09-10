@@ -149,6 +149,8 @@
    #:map-bucket
    #:null-bucket
    #:null-bucket-p
+   #:pass-bucket-operation
+   #:pass-bucket-query
    #:position-modification
    #:put!-function
    #:put-back!-function
