@@ -679,12 +679,14 @@ following cases need to be considered:
 
 
 (-> remove-from-node! (mutable-egnat-container
+                       t
                        cl-ds.meta:shrink-function
                        egnat-node t
                        hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun remove-from-node! (container operation node item paths
+(defun remove-from-node! (structure container
+                          operation node item paths
                           additional-arguments)
   (bind ((content (read-content node))
          (old-head (aref content 0))
@@ -696,32 +698,34 @@ following cases need to be considered:
                                                      additional-arguments))
          (new-head (or (cl-ds.meta:null-bucket-p new-bucket) (aref new-bucket 0)))
          (head-was-changed (or (cl-ds.meta:null-bucket-p new-bucket)
-                              (not (same container new-head old-head)))))
+                               (not (same structure new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
     (when changed
       ;; remove from node, update paths, sometimes reinitialize paths...
       (merging-shrink! container node paths head-was-changed new-bucket))
-    (values container status)))
+    (values structure status)))
 
 
-(-> egnat-shrink! (mutable-egnat-container cl-ds.meta:shrink-function t list)
+(-> egnat-shrink! (mutable-egnat-container t cl-ds.meta:shrink-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-shrink! (container operation item additional-arguments)
+(defun egnat-shrink! (structure container operation
+                      item additional-arguments)
   (if (~> container access-root null)
-      (values container
+      (values structure
               cl-ds.common:empty-eager-modification-operation-status)
       (bind (((:slots %metric-fn %same-fn %content-count-in-node %size
                       %root %branching-factor)
-              container)
-             ((:values paths found last-node) (find-destination-node container
+              structure)
+             ((:values paths found last-node) (find-destination-node structure
                                                                      item)))
         (if found
             (progn
               (decf (access-size container))
-              (remove-from-node! container operation last-node item paths
+              (remove-from-node! structure container operation
+                                 last-node item paths
                                  additional-arguments))
-            (values container
+            (values structure
                     cl-ds.common:empty-eager-modification-operation-status)))))
 
 
