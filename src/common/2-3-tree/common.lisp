@@ -75,38 +75,42 @@
   (let* ((left (access-left node))
          (result (insert-front new (access-left node) overflow-buffer)))
     (if (null result)
-      (make-instance '3-node
-                     :left (make '1-content :content-1 (funcall new))
-                     :content-1 (access-content-1 left)
-                     :content-2 (access-content-1 node)
-                     :center (make '1-content :content-1 (access-content-2 left))
-                     :right (access-right node))
-      (make-instance '2-node
-                     :left result
-                     :content-1 (access-content-1 node)
-                     :right (access-right node)))))
+        (make-instance
+         '3-node
+         :left (make '1-content :content-1 (funcall new))
+         :content-1 (access-content-1 left)
+         :content-2 (access-content-1 node)
+         :center (make '1-content :content-1 (access-content-2 left))
+         :right (access-right node))
+        (make-instance
+         '2-node
+         :left result
+         :content-1 (access-content-1 node)
+         :right (access-right node)))))
 
 
 (defmethod insert-front (new (node 3-node) overflow-buffer)
   (let* ((left (access-left node))
          (result (insert-front new (access-left node) overflow-buffer)))
     (if (null result)
-      (make-instance '2-node
-                     :left (make '2-node
-                                 :left (make '1-content :content-1 (funcall new))
-                                 :content-1 (access-content-1 left)
-                                 :right (make '1-content :content-1 (access-content-2 left)))
-                     :content-1 (access-content-1 node)
-                     :right (make '2-node
-                                  :left (access-center node)
-                                  :content-1 (access-content-2 node)
-                                  :right (access-right node)))
-      (make-instance '3-node
-                     :left result
-                     :content-1 (access-content-1 node)
-                     :content-2 (access-content-2 node)
-                     :center (access-center node)
-                     :right (access-right node)))))
+        (make-instance
+         '2-node
+         :left (make '2-node
+                     :left (make '1-content :content-1 (funcall new))
+                     :content-1 (access-content-1 left)
+                     :right (make '1-content :content-1 (access-content-2 left)))
+         :content-1 (access-content-1 node)
+         :right (make '2-node
+                      :left (access-center node)
+                      :content-1 (access-content-2 node)
+                      :right (access-right node)))
+        (make-instance
+         '3-node
+         :left result
+         :content-1 (access-content-1 node)
+         :content-2 (access-content-2 node)
+         :center (access-center node)
+         :right (access-right node)))))
 
 
 (defun push-front (new tree)
