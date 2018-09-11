@@ -60,10 +60,27 @@
 (defgeneric insert-front (new node))
 
 
+(defgeneric take-back (node))
+
+
 (defmethod insert-front (new (node 1-content))
   (make '2-content
         :content-1 (funcall new)
         :content-2 (access-content-1 node)))
+
+
+(defmethod take-back ((node 2-content))
+  (values (make '1-content :content-1 (access-content-1 node))
+          node))
+
+
+(defmethod take-back ((node 2-node))
+  (bind ((right (access-right node))
+         ((:values new-node old-node) (take-back right)))
+    (values (make '2-node :content-1 (access-content-1 node)
+                          :left (access-left node)
+                          :right new-node)
+            old-node)))
 
 
 (defmethod insert-front (new (node (eql nil)))
