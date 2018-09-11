@@ -90,12 +90,11 @@
          ((:values new-node old-node) (take-back right)))
     (if (null new-node)
         cl-ds.utils:todo
-        (values (make '3-node
-                      :content-1 (access-content-1 node)
-                      :content-2 (access-content-2 node)
-                      :left (access-left node)
-                      :center (access-center node)
-                      :right new-node)
+        (values (make '3-node :content-1 (access-content-1 node)
+                              :content-2 (access-content-2 node)
+                              :left (access-left node)
+                              :center (access-center node)
+                              :right new-node)
                 old-node))))
 
 
