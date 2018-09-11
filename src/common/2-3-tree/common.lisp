@@ -77,10 +77,12 @@
 (defmethod take-back ((node 2-node))
   (bind ((right (access-right node))
          ((:values new-node old-node) (take-back right)))
-    (values (make '2-node :content-1 (access-content-1 node)
-                          :left (access-left node)
-                          :right new-node)
-            old-node)))
+    (if (null new-node)
+        cl-ds.utils:todo
+        (values (make '2-node :content-1 (access-content-1 node)
+                              :left (access-left node)
+                              :right new-node)
+                old-node))))
 
 
 (defmethod insert-front (new (node (eql nil)))
