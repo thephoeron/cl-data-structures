@@ -135,6 +135,15 @@
       new-node))
 
 
+(defun take-back-handle-nil (new-node old-node new)
+  (if (null new-node)
+      (if (typep old-node '1-content)
+          nil
+          (progn (check-type old-node 2-content)
+                 cl-ds.utils:todo))
+      new-node))
+
+
 (defmethod insert-front (new (node 2-node))
   (let* ((left (access-left node))
          (result (insert-front new (access-left node))))

@@ -38,6 +38,7 @@
                (cl-data-structures.common.2-3-tree::1-content
                 (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
                 (decf i)))))
-    (check node)))
+    (check node)
+    ))
 
 (finalize)
