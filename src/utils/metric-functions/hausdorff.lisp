@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.utils.metric)
 
 
-(defun hausdorff-metric (a b fn
+(defun hausdorff-metric (fn a b
                          &key
                            (element-type t)
                            (distance-matrix
