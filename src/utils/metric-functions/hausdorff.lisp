@@ -2,8 +2,11 @@
 
 
 (defun hausdorff-metric (a b fn
-                         &key (distance-matrix (make-array (list (length a)
-                                                                 (length b)))))
+                         &key
+                           (element-type t)
+                           (distance-matrix (make-array (list (length a)
+                                                              (length b))
+                                                        :element-type element-type)))
   (declare (type vector a) (type vector b)
            (optimize (speed 3)))
   (ensure-functionf fn)
