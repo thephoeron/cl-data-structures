@@ -89,7 +89,24 @@
   (bind ((right (access-right node))
          ((:values new-node old-node) (take-back right)))
     (if (null new-node)
-        cl-ds.utils:todo
+        (let ((center (access-center node)))
+          (if (typep center '2-content)
+              (values (make '3-node
+                            :content-1 (access-content-1 node)
+                            :content-2 (access-content-2 center)
+                            :left (access-left node)
+                            :center (make '1-content
+                                          :content-1 (access-content-1 center))
+                            :right (make '1-content
+                                         :content-1 (access-content-2 node)))
+                      old-node)
+              (values (make '2-node
+                            :left (access-left node)
+                            :content-1 (access-content-1 center)
+                            :right (make '2-content
+                                         :content-1 (access-content-1 node)
+                                         :content-2 (access-content-2 node)))
+                      old-node)))
         (values (make '3-node :content-1 (access-content-1 node)
                               :content-2 (access-content-2 node)
                               :left (access-left node)
