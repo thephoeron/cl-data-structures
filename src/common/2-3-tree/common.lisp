@@ -135,12 +135,21 @@
       new-node))
 
 
-(defun take-back-handle-nil (new-node old-node new)
+(defun take-back-handle-nil (new-node old-node)
   (if (null new-node)
       (if (typep old-node '1-content)
           nil
-          (progn (check-type old-node 2-content)
-                 cl-ds.utils:todo))
+          (let ((left (access-left old-node)))
+            (if (typep left '1-content)
+                (make '2-content
+                      :content-1 (access-content-1 old-node)
+                      :content-2 (access-content-1 left))
+                (make '2-node
+                      :content-1 (access-content-2 left)
+                      :left (make '1-content
+                                  :content-1 (access-content-1 left))
+                      :right (make '1-content
+                                   :content-1 (access-content-1 old-node))))))
       new-node))
 
 
