@@ -64,4 +64,4 @@
                                         &rest arguments)
   (let ((vector (vect)))
     (cl-ds:across (rcurry #'vector-push-extend vector) sequence)
-    (cl-ds:make-from-traversable class arguments vector)))
+    (apply #'cl-ds:make-from-traversable class vector arguments)))

@@ -27,7 +27,7 @@
         :original-range (cl-ds.alg:read-original-range range)))
 
 
-(defun traverse/accross (traverse/accross range function)
+(defun traverse/accross-thread-buffer-range (traverse/accross range function)
   (bind ((queue (lparallel.queue:make-queue :fixed-capacity (read-limit range)))
          ((:flet enque (data))
           (lparallel.queue:push-queue data queue))
@@ -63,11 +63,11 @@
 
 
 (defmethod cl-ds:traverse (function (range buffer-range))
-  (traverse/accross #'cl-ds:traverse range function))
+  (traverse/accross-thread-buffer-range #'cl-ds:traverse range function))
 
 
 (defmethod cl-ds:across (function (range buffer-range))
-  (traverse/accross #'cl-ds:across range function))
+  (traverse/accross-thread-buffer-range #'cl-ds:across range function))
 
 
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)

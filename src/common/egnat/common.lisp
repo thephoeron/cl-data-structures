@@ -144,7 +144,9 @@
                                                  :bucket-function bucket-function)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
-         (content (cl-ds.meta:make-bucket-from-multiple operation container this-content)))
+         (content (cl-ds.meta:make-bucket-from-multiple operation
+                                                        container
+                                                        this-content)))
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node

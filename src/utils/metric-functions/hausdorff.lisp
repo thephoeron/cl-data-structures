@@ -10,6 +10,10 @@
   (declare (type vector a) (type vector b)
            (optimize (speed 3)))
   (ensure-functionf fn)
+  (when (and (emptyp a) (emptyp b))
+    (return-from hausdorff-metric 0))
+  (when (or (emptyp a) (emptyp b))
+    (return-from hausdorff-metric most-positive-fixnum))
   (iterate
     (for ea in-vector a)
     (for ia from 0)
