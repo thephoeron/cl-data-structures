@@ -303,7 +303,7 @@
                                    &key &allow-other-keys))
 
 
-(def null-bucket 'null-bucket)
+(define-constant null-bucket 'null-bucket)
 
 
 (defun null-bucket-p (bucket)
