@@ -54,7 +54,7 @@
 
 (defun make-contents (operation container seeds-indexes
                       data data-partitions reverse-mapping)
-  (assert (eql (length data) (length data-partitions)))
+  (assert (eql (cl-ds:size data) (cl-ds:size data-partitions)))
   (let ((result (make-array (length seeds-indexes))))
     (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
     (iterate
