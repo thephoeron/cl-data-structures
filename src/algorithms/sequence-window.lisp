@@ -90,7 +90,7 @@
                             from to)
   (make (type-of sequence)
         :from (+ (access-current-index sequence) from)
-        :to (+ (read-from sequence) to)
+        :to (+ (access-current-index sequence) from to)
         :content (read-content sequence)))
 
 

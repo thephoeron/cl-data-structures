@@ -96,7 +96,7 @@
 (let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 10)
-                                                  (send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i)))))))
   (iterate
     (for i from 0 below 10)
     (is (cl-ds:at container i) i)))
@@ -104,7 +104,7 @@
 (let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
-                                                  (send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i)))))))
   (iterate
     (for i from 0 below 64)
     (is (cl-ds:at container i) i)))
@@ -112,7 +112,7 @@
 (let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
-                                                  (send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i)))))))
   (iterate
     (for i from 0 below 64)
     (is (cl-ds:at container i) i))
@@ -137,7 +137,7 @@
 (let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
                                               (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
-                                                  (send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i)))))))
   (let ((range (cl-ds:whole-range container)))
     (cl-ds.common.rrb::init-rrb range container :from 5)
     (iterate

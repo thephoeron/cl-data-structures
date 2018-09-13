@@ -34,6 +34,7 @@
    #:erase-if!
    #:expression
    #:field
+   #:finish
    #:force
    #:found
    #:functional
@@ -82,7 +83,10 @@
    #:read-bounds
    #:read-class
    #:read-value
+   #:recur
    #:reset!
+   #:send-finish
+   #:send-recur
    #:size
    #:take-out
    #:take-out!

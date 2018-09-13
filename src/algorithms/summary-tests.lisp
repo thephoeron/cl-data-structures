@@ -9,7 +9,7 @@
 
 (let* ((data (cl-ds:xpr (:i 0)
                (when (< i 250)
-                 (send-recur i :i (1+ i)))))
+                 (cl-ds:send-recur i :i (1+ i)))))
        (min-and-max (cl-ds.alg:summary
                      data
                      (list (cl-ds:field :name :min

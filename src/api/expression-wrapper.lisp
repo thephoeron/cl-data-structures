@@ -44,6 +44,10 @@
       `(cl-ds.utils:let-generator
            ((,!fn ,(mapcar (lambda (x) (intern (symbol-name x))) keys)
                   ,@body))
+           cl-ds:send-finish
+           cl-ds:finish
+           cl-ds:recur
+           cl-ds:send-recur
          (make 'cl-ds:expression
                :construct-function (function ,!fn)
                :arguments (list ,@arguments))))))

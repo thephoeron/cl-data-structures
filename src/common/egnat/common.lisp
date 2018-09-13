@@ -7,8 +7,8 @@
                     (cl-ds.common:sequence-window data 0 count)))
          (new-data (unless (eql count (cl-ds:size data))
                      (cl-ds.common:sequence-window data
-                                                count
-                                                (cl-ds:size data)))))
+                                                   count
+                                                   (cl-ds:size data)))))
     (assert (> size count))
     (assert (eql count (cl-ds:size content)))
     (values content new-data)))
@@ -54,19 +54,20 @@
 
 (defun make-contents (operation container seeds-indexes
                       data data-partitions reverse-mapping)
+  (assert (eql (length data) (length data-partitions)))
   (let ((result (make-array (length seeds-indexes))))
     (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
     (iterate
       (for d in-vector data-partitions)
       (for i from 0)
+      (when (position i seeds-indexes :test #'eql)
+        (next-iteration))
       (for element = (cl-ds:at data i))
       (for partition = (gethash d reverse-mapping))
-      ;; don't assign seeds to partitions because
-      ;; it has been already done in map-into form
-      (unless (eql d i)
-        (vector-push-extend element (aref result partition))))
+      (vector-push-extend element (aref result partition)))
     (map-into result
-              (lambda (x) (cl-ds.meta:make-bucket-from-multiple operation container x))
+              (lambda (x)
+                (cl-ds.meta:make-bucket-from-multiple operation container x))
               result)
     result))
 
@@ -147,6 +148,8 @@
          (content (cl-ds.meta:make-bucket-from-multiple operation
                                                         container
                                                         this-content)))
+    (assert (= (+ (cl-ds:size this-data) (cl-ds:size this-content))
+               (cl-ds:size data)))
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node
