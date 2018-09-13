@@ -74,6 +74,10 @@
           node))
 
 
+(defmethod take-back ((node 1-content))
+  (values nil node))
+
+
 (defmethod take-back ((node 2-node))
   (bind ((right (access-right node))
          ((:values new-node old-node) (take-back right)))
@@ -116,8 +120,7 @@
 
 
 (defmethod insert-front (new (node (eql nil)))
-  (make '1-CONTENT
-        :content-1 (funcall new)))
+  (make '1-content :content-1 (funcall new)))
 
 
 (defmethod insert-front (new (node 2-content))
@@ -137,8 +140,7 @@
 
 (defun take-back-handle-nil (new-node old-node)
   (if (null new-node)
-      (if (typep old-node '1-content)
-          nil
+      (if (typep old-node '2-node)
           (let ((left (access-left old-node)))
             (if (typep left '1-content)
                 (make '2-content
@@ -149,7 +151,8 @@
                       :left (make '1-content
                                   :content-1 (access-content-1 left))
                       :right (make '1-content
-                                   :content-1 (access-content-1 old-node))))))
+                                   :content-1 (access-content-1 old-node)))))
+          nil)
       new-node))
 
 

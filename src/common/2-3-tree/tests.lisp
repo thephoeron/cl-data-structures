@@ -39,6 +39,15 @@
                 (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
                 (decf i)))))
     (check node)
+    (iterate
+      (for j from 31 downto 1)
+      (setf node
+            (cl-data-structures.common.2-3-tree::take-back-handle-nil
+             (cl-data-structures.common.2-3-tree::take-back node)
+             node))
+      (setf i j)
+      (check node)
+      )
     ))
 
 (finalize)
