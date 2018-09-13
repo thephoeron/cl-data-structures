@@ -2,7 +2,7 @@
   (:use #:cl #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils.metric)
   (:export
-   #:average-mini-metric
+   #:average-metric
    #:earth-mover-metric
    #:euclid-metric
    #:hausdorff-metric
