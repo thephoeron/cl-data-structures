@@ -50,6 +50,7 @@
                               :components ((:file "package")
                                            (:file "levenshtein")
                                            (:file "hellinger")
+                                           (:file "average-mini-metric")
                                            (:file "hausdorff")
                                            (:file "euclid")
                                            (:file "earth-mover")
