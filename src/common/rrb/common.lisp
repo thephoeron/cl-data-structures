@@ -432,6 +432,48 @@
                :accessor access-container)))
 
 
+(defclass chunked-rrb-range (cl-ds:fundamental-forward-range)
+  ((%vectors-in-chunk :initarg :vectors-in-chunk
+                      :reader read-vectors-in-chunk)
+   (%rrb-range :initarg :rrb-range
+               :reader read-rrb-range)))
+
+
+(defmethod cl-ds:clone ((range chunked-rrb-range))
+  (make 'chunked-rrb-range
+        :vectors-in-chunk (read-vectors-in-chunk range )
+        :rrb-range (~> range read-rrb-range cl-ds:clone)))
+
+
+(defmethod cl-ds:chunked ((range rrb-range) &optional chunk-size-hint)
+  (make 'chunked-rrb-range
+        :rrb-range (cl-ds:clone range)
+        :vectors-in-chunk (if chunk-size-hint
+                              (truncate chunk-size-hint
+                                        +maximum-children-count+)
+                              1)))
+
+
+(defmethod cl-ds:consume-front ((range chunked-rrb-range))
+  (bind (((:slots %start %last-size %lower-bound %upper-bound
+                  %initial-lower-bound %initial-upper-bound %content)
+          (read-rrb-range range))
+         ((:slots %vectors-in-chunk) range))
+    (if (or (eql %lower-bound %upper-bound) (null %content))
+        (values nil nil)
+        cl-ds.utils:todo)))
+
+
+(defmethod cl-ds:peek-front ((range chunked-rrb-range))
+  (bind (((:slots %start %last-size %lower-bound %upper-bound
+                  %initial-lower-bound %initial-upper-bound %content)
+          (read-rrb-range range))
+         ((:slots %vectors-in-chunk) range))
+    (if (or (eql %lower-bound %upper-bound) (null %content))
+        (values nil nil)
+        cl-ds.utils:todo)))
+
+
 (defclass mutable-rrb-range (rrb-range)
   ())
 
