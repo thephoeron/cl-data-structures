@@ -264,3 +264,49 @@ Range releated functions.
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-function))
   #'update!)
+
+(defmethod clone ((range chunked-range))
+  (make 'chunked-range
+        :original-range (~> range read-original-range clone)
+        :chunk-size (read-chunk-size range)))
+
+
+(defmethod chunked ((range chunking-mixin))
+  (make 'chunked-range
+        :original-range (cl-ds:clone range)))
+
+
+(defmethod consume-front ((range chunked-range))
+  (bind ((og-range (read-original-range range))
+         ((:values item more) (consume-front og-range)))
+    (if more
+        (let* ((chunk-size (read-chunk-size range))
+               (result (make-array chunk-size
+                                   :adjustable t
+                                   :fill-pointer 1)))
+          (setf (aref result 0) item)
+          (iterate
+            (for i from 1 below chunk-size)
+            (for (values elt m) = (consume-front og-range))
+            (vector-push-extend elt result))
+          (values (whole-range result)
+                  t))
+        (values nil nil))))
+
+
+(defmethod peek-front ((range chunked-range))
+  (bind ((og-range (~> range read-original-range cl-ds:clone))
+         ((:values item more) (consume-front og-range)))
+    (if more
+        (let* ((chunk-size (read-chunk-size range))
+               (result (make-array chunk-size
+                                   :adjustable t
+                                   :fill-pointer 1)))
+          (setf (aref result 0) item)
+          (iterate
+            (for i from 1 below chunk-size)
+            (for (values elt m) = (consume-front og-range))
+            (vector-push-extend elt result))
+          (values (whole-range result)
+                  t))
+        (values nil nil))))

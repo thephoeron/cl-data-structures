@@ -37,6 +37,7 @@
    #:field
    #:finish
    #:force
+   #:chunking-mixin
    #:found
    #:functional
    #:functionalp

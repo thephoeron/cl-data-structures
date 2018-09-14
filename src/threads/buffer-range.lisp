@@ -13,11 +13,6 @@
   ())
 
 
-(defclass chunked-buffer-range (forward-buffer-range)
-  ((%chunk-size :initarg :chunk-size
-                :reader read-chunk-size)))
-
-
 (defclass bidirectional-buffer-range (buffer-range cl-ds.alg:bidirectional-proxy-range)
   ())
 
@@ -31,14 +26,6 @@
         :limit (read-limit range)
         :context-function (read-context-function range)
         :original-range (cl-ds.alg:read-original-range range)))
-
-
-(defmethod cl-ds:clone ((range chunked-buffer-range))
-  (make 'chunked-buffer-range
-        :original-range (~> range cl-ds.alg:read-original-range cl-ds:clone)
-        :limit (read-limit range)
-        :context-function (read-context-function range)
-        :chunk-size (read-chunk-size range)))
 
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
@@ -82,53 +69,6 @@
 
 (defmethod cl-ds:across (function (range buffer-range))
   (traverse/accross-thread-buffer-range #'cl-ds:across range function))
-
-
-(defmethod cl-ds:chunked ((range buffer-range) &optional chunk-size-hint)
-  (if-let ((chunked (~> range cl-ds.alg:read-original-range
-                        (cl-ds:chunked chunk-size-hint))))
-    chunked
-    (make 'chunked-buffer-range
-          :original-range (cl-ds.alg:read-original-range range)
-          :limit (read-limit range)
-          :context-function (read-context-function range)
-          :chunk-size (or chunk-size-hint (read-limit range)))))
-
-
-(defmethod cl-ds:consume-front ((range chunked-buffer-range))
-  (bind ((og-range (cl-ds.alg:read-original-range range))
-         ((:values item more) (cl-ds:consume-front og-range)))
-    (if more
-        (let* ((chunk-size (read-chunk-size range))
-               (result (make-array chunk-size
-                                   :adjustable t
-                                   :fill-pointer 1)))
-          (setf (aref result 0) item)
-          (iterate
-            (for i from 1 below chunk-size)
-            (for (values elt m) = (cl-ds:consume-front og-range))
-            (vector-push-extend elt result))
-          (values (cl-ds:whole-range result)
-                  t))
-        (values nil nil))))
-
-
-(defmethod cl-ds:peek-front ((range chunked-buffer-range))
-  (bind ((og-range (~> range cl-ds.alg:read-original-range cl-ds:clone))
-         ((:values item more) (cl-ds:consume-front og-range)))
-    (if more
-        (let* ((chunk-size (read-chunk-size range))
-               (result (make-array chunk-size
-                                   :adjustable t
-                                   :fill-pointer 1)))
-          (setf (aref result 0) item)
-          (iterate
-            (for i from 1 below chunk-size)
-            (for (values elt m) = (cl-ds:consume-front og-range))
-            (vector-push-extend elt result))
-          (values (cl-ds:whole-range result)
-                  t))
-        (values nil nil))))
 
 
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)
