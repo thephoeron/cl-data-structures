@@ -27,25 +27,22 @@
 
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
-  (bind ((queue (lparallel.queue:make-queue))
-         ((:flet enque (data))
-          (lparallel.queue:push-queue data queue))
-         (og-range (cl-ds.alg::read-original-range range))
+  (bind ((og-range (cl-ds.alg::read-original-range range))
          (chunked-range (cl-ds:chunked og-range)))
     (if (null chunked-range)
         (funcall traverse/accross og-range function)
         (iterate
+          (with queue = (lparallel.queue:make-queue))
           (with pushing =
                 (lparallel:future
                   (cl-ds:traverse
-                   (lambda (x)
-                     (let ((vector (vect 128)))
-                       (cl-ds:traverse (rcurry #'vector-push-extend
-                                               vector)
-                                       x)
-                       (enque (list* vector t))))
+                   (lambda (x &aux (vector (vect 128)))
+                     (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
+                     (lparallel.queue:push-queue (list* vector t)
+                                                 queue))
                    chunked-range)
-                  (enque (list* nil nil))))
+                  (lparallel.queue:push-queue (list* nil nil)
+                                              queue)))
           (for (data . more) = (lparallel.queue:pop-queue queue))
           (while more)
           (map nil function data)
