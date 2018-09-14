@@ -102,8 +102,8 @@
           (let* ((chunk-size (read-chunk-size range))
                  (result (make-array chunk-size
                                      :adjustable t
-                                     :fill-pointer 1
-                                     :initial-element item)))
+                                     :fill-pointer 1)))
+            (setf (aref result 0) item)
             (iterate
               (for i from 1 below chunk-size)
               (for (values elt m) = (cl-ds:consume-front og-range))
@@ -120,8 +120,8 @@
           (let* ((chunk-size (read-chunk-size range))
                  (result (make-array chunk-size
                                      :adjustable t
-                                     :fill-pointer 1
-                                     :initial-element item)))
+                                     :fill-pointer 1)))
+            (setf (aref result 0) item)
             (iterate
               (for i from 1 below chunk-size)
               (for (values elt m) = (cl-ds:consume-front og-range))
