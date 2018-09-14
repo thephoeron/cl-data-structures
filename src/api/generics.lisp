@@ -271,9 +271,10 @@ Range releated functions.
         :chunk-size (read-chunk-size range)))
 
 
-(defmethod chunked ((range chunking-mixin))
+(defmethod chunked ((range chunking-mixin) &optional chunk-size-hint)
   (make 'chunked-range
-        :original-range (cl-ds:clone range)))
+        :original-range (cl-ds:clone range)
+        :chunk-size (or chunk-size-hint 256)))
 
 
 (defmethod consume-front ((range chunked-range))
