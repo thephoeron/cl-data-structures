@@ -146,6 +146,13 @@ Range releated functions.
 
 (defgeneric (setf peek-back) (new-value range))
 
+(defgeneric chunked (range &optional chunk-size-hint)
+  (:method :before ((range fundamental-range) &optional chunk-size-hint)
+    (check-type chunk-size-hint (or null positive-integer)))
+  (:method ((range fundamental-range) &optional chunk-size-hint)
+    (declare (ignore chunk-size-hint))
+    nil))
+
 (defgeneric dimensionality (object)
   (:method ((object fundamental-container))
     1)

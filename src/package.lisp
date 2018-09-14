@@ -16,6 +16,7 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:chunked
    #:clone
    #:consume-back
    #:consume-front

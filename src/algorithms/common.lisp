@@ -6,6 +6,12 @@
                     :reader read-original-range)))
 
 
+(defclass chunked-proxy-range (cl-ds:fundamental-forward-range
+                               proxy-range)
+  ((%chunked-range :initarg :chunked-range
+                   :reader read-chunked-range)))
+
+
 (defmethod cl-ds:reset! ((range proxy-range))
   (cl-ds:reset! (read-original-range range))
   range)
@@ -41,6 +47,23 @@
                function
                arguments
                key))))))
+
+
+(defgeneric wrap-chunk (range chunk))
+
+
+(defmethod cl-ds:consume-front ((range chunked-proxy-range))
+  (if-let ((chunk (~> range read-chunked-range cl-ds:consume-front)))
+    (values (wrap-chunk range chunk) t)
+    (values nil nil)))
+
+
+(defmethod cl-ds:chunked ((range proxy-range) &optional chunk-size-hint)
+  (if-let ((chunked (~> range read-original-range (cl-ds:chunked chunk-size-hint))))
+    (make 'chunked-proxy-range
+          :original-range range
+          :chunked-range chunked)
+    nil))
 
 
 (defmethod cl-ds.alg.meta:construct-aggregator

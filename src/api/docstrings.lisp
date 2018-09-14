@@ -334,6 +334,9 @@
      :side-effects
      "May vary, depending on type of the CONTAINER. Also, some (or all) parts of a internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into a returned instance."))
 
+  (function chunked
+    (:description "Returns either nil or forward range of sub-ranges that in total contain all elements of the RANGE. This function can be used to implement multithreaded functions, however, implementation of this is optional."))
+
   (function become-mutable
     (:description
      "Transforms the CONTAINER into a mutable variant."
