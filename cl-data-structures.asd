@@ -185,6 +185,7 @@
                (:module "threads"
                 :components ((:file "package")
                              (:file "buffer-range")
+                             (:file "in-parallel")
                              (:file "docstrings")))
                (:module "clustering"
                 :components ((:file "package")

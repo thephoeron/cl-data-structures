@@ -270,12 +270,10 @@ Range releated functions.
         :original-range (~> range read-original-range clone)
         :chunk-size (read-chunk-size range)))
 
-
 (defmethod chunked ((range chunking-mixin) &optional chunk-size-hint)
   (make 'chunked-range
         :original-range (cl-ds:clone range)
         :chunk-size (or chunk-size-hint 256)))
-
 
 (defmethod consume-front ((range chunked-range))
   (bind ((og-range (read-original-range range))
@@ -293,7 +291,6 @@ Range releated functions.
           (values (whole-range result)
                   t))
         (values nil nil))))
-
 
 (defmethod peek-front ((range chunked-range))
   (bind ((og-range (~> range read-original-range cl-ds:clone))
