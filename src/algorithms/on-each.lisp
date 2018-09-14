@@ -33,6 +33,13 @@
   ())
 
 
+(defmethod wrap-chunk ((range forward-proxy-box-range) chunk)
+  (make 'forward-proxy-box-range
+        :function (read-function range)
+        :key (read-key range)
+        :original-range chunk))
+
+
 (defmethod cl-ds:clone ((range forward-proxy-box-range))
   (make-instance (type-of range)
                  :original-range (cl-ds:clone (read-original-range range))

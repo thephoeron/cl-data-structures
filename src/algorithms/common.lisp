@@ -60,7 +60,8 @@
 
 (defmethod cl-ds:chunked ((range proxy-range) &optional chunk-size-hint)
   (if-let ((method (find-method #'wrap-chunk '()
-                                (mapcar #'find-class `(,(type-of range)))
+                                (list (class-of range)
+                                      (find-class 'cl-ds:fundamental-forward-range))
                                 nil))
            (chunked (~> range read-original-range
                         (cl-ds:chunked chunk-size-hint))))
