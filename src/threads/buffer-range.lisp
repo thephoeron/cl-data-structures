@@ -13,6 +13,11 @@
   ())
 
 
+(defclass chunked-buffer-range (forward-buffer-range)
+  ((%chunk-size :initarg :chunk-size
+                :reader read-chunk-size)))
+
+
 (defclass bidirectional-buffer-range (buffer-range cl-ds.alg:bidirectional-proxy-range)
   ())
 
