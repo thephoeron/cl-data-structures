@@ -95,6 +95,42 @@
           :chunk-size (or chunk-size-hint (read-limit range)))))
 
 
+(defmethod cl-ds:consume-front ((range chunked-buffer-range))
+  (let ((og-range (cl-ds.alg:read-original-range range)))
+    (multiple-value-bind (item more) (cl-ds:consume-front og-range)
+      (if more
+          (let* ((chunk-size (read-chunk-size range))
+                 (result (make-array chunk-size
+                                     :adjustable t
+                                     :fill-pointer 1
+                                     :initial-element item)))
+            (iterate
+              (for i from 1 below chunk-size)
+              (for (values elt m) = (cl-ds:consume-front og-range))
+              (vector-push-extend elt result))
+            (values (cl-ds:whole-range result)
+                    t))
+          (values nil nil)))))
+
+
+(defmethod cl-ds:peek-front ((range chunked-buffer-range))
+  (let ((og-range (~> range cl-ds.alg:read-original-range cl-ds:clone)))
+    (multiple-value-bind (item more) (cl-ds:consume-front og-range)
+      (if more
+          (let* ((chunk-size (read-chunk-size range))
+                 (result (make-array chunk-size
+                                     :adjustable t
+                                     :fill-pointer 1
+                                     :initial-element item)))
+            (iterate
+              (for i from 1 below chunk-size)
+              (for (values elt m) = (cl-ds:consume-front og-range))
+              (vector-push-extend elt result))
+            (values (cl-ds:whole-range result)
+                    t))
+          (values nil nil)))))
+
+
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
