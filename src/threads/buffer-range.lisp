@@ -1,22 +1,23 @@
 (in-package #:cl-data-structures.threads)
 
 
-(defclass buffer-range (cl-ds.alg:proxy-range)
+(defclass buffer-range (cl-ds.alg:transparent-to-chunking-mixin
+                        cl-ds.alg:proxy-range)
   ((%limit :initarg :limit
            :reader read-limit)
    (%context-function :initarg :context-function
                       :reader read-context-function)))
 
 
-(defclass forward-buffer-range (buffer-range cl-ds.alg::forward-proxy-range)
+(defclass forward-buffer-range (buffer-range cl-ds.alg:forward-proxy-range)
   ())
 
 
-(defclass bidirectional-buffer-range (buffer-range cl-ds.alg::bidirectional-proxy-range)
+(defclass bidirectional-buffer-range (buffer-range cl-ds.alg:bidirectional-proxy-range)
   ())
 
 
-(defclass random-access-buffer-range (buffer-range cl-ds.alg::random-access-proxy-range)
+(defclass random-access-buffer-range (buffer-range cl-ds.alg:random-access-proxy-range)
   ())
 
 
@@ -25,6 +26,14 @@
         :limit (read-limit range)
         :context-function (read-context-function range)
         :original-range (cl-ds.alg:read-original-range range)))
+
+
+(defmethod cl-ds:clone ((range chunked-buffer-range))
+  (make 'chunked-buffer-range
+        :original-range (~> range cl-ds.alg:read-original-range cl-ds:clone)
+        :limit (read-limit range)
+        :context-function (read-context-function range)
+        :chunk-size (read-chunk-size range)))
 
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
@@ -68,6 +77,17 @@
 
 (defmethod cl-ds:across (function (range buffer-range))
   (traverse/accross-thread-buffer-range #'cl-ds:across range function))
+
+
+(defmethod cl-ds:chunked ((range buffer-range) &optional chunk-size-hint)
+  (if-let ((chunked (~> range cl-ds.alg:read-original-range
+                        (cl-ds:chunked chunk-size-hint))))
+    chunked
+    (make 'chunked-buffer-range
+          :original-range (cl-ds.alg:read-original-range range)
+          :limit (read-limit range)
+          :context-function (read-context-function range)
+          :chunk-size (or chunk-size-hint (read-limit range)))))
 
 
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)

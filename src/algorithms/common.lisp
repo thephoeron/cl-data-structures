@@ -1,6 +1,10 @@
 (in-package #:cl-data-structures.algorithms)
 
 
+(defclass transparent-to-chunking-mixin ()
+  ())
+
+
 (defclass proxy-range ()
   ((%original-range :initarg :original-range
                     :reader read-original-range)))
@@ -69,6 +73,10 @@
           :original-range range
           :chunked-range chunked)
     nil))
+
+
+(defmethod cl-ds:chunked ((range transparent-to-chunking-mixin) &optional chunk-size-hint)
+  (~> range read-original-range (cl-ds:chunked chunk-size-hint)))
 
 
 (defmethod cl-ds.alg.meta:construct-aggregator
