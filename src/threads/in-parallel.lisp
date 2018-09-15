@@ -38,11 +38,9 @@
                   (cl-ds:traverse
                    (lambda (x &aux (vector (vect 128)))
                      (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
-                     (lparallel.queue:push-queue (list* vector t)
-                                                 queue))
+                     (lparallel.queue:push-queue (list* vector t) queue))
                    chunked-range)
-                  (lparallel.queue:push-queue (list* nil nil)
-                                              queue)))
+                  (lparallel.queue:push-queue (list* nil nil) queue)))
           (for (data . more) = (lparallel.queue:pop-queue queue))
           (while more)
           (map nil function data)
