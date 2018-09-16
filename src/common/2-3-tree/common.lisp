@@ -141,18 +141,13 @@
                    t))
 		      (t
 		       ;; The left child is a 3-node
-		       (let ((l (access-left left))
-			           (m (access-middle left))
-			           (r (access-right left))
-			           (new-node-1 (make '2-node))
-			           (new-node-2 (make '2-node))
-                 (result-new-node (make '2-node)))
-		         (setf (access-left new-node-1) l
-		               (access-right new-node-1) m
-		               (access-left new-node-2) r
-		               (access-right new-node-2) n
-		               (access-left result-new-node) new-node-1
-		               (access-right result-new-node) new-node-2)
+		       (bind ((l (access-left left))
+			            (m (access-middle left))
+			            (r (access-right left))
+			            (new-node-1 (make '2-node :left l :right m))
+			            (new-node-2 (make '2-node :left r :right n))
+                  (result-new-node (make '2-node :left new-node-1
+                                                 :right new-node-2)))
 		         (values result-new-node nil))))))
 
 
@@ -193,13 +188,8 @@
 		       ;; children.
 		       (bind ((l (access-left middle))
 			            (r (access-right middle))
-			            (new-node-1 (make '3-node))
-			            (new-node-2 (make '2-node)))
-		         (setf (access-left new-node-1) l
-		               (access-middle new-node-1) r
-		               (access-right new-node-1) n
-		               (access-left new-node-2) left
-		               (access-right new-node-2) new-node-1)
+			            (new-node-1 (make '3-node :left l :middle r :right r))
+			            (new-node-2 (make '2-node :left left :right new-node-1)))
 		         (values new-node-2 nil)))
 		      (t
 		       ;; The node n represents a subtree that has the
@@ -211,14 +201,9 @@
 		       (bind ((l (access-left middle))
 			            (m (access-middle middle))
 			            (r (access-right middle))
-			            (new-node-1 (make '2-node))
-			            (new-node-2 (make '2-node))
-                  (node (make '3-node
-                              :left (access-left node)
-                              :middle new-node-1
-                              :right new-node-2)))
-		         (setf (access-left new-node-1) l
-		               (access-right new-node-1) m
-		               (access-left new-node-2) r
-		               (access-right new-node-2) n)
+			            (new-node-1 (make '2-node :left l :right m))
+			            (new-node-2 (make '2-node :left r :right n))
+                  (node (make '3-node :left (access-left node)
+                                      :middle new-node-1
+                                      :right new-node-2)))
 		         (values node nil))))))
