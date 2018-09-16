@@ -3,4 +3,5 @@
 
 (defpackage :cl-data-structures.common.2-3-tree
   (:use #:cl
-        #:cl-data-structures.aux-package))
+        #:cl-data-structures.aux-package)
+  (:nicknames #:cl-ds.common.2-3))

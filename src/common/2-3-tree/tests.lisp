@@ -2,7 +2,7 @@
 (defpackage 2-3-tree-tests (:use :cl :prove :cl-data-structures.aux-package))
 (in-package :2-3-tree-tests)
 
-(plan 32)
+(plan 64)
 
 (let ((node cl-ds.meta:null-bucket)
       (i 31))
@@ -25,6 +25,10 @@
                 (is node i)
                 (decf i)))))
     (check node)
-    ))
+    (iterate
+      (for i from 0 below 32)
+      (for (values new-node old-value) = (cl-ds.common.2-3::delete-back-from-tree node))
+      (setf node new-node)
+      (is i old-value))))
 
 (finalize)

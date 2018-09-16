@@ -33,6 +33,12 @@
            :initarg :right
            :accessor access-right)))
 
+(defmethod initialize-instance :after ((object 2-node) &rest all)
+  (when (null (access-right object))
+    (break))
+  (when (null (access-left object))
+    (break)))
+
 
 (defclass tagged-2-node
     (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
@@ -76,6 +82,11 @@
               :right n2))))
 
 
+(defun delete-back-from-tree (tree)
+  (bind (((:values node _ old-value) (delete-back tree)))
+    (values node old-value)))
+
+
 (defmethod insert-front ((node 3-node) new)
   (bind ((left (access-left node))
          ((:values n1 n2) (insert-front left new)))
@@ -94,23 +105,23 @@
 		      (values new-node-1 new-node-2)))))
 
 
-(defgeneric delete-back (tree-or-node))
+(defgeneric delete-back (node))
 
 
 (defmethod delete-back ((node t))
-  (values cl-ds.meta:null-bucket t))
+  (values cl-ds.meta:null-bucket t node))
 
 
 (defmethod delete-back ((node 2-node))
   (bind ((left (access-left node))
          (right (access-right node))
-         ((:values n lower-p) (delete-back right)))
-	  (cond ((null n)
+         ((:values n lower-p old-value) (delete-back right)))
+	  (cond ((cl-ds.meta:null-bucket-p n)
 		       ;; The right child of NODE was a leaf, so it got
 		       ;; deleted.  We need to return the left child of
 		       ;; NODE, but first we need to make sure it is no
 		       ;; longer referenced from NODE.
-           (values (access-left node) t))
+           (values (access-left node) t old-value))
 		      ((not lower-p)
 		       ;; This is the simple case where we got back a
 		       ;; node with the same height as the original right
@@ -121,7 +132,8 @@
 		       (values (make '2-node
                          :left (access-left node)
                          :right n)
-                   nil))
+                   nil
+                   old-value))
 		      ((typep left '2-node)
 		       ;; The node N that resulted from the recursive
 		       ;; call to delete-back of the right child is the root
@@ -132,13 +144,11 @@
 		       ;; height, so we stick them in a new 3-node that
 		       ;; we return.  The tree rooted at that 3-node is
 		       ;; lower than the original tree rooted at NODE.
-           (values (make '3-node
-                         :left (make '2-node
-                                     :right nil
-                                     :left nil)
-                         :right n
-                         :middle (access-right left))
-                   t))
+           (values (make '3-node :left (access-left left)
+                                 :right n
+                                 :middle (access-right left))
+                   t
+                   old-value))
 		      (t
 		       ;; The left child is a 3-node
 		       (bind ((l (access-left left))
@@ -148,36 +158,37 @@
 			            (new-node-2 (make '2-node :left r :right n))
                   (result-new-node (make '2-node :left new-node-1
                                                  :right new-node-2)))
-		         (values result-new-node nil))))))
+		         (values result-new-node nil old-value))))))
 
 
 (defmethod delete-back ((node 3-node))
   (bind ((left (access-left node))
 	       (middle (access-middle node))
 	       (right (access-right node))
-         ((:values n lower-p)
+         ((:values n lower-p old-value)
           (delete-back right)))
-    (cond ((null n)
+    (cond ((cl-ds.meta:null-bucket-p n)
 		       ;; The right child of NODE was a leaf, so it got
 		       ;; deleted.  We now have two children left, so we
 		       ;; replace the original 3-node by a 2-node,
 		       ;; holding the remaining children.
 		       (values (make '2-node
                          :left left
-                         :middle middle)
-                   nil))
+                         :right middle)
+                   nil
+                   old-value))
 		      ((not lower-p)
 		       ;; This is the simple case where we got back a
 		       ;; node with the same height as the original right
-		       ;; child.  It suffices to decrement the size of
-		       ;; the subtree rooted at NODE, replace the
-		       ;; original right child with what we got back, and
-		       ;; return the original node.
+		       ;; child.  It suffices to replace the original right
+           ;; child with what we got back, and return the
+           ;; original node.
 		       (values (make '3-node
                          :right n
                          :left left
                          :middle middle)
-                   nil))
+                   nil
+                   old-value))
 		      ((typep middle '2-node)
 		       ;; The node n represents a subtree that has the
 		       ;; same height as the children of the 2-node in
@@ -188,9 +199,9 @@
 		       ;; children.
 		       (bind ((l (access-left middle))
 			            (r (access-right middle))
-			            (new-node-1 (make '3-node :left l :middle r :right r))
+			            (new-node-1 (make '3-node :left l :middle r :right n))
 			            (new-node-2 (make '2-node :left left :right new-node-1)))
-		         (values new-node-2 nil)))
+		         (values new-node-2 nil old-value)))
 		      (t
 		       ;; The node n represents a subtree that has the
 		       ;; same height as the children of the 3-node in
@@ -206,4 +217,4 @@
                   (node (make '3-node :left (access-left node)
                                       :middle new-node-1
                                       :right new-node-2)))
-		         (values node nil))))))
+		         (values node nil old-value))))))
