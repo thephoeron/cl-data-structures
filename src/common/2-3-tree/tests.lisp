@@ -4,50 +4,27 @@
 
 (plan 32)
 
-(let ((node nil)
+(let ((node cl-ds.meta:null-bucket)
       (i 31))
   (iterate
     (for i from 0 below 32)
     (for new = (lambda () i))
-    (setf node (cl-data-structures.common.2-3-tree::insert-front-handle-nil
-                (cl-data-structures.common.2-3-tree::insert-front
-                 new
-                 node)
+    (setf node (cl-data-structures.common.2-3-tree::insert-front-into-tree
                 node
                 new)))
   (labels ((check (node)
              (etypecase node
                (cl-data-structures.common.2-3-tree::3-node
                 (check (cl-data-structures.common.2-3-tree::access-left node))
-                (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
-                (decf i)
-                (check (cl-data-structures.common.2-3-tree::access-center node))
-                (is (cl-data-structures.common.2-3-tree::access-content-2 node) i)
-                (decf i)
+                (check (cl-data-structures.common.2-3-tree::access-middle node))
                 (check (cl-data-structures.common.2-3-tree::access-right node)))
                (cl-data-structures.common.2-3-tree::2-node
                 (check (cl-data-structures.common.2-3-tree::access-left node))
-                (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
-                (decf i)
                 (check (cl-data-structures.common.2-3-tree::access-right node)))
-               (cl-data-structures.common.2-3-tree::2-content
-                (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
-                (decf i)
-                (is (cl-data-structures.common.2-3-tree::access-content-2 node) i)
-                (decf i))
-               (cl-data-structures.common.2-3-tree::1-content
-                (is (cl-data-structures.common.2-3-tree::access-content-1 node) i)
+               (t
+                (is node i)
                 (decf i)))))
     (check node)
-    (iterate
-      (for j from 31 downto 1)
-      (setf node
-            (cl-data-structures.common.2-3-tree::take-back-handle-nil
-             (cl-data-structures.common.2-3-tree::take-back node)
-             node))
-      (setf i j)
-      (check node)
-      )
     ))
 
 (finalize)

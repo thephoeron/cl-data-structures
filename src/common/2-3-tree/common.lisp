@@ -1,40 +1,37 @@
 (in-package #:cl-data-structures.common.2-3-tree)
 
 
-(defclass 2-3-node ()
+(defclass tree ()
+  ((%root :initform nil
+          :accessor access-root)
+   (%size :initform 0
+          :accessor access-size
+          :reader cl-ds:size)))
+
+
+(defclass node ()
   ())
 
 
-(defclass fundamental-finger-tree
-    (cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ((%root :initarg :root
-          :initform nil
-          :accessor access-root
-          :type finger-tree-node)))
-
-
-(defclass 1-content ()
-  ((%content-1 :initarg :content-1
-               :type content-1
-               :accessor access-content-1)))
-
-
-(defclass 2-content (1-content)
-  ((%content-2 :initarg :content-2
-               :type content-2
-               :accessor access-content-2)))
-
-
-(defclass 2-node (2-3-node 1-content)
-  ((%left :initarg :left
+(defclass 2-node (node)
+  ((%left :initform cl-ds.meta:null-bucket
+          :initarg :left
           :accessor access-left)
-   (%right :initarg :right
-          :accessor access-right)))
+   (%right :initform cl-ds.meta:null-bucket
+           :initarg :right
+           :accessor access-right)))
 
 
-(defclass 3-node (2-node 2-content)
-  ((%center :initarg :center
-            :accessor access-center)))
+(defclass 3-node (2-node)
+  ((%left :initform cl-ds.meta:null-bucket
+          :initarg :left
+          :accessor access-left)
+   (%middle :initform cl-ds.meta:null-bucket
+            :initarg :middle
+            :accessor access-middle)
+   (%right :initform cl-ds.meta:null-bucket
+           :initarg :right
+           :accessor access-right)))
 
 
 (defclass tagged-2-node
@@ -47,152 +44,181 @@
   ())
 
 
-(defclass tagged-1-content
-    (1-content cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ())
-
-
-(defclass tagged-2-content
-    (2-content cl-ds.common.abstract:fundamental-ownership-tagged-object)
-  ())
-
-
-(defgeneric insert-front (new node))
+(defgeneric insert-front (node new))
 
 
 (defgeneric take-back (node))
 
 
-(defmethod insert-front (new (node 1-content))
-  (make '2-content
-        :content-1 (funcall new)
-        :content-2 (access-content-1 node)))
+(defmethod insert-front ((node t) item)
+  (values (funcall item) node))
 
 
-(defmethod take-back ((node 2-content))
-  (values (make '1-content :content-1 (access-content-1 node))
-          node))
+(defmethod insert-front ((node 2-node) new)
+  (bind ((left (access-left node))
+         ((:values n1 n2) (insert-front left new)))
+	  (if (cl-ds.meta:null-bucket-p n2)
+		    (let ((new-node (make '2-node :left n1 :right (access-right node))))
+			    (values new-node cl-ds.meta:null-bucket))
+		    (let ((new-node (make '3-node
+                              :left n1
+                              :middle n2
+                              :right (access-right node))))
+		      (values new-node cl-ds.meta:null-bucket)))))
 
 
-(defmethod take-back ((node 1-content))
-  (values nil node))
-
-
-(defmethod take-back ((node 2-node))
-  (bind ((right (access-right node))
-         ((:values new-node old-node) (take-back right)))
-    (if (null new-node)
-        (values nil old-node)
-        (values (make '2-node :content-1 (access-content-1 node)
-                              :left (access-left node)
-                              :right new-node)
-                old-node))))
-
-
-(defmethod take-back ((node 3-node))
-  (bind ((right (access-right node))
-         ((:values new-node old-node) (take-back right)))
-    (if (null new-node)
-        (let ((center (access-center node)))
-          (if (typep center '2-content)
-              (values (make '3-node
-                            :content-1 (access-content-1 node)
-                            :content-2 (access-content-2 center)
-                            :left (access-left node)
-                            :center (make '1-content
-                                          :content-1 (access-content-1 center))
-                            :right (make '1-content
-                                         :content-1 (access-content-2 node)))
-                      old-node)
-              (values (make '2-node
-                            :left (access-left node)
-                            :content-1 (access-content-1 center)
-                            :right (make '2-content
-                                         :content-1 (access-content-1 node)
-                                         :content-2 (access-content-2 node)))
-                      old-node)))
-        (values (make '3-node :content-1 (access-content-1 node)
-                              :content-2 (access-content-2 node)
-                              :left (access-left node)
-                              :center (access-center node)
-                              :right new-node)
-                old-node))))
-
-
-(defmethod insert-front (new (node (eql nil)))
-  (make '1-content :content-1 (funcall new)))
-
-
-(defmethod insert-front (new (node 2-content))
-  nil)
-
-
-(defun insert-front-handle-nil (new-node old-node new)
-  (if (null new-node)
-      (progn
-        (check-type old-node 2-content)
+(defun insert-front-into-tree (tree new)
+  (bind (((:values n1 n2) (insert-front tree new)))
+    (if (cl-ds.meta:null-bucket-p n2)
+        n1
         (make '2-node
-              :left (make '1-content :content-1 (funcall new))
-              :content-1 (access-content-1 old-node)
-              :right (make '1-content :content-1 (access-content-2 old-node))))
-      new-node))
+              :left n1
+              :right n2))))
 
 
-(defun take-back-handle-nil (new-node old-node)
-  (if (null new-node)
-      (if (typep old-node '2-node)
-          (let ((left (access-left old-node)))
-            (if (typep left '1-content)
-                (make '2-content
-                      :content-1 (access-content-1 old-node)
-                      :content-2 (access-content-1 left))
-                (make '2-node
-                      :content-1 (access-content-2 left)
-                      :left (make '1-content
-                                  :content-1 (access-content-1 left))
-                      :right (make '1-content
-                                   :content-1 (access-content-1 old-node)))))
-          nil)
-      new-node))
+(defmethod insert-front ((node 3-node) new)
+  (bind ((left (access-left node))
+         ((:values n1 n2) (insert-front left new)))
+    (if (cl-ds.meta:null-bucket-p n2)
+		    (let ((new-node (make '3-node
+                              :left n1
+                              :middle (access-middle node)
+                              :right (access-right node))))
+			    (values new-node cl-ds.meta:null-bucket))
+		    (let ((new-node-1 (make '2-node
+                                :left n1
+                                :right n2))
+		          (new-node-2 (make '2-node
+                                :left (access-middle node)
+                                :right (access-right node))))
+		      (values new-node-1 new-node-2)))))
 
 
-(defmethod insert-front (new (node 2-node))
-  (let* ((left (access-left node))
-         (result (insert-front new (access-left node))))
-    (if (null result)
-        (make-instance
-         '3-node
-         :left (make '1-content :content-1 (funcall new))
-         :content-1 (access-content-1 left)
-         :content-2 (access-content-1 node)
-         :center (make '1-content :content-1 (access-content-2 left))
-         :right (access-right node))
-        (make-instance
-         '2-node
-         :left result
-         :content-1 (access-content-1 node)
-         :right (access-right node)))))
+(defgeneric delete-back (tree-or-node))
 
 
-(defmethod insert-front (new (node 3-node))
-  (let* ((left (access-left node))
-         (result (insert-front new (access-left node))))
-    (if (null result)
-        (make-instance
-         '2-node
-         :left (make '2-node
-                     :left (make '1-content :content-1 (funcall new))
-                     :content-1 (access-content-1 left)
-                     :right (make '1-content :content-1 (access-content-2 left)))
-         :content-1 (access-content-1 node)
-         :right (make '2-node
-                      :left (access-center node)
-                      :content-1 (access-content-2 node)
-                      :right (access-right node)))
-        (make-instance
-         '3-node
-         :left result
-         :content-1 (access-content-1 node)
-         :content-2 (access-content-2 node)
-         :center (access-center node)
-         :right (access-right node)))))
+(defmethod delete-back ((node t))
+  (values cl-ds.meta:null-bucket t))
+
+
+(defmethod delete-back ((node 2-node))
+  (bind ((left (access-left node))
+         (right (access-right node))
+         ((:values n lower-p) (delete-back right)))
+	  (cond ((null n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We need to return the left child of
+		       ;; NODE, but first we need to make sure it is no
+		       ;; longer referenced from NODE.
+           (values (access-left node) t))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to decrement the size of
+		       ;; the subtree rooted at NODE, replace the
+		       ;; original right child with what we got back, and
+		       ;; return the original node.
+		       (values (make '2-node
+                         :left (access-left node)
+                         :right n)
+                   nil))
+		      ((typep left '2-node)
+		       ;; The node N that resulted from the recursive
+		       ;; call to delete-back of the right child is the root
+		       ;; of a subtree that is lower than the original
+		       ;; right child of NODE, and the left child of NODE
+		       ;; is a 2-node.  The two children of the left
+		       ;; child of NODE and the node N all have the same
+		       ;; height, so we stick them in a new 3-node that
+		       ;; we return.  The tree rooted at that 3-node is
+		       ;; lower than the original tree rooted at NODE.
+           (values (make '3-node
+                         :left (make '2-node
+                                     :right nil
+                                     :left nil)
+                         :right n
+                         :middle (access-right left))
+                   t))
+		      (t
+		       ;; The left child is a 3-node
+		       (let ((l (access-left left))
+			           (m (access-middle left))
+			           (r (access-right left))
+			           (new-node-1 (make '2-node))
+			           (new-node-2 (make '2-node))
+                 (result-new-node (make '2-node)))
+		         (setf (access-left new-node-1) l
+		               (access-right new-node-1) m
+		               (access-left new-node-2) r
+		               (access-right new-node-2) n
+		               (access-left result-new-node) new-node-1
+		               (access-right result-new-node) new-node-2)
+		         (values result-new-node nil))))))
+
+
+(defmethod delete-back ((node 3-node))
+  (bind ((left (access-left node))
+	       (middle (access-middle node))
+	       (right (access-right node))
+         ((:values n lower-p)
+          (delete-back right)))
+    (cond ((null n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We now have two children left, so we
+		       ;; replace the original 3-node by a 2-node,
+		       ;; holding the remaining children.
+		       (values (make '2-node
+                         :left left
+                         :middle middle)
+                   nil))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to decrement the size of
+		       ;; the subtree rooted at NODE, replace the
+		       ;; original right child with what we got back, and
+		       ;; return the original node.
+		       (values (make '3-node
+                         :right n
+                         :left left
+                         :middle middle)
+                   nil))
+		      ((typep middle '2-node)
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 2-node in
+		       ;; the middle child of the 3-node NODE.  We put n
+		       ;; and the children of the 2-node in a new 3-node,
+		       ;; and we replace NODE by a 2-node with the old
+		       ;; left child of NODE and the new 3-node as
+		       ;; children.
+		       (bind ((l (access-left middle))
+			            (r (access-right middle))
+			            (new-node-1 (make '3-node))
+			            (new-node-2 (make '2-node)))
+		         (setf (access-left new-node-1) l
+		               (access-middle new-node-1) r
+		               (access-right new-node-1) n
+		               (access-left new-node-2) left
+		               (access-right new-node-2) new-node-1)
+		         (values new-node-2 nil)))
+		      (t
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 3-node in
+		       ;; the middle child of the 3-node NODE.  We
+		       ;; redistribute the return value and the three
+		       ;; children of the middle sibling (4 objects in
+		       ;; total) as the children of two 2-nodes.
+		       (bind ((l (access-left middle))
+			            (m (access-middle middle))
+			            (r (access-right middle))
+			            (new-node-1 (make '2-node))
+			            (new-node-2 (make '2-node))
+                  (node (make '3-node
+                              :left (access-left node)
+                              :middle new-node-1
+                              :right new-node-2)))
+		         (setf (access-left new-node-1) l
+		               (access-right new-node-1) m
+		               (access-left new-node-2) r
+		               (access-right new-node-2) n)
+		         (values node nil))))))
