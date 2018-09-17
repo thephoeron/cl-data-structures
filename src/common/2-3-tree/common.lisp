@@ -53,10 +53,17 @@
 (defgeneric insert-front (node new))
 
 
+(defgeneric insert-front! (node new))
+
+
 (defgeneric take-back (node))
 
 
 (defmethod insert-front ((node t) item)
+  (values (funcall item) node))
+
+
+(defmethod insert-front! ((node t) item)
   (values (funcall item) node))
 
 
@@ -73,13 +80,25 @@
 		      (values new-node cl-ds.meta:null-bucket)))))
 
 
+(defmethod insert-front! ((node 2-node) new)
+  (bind ((left (access-left node))
+         ((:values n1 n2) (insert-front! left new)))
+	  (if (cl-ds.meta:null-bucket-p n2)
+        (progn
+          (unless (eq n1 left)
+            (setf (access-left node) n1))
+		      (values node cl-ds.meta:null-bucket))
+        (progn
+          (setf (access-left node) n1
+                (access-right node) n2)
+		      (values node cl-ds.meta:null-bucket)))))
+
+
 (defun insert-front-into-tree (tree new)
   (bind (((:values n1 n2) (insert-front tree new)))
     (if (cl-ds.meta:null-bucket-p n2)
         n1
-        (make '2-node
-              :left n1
-              :right n2))))
+        (make '2-node :left n1 :right n2))))
 
 
 (defun delete-back-from-tree (tree)
@@ -96,6 +115,23 @@
                               :middle (access-middle node)
                               :right (access-right node))))
 			    (values new-node cl-ds.meta:null-bucket))
+		    (let ((new-node-1 (make '2-node
+                                :left n1
+                                :right n2))
+		          (new-node-2 (make '2-node
+                                :left (access-middle node)
+                                :right (access-right node))))
+		      (values new-node-1 new-node-2)))))
+
+
+(defmethod insert-front! ((node 3-node) new)
+  (bind ((left (access-left node))
+         ((:values n1 n2) (insert-front! left new)))
+    (if (cl-ds.meta:null-bucket-p n2)
+        (progn
+          (unless (eq left n1)
+            (setf (access-left node) n1))
+		      (values node cl-ds.meta:null-bucket))
 		    (let ((new-node-1 (make '2-node
                                 :left n1
                                 :right n2))
