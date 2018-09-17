@@ -33,12 +33,6 @@
            :initarg :right
            :accessor access-right)))
 
-(defmethod initialize-instance :after ((object 2-node) &rest all)
-  (when (null (access-right object))
-    (break))
-  (when (null (access-left object))
-    (break)))
-
 
 (defclass tagged-2-node
     (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
