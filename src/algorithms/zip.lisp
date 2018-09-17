@@ -43,9 +43,9 @@
 
 
 (defun zip (function &rest ranges)
-  (let* ((ranges (mapcar (lambda (x) (if (typep x 'cl-ds:fundamental-forward-range)
-                                    x
-                                    (cl-ds:whole-range x)))
+  (let* ((ranges (mapcar (cl-ds.utils:if-else
+                          (rcurry #'typep 'cl-ds:fundamental-forward-range)
+                          #'identity #'cl-ds:whole-range)
                          ranges))
          (type (common-fundamental-range-class ranges)))
     (assert type)
