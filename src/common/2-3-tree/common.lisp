@@ -235,6 +235,119 @@
   (values cl-ds.meta:null-bucket t node))
 
 
+(defmethod transactional-delete-back! ((node 2-node) tag)
+  (bind ((left (access-left node))
+         (right (access-right node))
+         ((:values n lower-p old-value) (transactional-delete-back! right tag)))
+	  (cond ((cl-ds.meta:null-bucket-p n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We need to return the left child of
+		       ;; NODE, but first we need to make sure it is no
+		       ;; longer referenced from NODE.
+           (values (access-left node) t old-value))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to decrement the size of
+		       ;; the subtree rooted at NODE, replace the
+		       ;; original right child with what we got back, and
+		       ;; return the original node.
+           (cond ((eq right n) (values node nil old-value))
+                 ((cl-ds.common.abstract:acquire-ownership node tag)
+                  (progn
+                    (setf (access-right node) n)
+		                (values node nil old-value)))
+                 (t (values (make 'tagged-2-node
+                                  :left (access-left node)
+                                  :ownership-tag tag
+                                  :right n)
+                            nil
+                            old-value))))
+		      ((typep left '2-node)
+		       ;; The node N that resulted from the recursive
+		       ;; call to delete-back of the right child is the root
+		       ;; of a subtree that is lower than the original
+		       ;; right child of NODE, and the left child of NODE
+		       ;; is a 2-node.  The two children of the left
+		       ;; child of NODE and the node N all have the same
+		       ;; height, so we stick them in a new 3-node that
+		       ;; we return.  The tree rooted at that 3-node is
+		       ;; lower than the original tree rooted at NODE.
+           (values (make 'tagged-3-node :left (access-left left)
+                                        :right n
+                                        :ownership-tag tag
+                                        :middle (access-right left))
+                   t
+                   old-value))
+		      (t
+		       ;; The left child is a 3-node
+		       (bind ((l (access-left left))
+			            (m (access-middle left))
+			            (r (access-right left))
+			            (new-node-1 (make '2-node :left l :right m))
+			            (new-node-2 (make '2-node :left r :right n)))
+             (if (cl-ds.common.abstract:acquire-ownership node tag)
+                 (progn
+                   (setf (access-left node) new-node-1
+                         (access-right node) new-node-2)
+		               (values node nil old-value))
+                 (values (make 'tagged-2-node
+                               :left (access-left node)
+                               :ownership-tag tag
+                               :right n)
+                         nil
+                         old-value)))))))
+
+
+(defmethod delete-back ((node 2-node))
+  (bind ((left (access-left node))
+         (right (access-right node))
+         ((:values n lower-p old-value) (delete-back right)))
+	  (cond ((cl-ds.meta:null-bucket-p n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We need to return the left child of
+		       ;; NODE, but first we need to make sure it is no
+		       ;; longer referenced from NODE.
+           (values (access-left node) t old-value))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to decrement the size of
+		       ;; the subtree rooted at NODE, replace the
+		       ;; original right child with what we got back, and
+		       ;; return the original node.
+		       (values (make '2-node
+                         :left (access-left node)
+                         :right n)
+                   nil
+                   old-value))
+		      ((typep left '2-node)
+		       ;; The node N that resulted from the recursive
+		       ;; call to delete-back of the right child is the root
+		       ;; of a subtree that is lower than the original
+		       ;; right child of NODE, and the left child of NODE
+		       ;; is a 2-node.  The two children of the left
+		       ;; child of NODE and the node N all have the same
+		       ;; height, so we stick them in a new 3-node that
+		       ;; we return.  The tree rooted at that 3-node is
+		       ;; lower than the original tree rooted at NODE.
+           (values (make '3-node :left (access-left left)
+                                 :right n
+                                 :middle (access-right left))
+                   t
+                   old-value))
+		      (t
+		       ;; The left child is a 3-node
+		       (bind ((l (access-left left))
+			            (m (access-middle left))
+			            (r (access-right left))
+			            (new-node-1 (make '2-node :left l :right m))
+			            (new-node-2 (make '2-node :left r :right n))
+                  (result-new-node (make '2-node :left new-node-1
+                                                 :right new-node-2)))
+		         (values result-new-node nil old-value))))))
+
+
 (defmethod delete-back! ((node 2-node))
   (bind ((left (access-left node))
          (right (access-right node))
@@ -279,6 +392,100 @@
              (setf (access-left node) new-node-1
                    (access-right node) new-node-2)
 		         (values node nil old-value))))))
+
+
+(defmethod transactional-delete-back! ((node 3-node) tag)
+  (bind ((left (access-left node))
+	       (middle (access-middle node))
+	       (right (access-right node))
+         ((:values n lower-p old-value)
+          (transactional-delete-back! right tag)))
+    (cond ((cl-ds.meta:null-bucket-p n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We now have two children left, so we
+		       ;; replace the original 3-node by a 2-node,
+		       ;; holding the remaining children.
+		       (values (make 'tagged-2-node
+                         :ownership-tag tag
+                         :left left
+                         :right middle)
+                   nil
+                   old-value))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to replace the original right
+           ;; child with what we got back, and return the
+           ;; original node.
+           (cond ((eq n right) (values node nil old-value))
+                 ((cl-ds.common.abstract:acquire-ownership node tag)
+                  (setf (access-right node) n)
+                  (values node nil old-value))
+                 (t (values (make '3-node
+                                  :right n
+                                  :left left
+                                  :ownership-tag tag
+                                  :middle middle)
+                            nil
+                            old-value))))
+		      ((typep middle '2-node)
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 2-node in
+		       ;; the middle child of the 3-node NODE.  We put n
+		       ;; and the children of the 2-node in a new 3-node,
+		       ;; and we replace NODE by a 2-node with the old
+		       ;; left child of NODE and the new 3-node as
+		       ;; children.
+           (if (cl-ds.common.abstract:acquire-ownership node tag)
+		           (bind ((l (access-left middle))
+			                (r (access-right middle))
+			                (new-node (make '2-node :ownership-tag tag
+                                              :left left
+                                              :right node)))
+                 (psetf (access-middle node) r
+                        (access-left node) l
+                        (access-right node) n)
+		             (values new-node nil old-value))
+               (bind ((l (access-left middle))
+			                (r (access-right middle))
+			                (new-node-1 (make '3-node :ownership-tag tag
+                                                :left l
+                                                :middle r
+                                                :right n))
+			                (new-node-2 (make '2-node :ownership-tag tag
+                                                :left left
+                                                :right new-node-1)))
+		             (values new-node-2 nil old-value))))
+		      (t
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 3-node in
+		       ;; the middle child of the 3-node NODE.  We
+		       ;; redistribute the return value and the three
+		       ;; children of the middle sibling (4 objects in
+		       ;; total) as the children of two 2-nodes.
+           (if (cl-ds.common.abstract:acquire-ownership node tag)
+		           (bind ((l (access-left middle))
+			                (m (access-middle middle))
+			                (r (access-right middle))
+			                (new-node-1 (make '2-node :left l :right m
+                                                :ownership-tag tag))
+			                (new-node-2 (make '2-node :left r :right n
+                                                :ownership-tag tag)))
+                 (setf (access-middle node) new-node-1
+                       (access-right node) new-node-2)
+		             (values node nil old-value))
+               (bind ((l (access-left middle))
+			                (m (access-middle middle))
+			                (r (access-right middle))
+			                (new-node-1 (make '2-node :left l :right m
+                                                :ownership-tag tag))
+			                (new-node-2 (make '2-node :left r :right n
+                                                :ownership-tag tag))
+                      (node (make '3-node :left (access-left node)
+                                          :middle new-node-1
+                                          :ownership-tag tag
+                                          :right new-node-2)))
+		             (values node nil old-value)))))))
 
 
 (defmethod delete-back! ((node 3-node))
