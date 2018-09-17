@@ -113,7 +113,8 @@
               t))))
 
 
-(defmethod cl-ds:at ((range random-access-zipped-ranges) location &rest more-locations)
+(defmethod cl-ds:at ((range random-access-zipped-ranges) location
+                     &rest more-locations)
   (cl-ds:assert-one-dimension more-locations)
   (block nil
     (bind (((:slots %function %ranges) range))
