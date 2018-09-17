@@ -30,19 +30,16 @@
 
 (defun make-in-parallel-read-thread (chunked-range limit)
   (bind ((queue (lparallel.queue:make-queue :fixed-capacity limit))
+         ((:flet push-queue (element))
+          (lparallel.queue:push-queue element queue))
+         ((:flet to-vector (x))
+          (lret ((vector (make-array 128 :adjustable t :fill-pointer 0)))
+            (cl-ds:traverse (rcurry #'vector-push-extend vector) x)))
          ((:flet impl ())
           (cl-ds:traverse
            (lambda (x)
              (handler-case
-                 (lparallel.queue:push-queue
-                  (lparallel:future
-                    (let ((vector (make-array 128
-                                              :adjustable t
-                                              :fill-pointer 0)))
-                      (cl-ds:traverse (rcurry #'vector-push-extend vector)
-                                      x)
-                      (list* vector t)))
-                  queue)
+                 (nest push-queue lparallel:future (list* (to-vector x) t))
                (error (e)
                  (lparallel.queue:push-queue (list* e :error) queue))))
            chunked-range)
