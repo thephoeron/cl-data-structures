@@ -144,14 +144,21 @@
 (defgeneric delete-back (node))
 
 
+(defgeneric delete-back! (node))
+
+
 (defmethod delete-back ((node t))
   (values cl-ds.meta:null-bucket t node))
 
 
-(defmethod delete-back ((node 2-node))
+(defmethod delete-back! ((node t))
+  (values cl-ds.meta:null-bucket t node))
+
+
+(defmethod delete-back! ((node 2-node))
   (bind ((left (access-left node))
          (right (access-right node))
-         ((:values n lower-p old-value) (delete-back right)))
+         ((:values n lower-p old-value) (delete-back! right)))
 	  (cond ((cl-ds.meta:null-bucket-p n)
 		       ;; The right child of NODE was a leaf, so it got
 		       ;; deleted.  We need to return the left child of
@@ -165,11 +172,8 @@
 		       ;; the subtree rooted at NODE, replace the
 		       ;; original right child with what we got back, and
 		       ;; return the original node.
-		       (values (make '2-node
-                         :left (access-left node)
-                         :right n)
-                   nil
-                   old-value))
+           (setf (access-right node) n)
+		       (values node nil old-value))
 		      ((typep left '2-node)
 		       ;; The node N that resulted from the recursive
 		       ;; call to delete-back of the right child is the root
@@ -191,10 +195,66 @@
 			            (m (access-middle left))
 			            (r (access-right left))
 			            (new-node-1 (make '2-node :left l :right m))
-			            (new-node-2 (make '2-node :left r :right n))
-                  (result-new-node (make '2-node :left new-node-1
-                                                 :right new-node-2)))
-		         (values result-new-node nil old-value))))))
+			            (new-node-2 (make '2-node :left r :right n)))
+             (setf (access-left node) new-node-1
+                   (access-right node) new-node-2)
+		         (values node nil old-value))))))
+
+
+(defmethod delete-back! ((node 3-node))
+  (bind ((left (access-left node))
+	       (middle (access-middle node))
+	       (right (access-right node))
+         ((:values n lower-p old-value)
+          (delete-back! right)))
+    (cond ((cl-ds.meta:null-bucket-p n)
+		       ;; The right child of NODE was a leaf, so it got
+		       ;; deleted.  We now have two children left, so we
+		       ;; replace the original 3-node by a 2-node,
+		       ;; holding the remaining children.
+		       (values (make '2-node
+                         :left left
+                         :right middle)
+                   nil
+                   old-value))
+		      ((not lower-p)
+		       ;; This is the simple case where we got back a
+		       ;; node with the same height as the original right
+		       ;; child.  It suffices to replace the original right
+           ;; child with what we got back, and return the
+           ;; original node.
+           (setf (access-right node) n)
+		       (values node nil old-value))
+		      ((typep middle '2-node)
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 2-node in
+		       ;; the middle child of the 3-node NODE.  We put n
+		       ;; and the children of the 2-node in a new 3-node,
+		       ;; and we replace NODE by a 2-node with the old
+		       ;; left child of NODE and the new 3-node as
+		       ;; children.
+		       (bind ((l (access-left middle))
+			            (r (access-right middle))
+			            (new-node (make '2-node :left left :right node)))
+             (psetf (access-middle node) r
+                    (access-left node) l
+                    (access-right node) n)
+		         (values new-node nil old-value)))
+		      (t
+		       ;; The node n represents a subtree that has the
+		       ;; same height as the children of the 3-node in
+		       ;; the middle child of the 3-node NODE.  We
+		       ;; redistribute the return value and the three
+		       ;; children of the middle sibling (4 objects in
+		       ;; total) as the children of two 2-nodes.
+		       (bind ((l (access-left middle))
+			            (m (access-middle middle))
+			            (r (access-right middle))
+			            (new-node-1 (make '2-node :left l :right m))
+			            (new-node-2 (make '2-node :left r :right n)))
+             (setf (access-middle node) new-node-1
+                   (access-right node) new-node-2)
+		         (values node nil old-value))))))
 
 
 (defmethod delete-back ((node 3-node))
