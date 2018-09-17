@@ -30,13 +30,16 @@
   (bind ((og-range (cl-ds.alg::read-original-range range))
          (chunked-range (cl-ds:chunked og-range)))
     (if (null chunked-range)
-        (funcall traverse/accross og-range function)
+        (progn
+          (funcall traverse/accross og-range function))
         (iterate
           (with queue = (lparallel.queue:make-queue))
           (with pushing =
                 (lparallel:future
                   (cl-ds:traverse
-                   (lambda (x &aux (vector (vect 128)))
+                   (lambda (x &aux (vector (make-array 128
+                                                  :adjustable t
+                                                  :fill-pointer 0)))
                      (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
                      (lparallel.queue:push-queue (list* vector t) queue))
                    chunked-range)

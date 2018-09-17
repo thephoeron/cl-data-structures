@@ -58,7 +58,7 @@
 
 (defmethod cl-ds:consume-front ((range chunked-proxy-range))
   (if-let ((chunk (~> range read-chunked-range cl-ds:consume-front)))
-    (values (wrap-chunk range chunk) t)
+    (values (wrap-chunk (read-original-range range) chunk) t)
     (values nil nil)))
 
 
