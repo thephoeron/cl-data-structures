@@ -305,6 +305,7 @@ Range releated functions.
           (iterate
             (for i from 1 below chunk-size)
             (for (values elt m) = (consume-front og-range))
+            (while m)
             (vector-push-extend elt result))
           (values (whole-range result)
                   t))
