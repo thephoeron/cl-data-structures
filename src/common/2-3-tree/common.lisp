@@ -220,11 +220,18 @@
 (defgeneric delete-back! (node))
 
 
+(defgeneric transactional-delete-back! (node tag))
+
+
 (defmethod delete-back ((node t))
   (values cl-ds.meta:null-bucket t node))
 
 
 (defmethod delete-back! ((node t))
+  (values cl-ds.meta:null-bucket t node))
+
+
+(defmethod transactional-delete-back! ((node t) tag)
   (values cl-ds.meta:null-bucket t node))
 
 
