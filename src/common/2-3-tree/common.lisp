@@ -130,6 +130,24 @@
         (make '2-node :left n1 :right n2))))
 
 
+(defun insert-front-into-tree! (tree new)
+  (bind (((:values n1 n2) (insert-front! tree new)))
+    (if (cl-ds.meta:null-bucket-p n2)
+        n1
+        (make '2-node :left n1 :right n2))))
+
+
+(defun transactional-insert-front-into-tree! (tree new)
+  (bind (((:values n1 n2) (transactional-insert-front!
+                           tree new
+                           #1=(cl-ds.common.abstract:read-ownership-tag tree))))
+    (if (cl-ds.meta:null-bucket-p n2)
+        n1
+        (make '2-node :left n1
+                      :right n2
+                      :tag #1#))))
+
+
 (defun delete-back-from-tree (tree)
   (bind (((:values node _ old-value) (delete-back tree)))
     (values node old-value)))
