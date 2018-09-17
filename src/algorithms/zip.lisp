@@ -34,11 +34,13 @@
   (reinitialize-instance range))
 
 
-(defmethod reinitialize-instance :after ((range forward-zipped-ranges) &key &allow-other-keys)
+(defmethod reinitialize-instance :after ((range forward-zipped-ranges)
+                                         &key &allow-other-keys)
   (init-zipped-ranges range))
 
 
-(defmethod initialize-instance :after ((range forward-zipped-ranges) &key &allow-other-keys)
+(defmethod initialize-instance :after ((range forward-zipped-ranges)
+                                       &key &allow-other-keys)
   (init-zipped-ranges range))
 
 
