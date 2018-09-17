@@ -45,7 +45,7 @@
                (error (e) (push-queue (list* e :error)))))
            chunked-range)
           (push-queue (list* nil nil)))
-         (thread (bt:make-thread #'impl)))
+         (thread (bt:make-thread #'impl :name "in-parallel dispatching thread")))
     (list* thread queue)))
 
 
