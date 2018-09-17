@@ -3,7 +3,8 @@
 
 (defclass in-parallel-range (cl-ds.alg:transparent-to-chunking-mixin
                              cl-ds.alg:proxy-range)
-  ())
+  ((%limit :initarg :limit
+           :reader read-limit)))
 
 
 (defclass forward-in-parallel-range (in-parallel-range
@@ -23,31 +24,39 @@
 
 (defmethod cl-ds:clone ((range in-parallel-range))
   (make (type-of range)
+        :limit (read-limit range)
         :original-range (cl-ds.alg:read-original-range range)))
 
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
   (bind ((og-range (cl-ds.alg::read-original-range range))
-         (chunked-range (cl-ds:chunked og-range)))
+         (chunked-range (cl-ds:chunked og-range))
+         (pushing nil))
     (if (null chunked-range)
         (progn
           (funcall traverse/accross og-range function))
-        (iterate
-          (with queue = (lparallel.queue:make-queue))
-          (with pushing =
-                (lparallel:future
-                  (cl-ds:traverse
-                   (lambda (x &aux (vector (make-array 128
-                                                  :adjustable t
-                                                  :fill-pointer 0)))
-                     (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
-                     (lparallel.queue:push-queue (list* vector t) queue))
-                   chunked-range)
-                  (lparallel.queue:push-queue (list* nil nil) queue)))
-          (for (data . more) = (lparallel.queue:pop-queue queue))
-          (while more)
-          (map nil function data)
-          (finally (lparallel:force pushing))))
+        (unwind-protect
+             (iterate
+               (with queue = (lparallel.queue:make-queue
+                              :fixed-capacity (read-limit range)))
+               (with p =
+                     (setf pushing
+                           (bt:make-thread
+                            (lambda ()
+                              (cl-ds:traverse
+                               (lambda (x &aux (vector (make-array 128
+                                                              :adjustable t
+                                                              :fill-pointer 0)))
+                                 (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
+                                 (lparallel.queue:push-queue (list* vector t) queue))
+                               chunked-range)
+                              (lparallel.queue:push-queue (list* nil nil) queue)))))
+               (for (data . more) = (lparallel.queue:pop-queue queue))
+               (while more)
+               (map nil function data)
+               (finally (bt:join-thread p)))
+          (unless (null pushing)
+            (bt:destroy-thread pushing))))
     range))
 
 
@@ -64,17 +73,17 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric in-parallel (range)
+(defgeneric in-parallel (range &key limit)
   (:generic-function-class in-parallel-function)
-  (:method (range)
-    (cl-ds.alg.meta:apply-range-function range #'in-parallel)))
+  (:method (range &key (limit 512))
+    (cl-ds.alg.meta:apply-range-function range #'in-parallel :limit 512)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn in-parallel-function)
-                                       &rest all &key)
+                                       &rest all &key limit)
   (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'forward-in-parallel-range))
+  (cl-ds.alg:make-proxy range 'forward-in-parallel-range :limit limit))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
