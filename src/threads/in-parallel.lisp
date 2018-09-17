@@ -28,6 +28,29 @@
         :original-range (cl-ds.alg:read-original-range range)))
 
 
+(defun make-in-parallel-read-thread (chunked-range limit)
+  (bind ((queue (lparallel.queue:make-queue :fixed-capacity limit))
+         ((:flet impl ())
+          (cl-ds:traverse
+           (lambda (x)
+             (handler-case
+                 (lparallel.queue:push-queue
+                  (lparallel:future
+                    (let ((vector (make-array 128
+                                              :adjustable t
+                                              :fill-pointer 0)))
+                      (cl-ds:traverse (rcurry #'vector-push-extend vector)
+                                      x)
+                      (list* vector t)))
+                  queue)
+               (error (e)
+                 (lparallel.queue:push-queue (list* e :error) queue))))
+           chunked-range)
+          (lparallel.queue:push-queue (list* nil nil) queue))
+         (thread (bt:make-thread #'impl)))
+    (list* thread queue)))
+
+
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
   (bind ((og-range (cl-ds.alg::read-original-range range))
          (chunked-range (cl-ds:chunked og-range))
@@ -36,27 +59,15 @@
         (funcall traverse/accross og-range function)
         (unwind-protect
              (iterate
-               (with queue = (lparallel.queue:make-queue
-                              :fixed-capacity (read-limit range)))
-               (with p =
-                     (setf pushing
-                           (bt:make-thread
-                            (lambda ()
-                              (cl-ds:traverse
-                               (lambda (x &aux (vector (make-array 128
-                                                              :adjustable t
-                                                              :fill-pointer 0)))
-                                 (handler-case
-                                     (progn
-                                       (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
-                                       (lparallel.queue:push-queue (list* vector t) queue))
-                                   (error (e) (lparallel.queue:push-queue (list* e :error) queue))))
-                               chunked-range)
-                              (lparallel.queue:push-queue (list* nil nil) queue)))))
-               (for (data . more) = (lparallel.queue:pop-queue queue))
+               (with (thread . queue) =
+                     (make-in-parallel-read-thread chunked-range
+                                                   (read-limit range)))
+               (with p = (setf pushing thread))
+               (for future = (lparallel.queue:pop-queue queue))
+               (for (data . more) = (lparallel:force future))
                (while more)
                (if (eq :error more)
-                   (signal data)
+                   (error data)
                    (map nil function data))
                (finally (bt:join-thread p)))
           (unless (null pushing)
