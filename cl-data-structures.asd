@@ -97,6 +97,10 @@
                              (:module "abstract"
                               :components ((:file "package")
                                            (:file "common")))
+                             (:module "2-3-tree"
+                              :components ((:file "package")
+                                           (:file "common")
+                                           (:test-file "tests.lisp")))
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))
