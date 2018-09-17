@@ -2,6 +2,7 @@
 
 
 (defclass expression (c2mop:funcallable-standard-object
+                      chunking-mixin
                       fundamental-forward-range)
   ((%construct-function :initarg :construct-function
                         :type function

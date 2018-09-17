@@ -33,8 +33,7 @@
          (chunked-range (cl-ds:chunked og-range))
          (pushing nil))
     (if (null chunked-range)
-        (progn
-          (funcall traverse/accross og-range function))
+        (funcall traverse/accross og-range function)
         (unwind-protect
              (iterate
                (with queue = (lparallel.queue:make-queue
@@ -47,13 +46,18 @@
                                (lambda (x &aux (vector (make-array 128
                                                               :adjustable t
                                                               :fill-pointer 0)))
-                                 (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
-                                 (lparallel.queue:push-queue (list* vector t) queue))
+                                 (handler-case
+                                     (progn
+                                       (cl-ds:traverse (rcurry #'vector-push-extend vector) x)
+                                       (lparallel.queue:push-queue (list* vector t) queue))
+                                   (error (e) (lparallel.queue:push-queue (list* e :error) queue))))
                                chunked-range)
                               (lparallel.queue:push-queue (list* nil nil) queue)))))
                (for (data . more) = (lparallel.queue:pop-queue queue))
                (while more)
-               (map nil function data)
+               (if (eq :error more)
+                   (signal data)
+                   (map nil function data))
                (finally (bt:join-thread p)))
           (unless (null pushing)
             (bt:destroy-thread pushing))))
