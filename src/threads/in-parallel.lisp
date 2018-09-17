@@ -38,13 +38,13 @@
          ((:flet impl ())
           (cl-ds:traverse
            (lambda (x)
-             (handler-case (~> (list* (to-vector x) t)
+             (handler-case (~> (to-vector x)
+                               (list* t)
                                lparallel:future
                                push-queue)
-               (error (e)
-                 (lparallel.queue:push-queue (list* e :error) queue))))
+               (error (e) (push-queue (list* e :error)))))
            chunked-range)
-          (lparallel.queue:push-queue (list* nil nil) queue))
+          (push-queue (list* nil nil)))
          (thread (bt:make-thread #'impl)))
     (list* thread queue)))
 
