@@ -70,6 +70,48 @@
         :content sequence))
 
 
+(defclass chunked-sequence-window (sequence-window)
+  ((%chunk-size-hint :initarg :chunk-size-hint
+                     :reader read-chunk-size-hint)))
+
+
+(defmethod cl-ds:consume-front ((range chunked-sequence-window))
+  (bind (((:slots %from %to %content %current-index
+                  %initial-to %chunk-size-hint)
+          range))
+    (if (< %from %to)
+        (let ((to (min %to (+ %from %chunk-size-hint))))
+          (setf %to to)
+          (make 'sequence-window
+                :from %from
+                :to to
+                :content %content))
+        (values nil nil)))))
+
+
+(defmethod cl-ds:peek-front ((range chunked-sequence-window))
+  (bind (((:slots %from %to %content %current-index
+                  %initial-to %chunk-size-hint)
+          range))
+    (if (< %from %to)
+        (let ((to (min %to (+ %from %chunk-size-hint))))
+          (make 'sequence-window
+                :from %from
+                :to to
+                :content %content))
+        (values nil nil)))))
+
+
+(defmethod cl-ds:chunked ((sequence sequence-window) &optional chunk-size-hint)
+  (make 'chunked-sequence-window
+        :from (read-from sequence)
+        :to (read-to sequence)
+        :content (read-content sequence)
+        :current-index (access-current-index sequence)
+        :chunk-size-hint (or chunk-size-hint 128)
+        :initial-to (read-to sequence)))
+
+
 (defmethod sequence-window :before ((sequence cl:sequence)
                                     from to)
   (unless (< from to)
@@ -90,7 +132,7 @@
                             from to)
   (make (type-of sequence)
         :from (+ (access-current-index sequence) from)
-        :to (+ (read-from sequence) to)
+        :to (+ (access-current-index sequence) from to)
         :content (read-content sequence)))
 
 
@@ -175,6 +217,16 @@
   (make (type-of container)
         :from (read-from container)
         :to (read-to container)
+        :content (read-content container)
+        :current-index (access-current-index container)
+        :initial-to (access-initial-to container)))
+
+
+(defmethod cl-ds:clone ((container chunked-sequence-window))
+  (make (type-of container)
+        :from (read-from container)
+        :to (read-to container)
+        :chunk-size-hint (read-chunk-size-hint container)
         :content (read-content container)
         :current-index (access-current-index container)
         :initial-to (access-initial-to container)))

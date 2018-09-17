@@ -432,6 +432,101 @@
                :accessor access-container)))
 
 
+(defclass chunked-rrb-range (cl-ds:fundamental-forward-range)
+  ((%vectors-in-chunk :initarg :vectors-in-chunk
+                      :reader read-vectors-in-chunk)
+   (%rrb-range :initarg :rrb-range
+               :reader read-rrb-range)))
+
+
+(defmethod cl-ds:clone ((range chunked-rrb-range))
+  (make 'chunked-rrb-range
+        :vectors-in-chunk (read-vectors-in-chunk range )
+        :rrb-range (~> range read-rrb-range cl-ds:clone)))
+
+
+(defmethod cl-ds:chunked ((range rrb-range) &optional chunk-size-hint)
+  (make 'chunked-rrb-range
+        :rrb-range (cl-ds:clone range)
+        :vectors-in-chunk (if chunk-size-hint
+                              (max 1 (truncate chunk-size-hint
+                                               +maximum-children-count+))
+                              1)))
+
+
+(defmethod cl-ds:consume-front ((range chunked-rrb-range))
+  (bind (((:slots %start %last-size %lower-bound %upper-bound %container
+                  %initial-lower-bound %initial-upper-bound %content)
+          (read-rrb-range range))
+         ((:slots %vectors-in-chunk) range))
+    (if (or (eql %lower-bound %upper-bound) (null %content))
+        (values nil nil)
+        (let* ((content %content)
+               (start %start)
+               (count 0)
+               (lower-bound %lower-bound)
+               (end +maximum-children-count+)
+               (result-content (make-instance 'flexichain:standard-flexichain)))
+          (incf count (- +maximum-children-count+ start))
+          (incf %lower-bound count)
+          (iterate
+            (repeat %vectors-in-chunk)
+            (flexichain:push-end result-content (flexichain:pop-start content))
+            (unless (first-iteration-p)
+              (incf %lower-bound +maximum-children-count+)
+              (incf count +maximum-children-count+))
+            (until (zerop (flexichain:nb-elements content))))
+          (when (zerop (flexichain:nb-elements content))
+            (setf %content nil
+                  end %last-size))
+          (setf %start 0)
+          (values (make 'rrb-range
+                        :start start
+                        :last-size end
+                        :content result-content
+                        :initial-lower-bound lower-bound
+                        :lower-bound lower-bound
+                        :upper-bound (+ lower-bound count)
+                        :initial-upper-bound (+ lower-bound count)
+                        :container %container)
+                  t)))))
+
+
+(defmethod cl-ds:peek-front ((range chunked-rrb-range))
+  (bind (((:slots %start %last-size %lower-bound %upper-bound %container
+                  %initial-lower-bound %initial-upper-bound %content)
+          (read-rrb-range range))
+         ((:slots %vectors-in-chunk) range))
+    (if (or (eql %lower-bound %upper-bound) (null %content))
+        (values nil nil)
+        (let* ((content %content)
+               (start %start)
+               (count 0)
+               (lower-bound %lower-bound)
+               (end +maximum-children-count+)
+               (result-content (make-instance 'flexichain:standard-flexichain)))
+          (incf count (- +maximum-children-count+ start))
+          (incf %lower-bound count)
+          (iterate
+            (repeat %vectors-in-chunk)
+            (for i from 0 below (flexichain:nb-elements content))
+            (flexichain:push-end result-content (flexichain:element* content i))
+            (unless (first-iteration-p)
+              (incf count +maximum-children-count+)))
+          (when (zerop (flexichain:nb-elements content))
+            (setf end %last-size))
+          (values (make 'rrb-range
+                        :start start
+                        :last-size end
+                        :content result-content
+                        :initial-lower-bound lower-bound
+                        :lower-bound lower-bound
+                        :upper-bound (+ lower-bound count)
+                        :initial-upper-bound (+ lower-bound count)
+                        :container %container)
+                  t)))))
+
+
 (defclass mutable-rrb-range (rrb-range)
   ())
 

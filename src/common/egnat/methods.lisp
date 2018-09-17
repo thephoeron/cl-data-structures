@@ -131,10 +131,11 @@
 
 
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
-                                             (container mutable-egnat-container)
+                                             (structure mutable-egnat-container)
+                                             container
                                              location
                                              &rest all)
-  (egnat-grow! container operation location all))
+  (egnat-grow! structure container operation location all))
 
 
 (defmethod cl-ds:traverse (function (container fundamental-egnat-container))

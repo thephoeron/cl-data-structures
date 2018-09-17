@@ -5,4 +5,5 @@
   (:use #:cl-data-structures.aux-package #:common-lisp)
   (:nicknames #:cl-ds.threads)
   (:export
+   #:in-parallel
    #:thread-buffer))

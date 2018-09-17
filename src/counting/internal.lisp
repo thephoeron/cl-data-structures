@@ -216,15 +216,15 @@
       (unless (null cell)
         (bind (((node depth . parent) cell))
           (if (and maximal-size (< maximal-size depth))
-              (recur :stack stack)
+              (cl-ds:recur :stack stack)
               (if (null parent)
-                  (recur :stack (add-to-stack stack cell (1+ depth)))
+                  (cl-ds:recur :stack (add-to-stack stack cell (1+ depth)))
                   (if (< (/ (support node) (read-total-size index))
                          minimal-frequency)
-                      (recur :stack (add-to-stack stack cell (1+ depth)))
-                      (send-recur (funcall operation cell)
-                                  :stack (add-to-stack stack cell
-                                                       (1+ depth)))))))))))
+                      (cl-ds:recur :stack (add-to-stack stack cell (1+ depth)))
+                      (cl-ds:send-recur (funcall operation cell)
+                                        :stack (add-to-stack stack cell
+                                                             (1+ depth)))))))))))
 
 
 (defun chain-cells (cell)

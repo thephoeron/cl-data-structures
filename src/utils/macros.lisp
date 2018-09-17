@@ -179,7 +179,8 @@
              (collect (list fake value))))))
 
 
-(defmacro let-generator (forms &body body)
+(defmacro let-generator (forms send-finish finish recur send-recur
+                         &body body)
   "Poor man's generator (no continuations, no code-walking)."
   (with-gensyms (!end !result !self !finished)
     (let ((final-forms nil))
@@ -194,22 +195,22 @@
                           (values
                            (lambda ()
                              (block ,!end
-                               (macrolet ((,(intern "SEND-FINISH") (&body ,!result)
+                               (macrolet ((,send-finish (&body ,!result)
                                             `(progn
                                                (setf ,',!finished t)
                                                (return-from ,',!end
                                                  (values (progn ,@,!result)
                                                          t))))
-                                          (,(intern "FINISH") ()
+                                          (,finish ()
                                             `(progn
                                                (setf ,',!finished t)
                                                (return-from ,',!end
                                                  (values nil nil))))
-                                          (,(intern "RECUR") (&rest args)
+                                          (,recur (&rest args)
                                             `(progn
                                                (setf ,@(build-setf-form ',vars-asg args))
                                                (go ,',!self)))
-                                          (,(intern "SEND-RECUR") (,!result &rest args)
+                                          (,send-recur (,!result &rest args)
                                             `(return-from ,',!end
                                                (values (prog1
                                                            ,,!result

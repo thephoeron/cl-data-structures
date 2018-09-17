@@ -16,7 +16,7 @@
      (cl-ds.alg:on-each #'1+
                         (cl-ds:xpr (:i 1)
                           (when (< i 5)
-                            (send-recur i :i (1+ i))))))
+                            (cl-ds:send-recur i :i (1+ i))))))
     (+ 2 3 4 5))
 
 (finalize)

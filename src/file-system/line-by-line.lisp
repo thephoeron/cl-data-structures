@@ -1,7 +1,9 @@
 (in-package #:cl-data-structures.file-system)
 
 
-(defclass line-by-line-range (cl-ds:fundamental-forward-range file-range-mixin)
+(defclass line-by-line-range (cl-ds:chunking-mixin
+                              cl-ds:fundamental-forward-range
+                              file-range-mixin)
   ((%path :initarg :path
           :type (or string pathname)
           :reader read-path)

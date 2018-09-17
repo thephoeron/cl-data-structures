@@ -50,6 +50,7 @@
                               :components ((:file "package")
                                            (:file "levenshtein")
                                            (:file "hellinger")
+                                           (:file "average-metric")
                                            (:file "hausdorff")
                                            (:file "euclid")
                                            (:file "earth-mover")
@@ -184,6 +185,7 @@
                (:module "threads"
                 :components ((:file "package")
                              (:file "buffer-range")
+                             (:file "in-parallel")
                              (:file "docstrings")))
                (:module "clustering"
                 :components ((:file "package")

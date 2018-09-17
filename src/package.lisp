@@ -16,6 +16,7 @@
    #:become-lazy
    #:become-mutable
    #:become-transactional
+   #:chunked
    #:clone
    #:consume-back
    #:consume-front
@@ -34,7 +35,9 @@
    #:erase-if!
    #:expression
    #:field
+   #:finish
    #:force
+   #:chunking-mixin
    #:found
    #:functional
    #:functionalp
@@ -82,7 +85,10 @@
    #:read-bounds
    #:read-class
    #:read-value
+   #:recur
    #:reset!
+   #:send-finish
+   #:send-recur
    #:size
    #:take-out
    #:take-out!
@@ -149,6 +155,8 @@
    #:map-bucket
    #:null-bucket
    #:null-bucket-p
+   #:pass-bucket-operation
+   #:pass-bucket-query
    #:position-modification
    #:put!-function
    #:put-back!-function

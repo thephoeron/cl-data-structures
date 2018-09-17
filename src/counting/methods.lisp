@@ -121,32 +121,33 @@
           (front (first chain))
           (content (read-sets parent)))
      (when (and maximal-size (> depth maximal-size))
-       (recur :stack stack))
+       (cl-ds:recur :stack stack))
      (when (null front)
-       (send-recur (make 'set-in-index :index index
-                                       :node parent
-                                       :path (iterate
-                                               (with path = (vect))
-                                               (for (chain node depth parent)
-                                                    initially cell
-                                                    then parent)
-                                               (until (null parent))
-                                               (vector-push-extend node path)
-                                               (finally (return path))))
-                   :stack (iterate
-                            (for i from 0 below (length content))
-                            (push (list (rest chain)
-                                        (aref content i)
-                                        (1+ depth)
-                                        cell)
-                                  stack)
-                            (finally (return stack)))))
+       (cl-ds:send-recur (make 'set-in-index
+                               :index index
+                               :node parent
+                               :path (iterate
+                                       (with path = (vect))
+                                       (for (chain node depth parent)
+                                            initially cell
+                                            then parent)
+                                       (until (null parent))
+                                       (vector-push-extend node path)
+                                       (finally (return path))))
+                         :stack (iterate
+                                  (for i from 0 below (length content))
+                                  (push (list (rest chain)
+                                              (aref content i)
+                                              (1+ depth)
+                                              cell)
+                                        stack)
+                                  (finally (return stack)))))
      (let ((position (lower-bound content
                                   (read-type front)
                                   #'<
                                   :key #'read-type)))
        (when (= position (length content))
-         (recur :stack stack))
+         (cl-ds:recur :stack stack))
        (when (eql (read-type front)
                   (~> content (aref position) read-type))
          (push (list (rest chain)
@@ -157,7 +158,7 @@
        (iterate
          (for i from 0 below position)
          (push (list chain (aref content i) (1+ depth) cell) stack))
-       (recur :stack stack))
+       (cl-ds:recur :stack stack))
      (assert nil))))
 
 

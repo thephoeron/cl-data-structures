@@ -1,18 +1,5 @@
 (in-package #:cl-data-structures)
 
-(defgeneric frozenp (obj))
-
-(defun ensure-not-frozen (obj)
-  (when (frozenp obj)
-    (error 'ice-error :test "Trying to change frozen object!")))
-
-(defmethod position-modification :before (operation
-                                          (container transactional)
-                                          location
-                                          &rest all
-                                          &key &allow-other-keys)
-  (declare (ignore operation location all))
-  (ensure-not-frozen container))
 
 (defgeneric at (container location &rest more-locations))
 
@@ -159,6 +146,13 @@ Range releated functions.
 
 (defgeneric (setf peek-back) (new-value range))
 
+(defgeneric chunked (range &optional chunk-size-hint)
+  (:method :before ((range fundamental-range) &optional chunk-size-hint)
+    (check-type chunk-size-hint (or null positive-integer)))
+  (:method ((range fundamental-range) &optional chunk-size-hint)
+    (declare (ignore chunk-size-hint))
+    nil))
+
 (defgeneric dimensionality (object)
   (:method ((object fundamental-container))
     1)
@@ -270,3 +264,47 @@ Range releated functions.
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-function))
   #'update!)
+
+(defmethod clone ((range chunked-range))
+  (make 'chunked-range
+        :original-range (~> range read-original-range clone)
+        :chunk-size (read-chunk-size range)))
+
+(defmethod chunked ((range chunking-mixin) &optional chunk-size-hint)
+  (make 'chunked-range
+        :original-range (cl-ds:clone range)
+        :chunk-size (or chunk-size-hint 256)))
+
+(defmethod consume-front ((range chunked-range))
+  (bind ((og-range (read-original-range range))
+         ((:values item more) (consume-front og-range)))
+    (if more
+        (let* ((chunk-size (read-chunk-size range))
+               (result (make-array chunk-size
+                                   :adjustable t
+                                   :fill-pointer 1)))
+          (setf (aref result 0) item)
+          (iterate
+            (for i from 1 below chunk-size)
+            (for (values elt m) = (consume-front og-range))
+            (vector-push-extend elt result))
+          (values (whole-range result)
+                  t))
+        (values nil nil))))
+
+(defmethod peek-front ((range chunked-range))
+  (bind ((og-range (~> range read-original-range cl-ds:clone))
+         ((:values item more) (consume-front og-range)))
+    (if more
+        (let* ((chunk-size (read-chunk-size range))
+               (result (make-array chunk-size
+                                   :adjustable t
+                                   :fill-pointer 1)))
+          (setf (aref result 0) item)
+          (iterate
+            (for i from 1 below chunk-size)
+            (for (values elt m) = (consume-front og-range))
+            (vector-push-extend elt result))
+          (values (whole-range result)
+                  t))
+        (values nil nil))))

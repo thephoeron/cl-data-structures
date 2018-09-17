@@ -19,7 +19,7 @@
      :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
      :examples [(let ((data (cl-ds:xpr (:i 0)
                               (when (< i 500000)
-                                (send-recur (random 99999999999) :i (1+ i))))))
+                                (cl-ds:send-recur (random 99999999999) :i (1+ i))))))
                   (prove:ok (< 490000
                                (cl-ds:value
                                 (cl-data-structures.streaming-algorithms:approximated-set-cardinality

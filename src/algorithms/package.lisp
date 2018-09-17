@@ -52,6 +52,7 @@
   (:nicknames #:cl-ds.alg)
   (:export
    #:accumulate
+   #:bidirectional-proxy-range
    #:cartesian
    #:chain
    #:count-elements
@@ -60,6 +61,7 @@
    #:count-elements-if-function
    #:distinct
    #:flatten-lists
+   #:forward-proxy-range
    #:gather-prior-states
    #:group-by
    #:group-by-function
@@ -70,12 +72,14 @@
    #:on-each
    #:only
    #:proxy-box-range
-   #:read-original-range
    #:proxy-range
-   #:forward-proxy-range
    #:proxy-range-aggregator-outer-fn
+   #:random-access-proxy-range
+   #:read-original-range
    #:shuffled-range
    #:split-into-chunks
    #:to-vector
+   #:transparent-to-chunking-mixin
    #:without
+   #:wrap-chunk
    #:zip))

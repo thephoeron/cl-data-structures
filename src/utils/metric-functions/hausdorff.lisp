@@ -1,12 +1,19 @@
 (in-package #:cl-data-structures.utils.metric)
 
 
-(defun hausdorff-metric (a b fn
-                         &key (distance-matrix (make-array (list (length a)
-                                                                 (length b)))))
+(defun hausdorff-metric (fn a b
+                         &key
+                           (element-type t)
+                           (distance-matrix
+                            (make-array (list (length a) (length b))
+                                        :element-type element-type)))
   (declare (type vector a) (type vector b)
            (optimize (speed 3)))
   (ensure-functionf fn)
+  (when (and (emptyp a) (emptyp b))
+    (return-from hausdorff-metric 0))
+  (when (or (emptyp a) (emptyp b))
+    (return-from hausdorff-metric most-positive-fixnum))
   (iterate
     (for ea in-vector a)
     (for ia from 0)

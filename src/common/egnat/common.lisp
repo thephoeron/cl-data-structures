@@ -7,8 +7,8 @@
                     (cl-ds.common:sequence-window data 0 count)))
          (new-data (unless (eql count (cl-ds:size data))
                      (cl-ds.common:sequence-window data
-                                                count
-                                                (cl-ds:size data)))))
+                                                   count
+                                                   (cl-ds:size data)))))
     (assert (> size count))
     (assert (eql count (cl-ds:size content)))
     (values content new-data)))
@@ -54,19 +54,20 @@
 
 (defun make-contents (operation container seeds-indexes
                       data data-partitions reverse-mapping)
+  (assert (eql (cl-ds:size data) (cl-ds:size data-partitions)))
   (let ((result (make-array (length seeds-indexes))))
     (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
     (iterate
       (for d in-vector data-partitions)
       (for i from 0)
+      (when (position i seeds-indexes :test #'eql)
+        (next-iteration))
       (for element = (cl-ds:at data i))
       (for partition = (gethash d reverse-mapping))
-      ;; don't assign seeds to partitions because
-      ;; it has been already done in map-into form
-      (unless (eql d i)
-        (vector-push-extend element (aref result partition))))
+      (vector-push-extend element (aref result partition)))
     (map-into result
-              (lambda (x) (cl-ds.meta:make-bucket-from-multiple operation container x))
+              (lambda (x)
+                (cl-ds.meta:make-bucket-from-multiple operation container x))
               result)
     result))
 
@@ -144,7 +145,11 @@
                                                  :bucket-function bucket-function)))
                     contents))
          ((:values close-range distant-range) (make-ranges container contents))
-         (content (cl-ds.meta:make-bucket-from-multiple operation container this-content)))
+         (content (cl-ds.meta:make-bucket-from-multiple operation
+                                                        container
+                                                        this-content)))
+    (assert (= (+ (cl-ds:size this-data) (cl-ds:size this-content))
+               (cl-ds:size data)))
     (assert (= (reduce #'+ contents :key #'length)
                (cl-ds:size this-data)))
     (make 'egnat-node
@@ -378,12 +383,12 @@
   node)
 
 
-(-> splitting-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
+(-> splitting-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun splitting-grow! (container operation item additional-arguments)
+(defun splitting-grow! (structure container operation item additional-arguments)
   (fbind ((distance (curry #'distance container)))
-    (bind (((:slots %root %branching-factor %size %metric-type) container)
+    (bind (((:slots %root %branching-factor %size %metric-type) structure)
            ((:dflet closest-index (array))
             (let ((result 0))
               (cl-ds.utils:optimize-value ((mini <))
@@ -425,7 +430,7 @@
                     (update-ranges! container node item last))))))
       (impl (access-root container))
       (incf %size)))
-  (values container
+  (values structure
           cl-ds.common:empty-eager-modification-operation-status))
 
 
@@ -440,6 +445,7 @@
 
 
 (-> egnat-replace! (mutable-egnat-container
+                    t
                     cl-ds.meta:grow-function
                     t
                     egnat-node
@@ -447,7 +453,7 @@
                     list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-replace! (container operation
+(defun egnat-replace! (structure container operation
                        item last-node
                        paths
                        additional-arguments)
@@ -474,12 +480,12 @@
     (values container status)))
 
 
-(-> egnat-push! (mutable-egnat-container
+(-> egnat-push! (mutable-egnat-container t
                  cl-ds.meta:grow-function t
                  egnat-node hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-push! (container operation
+(defun egnat-push! (structure container operation
                     item node paths
                     additional-arguments)
   (bind ((content (read-content node))
@@ -495,20 +501,20 @@
     (unless (null parent.index)
       (optimize-parents-partial! container (car parent.index)
                                  paths (cdr parent.index) item))
-    (values container
+    (values structure
             cl-ds.common:empty-eager-modification-operation-status)))
 
 
-(-> egnat-grow! (mutable-egnat-container cl-ds.meta:grow-function t list)
+(-> egnat-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-grow! (container operation item additional-arguments)
+(defun egnat-grow! (structure container operation item additional-arguments)
   (if (~> container access-root null) ; border case. nil is valid value for root
       (initialize-root! container operation item additional-arguments)
       (bind (((:slots %metric-f %same-fn %content-count-in-node
                       %size %root %branching-factor)
-              container)
-             ((:values paths found last-node) (find-destination-node container
+              structure)
+             ((:values paths found last-node) (find-destination-node structure
                                                                      item)))
         #|
 following cases need to be considered:
@@ -523,7 +529,7 @@ following cases need to be considered:
    has been added.
         |#
         (if found ; case number 1, easy to handle
-            (egnat-replace! container operation
+            (egnat-replace! structure container operation
                             item last-node
                             paths
                             additional-arguments)
@@ -538,10 +544,10 @@ following cases need to be considered:
                ;; checking if it is the case number 2
                (if (null result)
                    ;; case 3, it will be messy...
-                   (return (splitting-grow! container operation item
+                   (return (splitting-grow! structure container operation item
                                             additional-arguments))
                    ;; the case number 2, just one push-extend and we are done
-                   (return (egnat-push! container operation item result
+                   (return (egnat-push! structure container operation item result
                                         paths additional-arguments)))))))))
 
 
@@ -678,12 +684,14 @@ following cases need to be considered:
 
 
 (-> remove-from-node! (mutable-egnat-container
+                       t
                        cl-ds.meta:shrink-function
                        egnat-node t
                        hash-table list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun remove-from-node! (container operation node item paths
+(defun remove-from-node! (structure container
+                          operation node item paths
                           additional-arguments)
   (bind ((content (read-content node))
          (old-head (aref content 0))
@@ -695,32 +703,34 @@ following cases need to be considered:
                                                      additional-arguments))
          (new-head (or (cl-ds.meta:null-bucket-p new-bucket) (aref new-bucket 0)))
          (head-was-changed (or (cl-ds.meta:null-bucket-p new-bucket)
-                              (not (same container new-head old-head)))))
+                               (not (same structure new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
     (when changed
       ;; remove from node, update paths, sometimes reinitialize paths...
       (merging-shrink! container node paths head-was-changed new-bucket))
-    (values container status)))
+    (values structure status)))
 
 
-(-> egnat-shrink! (mutable-egnat-container cl-ds.meta:shrink-function t list)
+(-> egnat-shrink! (mutable-egnat-container t cl-ds.meta:shrink-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
-(defun egnat-shrink! (container operation item additional-arguments)
+(defun egnat-shrink! (structure container operation
+                      item additional-arguments)
   (if (~> container access-root null)
-      (values container
+      (values structure
               cl-ds.common:empty-eager-modification-operation-status)
       (bind (((:slots %metric-fn %same-fn %content-count-in-node %size
                       %root %branching-factor)
-              container)
-             ((:values paths found last-node) (find-destination-node container
+              structure)
+             ((:values paths found last-node) (find-destination-node structure
                                                                      item)))
         (if found
             (progn
               (decf (access-size container))
-              (remove-from-node! container operation last-node item paths
+              (remove-from-node! structure container operation
+                                 last-node item paths
                                  additional-arguments))
-            (values container
+            (values structure
                     cl-ds.common:empty-eager-modification-operation-status)))))
 
 
