@@ -10,7 +10,8 @@
                    :reader read-original-seen)))
 
 
-(defclass forward-distinct-proxy (distinct-proxy
+(defclass forward-distinct-proxy (cl-ds:chunking-mixin
+                                  distinct-proxy
                                   fundamental-forward-range)
   ())
 
