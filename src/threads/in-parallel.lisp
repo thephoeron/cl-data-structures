@@ -38,8 +38,9 @@
          ((:flet impl ())
           (cl-ds:traverse
            (lambda (x)
-             (handler-case
-                 (nest push-queue lparallel:future (list* (to-vector x) t))
+             (handler-case (~> (list* (to-vector x) t)
+                               lparallel:future
+                               push-queue)
                (error (e)
                  (lparallel.queue:push-queue (list* e :error) queue))))
            chunked-range)
