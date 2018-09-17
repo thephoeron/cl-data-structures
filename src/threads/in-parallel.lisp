@@ -58,6 +58,7 @@
     (if (null chunked-range)
         (funcall traverse/accross og-range function)
         (unwind-protect
+             (lparallel:check-kernel)
              (iterate
                (with (thread . queue) =
                      (make-in-parallel-read-thread chunked-range
