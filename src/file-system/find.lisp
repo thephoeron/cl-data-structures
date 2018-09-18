@@ -44,7 +44,7 @@
                                                  regex-file-range-stack-cell)
   ((%times :initarg :times
            :reader read-times
-           :initform :recursive)))
+           :initform 1)))
 
 
 (defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
