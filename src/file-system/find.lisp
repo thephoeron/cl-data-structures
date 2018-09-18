@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.file-system)
 
 
-(defclass find-range (cl-ds:fundamental-forward-range)
+(defclass find-range (cl-ds:chunking-mixin
+                      cl-ds:fundamental-forward-range)
   ((%stack :initarg :stack
            :initform nil
            :type list
