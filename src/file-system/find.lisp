@@ -25,7 +25,7 @@
                :type fundamental-file-range-stack-cell
                :accessor access-prev-cell)
    (%path :initarg :path
-          :type string
+          :type (or nil string)
           :reader read-path)))
 
 
@@ -73,3 +73,33 @@
 (defmethod make-stack-cell ((name (eql :regex-file)) &key path)
   (make 'regex-directory-file-range-stack-cell
         :path path))
+
+
+(defmethod cl-ds:consume-front ((cell directory-file-range-stack-cell))
+  (if (~> cell read-prev-cell null)
+      (let ((path (read-path cell)))
+        (setf (slot-value cell '%path) nil)
+        (if (osicat:file-exists-p path)
+            (values path (not (null path)))
+            (values nil nil)))
+      (let ((prev-path (~> cell read-prev-cell cl-ds:consume-front)))
+        (if (null prev-path)
+            (values nil nil)
+            (let ((result (merge-pathnames (read-path cell) prev-path)))
+              (if (osicat:file-exists-p result :directory)
+                  (values result t)
+                  (cl-ds:consume-front cell)))))))
+
+
+(defmethod cl-ds:consume-front ((cell regex-directory-file-range-stack-cell))
+  (bind ((path (read-path cell))
+         (state (access-state cell))
+         (times (access-times cell)))
+    (if (null state)
+        (let ((prev-path (~> cell read-prev-cell cl-ds:consume-front)))
+          (if (null prev-path)
+              (values nil nil)
+              (let* ((directory-content (directory-content prev-path))
+                     (new-state (mapcar (curry #'list 0) directory-content)))
+                (setf (access-state cell) new-state)
+                (cl-ds:consume-front cell)))))))
