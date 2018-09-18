@@ -14,9 +14,9 @@
 
 
 ;; ((:directory :path "/home/shka/Muzyka")
-;;  (:regex-directory :regex "*"
+;;  (:regex-directory :path "*"
 ;;   :times '(0 :recursive))
-;;  (:regex-file :regex "*.lisp"))
+;;  (:regex-file :path "*.lisp"))
 
 
 (defclass fundamental-file-range-stack-cell ()
@@ -64,12 +64,12 @@
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :regex-directory)) &key regex times)
+(defmethod make-stack-cell ((name (eql :regex-directory)) &key path times)
   (make 'regex-directory-file-range-stack-cell
-        :path regex
+        :path path
         :times times))
 
 
-(defmethod make-stack-cell ((name (eql :regex-file)) &key regex)
+(defmethod make-stack-cell ((name (eql :regex-file)) &key path)
   (make 'regex-directory-file-range-stack-cell
-        :path regex)
+        :path path))
