@@ -41,7 +41,9 @@
 
 (defclass regex-directory-file-range-stack-cell (directory-file-range-stack-cell
                                                  regex-file-range-stack-cell)
-  ())
+  ((%times :initarg :times
+           :reader read-times
+           :initform :recursive)))
 
 
 (defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
