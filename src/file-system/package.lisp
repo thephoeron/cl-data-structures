@@ -7,5 +7,6 @@
   (:shadow #:find)
   (:export
    #:line-by-line
+   #:find
    #:close-inner-stream
    #:with-file-ranges))

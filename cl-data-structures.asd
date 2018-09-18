@@ -14,7 +14,8 @@
                 :lparallel        :flexichain
                 :metabang-bind    :bordeaux-threads
                 :scribble         :osicat
-                :cl-progress-bar  :trivial-garbage)
+                :cl-fad           :cl-progress-bar
+                :trivial-garbage)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
@@ -181,6 +182,7 @@
                 :components ((:file "package")
                              (:file "common")
                              (:file "line-by-line")
+                             (:file "find")
                              (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")
