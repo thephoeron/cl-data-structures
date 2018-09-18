@@ -6,7 +6,7 @@
 
 
 (defmethod cl-ds:add! ((container mutable-dictionary) location new-value)
-  (cl-ds.meta:position-modification #'cl-ds:add! containercontainer location :value new-value))
+  (cl-ds.meta:position-modification #'cl-ds:add! container container location :value new-value))
 
 
 (defmethod cl-ds:insert ((container functional-dictionary) location new-value)
