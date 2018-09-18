@@ -29,7 +29,10 @@
 
 
 (defclass regex-file-range-stack-cell (fundamental-file-range-stack-cell)
-  ())
+  ((%state :initform nil
+           :accessor access-state
+           :type list
+           :initarg :state)))
 
 
 (defclass directory-file-range-stack-cell (fundamental-file-range-stack-cell)
