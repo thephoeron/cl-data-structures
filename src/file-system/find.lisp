@@ -58,7 +58,7 @@
 (defgeneric make-stack-cell (name &key &allow-other-keys))
 
 
-(defmethod make-stack-cell ((name (eql :in-directory)) &key path)
+(defmethod make-stack-cell ((name (eql :directory)) &key path)
   (make 'directory-file-range-stack-cell
         :path path))
 
