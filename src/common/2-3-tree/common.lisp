@@ -33,12 +33,6 @@
            :initarg :right
            :accessor access-right)))
 
-(defmethod initialize-instance :after ((object 2-node) &rest all)
-  (when (null (access-right object))
-    (break))
-  (when (null (access-left object))
-    (break)))
-
 
 (defclass tagged-2-node
     (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
@@ -132,25 +126,37 @@
 
 (defun insert-front-into-tree! (tree new)
   (bind (((:values n1 n2) (insert-front! tree new)))
-    (if (cl-ds.meta:null-bucket-p n2)
-        n1
-        (make '2-node :left n1 :right n2))))
+    (setf (access-root tree)
+          (if (cl-ds.meta:null-bucket-p n2)
+              n1
+              (make '2-node :left n1 :right n2)))))
 
 
 (defun transactional-insert-front-into-tree! (tree new)
   (bind (((:values n1 n2) (transactional-insert-front!
                            tree new
                            #1=(cl-ds.common.abstract:read-ownership-tag tree))))
-    (if (cl-ds.meta:null-bucket-p n2)
-        n1
-        (make '2-node :left n1
-                      :right n2
-                      :tag #1#))))
+    (setf (access-root tree)
+          (if (cl-ds.meta:null-bucket-p n2)
+              n1
+              (make '2-node :left n1
+                            :right n2
+                            :tag #1#)))))
 
 
 (defun delete-back-from-tree (tree)
   (bind (((:values node _ old-value) (delete-back tree)))
     (values node old-value)))
+
+
+(defun delete-back-from-tree! (tree)
+  (bind (((:values node _ old-value) (delete-back! tree)))
+    (setf (access-root tree) node)
+    (values node old-value)))
+
+
+(defun transactional-delete-back-from-tree! (tree)
+  (delete-back-from-tree! tree))
 
 
 (defmethod transactional-insert-front! ((node 3-node) new tag)
