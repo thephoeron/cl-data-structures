@@ -336,7 +336,7 @@
 
 (defmethod cl-ds:clone ((cell regex-directory-file-range-stack-cell))
   (lret ((result (call-next-method)))
-    (setf (slot-value cell '%times) (read-times cell))))
+    (setf (slot-value result '%times) (read-times cell))))
 
 
 (defmethod cl-ds:clone ((cell fundamental-file-range-stack-cell))
