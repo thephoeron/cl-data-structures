@@ -361,10 +361,3 @@
 
 (defmethod cl-ds:reset! ((cell fundamental-file-range-stack-cell))
   (when #1=(access-prev-cell cell) (cl-ds:reset! #1#)))
-
-
-(time
- (~> (find '((:all-directories :path "/home/shka/Wideo/")
-             (:regex-file :path ".*mkv")))
-     cl-ds.alg:to-vector
-     print))
