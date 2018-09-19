@@ -92,6 +92,11 @@
   (check-type path (or string pathname)))
 
 
+(defmethod make-instance :before ((range recursive-content-file-range-stack-cell)
+                                  &key path)
+  (check-type path (or string pathname)))
+
+
 (defmethod make-instance :before ((range regex-file-file-range-stack-cell)
                                   &key path)
   (check-type path string))
