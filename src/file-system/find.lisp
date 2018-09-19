@@ -41,8 +41,8 @@
 (defclass regex-directory-file-range-stack-cell (stateful-file-range-stack-cell
                                                  directory-file-range-stack-cell)
   ((%times :initarg :times
-           :reader read-times
-           :initform 1)))
+           :reader read-times))
+  (:initargs (:times 1)))
 
 
 (defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
@@ -55,6 +55,31 @@
 
 
 (defgeneric make-stack-cell (name &key &allow-other-keys))
+
+
+(defmethod make-instance :before ((range regex-file-file-range-stack-cell)
+                                  &key path times)
+  (check-type path string)
+  (check-type times (or list positive-integer symbol))
+  (if (listp times)
+      (progn
+        (check-type (first times) non-negative-integer)
+        (check-type (second times) (or positive-integer symbol))
+        (unless (eql (length times) 2)
+          (error 'cl-ds:invalid-argument
+                 :argument :times
+                 :text "Times list should contain lower bound and upper bound."))
+        (if (symbolp (second times))
+            (unless (eql :recursive (second times))
+              (error 'cl-ds:not-in-allowed-set
+                     :value (second times)
+                     :bounds '(:recursive)
+                     :text "Upper bound is supposed to be either integer or :recursive symbol."))
+            (unless (apply #'<= times)
+              (error 'cl-ds:invalid-argument
+                     :argument :times
+                     :text "Lower bound of times should be less then upper bound."))))
+      (check-type times non-negative-integer)))
 
 
 (defmethod make-stack-cell ((name (eql :directory)) &key path)
