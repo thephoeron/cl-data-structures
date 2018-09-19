@@ -102,7 +102,7 @@
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :regex-directory)) &key path times)
+(defmethod make-stack-cell ((name (eql :regex-directory)) &key path (times 1))
   (make 'regex-directory-file-range-stack-cell
         :path path
         :times times))
@@ -118,7 +118,7 @@
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :all-directories)) &key path)
+(defmethod make-stack-cell ((name (eql :all-directories)) &key (path ""))
   (make 'recursive-content-file-range-stack-cell
         :path path))
 
@@ -149,7 +149,6 @@
 
 
 (defmethod cl-ds:consume-front ((cell recursive-content-file-range-stack-cell))
-  (declare (optimize (debug 3)))
   (tagbody :start
      (when (~> cell access-state first (eql :end))
        (return-from cl-ds:consume-front
@@ -166,7 +165,7 @@
                        (values nil nil))))
                  (if-let ((p (~>> cell access-prev-cell cl-ds:consume-front)))
                    (progn
-                     (setf prev-path (merge-pathnames path))
+                     (setf prev-path (merge-pathnames path p))
                      (unless (cl-fad:directory-exists-p prev-path)
                        (push :end (access-state cell))
                        (return-from cl-ds:consume-front
