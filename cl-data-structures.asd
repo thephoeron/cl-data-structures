@@ -15,7 +15,7 @@
                 :metabang-bind    :bordeaux-threads
                 :scribble         :osicat
                 :cl-fad           :cl-progress-bar
-                :trivial-garbage)
+                :trivial-garbage  :cl-ppcre)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
