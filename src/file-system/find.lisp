@@ -57,7 +57,7 @@
 (defgeneric make-stack-cell (name &key &allow-other-keys))
 
 
-(defmethod make-instance :before ((range regex-file-file-range-stack-cell)
+(defmethod make-instance :before ((range regex-directory-file-range-stack-cell)
                                   &key path times)
   (check-type path string)
   (check-type times (or list positive-integer symbol))
@@ -80,6 +80,21 @@
                      :argument :times
                      :text "Lower bound of times should be less then upper bound."))))
       (check-type times non-negative-integer)))
+
+
+(defmethod make-instance :before ((range file-file-range-stack-cell)
+                                  &key path)
+  (check-type path (or string pathname)))
+
+
+(defmethod make-instance :before ((range directory-file-range-stack-cell)
+                                  &key path)
+  (check-type path (or string pathname)))
+
+
+(defmethod make-instance :before ((range regex-file-file-range-stack-cell)
+                                  &key path)
+  (check-type path string))
 
 
 (defmethod make-stack-cell ((name (eql :directory)) &key path)
@@ -346,3 +361,10 @@
 
 (defmethod cl-ds:reset! ((cell fundamental-file-range-stack-cell))
   (when #1=(access-prev-cell cell) (cl-ds:reset! #1#)))
+
+
+(time
+ (~> (find '((:all-directories :path "/home/shka/Wideo/")
+             (:regex-file :path ".*mkv")))
+     cl-ds.alg:to-vector
+     print))
