@@ -29,8 +29,7 @@
                    :initarg :initial-state)))
 
 
-(defclass directory-file-range-stack-cell (is-directory-description
-                                           fundamental-file-range-stack-cell)
+(defclass directory-file-range-stack-cell (fundamental-file-range-stack-cell)
   ())
 
 
@@ -167,7 +166,8 @@
 
 
 (defmethod make-stack-cell ((name (eql :all-files)) &key)
-  (make 'all-files-file-range-stack-cell))
+  (make 'all-files-file-range-stack-cell
+        :path nil))
 
 
 (defun to-pathname (x &rest args)
@@ -248,7 +248,7 @@
 (defmethod cl-ds:consume-front ((cell all-files-file-range-stack-cell))
   (tagbody :start
      (bind ((state (access-state cell)))
-       (if (null state)
+       (if (endp state)
            (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
              (if (null prev-path)
                  (return-from cl-ds:consume-front
@@ -262,7 +262,8 @@
            (iterate
              (until (endp (access-state cell)))
              (for next-path = (pop (access-state cell)))
-             (values next-path t)
+             (return-from cl-ds:consume-front
+               (values next-path t))
              (finally (go :start)))))))
 
 
