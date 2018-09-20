@@ -29,6 +29,8 @@
                    :initarg :initial-state)))
 
 
+
+
 (defclass recursive-content-file-range-stack-cell (stateful-file-range-stack-cell
                                                    fundamental-file-range-stack-cell)
   ())
@@ -45,6 +47,14 @@
   (:initargs (:times 1)))
 
 
+(defmethod (setf access-prev-cell)
+    :before ((new-val (eql nil))
+             (cell regex-directory-file-range-stack-cell))
+  (error 'cl-ds:initialization-error
+         :text "Regex form can't occur as first in the path description."
+         :class 'find-range))
+
+
 (defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
   ())
 
@@ -52,6 +62,14 @@
 (defclass regex-file-file-range-stack-cell (stateful-file-range-stack-cell
                                             fundamental-file-range-stack-cell)
   ())
+
+
+(defmethod (setf access-prev-cell)
+    :before ((new-val (eql nil))
+             (cell regex-file-file-range-stack-cell))
+  (error 'cl-ds:initialization-error
+         :text "Regex form can't occur as first in the path description."
+         :class 'find-range))
 
 
 (defgeneric make-stack-cell (name &key &allow-other-keys))
