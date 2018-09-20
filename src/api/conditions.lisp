@@ -12,10 +12,9 @@
   (:report print-condition))
 
 
-(defmethod print-condition :around ((condition textual-error) stream)
+(defmethod print-condition ((condition textual-error) stream)
   (unless (null (read-text condition))
-    (format stream "~a~%~%" (read-text condition)))
-  (call-next-method))
+    (format stream "~a~%~%" (read-text condition))))
 
 
 (define-condition initialization-error (more-conditions:reference-condition
@@ -34,7 +33,7 @@
 
 
 (defmethod print-condition ((condition initialization-error) stream)
-  (format stream "During initialization of ~a...~%"
+  (format stream "During initialization of ~a:~%"
           (read-class condition))
   (call-next-method))
 
@@ -88,7 +87,8 @@
 
 
 (defmethod print-condition ((condition dimensionality-error) stream)
-  (format stream "Dimensionality is ~a." (read-bounds condition)))
+  (format stream "Dimensionality is ~a.~%" (read-bounds condition))
+  (call-next-method))
 
 
 (defmethod print-condition ((condition argument-out-of-bounds) stream)
@@ -99,7 +99,8 @@
               (read-bounds condition))
       (format stream "Value ~a is out of bounds ~a.~%"
               (read-value condition)
-              (read-bounds condition))))
+              (read-bounds condition)))
+  (call-next-method))
 
 
 (defmethod print-condition ((condition not-in-allowed-set) stream)
