@@ -8,7 +8,7 @@
 
 (defgeneric on-each (function range &key key)
   (:generic-function-class on-each-function)
-  (:method (function (range fundamental-range) &key (key #'identity))
+  (:method (function range &key (key #'identity))
     (apply-range-function range #'on-each :function function :key key)))
 
 
