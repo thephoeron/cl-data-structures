@@ -29,14 +29,27 @@
                    :initarg :initial-state)))
 
 
-
-
-(defclass recursive-content-file-range-stack-cell (stateful-file-range-stack-cell
-                                                   fundamental-file-range-stack-cell)
+(defclass directory-file-range-stack-cell (is-directory-description
+                                           fundamental-file-range-stack-cell)
   ())
 
 
-(defclass directory-file-range-stack-cell (fundamental-file-range-stack-cell)
+(defclass recursive-content-file-range-stack-cell (stateful-file-range-stack-cell
+                                                   directory-file-range-stack-cell)
+  ())
+
+
+(defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
+  ())
+
+
+(defclass all-files-file-range-stack-cell (stateful-file-range-stack-cell
+                                           file-file-range-stack-cell)
+  ())
+
+
+(defclass regex-file-file-range-stack-cell (stateful-file-range-stack-cell
+                                            file-file-range-stack-cell)
   ())
 
 
@@ -48,6 +61,22 @@
 
 
 (defmethod (setf access-prev-cell)
+    :before ((new-val all-files-file-range-stack-cell)
+             (cell regex-directory-file-range-stack-cell))
+  (error 'cl-ds:initialization-error
+         :text "Directory can't be stacked on top of file in the path description."
+         :class 'find-range))
+
+
+(defmethod (setf access-prev-cell)
+    :before ((new-val file-file-range-stack-cell)
+             (cell directory-file-range-stack-cell))
+  (error 'cl-ds:initialization-error
+         :text "Directory can't be stacked on top of file in the path description."
+         :class 'find-range))
+
+
+(defmethod (setf access-prev-cell)
     :before ((new-val (eql nil))
              (cell regex-directory-file-range-stack-cell))
   (error 'cl-ds:initialization-error
@@ -55,25 +84,11 @@
          :class 'find-range))
 
 
-(defclass file-file-range-stack-cell (fundamental-file-range-stack-cell)
-  ())
-
-
-(defclass all-files-file-range-stack-cell (stateful-file-range-stack-cell
-                                           fundamental-file-range-stack-cell)
-  ())
-
-
-(defclass regex-file-file-range-stack-cell (stateful-file-range-stack-cell
-                                            fundamental-file-range-stack-cell)
-  ())
-
-
 (defmethod (setf access-prev-cell)
     :before ((new-val (eql nil))
-             (cell regex-file-file-range-stack-cell))
+             (cell file-file-range-stack-cell))
   (error 'cl-ds:initialization-error
-         :text "Regex form can't occur as first in the path description."
+         :text "Files form can't occur as first in the path description."
          :class 'find-range))
 
 
