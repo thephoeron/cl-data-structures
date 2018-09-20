@@ -309,6 +309,12 @@ Range function invokaction protocol.
     (apply #'apply-aggregation-function-with-aggregator
            aggregator range function all)))
 
+(defmethod apply-aggregation-function ((range cl-ds:fundamental-container)
+                                       (function aggregation-function)
+                                       &rest all &key key &allow-other-keys)
+  (declare (ignore key))
+  (apply #'apply-aggregation-function (cl-ds:whole-range range) function all))
+
 
 (defmethod apply-aggregation-function-with-aggregator
     ((aggregator fundamental-aggregator)

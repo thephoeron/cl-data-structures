@@ -468,7 +468,7 @@ Methods. Those will just call non generic functions.
         :size (access-size container)))
 
 
-(defmethod cl-ds:become-functional ((container functional-hamt-dictionary))
+(defmethod cl-ds:become-functional ((container mutable-hamt-dictionary))
   (make 'functional-hamt-dictionary
         :hash-fn (cl-ds.dicts:read-hash-fn container)
         :root (access-root container)
