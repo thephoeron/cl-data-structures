@@ -680,12 +680,11 @@
   (iterate
     (with shift = 0)
     (for count
-         initially (floor (/ (length content)
-                             cl-ds.common.rrb:+maximum-children-count+))
-         then (floor (/ count cl-ds.common.rrb:+maximum-children-count+)))
+         initially (length content)
+         then (truncate count cl-ds.common.rrb:+maximum-children-count+))
+    (until (zerop count))
     (fold-content tag content)
     (incf shift)
-    (while (> count +maximum-children-count+))
     (setf (fill-pointer content) count)
     (finally
      (return (values (if (emptyp content)
@@ -701,11 +700,11 @@
          (element-type (getf arguments :element-type t))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
-    (cl-ds:across (lambda (x)
-                    (when (zerop (index))
+    (cl-ds:across (lambda (x &aux (index (index)))
+                    (when (zerop index)
                       (vector-push-extend (cl-ds.common.rrb:make-node-content element-type)
                                           content))
-                    (setf (aref (last-elt content) (index))
+                    (setf (aref (last-elt content) index)
                           x)
                     (incf size))
                   traversable)
@@ -714,7 +713,10 @@
                 (cl-ds.common.rrb:make-rrb-node :content x
                                                 :ownership-tag tag))
               content)
-    (bind ((tail-size (logand size (lognot cl-ds.common.rrb:+tail-mask+)))
+    (bind ((tail-size (let ((s (rem size cl-ds.common.rrb:+maximum-children-count+)))
+                        (if (zerop s)
+                            32
+                            s)))
            (tree-size (- size tail-size))
            (tail (if (zerop tail-size) nil (~> content pop-last rrb-node-content)))
            ((:values root shift) (fold-rrb-content content tag)))

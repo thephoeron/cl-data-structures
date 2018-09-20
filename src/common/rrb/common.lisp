@@ -401,9 +401,16 @@
                     (lambda (x) (impl function x (1- depth)))
                     (rrb-node-content node)))))
   (defmethod cl-ds:traverse (function (object rrb-container))
-    (let ((root (access-root object)))
-      (unless (null root)
-        (impl function root (access-shift object))))
+    (let ((root (access-root object))
+          (shift (access-shift object))
+          (size (access-size object)))
+      (if (zerop shift)
+          (map nil function root)
+          (iterate
+            (with content = (rrb-node-content root))
+            (for i from 0 to (ldb (byte +bit-count+ (* +bit-count+ shift))
+                                  size))
+            (impl function (aref content i) (1- shift)))))
     (iterate
       (with tail = (access-tail object))
       (for i from 0 below (access-tail-size object))
@@ -542,38 +549,51 @@
                            :initial-lower-bound 0
                            :initial-upper-bound (cl-ds:size container)))
 
-
+;; TODO very innefficient!
 (defun init-rrb (instance container &key (from 0) (to (cl-ds:size container)))
   (bind (((:slots %start %last-size %content %lower-bound
                   %upper-bound %size)
           instance)
          ((:slots %root %shift %size %tail-size %tail)
-          container))
+          container)
+         (size (- to from)))
     (setf %content (make-instance 'flexichain:standard-flexichain
                                   :min-size +maximum-children-count+)
-          %start (mod from +maximum-children-count+)
+          %start (rem from +maximum-children-count+)
           %lower-bound from
-          %last-size (mod to +maximum-children-count+)
+          %last-size (let ((s (rem to +maximum-children-count+)))
+                       (if (zerop s)
+                           +maximum-children-count+
+                           s))
           %upper-bound to)
-    (labels ((collect-bottom (node depth &optional (offset 0))
-               (let* ((bit-offset (* +bit-count+ (- %shift depth)))
-                      (start-range offset)
-                      (difference (ash 1 bit-offset))
-                      (end-range (+ offset (ash +tail-mask+ bit-offset))))
-                 (when (and node
-                            (<= start-range from to end-range))
-                   (if (zerop depth)
-                       (flexichain:push-end %content
-                                            (the node-content (rrb-node-content node)))
-                       (iterate
-                         (for i from 0 below +maximum-children-count+)
-                         (for d from difference by difference)
-                         (collect-bottom (nref node i)
-                                         (1- depth)
-                                         (+ start-range d))))))))
-      (collect-bottom %root %shift))
-    (unless (null %tail)
-      (when (< %size to)
+    (labels ((collect-bottom (node depth)
+               (if (zerop depth)
+                   (progn
+                     (flexichain:push-end %content
+                                          (the node-content (rrb-node-content node)))
+                     (decf size +maximum-children-count+))
+                   (iterate
+                     (for i from 0 below +maximum-children-count+)
+                     (collect-bottom (nref node i)
+                                     (1- depth))
+                     (unless (> size +maximum-children-count+)
+                       (leave))))))
+      (if (zerop %shift)
+          (unless (null %root)
+            (flexichain:push-end %content
+                                 (the node-content (rrb-node-content %root))))
+          (iterate
+            (with content = (rrb-node-content %root))
+            (for i from 0 to (ldb (byte +bit-count+ (* +bit-count+ %shift))
+                                  %size))
+            (collect-bottom (aref content i) (1- %shift))
+            (unless (> size +maximum-children-count+)
+              (leave)))))
+    (let ((skip-front-count (truncate from +maximum-children-count+)))
+      (iterate
+        (repeat skip-front-count)
+        (flexichain:pop-start %content))
+      (when (> size 0)
         (flexichain:push-end %content (the node-content %tail))))))
 
 

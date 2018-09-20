@@ -3,7 +3,7 @@
 (in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
-(plan 19644)
+(plan 39703)
 (let* ((container (make-instance 'functional-rrb-vector))
        (cont1 (cl-ds:put container 1))
        (cont2 (cl-ds:put cont1 2)))
@@ -134,17 +134,28 @@
       (is (cl-ds:at new-container i) i))))
 
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
-                                              (cl-ds:xpr (:i 0)
-                                                (when (< i 64)
-                                                  (cl-ds:send-recur i :i (1+ i)))))))
-  (let ((range (cl-ds:whole-range container)))
-    (cl-ds.common.rrb::init-rrb range container :from 5)
-    (iterate
-      (for (values value more) = (cl-ds:consume-front range))
-      (while more)
-      (for i from 5)
-      (is value i))))
+(let* ((container (cl-ds:make-from-traversable
+                   'functional-rrb-vector
+                   (cl-ds:iota-range :to 64)))
+       (range (cl-ds:whole-range container)))
+  (cl-ds.common.rrb::init-rrb range container :from 5)
+  (iterate
+    (for (values value more) = (cl-ds:consume-front range))
+    (while more)
+    (for i from 5)
+    (is value i)))
+
+
+(let* ((container (cl-ds:make-from-traversable
+                   'functional-rrb-vector
+                   (cl-ds:iota-range :to 32)))
+       (range (cl-ds:whole-range container)))
+  (cl-ds.common.rrb::init-rrb range container :from 5)
+  (iterate
+    (for (values value more) = (cl-ds:consume-front range))
+    (while more)
+    (for i from 5)
+    (is value i)))
 
 
 (let ((container (cl-ds:make-of-size 'mutable-rrb-vector 500)))
@@ -160,5 +171,15 @@
   (is-error (cl-ds:at container 6) 'cl-ds:argument-out-of-bounds)
   (is-error (cl-ds:at container -1) 'cl-ds:argument-out-of-bounds)
   (is-error (cl-ds:at container 0.2) 'cl:type-error))
+
+
+(let* ((iota (cl-ds:iota-range :to 10000))
+       (container (cl-ds:make-from-traversable 'functional-rrb-vector
+                                               iota))
+       (range (cl-ds:whole-range container)))
+  (cl-ds:across (lambda (x)
+                  (is x (cl-ds:consume-front range))
+                  (is x (cl-ds:consume-front iota)))
+                container))
 
 (finalize)
