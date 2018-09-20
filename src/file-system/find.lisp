@@ -295,13 +295,8 @@
   (cl-fad:list-directory directory))
 
 
-(defun directory-regex-matches (regex path n)
-  (~> (serapeum:nlet rec ((p path) (i n))
-        (if (= i 0)
-            p
-            (rec (cl-fad:pathname-parent-directory p)
-                 (1- i))))
-      (osicat:unmerge-pathnames path _)
+(defun directory-regex-matches (regex path parent)
+  (~> (osicat:unmerge-pathnames path parent)
       namestring
       (cl-ppcre:scan regex _)
       not
@@ -348,21 +343,21 @@
                    (values nil nil))
                  (let* ((directory-content (~>> prev-path directory-content
                                                 (delete-if-not #'cl-fad:directory-exists-p)))
-                        (new-state (mapcar (curry #'list 1) directory-content)))
+                        (new-state (mapcar (curry #'list 1 prev-path) directory-content)))
                    (setf (access-state cell) new-state)
                    (go :start))))
            (iterate
              (until (endp (access-state cell)))
-             (for (depth next-path) = (pop (access-state cell)))
+             (for (depth prev-path next-path) = (pop (access-state cell)))
              (when (not-greater times depth)
                (let ((directory-content (~>> next-path directory-content
                                              (delete-if-not #'cl-fad:directory-exists-p))))
                  (setf (access-state cell)
-                       (cl-ds.utils:add-to-list (mapcar (curry #'list (1+ depth))
+                       (cl-ds.utils:add-to-list (mapcar (curry #'list (1+ depth) prev-path)
                                                         directory-content)
                                                 (access-state cell)))
                  (when (and (times-matches times depth)
-                            (directory-regex-matches path next-path depth))
+                            (directory-regex-matches path next-path prev-path))
                    (return-from cl-ds:consume-front
                      (values next-path t)))))
              (finally (go :start)))))))
