@@ -59,6 +59,11 @@
   ())
 
 
+(defclass all-files-file-range-stack-cell (stateful-file-range-stack-cell
+                                           fundamental-file-range-stack-cell)
+  ())
+
+
 (defclass regex-file-file-range-stack-cell (stateful-file-range-stack-cell
                                             fundamental-file-range-stack-cell)
   ())
@@ -146,6 +151,10 @@
         :path path))
 
 
+(defmethod make-stack-cell ((name (eql :all-files)) &key)
+  (make 'all-files-file-range-stack-cell))
+
+
 (defun to-pathname (x &rest args)
   (etypecase x
     (string (apply #'make-pathname args))
@@ -219,6 +228,27 @@
                             (return-from cl-ds:consume-front
                               (values nil nil)))
                           (go :start))))))))
+
+
+(defmethod cl-ds:consume-front ((cell all-files-file-range-stack-cell))
+  (tagbody :start
+     (bind ((state (access-state cell)))
+       (if (null state)
+           (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
+             (if (null prev-path)
+                 (return-from cl-ds:consume-front
+                   (values nil nil))
+                 (let* ((directory-content
+                          (~>> prev-path directory-content
+                               (delete-if-not (rcurry #'osicat:file-exists-p
+                                                      :regular-file)))))
+                   (setf (access-state cell) directory-content)
+                   (go :start))))
+           (iterate
+             (until (endp (access-state cell)))
+             (for next-path = (pop (access-state cell)))
+             (values next-path t)
+             (finally (go :start)))))))
 
 
 (defmethod cl-ds:consume-front ((cell regex-file-file-range-stack-cell))
