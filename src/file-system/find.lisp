@@ -101,7 +101,7 @@
   (check-type times (or list positive-integer symbol))
   (if (listp times)
       (progn
-        (check-type (first times) non-negative-integer)
+        (check-type (first times) positive-integer)
         (check-type (second times) (or positive-integer symbol))
         (unless (eql (length times) 2)
           (error 'cl-ds:invalid-argument
@@ -294,6 +294,19 @@
   (cl-fad:list-directory directory))
 
 
+(defun directory-regex-matches (regex path n)
+  (~> (serapeum:nlet rec ((p path) (i n))
+        (if (= i 0)
+            p
+            (rec (cl-fad:pathname-parent-directory p)
+                 (1- i))))
+      (osicat:unmerge-pathnames path _)
+      namestring
+      (cl-ppcre:scan regex _)
+      not
+      null))
+
+
 (defun regex-matches (regex path)
   (~> path
       (osicat:unmerge-pathnames (cl-fad:pathname-parent-directory path))
@@ -335,31 +348,22 @@
                  (let* ((directory-content (~>> prev-path directory-content
                                                 (delete-if-not #'cl-fad:directory-exists-p)))
                         (new-state (mapcar (curry #'list 1) directory-content)))
-                   (setf (access-state cell) (cons (list 0 prev-path)
-                                                   new-state))
+                   (setf (access-state cell) new-state)
                    (go :start))))
            (iterate
-             (with allowed-zero = (etypecase times
-                                    (list (zerop (first times)))
-                                    (positive-integer nil)
-                                    (symbol nil)))
              (until (endp (access-state cell)))
              (for (depth next-path) = (pop (access-state cell)))
-             (if (zerop depth)
-                 (when allowed-zero
+             (when (not-greater times depth)
+               (let ((directory-content (~>> next-path directory-content
+                                             (delete-if-not #'cl-fad:directory-exists-p))))
+                 (setf (access-state cell)
+                       (cl-ds.utils:add-to-list (mapcar (curry #'list (1+ depth))
+                                                        directory-content)
+                                                (access-state cell)))
+                 (when (and (times-matches times depth)
+                            (directory-regex-matches path next-path depth))
                    (return-from cl-ds:consume-front
-                     (values next-path t)))
-                 (when (and (regex-matches path next-path)
-                            (not-greater times depth))
-                   (let ((directory-content (~>> next-path directory-content
-                                                 (delete-if-not #'cl-fad::directory-exists-p))))
-                     (setf (access-state cell)
-                           (cl-ds.utils:add-to-list (mapcar (curry #'list (1+ depth))
-                                                            directory-content)
-                                                    (access-state cell)))
-                     (when (times-matches times depth)
-                       (return-from cl-ds:consume-front
-                         (values next-path t))))))
+                     (values next-path t)))))
              (finally (go :start)))))))
 
 

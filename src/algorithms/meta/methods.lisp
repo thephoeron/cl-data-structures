@@ -95,6 +95,13 @@ Top level aggregator protocol.
    arguments key (apply #'multi-aggregation-stages function arguments)))
 
 
+(defmethod construct-aggregator ((range cl-ds:fundamental-container)
+                                 key function outer-fn arguments)
+  (construct-aggregator (cl-ds:whole-range range)
+                        key function
+                        outer-fn arguments))
+
+
 (defmethod construct-aggregator ((range cl:hash-table)
                                  key
                                  (function multi-aggregation-function)
