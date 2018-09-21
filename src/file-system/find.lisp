@@ -56,7 +56,7 @@
                                                  directory-file-range-stack-cell)
   ((%times :initarg :times
            :reader read-times))
-  (:initargs (:times 1)))
+  (:default-initargs :times 1))
 
 
 (defmethod (setf access-prev-cell)
