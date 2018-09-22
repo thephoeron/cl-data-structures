@@ -137,6 +137,11 @@
                              (:module "rrb"
                               :components ((:file "api")
                                            (:test-file "tests")))))
+               (:module "queues"
+                :components ((:file "packages")
+                             (:file "common")
+                             (:module "2-3-tree"
+                              :components ((:file "api")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
