@@ -2,7 +2,7 @@
 
 
 (defclass tree ()
-  ((%root :initform nil
+  ((%root :initform cl-ds.meta:null-bucket
           :accessor access-root)
    (%size :initform 0
           :accessor access-size
@@ -111,10 +111,11 @@
           (unless (eq n1 left)
             (setf (access-left node) n1))
 		      (values node cl-ds.meta:null-bucket))
-        (progn
-          (setf (access-left node) n1
-                (access-right node) n2)
-		      (values node cl-ds.meta:null-bucket)))))
+        (let ((new-node (make '3-node
+                              :left n1
+                              :middle n2
+                              :right (access-right node))))
+		      (values new-node cl-ds.meta:null-bucket)))))
 
 
 (defun insert-front-into-tree (tree new)
@@ -125,7 +126,7 @@
 
 
 (defun insert-front-into-tree! (tree new)
-  (bind (((:values n1 n2) (insert-front! tree new)))
+  (bind (((:values n1 n2) (insert-front! (access-root tree) new)))
     (setf (access-root tree)
           (if (cl-ds.meta:null-bucket-p n2)
               n1
@@ -134,7 +135,8 @@
 
 (defun transactional-insert-front-into-tree! (tree new)
   (bind (((:values n1 n2) (transactional-insert-front!
-                           tree new
+                           (access-root tree)
+                           new
                            #1=(cl-ds.common.abstract:read-ownership-tag tree))))
     (setf (access-root tree)
           (if (cl-ds.meta:null-bucket-p n2)
@@ -150,7 +152,7 @@
 
 
 (defun delete-back-from-tree! (tree)
-  (bind (((:values node _ old-value) (delete-back! tree)))
+  (bind (((:values node _ old-value) (delete-back! (access-root tree))))
     (setf (access-root tree) node)
     (values node old-value)))
 
