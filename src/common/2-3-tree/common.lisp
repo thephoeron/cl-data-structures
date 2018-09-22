@@ -161,11 +161,16 @@
 (defun delete-back-from-tree! (tree)
   (bind (((:values node _ old-value) (delete-back! (access-root tree))))
     (setf (access-root tree) node)
-    (values node old-value)))
+    (values tree old-value)))
 
 
 (defun transactional-delete-back-from-tree! (tree)
-  (delete-back-from-tree! tree))
+  (bind (((:values node _ old-value)
+          (transactional-delete-back!
+           (access-root tree)
+           (cl-ds.common.abstract:read-ownership-tag tree))))
+    (setf (access-root tree) node)
+    (values tree old-value)))
 
 
 (defmethod transactional-insert-front! ((node 3-node) new tag)
@@ -330,7 +335,7 @@
 		       ;; the subtree rooted at NODE, replace the
 		       ;; original right child with what we got back, and
 		       ;; return the original node.
-		       (values (make '2-node
+		       (values (make 'tagged-2-node
                          :left (access-left node)
                          :right n)
                    nil
@@ -435,7 +440,7 @@
                  ((cl-ds.common.abstract:acquire-ownership node tag)
                   (setf (access-right node) n)
                   (values node nil old-value))
-                 (t (values (make '3-node
+                 (t (values (make 'tagged-3-node
                                   :right n
                                   :left left
                                   :ownership-tag tag
@@ -453,22 +458,25 @@
            (if (cl-ds.common.abstract:acquire-ownership node tag)
 		           (bind ((l (access-left middle))
 			                (r (access-right middle))
-			                (new-node (make '2-node :ownership-tag tag
-                                              :left left
-                                              :right node)))
+			                (new-node (make 'tagged-2-node
+                                      :ownership-tag tag
+                                      :left left
+                                      :right node)))
                  (psetf (access-middle node) r
                         (access-left node) l
                         (access-right node) n)
 		             (values new-node nil old-value))
                (bind ((l (access-left middle))
 			                (r (access-right middle))
-			                (new-node-1 (make '3-node :ownership-tag tag
-                                                :left l
-                                                :middle r
-                                                :right n))
-			                (new-node-2 (make '2-node :ownership-tag tag
-                                                :left left
-                                                :right new-node-1)))
+			                (new-node-1 (make 'tagged-3-node
+                                        :ownership-tag tag
+                                        :left l
+                                        :middle r
+                                        :right n))
+			                (new-node-2 (make 'tagged-2-node
+                                        :ownership-tag tag
+                                        :left left
+                                        :right new-node-1)))
 		             (values new-node-2 nil old-value))))
 		      (t
 		       ;; The node n represents a subtree that has the
@@ -481,24 +489,29 @@
 		           (bind ((l (access-left middle))
 			                (m (access-middle middle))
 			                (r (access-right middle))
-			                (new-node-1 (make '2-node :left l :right m
+			                (new-node-1 (make 'tagged-2-node
+                                        :left l :right m
                                                 :ownership-tag tag))
-			                (new-node-2 (make '2-node :left r :right n
-                                                :ownership-tag tag)))
+			                (new-node-2 (make 'tagged-2-node
+                                        :left r :right n
+                                        :ownership-tag tag)))
                  (setf (access-middle node) new-node-1
                        (access-right node) new-node-2)
 		             (values node nil old-value))
                (bind ((l (access-left middle))
 			                (m (access-middle middle))
 			                (r (access-right middle))
-			                (new-node-1 (make '2-node :left l :right m
-                                                :ownership-tag tag))
-			                (new-node-2 (make '2-node :left r :right n
-                                                :ownership-tag tag))
-                      (node (make '3-node :left (access-left node)
-                                          :middle new-node-1
-                                          :ownership-tag tag
-                                          :right new-node-2)))
+			                (new-node-1 (make 'tagged-2-node
+                                        :left l :right m
+                                        :ownership-tag tag))
+			                (new-node-2 (make 'tagged-2-node
+                                        :left r :right n
+                                        :ownership-tag tag))
+                      (node (make 'tagged-3-node
+                                  :left (access-left node)
+                                  :middle new-node-1
+                                  :ownership-tag tag
+                                  :right new-node-2)))
 		             (values node nil old-value)))))))
 
 
