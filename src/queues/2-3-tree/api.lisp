@@ -52,7 +52,7 @@
         (progn
           (cl-ds.common.2-3:insert-front-into-tree!
            structure
-           head)
+           (lambda () head))
           (setf (access-head-position structure) (- +buffer-size+ 2)
                 head #1#
                 (access-head structure) head
