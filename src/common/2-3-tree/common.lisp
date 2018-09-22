@@ -3,10 +3,7 @@
 
 (defclass tree ()
   ((%root :initform cl-ds.meta:null-bucket
-          :accessor access-root)
-   (%size :initform 0
-          :accessor access-size
-          :reader cl-ds:size)))
+          :accessor access-root)))
 
 
 (defclass tagged-tree
