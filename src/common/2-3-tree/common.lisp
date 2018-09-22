@@ -9,6 +9,12 @@
           :reader cl-ds:size)))
 
 
+(defclass tagged-tree
+    (tree cl-ds.common.abstract:fundamental-ownership-tagged-object)
+  ()
+  (:default-initargs :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+
+
 (defclass node ()
   ())
 
@@ -35,12 +41,12 @@
 
 
 (defclass tagged-2-node
-    (2-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
+    (2-node cl-ds.common.abstract:tagged-node)
   ())
 
 
 (defclass tagged-3-node
-    (3-node cl-ds.common.abstract:fundamental-ownership-tagged-object)
+    (3-node cl-ds.common.abstract:tagged-node)
   ())
 
 
@@ -70,19 +76,18 @@
 
 (defmethod transactional-insert-front! ((node 2-node) new tag)
   (bind ((left (access-left node))
-         ((:values n1 n2) (transactional-insert-front! left new)))
+         ((:values n1 n2) (transactional-insert-front! left new tag)))
 	  (if (cl-ds.meta:null-bucket-p n2)
-        (progn
-          (unless (eq n1 left)
-            (if (cl-ds.common.abstract:acquire-ownership node tag)
-                (progn
-                  (setf (access-left node) n1)
-                  (values node cl-ds.meta:null-bucket)))
-		        (let ((new-node (make 'tagged-2-node :ownership-tag tag
-                                                 :left n1
-                                                 :right (access-right node))))
-			        (values new-node cl-ds.meta:null-bucket))))
-		    (let ((new-node (make '3-node
+        (cond ((eq n1 left) (values node cl-ds.meta:null-bucket))
+              ((cl-ds.common.abstract:acquire-ownership node tag)
+               (setf (access-left node) n1)
+               (values node cl-ds.meta:null-bucket))
+              (t
+		           (let ((new-node (make 'tagged-2-node :ownership-tag tag
+                                                    :left n1
+                                                    :right (access-right node))))
+			           (values new-node cl-ds.meta:null-bucket))))
+		    (let ((new-node (make 'tagged-3-node
                               :left n1
                               :middle n2
                               :ownership-tag tag
@@ -134,16 +139,18 @@
 
 
 (defun transactional-insert-front-into-tree! (tree new)
-  (bind (((:values n1 n2) (transactional-insert-front!
-                           (access-root tree)
+  (bind ((root (access-root tree))
+         (tag (cl-ds.common.abstract:read-ownership-tag tree))
+         ((:values n1 n2) (transactional-insert-front!
+                           root
                            new
-                           #1=(cl-ds.common.abstract:read-ownership-tag tree))))
+                           tag)))
     (setf (access-root tree)
           (if (cl-ds.meta:null-bucket-p n2)
               n1
-              (make '2-node :left n1
-                            :right n2
-                            :tag #1#)))))
+              (make 'tagged-2-node :left n1
+                                   :right n2
+                                   :ownership-tag tag)))))
 
 
 (defun delete-back-from-tree (tree)
@@ -163,19 +170,18 @@
 
 (defmethod transactional-insert-front! ((node 3-node) new tag)
   (bind ((left (access-left node))
-         ((:values n1 n2) (insert-front left new)))
+         ((:values n1 n2) (transactional-insert-front! left new tag)))
     (if (cl-ds.meta:null-bucket-p n2)
-        (unless (eq left n1)
-          (if (cl-ds.common.abstract:acquire-ownership node tag)
-              (progn
-                (setf (access-left node) n1)
-		            (values node cl-ds.meta:null-bucket))
-		          (let ((new-node (make 'tagged-3-node
-                                    :left n1
-                                    :ownership-tag tag
-                                    :middle (access-middle node)
-                                    :right (access-right node))))
-			          (values new-node cl-ds.meta:null-bucket))))
+        (cond ((eq left n1) (values node cl-ds.meta:null-bucket))
+              ((cl-ds.common.abstract:acquire-ownership node tag)
+               (setf (access-left node) n1)
+		           (values node cl-ds.meta:null-bucket))
+              (t (let ((new-node (make 'tagged-3-node
+                                       :left n1
+                                       :ownership-tag tag
+                                       :middle (access-middle node)
+                                       :right (access-right node))))
+			             (values new-node cl-ds.meta:null-bucket))))
 		    (let ((new-node-1 (make 'tagged-2-node
                                 :ownership-tag tag
                                 :left n1
