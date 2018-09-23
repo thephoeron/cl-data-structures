@@ -55,7 +55,62 @@
 
 
 (defmethod cl-ds.meta:position-modification
-    ((operation cl-ds.meta:grow-function)
+    ((operation cl-ds.meta:put-function)
+     (structure functional-2-3-queue)
+     container
+     location
+     &rest all)
+  (let ((head-position (access-head-position structure))
+        (size (cl-ds.queues:access-size structure))
+        (head (access-head structure))
+        (element-type (read-element-type structure)))
+    (declare (type buffer-index head-position)
+             (type queue-buffer head))
+    (cond ((eql head-position +buffer-size+)
+           (bind ((new-root (cl-ds.common.2-3:insert-front-into-tree
+                             structure
+                             (lambda () head)))
+                  (head (make-array
+                             +buffer-size+
+                             :element-type element-type))
+                  (head-position 1)
+                  (size (1+ size)))
+             (setf (aref head 0) (apply #'cl-ds.meta:make-bucket
+                                        operation
+                                        container
+                                        location
+                                        all))
+             (values (make (type-of structure)
+                           :head head
+                           :size size
+                           :element-type element-type
+                           :head-position head-position
+                           :tail (access-tail structure)
+                           :tail-position (access-tail-position structure)
+                           :root new-root
+                           :tail-end (access-tail-end structure))
+                     cl-ds.common:empty-eager-modification-operation-status)))
+          (t (bind ((head (copy-array head))
+                    (size (1+ size)))
+               (setf (aref head head-position) (cl-ds.meta:make-bucket operation
+                                                                       container
+                                                                       location))
+               (values (make (type-of structure)
+                             :head head
+                             :element-type element-type
+                             :size size
+                             :head-position (1+ head-position)
+                             :tail (access-tail structure)
+                             :tail-position (access-tail-position structure)
+                             :root (cl-ds.common.2-3:access-root structure)
+                             :tail-end (access-tail-end structure))
+                       cl-ds.common:empty-eager-modification-operation-status)
+               (values structure
+                       cl-ds.common:empty-eager-modification-operation-status))))))
+
+
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:put!-function)
      (structure mutable-2-3-queue)
      container
      location
@@ -91,7 +146,7 @@
 
 
 (defmethod cl-ds.meta:position-modification
-    ((operation cl-ds.meta:shrink-function)
+    ((operation cl-ds.meta:take-out!-function)
      (structure mutable-2-3-queue)
      container
      location
