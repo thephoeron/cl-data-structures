@@ -11,4 +11,8 @@
    #:delete-back-from-tree!
    #:insert-front-into-tree
    #:insert-front-into-tree!
+   #:node
+   #:access-left
+   #:access-right
+   #:access-middle
    #:tree))

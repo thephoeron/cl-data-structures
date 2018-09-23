@@ -223,6 +223,7 @@
   serapeum:econd
   serapeum:ordering
   serapeum:nest
+  serapeum:nlet
   serapeum:flip
   serapeum:fork
   serapeum:fork2

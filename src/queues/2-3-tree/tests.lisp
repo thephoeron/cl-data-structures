@@ -2,13 +2,14 @@
 (defpackage 2-3-queue-tests (:use :cl :prove :cl-data-structures.aux-package))
 (in-package :2-3-queue-tests)
 
-(plan 355)
+(plan 490)
 
 (let ((queue (make 'cl-ds.queues.2-3-tree::mutable-2-3-queue)))
   (iterate
     (for i from 0 below 100)
     (is (cl-ds:size queue) i)
-    (cl-ds:put! queue i))
+    (cl-ds:put! queue i)
+    (is (cl-ds:at queue :back) i))
   (iterate
     (for i from 0 below 100)
     (is (cl-ds:size queue) (- 100 i))
@@ -19,14 +20,16 @@
   (iterate
     (for i from 0 below 20)
     (is (cl-ds:size queue) i)
-    (cl-ds:put! queue i))
+    (cl-ds:put! queue i)
+    (is (cl-ds:at queue :back) i))
   (iterate
     (for i from 0 below 5)
     (cl-ds:mod-bind (container found value) (cl-ds:take-out! queue)
       (is value i)))
   (iterate
     (for i from 0 below 15)
-    (cl-ds:put! queue i))
+    (cl-ds:put! queue i)
+    (is (cl-ds:at queue :back) i))
   (iterate
     (for i from 5 below 20)
     (cl-ds:mod-bind (container found value) (cl-ds:take-out! queue)

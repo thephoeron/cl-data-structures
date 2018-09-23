@@ -153,11 +153,36 @@
                      (position (eql :front))
                      &rest more)
   (cl-ds:assert-one-dimension more)
-  cl-ds.utils:todo)
+  (when (~> container cl-ds:size zerop)
+    (return-from cl-ds:at (values nil nil)))
+  (let ((tail (access-tail container))
+        (tail-position (access-tail-position container))
+        (tail-end (access-tail-end container)))
+    (if (eql tail-position tail-end)
+        (iterate
+          (for node initially (cl-ds.common.2-3:access-root container)
+               then (cl-ds.common.2-3:access-right node))
+          (while (typep node 'cl-ds.common.2-3:node))
+          (finally
+           (return (values (aref (the queue-buffer node) 0)
+                           t))))
+        (values (aref tail tail-position) t))))
 
 
 (defmethod cl-ds:at ((container 2-3-queue)
                      (position (eql :back))
                      &rest more)
   (cl-ds:assert-one-dimension more)
-  cl-ds.utils:todo)
+  (when (~> container cl-ds:size zerop)
+    (return-from cl-ds:at (values nil nil)))
+  (let ((head (access-head container))
+        (head-position (access-head-position container)))
+    (if (or (null head) (zerop head-position))
+        (iterate
+          (for node initially (cl-ds.common.2-3:access-root container)
+               then (cl-ds.common.2-3:access-left node))
+          (while (typep node 'cl-ds.common.2-3:node))
+          (finally
+           (return (values (aref (the queue-buffer node) #.(1- +buffer-size+))
+                           t))))
+        (values (aref head (1- head-position)) t))))
