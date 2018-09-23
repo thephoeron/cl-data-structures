@@ -13,6 +13,10 @@
                :initform nil
                :type fundamental-file-range-stack-cell
                :accessor access-prev-cell)
+   (%predicate :initarg :predicate
+               :type function
+               :reader read-predicate
+               :initform (constantly t))
    (%path :initarg :path
           :type (or nil string pathname)
           :reader read-path)))
@@ -95,7 +99,7 @@
 
 
 (defmethod make-instance :before ((range regex-directory-file-range-stack-cell)
-                                  &key path times)
+                                  &key path times &allow-other-keys)
   (check-type path string)
   (check-type times (or list positive-integer symbol))
   (if (listp times)
@@ -120,53 +124,60 @@
 
 
 (defmethod make-instance :before ((range file-file-range-stack-cell)
-                                  &key path)
+                                  &key path predicate &allow-other-keys)
+  (ensure-function predicate)
   (check-type path (or string pathname)))
 
 
 (defmethod make-instance :before ((range directory-file-range-stack-cell)
-                                  &key path)
+                                  &key path &allow-other-keys)
   (check-type path (or string pathname)))
 
 
 (defmethod make-instance :before ((range recursive-content-file-range-stack-cell)
-                                  &key path)
+                                  &key path &allow-other-keys)
   (check-type path (or string pathname)))
 
 
 (defmethod make-instance :before ((range regex-file-file-range-stack-cell)
-                                  &key path)
+                                  &key path &allow-other-keys)
   (check-type path string))
 
 
-(defmethod make-stack-cell ((name (eql :directory)) &key path)
+(defmethod make-stack-cell ((name (eql :directory)) &key path (predicate (constantly t)))
   (make 'directory-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :regex-directory)) &key path (times 1))
+(defmethod make-stack-cell ((name (eql :regex-directory)) &key path (times 1) (predicate (constantly t)))
   (make 'regex-directory-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path path
         :times times))
 
 
-(defmethod make-stack-cell ((name (eql :regex-file)) &key path)
+(defmethod make-stack-cell ((name (eql :regex-file)) &key path (predicate (constantly t)))
   (make 'regex-file-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :file)) &key path)
+(defmethod make-stack-cell ((name (eql :file)) &key path (predicate (constantly t)))
   (make 'file-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :all-directories)) &key (path ""))
+(defmethod make-stack-cell ((name (eql :all-directories)) &key (path "") (predicate (constantly t)))
   (make 'recursive-content-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path path))
 
 
-(defmethod make-stack-cell ((name (eql :all-files)) &key)
+(defmethod make-stack-cell ((name (eql :all-files)) &key (predicate (constantly t)))
   (make 'all-files-file-range-stack-cell
+        :predicate (ensure-function predicate)
         :path nil))
 
 
@@ -183,14 +194,16 @@
            (setf (slot-value cell '%path) nil)
            (if (and (not (null path))
                     (setf path (to-pathname path :directory path))
-                    (osicat:directory-exists-p path))
+                    (osicat:directory-exists-p path)
+                    (~> cell read-predicate (funcall path)))
                (return-from cl-ds:consume-front (values path t))
                (return-from cl-ds:consume-front (values nil nil))))
          (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
            (if (null prev-path)
                (return-from cl-ds:consume-front (values nil nil))
                (let ((result (merge-pathnames (read-path cell) prev-path)))
-                 (if (osicat:directory-exists-p result)
+                 (if (and (osicat:directory-exists-p result)
+                          (~> cell read-predicate (funcall result)))
                      (return-from cl-ds:consume-front (values result t))
                      (go :start))))))))
 
@@ -214,9 +227,7 @@
                    (progn
                      (setf prev-path (merge-pathnames path p))
                      (unless (cl-fad:directory-exists-p prev-path)
-                       (push :end (access-state cell))
-                       (return-from cl-ds:consume-front
-                         (values nil nil))))
+                       (go :start)))
                    (progn
                      (push :end (access-state cell))
                      (return-from cl-ds:consume-front
@@ -235,11 +246,12 @@
              (when (and (~> cell access-state endp)
                         (null (access-prev-cell cell)))
                (push :end (access-state cell)))
-             (return-from cl-ds:consume-front
-               (values next-path t))
+             (when (~> cell read-predicate (funcall next-path))
+               (return-from cl-ds:consume-front
+                 (values next-path t)))
              (finally (if (null (access-prev-cell cell))
                           (progn
-                            (push :end (access-end cell))
+                            (push :end (access-state cell))
                             (return-from cl-ds:consume-front
                               (values nil nil)))
                           (go :start))))))))
@@ -255,8 +267,10 @@
                    (values nil nil))
                  (let* ((directory-content
                           (~>> prev-path directory-content
-                               (delete-if-not (rcurry #'osicat:file-exists-p
-                                                      :regular-file)))))
+                               (delete-if-not (cl-ds.utils:and*
+                                               (rcurry #'osicat:file-exists-p
+                                                       :regular-file)
+                                               (read-predicate cell))))))
                    (setf (access-state cell) directory-content)
                    (go :start))))
            (iterate
@@ -285,7 +299,8 @@
            (iterate
              (until (endp (access-state cell)))
              (for next-path = (pop (access-state cell)))
-             (when (regex-matches path next-path)
+             (when (and (~> cell read-predicate (funcall next-path))
+                        (regex-matches path next-path))
                (return-from cl-ds:consume-front
                  (values next-path t)))
              (finally (go :start)))))))
@@ -357,6 +372,7 @@
                                                         directory-content)
                                                 (access-state cell)))
                  (when (and (times-matches times depth)
+                            (~> cell read-predicate (funcall next-path))
                             (directory-regex-matches path next-path prev-path))
                    (return-from cl-ds:consume-front
                      (values next-path t)))))
@@ -364,14 +380,16 @@
 
 
 (defmethod cl-ds:consume-front ((cell file-file-range-stack-cell))
-  (bind ((path (read-path cell))
-         (inner (~> cell access-prev-cell cl-ds:consume-front)))
-    (if (null inner)
-        (values nil nil)
-        (let ((next-path (merge-pathnames path inner)))
-          (if (osicat:file-exists-p next-path :regular-file)
-              (values next-path t)
-              (values nil nil))))))
+  (tagbody :start
+     (bind ((path (read-path cell))
+            (inner (~> cell access-prev-cell cl-ds:consume-front)))
+       (if (null inner)
+           (values nil nil)
+           (let ((next-path (merge-pathnames path inner)))
+             (if (and (osicat:file-exists-p next-path :regular-file)
+                      (~> cell read-predicate (funcall next-path)))
+                 (return-from cl-ds:consume-front (values next-path t))
+                 (go :start)))))))
 
 
 (defgeneric find (description)
@@ -409,6 +427,7 @@
 (defmethod cl-ds:clone ((cell fundamental-file-range-stack-cell))
   (make (type-of cell)
         :prev-cell (and #1=(access-prev-cell cell) (cl-ds:clone #1#))
+        :predicate (read-predicate cell)
         :path (read-path cell)))
 
 
