@@ -405,7 +405,9 @@
 
 
 (defmethod cl-ds:consume-front ((range find-range))
-  (cl-ds:consume-front (access-stack range)))
+  (if-let ((stack (access-stack range)))
+    (cl-ds:consume-front stack)
+    (values nil nil)))
 
 
 (defmethod cl-ds:clone ((range find-range))
