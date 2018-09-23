@@ -413,8 +413,9 @@
 
 
 (defmethod cl-ds:clone ((range find-range))
-  (make 'find-range
-        :stack (cl-ds:clone (access-stack range))))
+  (let ((stack (access-stack range)))
+    (make 'find-range
+          :stack (when stack (cl-ds:clone stack)))))
 
 
 (defmethod cl-ds:clone :around ((cell stateful-file-range-stack-cell))
@@ -440,7 +441,8 @@
 
 
 (defmethod cl-ds:reset! ((range find-range))
-  (cl-ds:reset! (access-stack range))
+  (when-let ((stack (access-stack range)))
+    (cl-ds:reset! stack))
   range)
 
 
