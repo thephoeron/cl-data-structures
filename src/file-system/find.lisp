@@ -226,14 +226,13 @@
                  (if-let ((p (~>> cell access-prev-cell cl-ds:consume-front)))
                    (progn
                      (setf prev-path (merge-pathnames path p))
-                     (unless (cl-fad:directory-exists-p prev-path)
-                       (go :start)))
+                     (when (cl-fad:directory-exists-p prev-path)
+                       (setf (access-state cell) (list prev-path)))
+                     (go :start))
                    (progn
                      (push :end (access-state cell))
                      (return-from cl-ds:consume-front
-                       (values nil nil)))))
-             (setf (access-state cell) (list prev-path))
-             (go :start))
+                       (values nil nil))))))
            (iterate
              (until (or (null (access-state cell))
                         (~> cell access-state first (eql :end))))
