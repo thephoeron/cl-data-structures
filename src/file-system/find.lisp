@@ -120,7 +120,7 @@
               (error 'cl-ds:invalid-argument
                      :argument :times
                      :text "Lower bound of times should be less then upper bound."))))
-      (check-type times non-negative-integer)))
+      (check-type times positive-integer)))
 
 
 (defmethod make-instance :before ((range file-file-range-stack-cell)
