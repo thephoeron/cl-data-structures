@@ -285,7 +285,7 @@
   (tagbody :start
      (bind ((path (read-path cell))
             (state (access-state cell)))
-       (if (null state)
+       (if (endp state)
            (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
              (if (null prev-path)
                  (return-from cl-ds:consume-front
