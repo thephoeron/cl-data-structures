@@ -47,7 +47,11 @@
 
 
 (defun make-mutable-2-3-queue (&key (element-type t))
-  (make '2-3-queue :element-type element-type))
+  (make 'mutable-2-3-queue :element-type element-type))
+
+
+(defun make-functional-2-3-queue (&key (element-type t))
+  (make 'functional-2-3-queue :element-type element-type))
 
 
 (defmethod cl-ds.meta:position-modification
