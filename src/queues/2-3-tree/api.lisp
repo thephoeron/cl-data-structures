@@ -105,7 +105,8 @@
           (values structure status))
         (if (cl-ds.meta:null-bucket-p root)
             (if (~> structure cl-ds:size zerop)
-                cl-ds.utils:todo ; should signal error
+                (error 'cl-ds:operation-not-allowed
+                       :text "Can't reduce size of the empty queue!")
                 (bind ((head (access-head structure))
                        (bucket (aref head 0))
                        (head-position (access-head-position structure))
