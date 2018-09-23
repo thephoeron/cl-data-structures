@@ -41,6 +41,15 @@
   ())
 
 
+(defclass functional-2-3-queue (2-3-queue
+                                cl-ds.queues:fundamental-mutable-queue)
+  ())
+
+
+(defun make-mutable-2-3-queue (&key (element-type t))
+  (make '2-3-queue :element-type element-type))
+
+
 (defmethod cl-ds.meta:position-modification
     ((operation cl-ds.meta:grow-function)
      (structure mutable-2-3-queue)
