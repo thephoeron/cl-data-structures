@@ -12,29 +12,28 @@
   `(integer 0 ,+buffer-size+))
 
 
-(locally (declare (optimize (debug 3) (safety 3)))
-  (defclass 2-3-queue (cl-ds.common.2-3:tree)
-    ((%element-type :initarg :element-type
-                    :initform t
-                    :reader read-element-type)
-     (%head :accessor access-head
-            :initform nil
-            :initarg :head)
-     (%head-position :accessor access-head-position
-                     :initarg :head-position
-                     :type buffer-index
-                     :initform 0)
-     (%tail :accessor access-tail
-            :initform nil
-            :initarg :tail)
-     (%tail-position :accessor access-tail-position
-                     :initarg :tail-position
-                     :type buffer-index
-                     :initform 0)
-     (%tail-end :accessor access-tail-end
-                :initarg :tail-end
-                :type buffer-index
-                :initform 0))))
+(defclass 2-3-queue (cl-ds.common.2-3:tree)
+  ((%element-type :initarg :element-type
+                  :initform t
+                  :reader read-element-type)
+   (%head :accessor access-head
+          :initform nil
+          :initarg :head)
+   (%head-position :accessor access-head-position
+                   :initarg :head-position
+                   :type buffer-index
+                   :initform 0)
+   (%tail :accessor access-tail
+          :initform nil
+          :initarg :tail)
+   (%tail-position :accessor access-tail-position
+                   :initarg :tail-position
+                   :type buffer-index
+                   :initform 0)
+   (%tail-end :accessor access-tail-end
+              :initarg :tail-end
+              :type buffer-index
+              :initform 0)))
 
 
 (defclass mutable-2-3-queue (2-3-queue
