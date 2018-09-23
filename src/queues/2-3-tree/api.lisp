@@ -9,7 +9,7 @@
 
 
 (deftype buffer-index ()
-  `(integer -1 ,+buffer-size+))
+  `(integer 0 ,+buffer-size+))
 
 
 (locally (declare (optimize (debug 3) (safety 3)))
@@ -23,14 +23,18 @@
      (%head-position :accessor access-head-position
                      :initarg :head-position
                      :type buffer-index
-                     :initform -1)
+                     :initform 0)
      (%tail :accessor access-tail
             :initform nil
             :initarg :tail)
      (%tail-position :accessor access-tail-position
                      :initarg :tail-position
                      :type buffer-index
-                     :initform -1))))
+                     :initform 0)
+     (%tail-end :accessor access-tail-end
+                :initarg :tail-end
+                :type buffer-index
+                :initform 0))))
 
 
 (defclass mutable-2-3-queue (2-3-queue
@@ -51,17 +55,7 @@
                                :element-type (read-element-type structure)))))
     (declare (type buffer-index head-position)
              (type queue-buffer head))
-    (cond ((< head-position 0)
-           (setf (access-head-position structure) 1
-                 (aref head 0) (apply #'cl-ds.meta:make-bucket
-                                      operation
-                                      container
-                                      location
-                                      all)
-                 (cl-ds.queues:access-size structure) (1+ size))
-           (values structure
-                   cl-ds.common:empty-eager-modification-operation-status))
-          ((eql head-position +buffer-size+)
+    (cond ((eql head-position +buffer-size+)
            (cl-ds.common.2-3:insert-front-into-tree! structure
                                                      (lambda () head))
            (setf (access-head-position structure) 1
@@ -92,15 +86,29 @@
      &rest all)
   (let ((tail-position (access-tail-position structure))
         (root (cl-ds.common.2-3:access-root structure))
-        (tail (access-tail structure)))
+        (tail (access-tail structure))
+        (tail-end (access-tail-end structure)))
     (declare (type buffer-index tail-position)
              (type (or null queue-buffer) tail))
-    (if (< tail-position 0)
+    (if (< tail-position tail-end)
+        (bind ((bucket (aref tail tail-position))
+               ((:values new-buffer status changed)
+                (apply #'cl-ds.meta:shrink-bucket!
+                       operation container
+                       bucket location all)))
+          (if (cl-ds.meta:null-bucket-p new-buffer)
+              (progn
+                (decf (cl-ds.queues:access-size structure))
+                (when (eql +buffer-size+ (incf (access-tail-position structure)))
+                  (setf (access-tail-position structure) +buffer-size+)))
+              (setf (aref tail tail-position) new-buffer))
+          (values structure status))
         (if (cl-ds.meta:null-bucket-p root)
             (if (~> structure cl-ds:size zerop)
                 cl-ds.utils:todo ; should signal error
                 (bind ((head (access-head structure))
                        (bucket (aref head 0))
+                       (head-position (access-head-position structure))
                        ((:values shrinked-bucket status)
                         (apply #'cl-ds.meta:shrink-bucket!
                                operation
@@ -108,14 +116,16 @@
                                bucket
                                location
                                all)))
-                  (setf (access-head-position structure) -1
+                  (setf (access-tail-end structure) head-position
+                        (access-head-position structure) 0
                         (access-head structure) nil
                         (access-tail structure) head
                         (access-tail-position structure) 0)
                   (if (cl-ds.meta:null-bucket-p shrinked-bucket)
                       (progn
                         (decf (cl-ds.queues:access-size structure))
-                        (incf (access-tail-position structure)))
+                        (when (eql head-position (incf (access-tail-position structure)))
+                          (setf (access-tail-position structure) -1)))
                       (setf (aref head 0) shrinked-bucket))
                   (values structure status)))
             (bind (((:values _ buffer)
@@ -128,26 +138,14 @@
                            location
                            all)))
               (setf (access-tail-position structure) 0
+                    (access-tail-end structure) +buffer-size+
                     (access-tail structure) buffer)
               (if (cl-ds.meta:null-bucket-p new-bucket)
                   (progn
                     (decf (cl-ds.queues:access-size structure))
-                    (incf (cl-ds.queues:access-size structure))
                     (incf (access-tail-position structure)))
-                  (setf (last-elt buffer) new-bucket))
-              (values structure status)))
-        (bind ((bucket (aref tail tail-position))
-               ((:values new-buffer status changed)
-                (apply #'cl-ds.meta:shrink-bucket!
-                       operation container
-                       bucket location all)))
-          (if (cl-ds.meta:null-bucket-p new-buffer)
-              (progn
-                (decf (cl-ds.queues:access-size structure))
-                (when (eql +buffer-size+ (incf (access-tail-position structure)))
-                  (setf (access-tail-position structure) -1)))
-              (setf (aref tail tail-position) new-buffer))
-          (values structure status)))))
+                  (setf (aref buffer 0) new-bucket))
+              (values structure status))))))
 
 
 (defmethod cl-ds:at ((container 2-3-queue)
