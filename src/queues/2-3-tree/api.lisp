@@ -358,7 +358,8 @@
           (finally
            (return (values (aref (the queue-buffer node) 0)
                            t))))
-        (values (aref tail tail-position) t))))
+        (values (aref tail tail-position)
+                t))))
 
 
 (defmethod cl-ds:at ((container 2-3-queue)
@@ -377,4 +378,5 @@
           (finally
            (return (values (aref (the queue-buffer node) #.(1- +buffer-size+))
                            t))))
-        (values (aref head (1- head-position)) t))))
+        (values (aref head (1- head-position))
+                t))))
