@@ -46,6 +46,28 @@
   ())
 
 
+(defmethod cl-ds:become-functional ((container mutable-2-3-queue))
+  (make 'functional-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :head (access-head container)
+        :element-type (read-element-type container)
+        :head-position (access-head-position container)
+        :tail (access-tail container)
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-mutable ((container functional-2-3-queue))
+  (make 'mutable-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :head (access-head container)
+        :element-type (read-element-type container)
+        :head-position (access-head-position container)
+        :tail (access-tail container)
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
 (defun make-mutable-2-3-queue (&key (element-type t))
   (make 'mutable-2-3-queue :element-type element-type))
 
