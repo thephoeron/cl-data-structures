@@ -63,6 +63,9 @@
   (:default-initargs :times 1))
 
 
+(defgeneric eat-cell (cell))
+
+
 (defmethod (setf access-prev-cell)
     :before ((new-val all-files-file-range-stack-cell)
              (cell regex-directory-file-range-stack-cell))
@@ -187,7 +190,7 @@
     (pathname x)))
 
 
-(defmethod cl-ds:consume-front ((cell directory-file-range-stack-cell))
+(defmethod eat-cell ((cell directory-file-range-stack-cell))
   (tagbody :start
      (if (~> cell access-prev-cell null)
          (let* ((path (read-path cell)))
@@ -196,22 +199,22 @@
                     (setf path (to-pathname path :directory path))
                     (osicat:directory-exists-p path)
                     (~> cell read-predicate (funcall path)))
-               (return-from cl-ds:consume-front (values path t))
-               (return-from cl-ds:consume-front (values nil nil))))
-         (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
+               (return-from eat-cell (values path t))
+               (return-from eat-cell (values nil nil))))
+         (let ((prev-path (~> cell access-prev-cell eat-cell)))
            (if (null prev-path)
-               (return-from cl-ds:consume-front (values nil nil))
+               (return-from eat-cell (values nil nil))
                (let ((result (merge-pathnames (read-path cell) prev-path)))
                  (if (and (osicat:directory-exists-p result)
                           (~> cell read-predicate (funcall result)))
-                     (return-from cl-ds:consume-front (values result t))
+                     (return-from eat-cell (values result t))
                      (go :start))))))))
 
 
-(defmethod cl-ds:consume-front ((cell recursive-content-file-range-stack-cell))
+(defmethod eat-cell ((cell recursive-content-file-range-stack-cell))
   (tagbody :start
      (when (~> cell access-state first (eql :end))
-       (return-from cl-ds:consume-front
+       (return-from eat-cell
          (values nil nil)))
      (bind ((path (read-path cell)))
        (if (null (access-state cell))
@@ -221,9 +224,9 @@
                    (setf prev-path (to-pathname path :directory path))
                    (unless (cl-fad:directory-exists-p prev-path)
                      (push :end (access-state cell))
-                     (return-from cl-ds:consume-front
+                     (return-from eat-cell
                        (values nil nil))))
-                 (if-let ((p (~>> cell access-prev-cell cl-ds:consume-front)))
+                 (if-let ((p (~>> cell access-prev-cell eat-cell)))
                    (progn
                      (setf prev-path (merge-pathnames path p))
                      (when (cl-fad:directory-exists-p prev-path)
@@ -231,7 +234,7 @@
                      (go :start))
                    (progn
                      (push :end (access-state cell))
-                     (return-from cl-ds:consume-front
+                     (return-from eat-cell
                        (values nil nil))))))
            (iterate
              (until (or (null (access-state cell))
@@ -246,23 +249,23 @@
                         (null (access-prev-cell cell)))
                (push :end (access-state cell)))
              (when (~> cell read-predicate (funcall next-path))
-               (return-from cl-ds:consume-front
+               (return-from eat-cell
                  (values next-path t)))
              (finally (if (null (access-prev-cell cell))
                           (progn
                             (push :end (access-state cell))
-                            (return-from cl-ds:consume-front
+                            (return-from eat-cell
                               (values nil nil)))
                           (go :start))))))))
 
 
-(defmethod cl-ds:consume-front ((cell all-files-file-range-stack-cell))
+(defmethod eat-cell ((cell all-files-file-range-stack-cell))
   (tagbody :start
      (bind ((state (access-state cell)))
        (if (endp state)
-           (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
+           (let ((prev-path (~> cell access-prev-cell eat-cell)))
              (if (null prev-path)
-                 (return-from cl-ds:consume-front
+                 (return-from eat-cell
                    (values nil nil))
                  (let* ((directory-content
                           (~>> prev-path directory-content
@@ -275,19 +278,19 @@
            (iterate
              (until (endp (access-state cell)))
              (for next-path = (pop (access-state cell)))
-             (return-from cl-ds:consume-front
+             (return-from eat-cell
                (values next-path t))
              (finally (go :start)))))))
 
 
-(defmethod cl-ds:consume-front ((cell regex-file-file-range-stack-cell))
+(defmethod eat-cell ((cell regex-file-file-range-stack-cell))
   (tagbody :start
      (bind ((path (read-path cell))
             (state (access-state cell)))
        (if (endp state)
-           (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
+           (let ((prev-path (~> cell access-prev-cell eat-cell)))
              (if (null prev-path)
-                 (return-from cl-ds:consume-front
+                 (return-from eat-cell
                    (values nil nil))
                  (let* ((directory-content
                           (~>> prev-path directory-content
@@ -300,7 +303,7 @@
              (for next-path = (pop (access-state cell)))
              (when (and (~> cell read-predicate (funcall next-path))
                         (regex-matches path next-path))
-               (return-from cl-ds:consume-front
+               (return-from eat-cell
                  (values next-path t)))
              (finally (go :start)))))))
 
@@ -345,15 +348,15 @@
           (= depth times))))
 
 
-(defmethod cl-ds:consume-front ((cell regex-directory-file-range-stack-cell))
+(defmethod eat-cell ((cell regex-directory-file-range-stack-cell))
   (tagbody :start
      (bind ((path (read-path cell))
             (state (access-state cell))
             (times (read-times cell)))
        (if (endp state)
-           (let ((prev-path (~> cell access-prev-cell cl-ds:consume-front)))
+           (let ((prev-path (~> cell access-prev-cell eat-cell)))
              (if (null prev-path)
-                 (return-from cl-ds:consume-front
+                 (return-from eat-cell
                    (values nil nil))
                  (let* ((directory-content (~>> prev-path directory-content
                                                 (delete-if-not #'cl-fad:directory-exists-p)))
@@ -373,21 +376,21 @@
                  (when (and (times-matches times depth)
                             (~> cell read-predicate (funcall next-path))
                             (directory-regex-matches path next-path prev-path))
-                   (return-from cl-ds:consume-front
+                   (return-from eat-cell
                      (values next-path t)))))
              (finally (go :start)))))))
 
 
-(defmethod cl-ds:consume-front ((cell file-file-range-stack-cell))
+(defmethod eat-cell ((cell file-file-range-stack-cell))
   (tagbody :start
      (bind ((path (read-path cell))
-            (inner (~> cell access-prev-cell cl-ds:consume-front)))
+            (inner (~> cell access-prev-cell eat-cell)))
        (if (null inner)
            (values nil nil)
            (let ((next-path (merge-pathnames path inner)))
              (if (and (osicat:file-exists-p next-path :regular-file)
                       (~> cell read-predicate (funcall next-path)))
-                 (return-from cl-ds:consume-front (values next-path t))
+                 (return-from eat-cell (values next-path t))
                  (go :start)))))))
 
 
@@ -405,7 +408,7 @@
 
 (defmethod cl-ds:consume-front ((range find-range))
   (if-let ((stack (access-stack range)))
-    (cl-ds:consume-front stack)
+    (eat-cell stack)
     (values nil nil)))
 
 
