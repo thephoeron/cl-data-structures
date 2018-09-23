@@ -58,9 +58,23 @@
                                     item))
 
 
+(defmethod cl-ds:take-out! ((container fundamental-mutable-queue))
+  (cl-ds.meta:position-modification #'cl-ds:take-out!
+                                    container
+                                    container
+                                    nil))
+
+
 (defmethod cl-ds:put ((container fundamental-functional-queue)
                       item)
   (cl-ds.meta:position-modification #'cl-ds:put
                                     container
                                     container
                                     item))
+
+
+(defmethod cl-ds:take-out! ((container fundamental-functional-queue))
+  (cl-ds.meta:position-modification #'cl-ds:take-out
+                                    container
+                                    container
+                                    nil))

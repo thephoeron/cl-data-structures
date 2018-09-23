@@ -141,7 +141,8 @@
                 :components ((:file "packages")
                              (:file "common")
                              (:module "2-3-tree"
-                              :components ((:file "api")))))
+                              :components ((:file "api")
+                                           (:test-file "tests")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
