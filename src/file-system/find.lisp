@@ -66,6 +66,12 @@
 (defgeneric eat-cell (cell))
 
 
+(defgeneric reset-cell (cell))
+
+
+(defgeneric clone-cell (cell))
+
+
 (defmethod (setf access-prev-cell)
     :before ((new-val all-files-file-range-stack-cell)
              (cell regex-directory-file-range-stack-cell))
@@ -412,26 +418,20 @@
     (values nil nil)))
 
 
-(defmethod cl-ds:clone ((range find-range))
-  (let ((stack (access-stack range)))
-    (make 'find-range
-          :stack (when stack (cl-ds:clone stack)))))
-
-
-(defmethod cl-ds:clone :around ((cell stateful-file-range-stack-cell))
+(defmethod clone-cell :around ((cell stateful-file-range-stack-cell))
   (lret ((result (call-next-method)))
     (setf (access-state result) (access-state cell)
           (access-initial-state result) (access-state cell))))
 
 
-(defmethod cl-ds:clone ((cell regex-directory-file-range-stack-cell))
+(defmethod clone-cell ((cell regex-directory-file-range-stack-cell))
   (lret ((result (call-next-method)))
     (setf (slot-value result '%times) (read-times cell))))
 
 
-(defmethod cl-ds:clone ((cell fundamental-file-range-stack-cell))
+(defmethod clone-cell ((cell fundamental-file-range-stack-cell))
   (make (type-of cell)
-        :prev-cell (and #1=(access-prev-cell cell) (cl-ds:clone #1#))
+        :prev-cell (and #1=(access-prev-cell cell) (clone-cell #1#))
         :predicate (read-predicate cell)
         :path (read-path cell)))
 
@@ -440,16 +440,17 @@
   (cl-ds:peek-front (cl-ds:clone range)))
 
 
-(defmethod cl-ds:reset! ((range find-range))
-  (when-let ((stack (access-stack range)))
-    (cl-ds:reset! stack))
-  range)
+(defmethod cl-ds:clone ((range find-range))
+  (make 'find-range
+        :stack (when-let ((stack (access-stack range)))
+                 (clone-cell stack))))
 
 
-(defmethod cl-ds:reset! ((cell stateful-file-range-stack-cell))
+(defmethod clone-cell ((cell stateful-file-range-stack-cell))
   (setf (access-state cell) (access-initial-state cell))
   (call-next-method))
 
 
-(defmethod cl-ds:reset! ((cell fundamental-file-range-stack-cell))
-  (when #1=(access-prev-cell cell) (cl-ds:reset! #1#)))
+(defmethod clone-cell ((cell fundamental-file-range-stack-cell))
+  (when #1=(access-prev-cell cell) (clone-cell #1#)))
+
