@@ -39,6 +39,10 @@
   (bitmask 0 :type sparse-rrb-mask))
 
 
+(deftype sparse-rrb-node ()
+  `(or sparse-node list))
+
+
 (defun make-sparse-node-content (content)
   (make-sparse-node :content content))
 
@@ -72,16 +76,19 @@
        ,@body)))
 
 
+(-> sparse-rrb-node-contains (sparse-rrb-node node-size) boolean)
 (defun sparse-rrb-node-contains (node index)
   (with-sparse-rrb-node node
     (ldb-test (byte 1 index) (sparse-node-bitmask node))))
 
 
+(-> sparse-rrb-node-contains (sparse-rrb-node node-size) t)
 (defun sparse-nref (node index)
   (with-sparse-rrb-node node
     (aref (sparse-node-content node) (sindex index))))
 
 
+(-> (setf sparse-nref) (t sparse-rrb-node node-size) t)
 (defun (setf sparse-nref) (new-value node index)
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
@@ -111,17 +118,19 @@
       (setf (aref content sindex) new-value))))
 
 
+(-> sparse-rrb-node-size (sparse-rrb-node) node-size)
 (defun sparse-rrb-node-size (node)
   (with-sparse-rrb-node node
     (logcount (sparse-node-bitmask node))))
 
 
+(-> deep-copy-sparse-rrb-node (sparse-rrb-node (integer -1 2) &optional t)
+    (or null sparse-rrb-node))
 (defun deep-copy-sparse-rrb-node (node size-change &optional tag)
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (current-size (sparse-rrb-node-size node))
-           (current-length (length content))
-           (desired-size (clamp (+ size-change current-length) 0 +maximum-children-count+)))
+           (desired-size (clamp (+ size-change current-size) 0 +maximum-children-count+)))
       (cond ((zerop desired-size) nil)
             ((null tag)
              #1=(make-sparse-node
