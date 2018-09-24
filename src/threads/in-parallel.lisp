@@ -54,7 +54,7 @@
          (chunked-range (cl-ds:chunked og-range))
          (pushing nil))
     (if (null chunked-range)
-        (funcall traverse/accross og-range function)
+        (funcall traverse/accross function og-range)
         (unwind-protect
              (lparallel:check-kernel)
              (iterate
