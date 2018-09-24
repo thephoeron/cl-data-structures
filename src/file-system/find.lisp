@@ -460,4 +460,3 @@
 (defmethod reset-cell ((cell fundamental-file-range-stack-cell))
   (when-let ((stack (access-prev-cell cell)))
     (reset-cell stack)))
-
