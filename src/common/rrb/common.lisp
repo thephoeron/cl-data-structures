@@ -116,19 +116,16 @@
     (logcount (sparse-node-bitmask node))))
 
 
-(defun deep-copy-sparse-rrb-node (node size &optional tag)
+(defun deep-copy-sparse-rrb-node (node size-change &optional tag)
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (current-size (sparse-rrb-node-size node))
            (current-length (length content))
-           (desired-size (case size
-                           (:more (clamp (1+ current-size) current-length +maximum-children-count+))
-                           (:less (clamp (1- current-size) 0 current-length))
-                           (:preserve current-length))))
+           (desired-size (clamp (+ size-change current-length) 0 +maximum-children-count+)))
       (cond ((zerop desired-size) nil)
             ((null tag)
              #1=(make-sparse-node
-                 :content (if (eql size :preserve)
+                 :content (if (eql size-change 0)
                               (copy-array content)
                               (make-array desired-size :element-type (array-element-type content)))
                  :bitmask (sparse-node-bitmask node)))
