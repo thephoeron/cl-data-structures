@@ -56,20 +56,21 @@
     (if (null chunked-range)
         (funcall traverse/accross function og-range)
         (unwind-protect
-             (lparallel:check-kernel)
-             (iterate
-               (with (thread . queue) =
-                     (make-in-parallel-read-thread chunked-range
-                                                   (read-limit range)))
-               (with p = (setf pushing thread))
-               (for future = (lparallel.queue:pop-queue queue))
-               (for (data . more) = (lparallel:force future))
-               (while more)
-               (if (eq :error more)
-                   (error data)
-                   (map nil function data))
-               (finally (bt:join-thread p)
-                        (setf pushing nil)))
+             (progn
+               (lparallel:check-kernel)
+               (iterate
+                 (with (thread . queue) =
+                       (make-in-parallel-read-thread chunked-range
+                                                     (read-limit range)))
+                 (with p = (setf pushing thread))
+                 (for future = (lparallel.queue:pop-queue queue))
+                 (for (data . more) = (lparallel:force future))
+                 (while more)
+                 (if (eq :error more)
+                     (error data)
+                     (map nil function data))
+                 (finally (bt:join-thread p)
+                          (setf pushing nil))))
           (unless (null pushing)
             (bt:destroy-thread pushing))))
     range))
