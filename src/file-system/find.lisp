@@ -446,11 +446,18 @@
                  (clone-cell stack))))
 
 
-(defmethod clone-cell ((cell stateful-file-range-stack-cell))
+(defmethod cl-ds:clone ((range find-range))
+  (when-let ((stack (access-stack range)))
+    (reset-cell stack))
+  range)
+
+
+(defmethod reset-cell ((cell stateful-file-range-stack-cell))
   (setf (access-state cell) (access-initial-state cell))
   (call-next-method))
 
 
-(defmethod clone-cell ((cell fundamental-file-range-stack-cell))
-  (when #1=(access-prev-cell cell) (clone-cell #1#)))
+(defmethod reset-cell ((cell fundamental-file-range-stack-cell))
+  (when-let ((stack (access-prev-cell cell)))
+    (reset-cell stack)))
 
