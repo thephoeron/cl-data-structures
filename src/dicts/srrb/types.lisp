@@ -34,6 +34,25 @@
   ())
 
 
+(defun insert-tail (structure)
+  cl-ds.utils:todo)
+
+
+(defun insert-tail! (structure)
+  (let ((new-root (insert-tail structure)))
+    (setf (access-tree structure) new-root
+          (access-tree-index-bound structure) (access-index-bound structure)))
+  structure)
+
+
+(defun adjust-tree-to-new-size! (structure position)
+  cl-ds.utils:todo)
+
+
+(defun set-new-tail! (structure container position value)
+  cl-ds.utils:todo)
+
+
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
                                              (structure mutable-sparse-rrb-vector)
                                              container
@@ -93,7 +112,14 @@
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
                    (aref (access-tail structure) offset) ; should just modify tail
-                   cl-ds.utils:todo ; should insert tail, handle root overflow, calculate new shift, adjust tree to new shift, insert item into new tail
+                   (progn
+                     (insert-tail! structure)
+                     (adjust-tree-to-new-size! structure position)
+                     (bind (((:values status changed)
+                             (set-new-tail! structure container position value)))
+                       (when changed
+                         (setf (access-index-bound structure) position))
+                       (values structure status)))
                    ))))))
 
 

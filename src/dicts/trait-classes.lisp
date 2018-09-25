@@ -21,6 +21,9 @@
     :initform 3)))
 
 
+(defclass hashing-dictionary-mixin ())
+
+
 (defclass fundamental-sparse-vector (fundamental-dictionary)
   ())
 
