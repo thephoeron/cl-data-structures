@@ -53,12 +53,23 @@
   cl-ds.utils:todo)
 
 
+(defun set-in-tail! (structure operation container position offset value all)
+  (bind ((tail (access-tail structure))
+         (tail-mask (access-tail-mask structure))
+         ((:values bucket status changed)
+          (apply #'cl-ds.meta:make-bucket operation container value all)))
+    (when changed
+      (setf (aref tail offset) bucket
+            (access-tail-mask structure) (dpb 1 (byte 1 offset) tail-mask)
+            (access-index-bound structure) position))
+    (values structure status)))
+
+
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
                                              (structure mutable-sparse-rrb-vector)
                                              container
                                              position &rest all &key value)
-  (let ((bound (access-index-bound structure))
-        (tree-bound (access-tree-index-bound structure)))
+  (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            cl-ds.utils:todo) ; should signal proper error if position is negative
           ((< position tree-bound)
@@ -111,7 +122,8 @@
                   ))))
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
-                   (aref (access-tail structure) offset) ; should just modify tail
+                   (set-in-tail! structure operation position
+                                 container offset value all)
                    (progn
                      (insert-tail! structure)
                      (adjust-tree-to-new-size! structure position)
@@ -119,8 +131,7 @@
                              (set-new-tail! structure container position value)))
                        (when changed
                          (setf (access-index-bound structure) position))
-                       (values structure status)))
-                   ))))))
+                       (values structure status)))))))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
