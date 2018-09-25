@@ -127,11 +127,7 @@
                    (progn
                      (insert-tail! structure)
                      (adjust-tree-to-new-size! structure position)
-                     (bind (((:values status changed)
-                             (set-new-tail! structure container position value)))
-                       (when changed
-                         (setf (access-index-bound structure) position))
-                       (values structure status)))))))))
+                     (set-new-tail! structure container position value))))))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
