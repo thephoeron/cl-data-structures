@@ -54,11 +54,11 @@
                   by cl-ds.common.rrb:+bit-count+)
              (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
                            position))
-             (for node initially tree
+             (for node
+                  initially tree
                   then (cl-ds.common.rrb:sparse-nref node i))
              (for present =
-                  (cl-ds.common.rrb:sparse-rrb-node-contains node
-                                                             i))
+                  (cl-ds.common.rrb:sparse-rrb-node-contains node i))
              (unless present
                (setf all-exist nil)
                (let* ((old-content (cl-ds.common.rrb:sparse-rrb-node-content node))
@@ -96,8 +96,7 @@
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
-  (+ (access-tree-size vect)
-     (logcount (access-tail-mask vect))))
+  (+ (access-tree-size vect) (logcount (access-tail-mask vect))))
 
 
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
