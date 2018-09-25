@@ -84,6 +84,7 @@
                   by cl-ds.common.rrb:+bit-count+)
              (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
                            position))
+             (for p-i previous i)
              (for node
                   initially tree
                   then (cl-ds.common.rrb:sparse-nref node i))
@@ -118,8 +119,15 @@
              (finally
               (if all-exist
                   cl-ds.utils:todo ; should modify bucket
-                  cl-ds.utils:todo ; should make bucket
-                  ))))
+                  (cl-ds.common.rrb:with-sparse-rrb-node node
+                    (bind (((:values new-bucket status changed)
+                            (apply #'cl-ds.meta:make-bucket
+                                   operation container
+                                   value all)))
+                      (when changed
+                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                        (incf (access-tree-size structure)))
+                      (values structure status)))))))
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
                    (set-in-tail! structure operation position
