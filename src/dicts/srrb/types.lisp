@@ -68,7 +68,7 @@
                       (splice-index (logcount (ldb (byte i 0) new-bitmask)))
                       (old-count (logcount old-bitmask))
                       (new-count (1+ old-count))
-                      (new-content (if (< new-count old-content-size)
+                      (new-content (if (<= new-count old-content-size)
                                        old-content
                                        (make-array new-count
                                                    :element-type (array-element-type old-content)))))
@@ -83,6 +83,7 @@
                  (setf (aref new-content splice-index)
                        (cl-ds.common.rrb:make-sparse-rrb-node
                         :content (make-array 1 :element-type (array-element-type old-content)))
+
                        (cl-ds.common.rrb:sparse-rrb-node-bitmask node) new-bitmask)))
              (finally
               (if all-exist
@@ -91,7 +92,7 @@
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
                    (aref (access-tail structure) offset)
-                   cl-ds.utils:todo)))))) ; should insert tail
+                   cl-ds.utils:todo)))))) ; should insert tail, handle root overflow, calculate new shift, adjust tree to new shift, insert item into new tail
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
@@ -131,5 +132,5 @@
                     (present (ldb-test (byte 1 offset)
                                        (access-tail-mask vect))))
                (if present
-                   (aref (access-tail vect) offset)
+                   (values (aref (access-tail vect) offset) t)
                    (values nil nil)))))))
