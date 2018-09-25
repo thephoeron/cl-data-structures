@@ -53,5 +53,5 @@
   ())
 
 
-(defclass lazy-hashing-dictionary (fundamental-hashing-dictionary lazy-dictionary)
+(defclass lazy-hashing-dictionary (functional-hashing-dictionary lazy-dictionary)
   ())
