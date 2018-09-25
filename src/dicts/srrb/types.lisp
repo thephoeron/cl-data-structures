@@ -87,12 +87,14 @@
                        (cl-ds.common.rrb:sparse-rrb-node-bitmask node) new-bitmask)))
              (finally
               (if all-exist
-                  cl-ds.utils:todo
-                  cl-ds.utils:todo))))
+                  cl-ds.utils:todo ; should modify bucket
+                  cl-ds.utils:todo ; should make bucket
+                  ))))
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
-                   (aref (access-tail structure) offset)
-                   cl-ds.utils:todo)))))) ; should insert tail, handle root overflow, calculate new shift, adjust tree to new shift, insert item into new tail
+                   (aref (access-tail structure) offset) ; should just modify tail
+                   cl-ds.utils:todo ; should insert tail, handle root overflow, calculate new shift, adjust tree to new shift, insert item into new tail
+                   ))))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
