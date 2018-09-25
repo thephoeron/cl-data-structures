@@ -62,10 +62,10 @@
       (cons content ownership-tag)))
 
 
-(defun make-sparse-rrb-node (&key (content #())) ownership-tag
+(defun make-sparse-rrb-node (&key ownership-tag (content #()))
   (if (null ownership-tag)
-      (make-sparse-node content)
-      (cons (make-sparse-node content) ownership-tag)))
+      (make-sparse-node :content content)
+      (cons (make-sparse-node :content content) ownership-tag)))
 
 
 (defmacro with-sparse-rrb-node (node &body body)
@@ -80,6 +80,16 @@
 (defun sparse-rrb-node-contains (node index)
   (with-sparse-rrb-node node
     (ldb-test (byte 1 index) (sparse-node-bitmask node))))
+
+
+(defun (setf sparse-rrb-node-bitmask) (new-val node)
+  (with-sparse-rrb-node node
+    (setf (sparse-node-bitmask node) new-val)))
+
+
+(defun sparse-rrb-node-bitmask (node)
+  (with-sparse-rrb-node node
+    (sparse-node-bitmask node)))
 
 
 (-> sparse-rrb-node-contains (sparse-rrb-node node-size) t)
@@ -185,6 +195,16 @@
   (if (listp node)
       (car node)
       node))
+
+
+(defun sparse-rrb-node-content (node)
+  (with-sparse-rrb-node node
+    (sparse-node-content node)))
+
+
+(defun (setf sparse-rrb-node-content) (new-val node)
+  (with-sparse-rrb-node node
+    (setf (sparse-node-content node) new-val)))
 
 
 (defun rrb-node-deep-copy (node ownership-tag)

@@ -9,8 +9,8 @@
   (:export
    #:fundamental-dictionary
    #:fundamental-hashing-dictionary
+   #:fundamental-sparse-vector
    #:bucket
-   #:dictionary
    #:find-content
    #:functional-dictionary
    #:functional-hashing-dictionary
@@ -43,3 +43,11 @@
    #:mutable-hamt-dictionary
    #:read-max-depth
    #:transactional-hamt-dictionary))
+
+
+(defpackage :cl-data-structures.dicts.srrb
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package)
+  (:nicknames #:cl-ds.dicts.srrb)
+  (:export
+   ))

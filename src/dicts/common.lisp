@@ -7,7 +7,7 @@
 (defgeneric find-content (container bucket location &key &allow-other-keys))
 
 
-(defmethod find-content ((container hashing-dictionary)
+(defmethod find-content ((container fundamental-hashing-dictionary)
                          (bucket list) location &rest all &key hash)
   (bind ((equal-fn (read-equal-fn container))
          ((:dflet compare-fn (a b))
@@ -49,7 +49,7 @@
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
-                                     (container hashing-dictionary)
+                                     (container fundamental-hashing-dictionary)
                                      (bucket list)
                                      location
                                      &rest all
@@ -77,7 +77,7 @@
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-if-function)
-                                     (container hashing-dictionary)
+                                     (container fundamental-hashing-dictionary)
                                      (bucket list)
                                      location
                                      &rest all
@@ -115,7 +115,7 @@
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    (bucket list)
                                    location
                                    &rest all
@@ -131,7 +131,7 @@
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    (bucket list)
                                    location
                                    &rest all
@@ -147,7 +147,7 @@
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    (bucket list)
                                    location
                                    &rest all
@@ -192,7 +192,7 @@
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if!-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    (bucket list)
                                    location
                                    &rest all
@@ -224,7 +224,7 @@
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    (bucket list)
                                    location
                                    &rest all
@@ -241,7 +241,7 @@
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:update-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    location
                                    &rest all
                                    &key hash value)
@@ -252,7 +252,7 @@
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    location
                                    &rest all
                                    &key hash value)
@@ -265,7 +265,7 @@
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
-                                   (container hashing-dictionary)
+                                   (container fundamental-hashing-dictionary)
                                    location
                                    &rest all
                                    &key hash value)
@@ -278,7 +278,7 @@
 
 
 (flet ((locate-tuple (container bucket hash location)
-         (declare (type hashing-dictionary container)
+         (declare (type fundamental-hashing-dictionary container)
                   (type bucket bucket)
                   (type fixnum hash))
          (fbind ((comp (read-equal-fn container)))
@@ -292,7 +292,7 @@
                                    location)))))))
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert-function)
-                                      (container hashing-dictionary)
+                                      (container fundamental-hashing-dictionary)
                                       (bucket list)
                                       location
                                       &rest all
@@ -315,7 +315,7 @@
               t)))
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update-function)
-                                      (container hashing-dictionary)
+                                      (container fundamental-hashing-dictionary)
                                       (bucket list)
                                       location
                                       &rest all
@@ -335,7 +335,7 @@
                     t)))))
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add-function)
-                                      (container hashing-dictionary)
+                                      (container fundamental-hashing-dictionary)
                                       (bucket list)
                                       location
                                       &rest all
@@ -360,7 +360,7 @@
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-function)
-                                      (container hashing-dictionary)
+                                      (container fundamental-hashing-dictionary)
                                       (bucket list)
                                       location
                                       &rest all
@@ -394,7 +394,7 @@
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if-function)
-                                      (container hashing-dictionary)
+                                      (container fundamental-hashing-dictionary)
                                       (bucket list)
                                       location
                                       &rest all

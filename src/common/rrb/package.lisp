@@ -19,6 +19,17 @@
    #:access-start
    #:access-tail
    #:access-tail-size
+   #:sparse-rrb-node
+   #:sparse-node
+   #:with-sparse-rrb-node
+   #:make-sparse-rrb-node
+   #:sparse-rrb-node-contains
+   #:sparse-nref
+   #:sparse-rrb-node-contains
+   #:sparse-rrb-node-content
+   #:sparse-rrb-node-bitmask
+   #:sparse-rrb-node-size
+   #:deep-copy-sparse-rrb-node
    #:access-upper-bound
    #:copy-on-write
    #:copy-on-write-without-tail
