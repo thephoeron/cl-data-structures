@@ -62,10 +62,10 @@
       (cons content ownership-tag)))
 
 
-(defun make-sparse-rrb-node (&key ownership-tag (content #()))
+(defun make-sparse-rrb-node (&key ownership-tag (content #()) (bitmask 0))
   (if (null ownership-tag)
-      (make-sparse-node :content content)
-      (cons (make-sparse-node :content content) ownership-tag)))
+      (make-sparse-node :content content :bitmask)
+      (cons (make-sparse-node :content content :bitmask) ownership-tag)))
 
 
 (defmacro with-sparse-rrb-node (node &body body)
