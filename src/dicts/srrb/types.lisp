@@ -103,12 +103,10 @@
                by cl-ds.common.rrb:+bit-count+)
           (for index = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
                             tree-size))
-          (for absent =
-               (and node
-                    (cl-ds.common.rrb:sparse-rrb-node-contains node index)))
+          (for present = (cl-ds.common.rrb:sparse-rrb-node-contains node index))
           (for node
                initially new-root
-               then (and (not absent)
+               then (and present
                          (cl-ds.common.rrb:sparse-nref node index)))
           (for p-node previous node)
           (when absent
