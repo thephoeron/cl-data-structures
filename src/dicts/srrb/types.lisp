@@ -143,11 +143,10 @@
                                      :content (make-array 1))))
                   (setf node new-element)
                   (insert-impl p-node new-element index)))
-              (finally
-               (insert-impl node
-                            (access-tail structure)
-                            (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
-                                 size))))))))
+              (finally (insert-impl node
+                                    (access-tail structure)
+                                    (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
+                                         size))))))))
   (setf (access-tree-index-bound structure) (access-index-bound structure))
   structure)
 
