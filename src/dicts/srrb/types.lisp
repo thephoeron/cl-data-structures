@@ -146,7 +146,9 @@
               (finally (insert-impl node
                                     (access-tail structure)
                                     (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
-                                         size))))))))
+                                         size))
+                       (setf (access-tail structure) nil
+                             (access-tail-mask structure) 0)))))))
   (setf (access-tree-index-bound structure) (access-index-bound structure))
   structure)
 
