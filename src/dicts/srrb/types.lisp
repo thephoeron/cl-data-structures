@@ -90,7 +90,7 @@
 
 (defun insert-tail! (structure ownership-tag)
   (let ((tail-mask (access-tail-mask structure)))
-    (when (zerop tail-mask)
+    (unless (zerop tail-mask)
       (bind (((:values new-root new-node) (insert-tail structure ownership-tag))
              ((:dflet insert-impl (into new-element index))
               (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content into))
