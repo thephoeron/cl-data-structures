@@ -144,9 +144,10 @@
                   (setf node new-element)
                   (insert-impl p-node new-element index)))
               (finally
-               (let ((index (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
-                                 size)))
-                 (insert-impl node (access-tail structure) index))))))))
+               (insert-impl node
+                            (access-tail structure)
+                            (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
+                                 size))))))))
   (setf (access-tree-index-bound structure) (access-index-bound structure))
   structure)
 
