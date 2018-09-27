@@ -14,7 +14,8 @@
      (always (funcall fn pelt elt))))) ()
 
 
-(-> merge-ordered-vectors (vector (-> (t t) boolean) vector &rest vector) vector)
+(-> merge-ordered-vectors ((or vector null) (-> (t t) boolean) vector &rest vector)
+    (values vector index))
 (defun merge-ordered-vectors (result compare-fn vector &rest vectors)
   "Take few ordered vectors (by function compare-fn) and create new vector of element-type RESULT-TYPE by copying values from vectors in such way that it is also ordered. Return new vector.
 
@@ -29,6 +30,9 @@
  @b(Side effects:) none."
   (let* ((vectors (cons vector vectors))
          (position 0)
+         (result (if (null result)
+                     (make-array (reduce #'+ vectors :key #'length))
+                     result))
          (index.vector (make-array 0
                                    :element-type 'list
                                    :adjustable t
@@ -58,11 +62,11 @@
                 (array-dimension (cdr current)
                                  0))
         (swapop index.vector index)))
-    result))
+    (values result position)))
 
 
 (declaim (inline lower-bound))
-(-> lower-bound (vector t (-> (t t) boolean) &key (:key function) (:start non-negative-fixnum)) index)
+(-> lower-bound (vector t (-> (t t) t) &key (:key function) (:start non-negative-fixnum)) index)
 (defun lower-bound (vector element comparsion &key (key #'identity) (start 0))
   (declare (optimize (speed 3)))
   (let ((length (length vector)))
@@ -73,9 +77,18 @@
       (if (funcall comparsion
                    (funcall key (aref vector current))
                    element)
-          (setf start (1+ current))
-          (setf end current))
+          (setf start (the index (1+ current)))
+          (setf end (the index current)))
       (finally (return current)))))
+
+
+(declaim (inline binary-search))
+(-> binary-search (t vector (-> (t t) t) (-> (t t) t) &key (:key function)) t)
+(defun binary-search (element vector lower test &key (key #'identity))
+  (let ((lower-bound (lower-bound vector element lower :key key)))
+    (when (and (not (eql lower-bound (length vector)))
+               (funcall test element (funcall key (aref vector lower-bound))))
+      (aref vector lower-bound))))
 
 
 (defun on-ordered-intersection (function first-order second-order

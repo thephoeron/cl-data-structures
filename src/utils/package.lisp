@@ -13,6 +13,7 @@
    #:ancestor-p
    #:and*
    #:as-cons-tree
+   #:binary-search
    #:bind-lambda
    #:cartesian
    #:cartesian-table
