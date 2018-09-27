@@ -128,6 +128,9 @@
                                            (:test-file "transactions-tests")
                                            (:test-file "range-test")
                                            (:test-file "lazy-tests")))
+                             (:module "srrb"
+                              :components ((:file "types")
+                                           (:test-file "tests")))
                              (:test-file "functional-dictionary-test-suite")
                              (:test-file "mutable-dictionary-test-suite")
                              (:test-file "transactional-dictionary-test-suite")))

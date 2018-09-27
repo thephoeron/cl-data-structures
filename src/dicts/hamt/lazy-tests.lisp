@@ -1,9 +1,7 @@
 (in-package :cl-user)
 (defpackage lazy-hamt-dictionary-tests
   (:use :cl :prove :serapeum :cl-ds :iterate :alexandria :cl-ds.dicts.hamt)
-  (:shadowing-import-from :iterate :collecting :summing :in)
-  (:export :run-stress-test
-   :run-suite))
+  (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :lazy-hamt-dictionary-tests)
 
 (plan 1114)

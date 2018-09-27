@@ -247,7 +247,7 @@
                    (set-in-tail! structure operation position
                                  container offset value all)
                    (progn
-                     (insert-tail! structure)
+                     (insert-tail! structure nil)
                      (adjust-tree-to-new-size! structure position)
                      (set-new-tail! structure container position value))))))))
 
