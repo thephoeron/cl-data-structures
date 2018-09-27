@@ -124,3 +124,8 @@
         :predicate predicate
         :key key
         :original-range range))
+
+
+(defmethod wrap-chunk ((range without-proxy)
+                       (chunk cl-ds:fundamental-forward-range))
+  (without chunk (read-predicate range) :key (read-key range)))

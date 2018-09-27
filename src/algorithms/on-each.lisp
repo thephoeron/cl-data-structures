@@ -12,7 +12,7 @@
     (apply-range-function range #'on-each :function function :key key)))
 
 
-(defclass proxy-box-range ()
+(defclass proxy-box-range (proxy-range)
   ((%function :initarg :function
               :reader read-function)
    (%key :initarg :key

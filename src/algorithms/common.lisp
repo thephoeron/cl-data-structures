@@ -63,10 +63,10 @@
 
 
 (defmethod cl-ds:chunked ((range proxy-range) &optional chunk-size-hint)
-  (if-let ((method (find-method #'wrap-chunk '()
-                                (list (class-of range)
-                                      (find-class 'cl-ds:fundamental-forward-range))
-                                nil))
+  (if-let ((method (c2mop:compute-applicable-methods-using-classes
+                    #'wrap-chunk
+                    (list (class-of range)
+                          (find-class 'cl-ds:fundamental-forward-range))))
            (chunked (~> range read-original-range
                         (cl-ds:chunked chunk-size-hint))))
     (make 'chunked-proxy-range
