@@ -102,8 +102,10 @@
     (iterate
       (with a = 0)
       (with b = 0)
-      (while (< a (length first-order)))
-      (while (< b (length second-order)))
+      (with first-length = (length first-order))
+      (with second-length = (length second-order))
+      (while (< a first-length))
+      (while (< b second-length))
       (for av = (funcall key (first-order a)))
       (for bv = (funcall key (second-order b)))
       (cond ((funcall same av bv)
