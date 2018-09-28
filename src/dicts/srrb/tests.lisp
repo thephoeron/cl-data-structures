@@ -6,9 +6,10 @@
 
 (plan 1)
 
-(let* ((tail (make-array (cl-ds.common.rrb:+maximum-children-count+)))
+(let* ((tail (make-array cl-ds.common.rrb:+maximum-children-count+))
        (vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
-                              :tail tail)))
+                              :tail tail
+                              :tail-mask 111)))
   (cl-ds.dicts.srrb::insert-tail! vector nil)
   (is (cl-ds.dicts.srrb::access-tree vector) tail))
 

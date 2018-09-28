@@ -35,7 +35,7 @@
 
 
 (defstruct sparse-node
-  (content #() :type node-content)
+  (content #() :type simple-vector)
   (bitmask 0 :type sparse-rrb-mask))
 
 
@@ -64,8 +64,8 @@
 
 (defun make-sparse-rrb-node (&key ownership-tag (content #()) (bitmask 0))
   (if (null ownership-tag)
-      (make-sparse-node :content content :bitmask)
-      (cons (make-sparse-node :content content :bitmask) ownership-tag)))
+      (make-sparse-node :content content :bitmask bitmask)
+      (cons (make-sparse-node :content content :bitmask bitmask) ownership-tag)))
 
 
 (defmacro with-sparse-rrb-node (node &body body)

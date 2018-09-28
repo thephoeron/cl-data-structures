@@ -56,9 +56,9 @@
 
 
 (defun insert-tail (rrb-container ownership-tag)
-  (bind (((:slots %size %shift %tree %tail %tail-mask %element-type)
+  (bind (((:slots %tree-size %shift %tree %tail %tail-mask %element-type)
           rrb-container)
-         (root-overflow (>= (the fixnum (ash (the fixnum %size)
+         (root-overflow (>= (the fixnum (ash (the fixnum %tree-size)
                                              (- cl-ds.common.rrb:+bit-count+)))
                             (ash 1 (* cl-ds.common.rrb:+bit-count+ %shift))))
          (tail-mask %tail-mask)
@@ -144,7 +144,10 @@
                   (setf node new-element)
                   (insert-impl p-node new-element index)))
               (finally (insert-impl node
-                                    (access-tail structure)
+                                    (cl-ds.common.rrb:make-sparse-rrb-node
+                                     :content (access-tail structure)
+                                     :ownership-tag ownership-tag
+                                     :bitmask (access-tail-mask structure))
                                     (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
                                          size))
                        (setf (access-tail structure) nil
