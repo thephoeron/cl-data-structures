@@ -79,6 +79,7 @@
                 (finally (return result)))))
          (new-node (cl-ds.common.rrb:make-sparse-rrb-node
                     :content new-content
+                    :bitmask tail-mask
                     :ownership-tag ownership-tag)))
     (if root-overflow
         (values (insert-tail-handler-root-overflow rrb-container
@@ -115,43 +116,43 @@
                   (setf (aref new-content (1+ i)) (aref content i)))
                 (setf (aref new-content position) new-element)
                 new-element)))
-        (if (null new-node)
-            (setf (access-tree structure) new-root
+        (cond ((null new-node)
+               (setf (access-tree structure) new-root
 
-                  (access-tree-index-bound structure)
-                  (access-index-bound structure))
-            (iterate
-              (with shift = (access-shift structure))
-              (with size = (access-tree-index-bound structure))
-              (repeat (1- shift))
-              (for position
-                   from (* cl-ds.common.rrb:+bit-count+ shift)
-                   downto 0
-                   by cl-ds.common.rrb:+bit-count+)
-              (for index = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
-                                size))
-              (for present = (cl-ds.common.rrb:sparse-rrb-node-contains node
-                                                                        index))
-              (for node
-                   initially new-root
-                   then (and present
-                             (cl-ds.common.rrb:sparse-nref node index)))
-              (for p-node previous node)
-              (unless present
-                (let* ((new-element (cl-ds.common.rrb:make-sparse-rrb-node
-                                     :ownership-tag ownership-tag
-                                     :content (make-array 1))))
-                  (setf node new-element)
-                  (insert-impl p-node new-element index)))
-              (finally (insert-impl node
-                                    (cl-ds.common.rrb:make-sparse-rrb-node
-                                     :content (access-tail structure)
-                                     :ownership-tag ownership-tag
-                                     :bitmask (access-tail-mask structure))
-                                    (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
-                                         size))
-                       (setf (access-tail structure) nil
-                             (access-tail-mask structure) 0)))))))
+                     (access-tree-index-bound structure)
+                     (access-index-bound structure)))
+              (t (iterate
+                   (with shift = (access-shift structure))
+                   (with size = (access-tree-index-bound structure))
+                   (repeat (1- shift))
+                   (for position
+                     from (* cl-ds.common.rrb:+bit-count+ shift)
+                     downto 0
+                     by cl-ds.common.rrb:+bit-count+)
+                   (for index = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
+                                     size))
+                   (for present = (cl-ds.common.rrb:sparse-rrb-node-contains node
+                                                                             index))
+                   (for node
+                     initially new-root
+                     then (and present
+                               (cl-ds.common.rrb:sparse-nref node index)))
+                   (for p-node previous node)
+                   (unless present
+                     (let* ((new-element (cl-ds.common.rrb:make-sparse-rrb-node
+                                          :ownership-tag ownership-tag
+                                          :content (make-array 1))))
+                       (setf node new-element)
+                       (insert-impl p-node new-element index)))
+                   (finally (insert-impl node
+                                         (cl-ds.common.rrb:make-sparse-rrb-node
+                                          :content (access-tail structure)
+                                          :ownership-tag ownership-tag
+                                          :bitmask (access-tail-mask structure))
+                                         (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
+                                              size))
+                            (setf (access-tail structure) nil
+                                  (access-tail-mask structure) 0))))))))
   (setf (access-tree-index-bound structure) (access-index-bound structure))
   structure)
 
