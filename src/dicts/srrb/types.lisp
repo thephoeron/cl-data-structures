@@ -34,7 +34,7 @@
   ())
 
 
-(defun insert-tail-handler-root-overflow (rrb-container new-node ownership-tag)
+(defun insert-tail-handle-root-overflow (rrb-container new-node ownership-tag)
   (bind (((:slots %shift %tree) rrb-container))
     (iterate
       (repeat %shift)
@@ -63,8 +63,8 @@
                             (ash 1 (* cl-ds.common.rrb:+bit-count+ %shift))))
          (tail-mask %tail-mask)
          (tail-size (logcount tail-mask))
-         (element-type %element-type)
          (tail %tail)
+         (element-type (array-element-type tail))
          (new-content
           (if (eql tail-size cl-ds.common.rrb:+maximum-children-count+)
               tail
@@ -82,11 +82,13 @@
                     :bitmask tail-mask
                     :ownership-tag ownership-tag)))
     (if root-overflow
-        (values (insert-tail-handler-root-overflow rrb-container
-                                                   new-node
-                                                   ownership-tag)
+        (values (insert-tail-handle-root-overflow rrb-container
+                                                  new-node
+                                                  ownership-tag)
                 nil)
-        (values %tree new-node))))
+        (if (null %tree)
+            (values new-node nil)
+            (values %tree new-node)))))
 
 
 (defun insert-tail! (structure ownership-tag)

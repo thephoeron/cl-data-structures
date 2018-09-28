@@ -4,14 +4,18 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 2)
+(plan 3)
 
 (let* ((tail (make-array cl-ds.common.rrb:+maximum-children-count+))
        (vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
                               :tail tail
-                              :tail-mask 111)))
+                              :tail-mask #b111)))
   (is (cl-ds.dicts.srrb::access-tree vector) nil)
   (cl-ds.dicts.srrb::insert-tail! vector nil)
-  (ok (cl-ds.dicts.srrb::access-tree vector)))
+  (ok (cl-ds.dicts.srrb::access-tree vector))
+  (is (~> vector
+          cl-ds.dicts.srrb::access-tree
+          cl-ds.common.rrb:sparse-rrb-node-bitmask)
+      #b111))
 
 (finalize)
