@@ -446,7 +446,7 @@
   (cl-ds:at (cl-ds.common:access-content container) location))
 
 
-(defmethod cl-ds:become-lazy ((container cl-ds.dicts:dictionary))
+(defmethod cl-ds:become-lazy ((container cl-ds.dicts:fundamental-dictionary))
   (make 'lazy-box-dictionary
         :content (cl-ds:become-transactional container)))
 
