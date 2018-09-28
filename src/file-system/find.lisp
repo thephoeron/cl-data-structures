@@ -228,14 +228,14 @@
              (if (~> cell access-prev-cell null)
                  (progn
                    (setf prev-path (to-pathname path :directory path))
-                   (unless (cl-fad:directory-exists-p prev-path)
+                   (unless (osicat:directory-exists-p prev-path)
                      (push :end (access-state cell))
                      (return-from eat-cell
                        (values nil nil))))
                  (if-let ((p (~>> cell access-prev-cell eat-cell)))
                    (progn
                      (setf prev-path (merge-pathnames path p))
-                     (when (cl-fad:directory-exists-p prev-path)
+                     (when (osicat:directory-exists-p prev-path)
                        (setf (access-state cell) (list prev-path)))
                      (go :start))
                    (progn
@@ -247,7 +247,7 @@
                         (~> cell access-state first (eql :end))))
              (for next-path = (pop (access-state cell)))
              (for directory-content = (~>> next-path directory-content
-                                           (delete-if-not #'cl-fad::directory-exists-p)))
+                                           (delete-if-not #'osicat:directory-exists-p)))
              (setf (access-state cell)
                    (cl-ds.utils:add-to-list directory-content
                                             (access-state cell)))
@@ -315,7 +315,7 @@
 
 
 (defun directory-content (directory)
-  (cl-fad:list-directory directory))
+  (osicat:list-directory directory))
 
 
 (defun directory-regex-matches (regex path parent)
@@ -365,7 +365,7 @@
                  (return-from eat-cell
                    (values nil nil))
                  (let* ((directory-content (~>> prev-path directory-content
-                                                (delete-if-not #'cl-fad:directory-exists-p)))
+                                                (delete-if-not #'osicat:directory-exists-p)))
                         (new-state (mapcar (curry #'list 1 prev-path) directory-content)))
                    (setf (access-state cell) new-state)
                    (go :start))))
@@ -374,7 +374,7 @@
              (for (depth prev-path next-path) = (pop (access-state cell)))
              (when (not-greater times depth)
                (let ((directory-content (~>> next-path directory-content
-                                             (delete-if-not #'cl-fad:directory-exists-p))))
+                                             (delete-if-not #'osicat:directory-exists-p))))
                  (setf (access-state cell)
                        (cl-ds.utils:add-to-list (mapcar (curry #'list (1+ depth) prev-path)
                                                         directory-content)
