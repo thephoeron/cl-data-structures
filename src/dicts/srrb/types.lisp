@@ -165,14 +165,18 @@
 
 
 (defun set-in-tail! (structure operation container offset value all)
-  (bind ((tail (access-tail structure))
-         (tail-mask (access-tail-mask structure))
+  (bind (((:accessors (element-type read-element-type)
+                      (%tail-mask access-tail-mask)
+                      (%tail access-tail))
+          structure)
+         (tail %tail)
+         (tail-mask %tail-mask)
          (present (ldb-test (byte 1 offset) tail-mask)))
     (if present
         (bind ((old-bucket (aref tail offset))
                ((:values bucket status changed)
-                (apply #'cl-ds.meta:grow-bucket! operation container
-                       old-bucket value all)))
+                (apply #'cl-ds.meta:grow-bucket! operation
+                       container old-bucket value all)))
           (when changed
             (setf (aref tail offset) bucket))
           (values structure status))
@@ -181,14 +185,15 @@
                        operation container
                        value all)))
           (when changed
-            (let ((tail-array (or tail
-                                  (make-array
-                                   cl-ds.common.rrb:+maximum-children-count+
-                                   :element-type (cl-ds.common.rrb:read-element-type structure)))))
+            (let ((tail-array
+                    (or tail
+                        (make-array
+                         cl-ds.common.rrb:+maximum-children-count+
+                         :element-type element-type))))
               (setf (aref tail-array offset) bucket
-                    (access-tail-mask structure) (dpb 1 (byte 1 offset) tail-mask))
+                    %tail-mask (dpb 1 (byte 1 offset) tail-mask))
               (unless (eq tail tail-array)
-                (setf (access-tail structure) tail-array))))
+                (setf %tail tail-array))))
           (values structure status)))))
 
 
