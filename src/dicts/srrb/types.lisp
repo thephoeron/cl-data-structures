@@ -274,12 +274,12 @@
            (iterate
              (with tree = (access-tree vect))
              (with shift = (access-shift vect))
-             (for position
+             (for byte-position
                   from (* cl-ds.common.rrb:+bit-count+
                           shift)
                   downto 0
                   by cl-ds.common.rrb:+bit-count+)
-             (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
+             (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                            position))
              (for node initially tree
                   then (cl-ds.common.rrb:sparse-nref node i))
