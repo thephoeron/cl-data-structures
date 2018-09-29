@@ -4,7 +4,33 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 30)
+(plan 34)
+
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
+                                    (container (eql :mock))
+                                    bucket
+                                    location
+                                    &rest all)
+  (declare (ignore all))
+  (values location :ok t))
+
+(defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:grow-function)
+                                   (container (eql :mock))
+                                   location
+                                   &rest all)
+  (declare (ignore all))
+  (values location :ok t))
+
+(bind ((vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
+                              :tail nil))
+       ((:values structure status)
+        (cl-ds.dicts.srrb::set-in-tail! vector #'cl-ds:add! :mock 5 5 nil))
+       (tail (cl-ds.dicts.srrb::access-tail vector))
+       (tail-mask (cl-ds.dicts.srrb::access-tail-mask vector)))
+  (is structure vector)
+  (is status :ok)
+  (is (aref tail 5) 5)
+  (is tail-mask (ash 1 5)))
 
 (let* ((tail (make-array cl-ds.common.rrb:+maximum-children-count+))
        (vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
