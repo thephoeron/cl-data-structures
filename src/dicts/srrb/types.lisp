@@ -34,25 +34,24 @@
   ())
 
 
-(defun insert-tail-handle-root-overflow (rrb-container new-node ownership-tag)
-  (bind (((:slots %shift %tree) rrb-container))
-    (iterate
-      (repeat %shift)
-      (for node
-           initially new-node
-           then (cl-ds.common.rrb:make-sparse-rrb-node
-                 :content (make-array 1 :initial-element node)
-                 :bitmask 1
-                 :ownership-tag ownership-tag))
-      (finally
-       (bind ((content (make-array 2))
-              (root (cl-ds.common.rrb:make-sparse-rrb-node
-                     :content content
-                     :bitmask #b11
-                     :ownership-tag ownership-tag)))
-         (setf (aref content 0) %tree
-               (aref content 1) node)
-         (return root))))))
+(defun insert-tail-handle-root-overflow (shift tree new-node ownership-tag)
+  (iterate
+    (repeat shift)
+    (for node
+         initially new-node
+         then (cl-ds.common.rrb:make-sparse-rrb-node
+               :content (make-array 1 :initial-element node)
+               :bitmask 1
+               :ownership-tag ownership-tag))
+    (finally
+     (bind ((content (make-array 2))
+            (root (cl-ds.common.rrb:make-sparse-rrb-node
+                   :content content
+                   :bitmask #b11
+                   :ownership-tag ownership-tag)))
+       (setf (aref content 0) tree
+             (aref content 1) node)
+       (return root)))))
 
 
 (defun make-node-from-tail (rrb-container ownership-tag)
@@ -119,13 +118,13 @@
               structure)
              (root tree)
              (shift %shift))
-        (cond ((null tree)
+        (cond ((null root)
                (setf tree new-node))
               ((>= (the fixnum (ash (the fixnum tree-index-bound)
                                     (- cl-ds.common.rrb:+bit-count+)))
                    (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
                (let ((new-root (insert-tail-handle-root-overflow
-                                structure new-node ownership-tag)))
+                                shift root new-node ownership-tag)))
                  (incf %shift)
                  (setf tree new-root)))
               (t (iterate
@@ -135,13 +134,12 @@
                    (with p-node = nil)
                    (for index = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
                                      size))
-                   (for present = (cl-ds.common.rrb:sparse-rrb-node-contains node
-                                                                             index))
+                   (for present = (cl-ds.common.rrb:sparse-rrb-node-contains
+                                   node index))
                    (shiftf p-node
                            node
                            (and present
-                                (cl-ds.common.rrb:sparse-nref node
-                                                              index)))
+                                (cl-ds.common.rrb:sparse-nref node index)))
                    (when (zerop (decf shift))
                      (finish))
                    (decf position cl-ds.common.rrb:+bit-count+)
