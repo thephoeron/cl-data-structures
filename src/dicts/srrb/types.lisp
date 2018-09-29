@@ -164,6 +164,12 @@
   cl-ds.utils:todo)
 
 
+(-> set-in-tail! (mutable-sparse-rrb-vector
+                  cl-ds.meta:grow-function t
+                  cl-ds.common.rrb:rrb-node-position
+                  t
+                  list)
+    (values mutable-sparse-rrb-vector cl-ds:fundamental-modification-operation-status))
 (defun set-in-tail! (structure operation container offset value all)
   (bind (((:accessors (element-type read-element-type)
                       (%tail-mask access-tail-mask)
@@ -172,6 +178,10 @@
          (tail %tail)
          (tail-mask %tail-mask)
          (present (ldb-test (byte 1 offset) tail-mask)))
+    (declare (type (or null cl-ds.common.rrb:node-content) tail)
+             (type cl-ds.common.rrb:sparse-rrb-mask tail-mask)
+             (type cl-ds.common.rrb:rrb-node-position offset)
+             (type boolean present))
     (if present
         (bind ((old-bucket (aref tail offset))
                ((:values bucket status changed)

@@ -32,6 +32,8 @@
   `(simple-array * (,+maximal-shift+)))
 (deftype sparse-rrb-mask ()
   `(unsigned-byte ,+maximum-children-count+))
+(deftype rrb-node-position ()
+  `(integer 0 ,+maximum-children-count+))
 
 
 (defstruct sparse-node
