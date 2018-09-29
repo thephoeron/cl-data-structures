@@ -20,7 +20,7 @@
                       :accessor access-tree-index-bound)
    (%index-bound :initarg :index-bound
                  :accessor access-index-bound
-                 :initform 0)
+                 :initform cl-ds.common.rrb:+maximum-children-count+)
    (%tail-mask :initarg :tail-mask
                :initform 0
                :accessor access-tail-mask)
@@ -83,16 +83,18 @@
                     :bitmask tail-mask
                     :ownership-tag ownership-tag)))
     (if root-overflow
-        (values (insert-tail-handle-root-overflow rrb-container
-                                                  new-node
-                                                  ownership-tag)
-                nil)
+        (let ((result (insert-tail-handle-root-overflow rrb-container
+                                                        new-node
+                                                        ownership-tag)))
+          (incf %shift)
+          (values result nil))
         (if (null %tree)
             (values new-node nil)
             (values %tree new-node)))))
 
 
 (defun insert-tail! (structure ownership-tag)
+  (declare (optimize (debug 3)))
   (let ((tail-mask (access-tail-mask structure)))
     (unless (zerop tail-mask)
       (bind (((:values new-root new-node) (insert-tail structure ownership-tag))
@@ -107,7 +109,7 @@
                            (lret ((r (make-array
                                       (1+ length)
                                       :element-type (array-element-type content))))
-                             (cl-ds.common.rrb:sparse-rrb-node-content into) r)
+                             (setf (cl-ds.common.rrb:sparse-rrb-node-content into) r))
                            content)))
                 (setf (cl-ds.common.rrb:sparse-rrb-node-bitmask into)
                       new-bitmask)
@@ -115,7 +117,7 @@
                   (for i from 0 below position)
                   (setf (aref new-content i) (aref content i)))
                 (iterate
-                  (for i from position below length)
+                  (for i from position below (logcount bitmask))
                   (setf (aref new-content (1+ i)) (aref content i)))
                 (setf (aref new-content position) new-element)
                 new-element)))
@@ -124,37 +126,34 @@
               (t (iterate
                    (with shift = (access-shift structure))
                    (with size = (access-tree-index-bound structure))
-                   (repeat (1- shift))
-                   (for position
-                        from (* cl-ds.common.rrb:+bit-count+ shift)
-                        downto 0
-                        by cl-ds.common.rrb:+bit-count+)
+                   (with node = new-root)
+                   (with position = (* cl-ds.common.rrb:+bit-count+ shift))
+                   (with p-node = nil)
                    (for index = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
                                      size))
                    (for present = (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                                              index))
-                   (for node
-                        initially new-root
-                        then (and present
-                                  (cl-ds.common.rrb:sparse-nref node index)))
-                   (for p-node previous node)
+                   (shiftf p-node
+                           node
+                           (and present
+                                (cl-ds.common.rrb:sparse-nref node
+                                                              index)))
+                   (when (zerop (decf shift))
+                     (finish))
+                   (decf position cl-ds.common.rrb:+bit-count+)
                    (unless present
                      (let* ((new-element (cl-ds.common.rrb:make-sparse-rrb-node
                                           :ownership-tag ownership-tag
                                           :content (make-array 1))))
-                       (setf node new-element)
-                       (insert-impl p-node new-element index)))
-                   (finally (insert-impl node
-                                         (cl-ds.common.rrb:make-sparse-rrb-node
-                                          :content (access-tail structure)
-                                          :ownership-tag ownership-tag
-                                          :bitmask (access-tail-mask structure))
-                                         (ldb (byte cl-ds.common.rrb:+bit-count+ 0)
-                                              size))
-                            (setf (access-tail structure) nil
-                                  (access-tail-mask structure) 0)))))))
-    (setf (access-tail-mask structure) 0)
-    (incf (access-tree-index-bound structure) cl-ds.common.rrb:+maximum-children-count+)
+                       (insert-impl p-node new-element index)
+                       (setf node new-element
+                             p-node node)))
+                   (finally
+                    (insert-impl p-node new-node index)
+                    (setf (access-tail structure) nil)))))))
+    (setf (access-tail-mask structure) 0
+          (access-tree-index-bound structure) (access-index-bound structure))
+    (incf (access-index-bound structure) cl-ds.common.rrb:+maximum-children-count+)
     (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 
