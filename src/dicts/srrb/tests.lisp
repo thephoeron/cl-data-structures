@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 28)
+(plan 30)
 
 (let* ((tail (make-array cl-ds.common.rrb:+maximum-children-count+))
        (vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
@@ -53,7 +53,6 @@
   (let* ((tree (cl-ds.dicts.srrb::access-tree vector))
          (content (cl-ds.common.rrb:sparse-rrb-node-content tree))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask tree)))
-    (print tree)
     (is (length content) 3)
     (is bitmask #b1011)
     (let ((c (map 'vector #'cl-ds.common.rrb:sparse-rrb-node-content content)))
@@ -65,6 +64,8 @@
   (is (cl-ds.dicts.srrb::access-shift vector) 1)
   (is (cl-ds:at vector 0) 1)
   (is (cl-ds:at vector 1) 2)
-  (is (cl-ds:at vector 2) 3))
+  (is (cl-ds:at vector 2) 3)
+  (is (cl-ds:at vector 32) 10)
+  (is (cl-ds:at vector (* 32 3)) 15))
 
 (finalize)
