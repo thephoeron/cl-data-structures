@@ -186,36 +186,47 @@
              (type boolean larger?))
     (assert (not (zerop shift-difference)))
     (if larger?
-        (let* ((highest-current (1- old-tree-index-bound))
-               (new-root (cl-ds.common.rrb:make-sparse-rrb-node
-                          :content (make-array 1)
-                          :ownership-tag ownership-tag)))
-          (iterate
-            (repeat (1- shift-difference))
-            (for byte-position
-                 from (* cl-ds.common.rrb:+bit-count+
-                         new-shift)
-                 downto 0
-                 by cl-ds.common.rrb:+bit-count+)
-            (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
-                          highest-current))
+        (iterate
+          (with highest-current = (1- old-tree-index-bound))
+          (with new-root = (cl-ds.common.rrb:make-sparse-rrb-node
+                            :content (make-array 1)
+                            :ownership-tag ownership-tag))
+          (repeat (1- shift-difference))
+          (for byte-position
+               from (* cl-ds.common.rrb:+bit-count+
+                       new-shift)
+               downto 0
+               by cl-ds.common.rrb:+bit-count+)
+          (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                        highest-current))
 
-            (for p-i previous i)
-            (for node initially new-root
-                 then (cl-ds.common.rrb:sparse-nref node i))
-            (for present =
-                 (cl-ds.common.rrb:sparse-rrb-node-contains node i))
-            (unless present
-              (insert-new-node! node i))
-            (finally
-             (let ((i (ldb (byte cl-ds.common.rrb:+bit-count+
-                                 (* shift-difference
-                                    cl-ds.common.rrb:+bit-count+))
-                           highest-current)))
-               (cl-ds.common.rrb:with-sparse-rrb-node node
-                 (setf (cl-ds.common.rrb:sparse-nref node i) root))
-               (return new-root)))))
-        cl-ds.utils:todo)))
+          (for p-i previous i)
+          (for node initially new-root
+               then (cl-ds.common.rrb:sparse-nref node i))
+          (for present =
+               (cl-ds.common.rrb:sparse-rrb-node-contains node i))
+          (unless present
+            (insert-new-node! node i))
+          (finally
+           (let ((i (ldb (byte cl-ds.common.rrb:+bit-count+
+                               (* shift-difference
+                                  cl-ds.common.rrb:+bit-count+))
+                         highest-current)))
+             (cl-ds.common.rrb:with-sparse-rrb-node node
+               (setf (cl-ds.common.rrb:sparse-nref node i) root))
+             (return new-root))))
+        (iterate
+          (for byte-position
+               from (* cl-ds.common.rrb:+bit-count+
+                       new-shift)
+               downto 0
+               by cl-ds.common.rrb:+bit-count+)
+          (repeat (- shift-difference))
+          (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                        (1- position)))
+          (for node initially root
+               then (cl-ds.common.rrb:sparse-nref node i))
+          (finally (return node))))))
 
 
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
