@@ -12,21 +12,7 @@
 (define-constant +maximum-children-count+ (ash 1 +bit-count+))
 (define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0)
                                   most-positive-fixnum))
-(define-constant +all-shifts+
-    #.(iterate
-        (with result = (make-array cl-ds.common.rrb:+maximal-shift+
-                                   :element-type 'non-negative-fixnum))
-        (for i from 0 below cl-ds.common.rrb:+maximal-shift+)
-        (for c initially cl-ds.common.rrb:+maximum-children-count+
-             then (* c cl-ds.common.rrb:+maximum-children-count+))
-        (setf (aref result i) c)
-        (finally (return result)))
-  :test 'equalp)
 
-
-(deftype shifts-vector ()
-  `(simple-array positive-fixnum (,+maximum-children-count+)))
-(declaim (type shifts-vector +all-shifts+))
 
 (deftype node-content ()
   "Vector with content of the node"

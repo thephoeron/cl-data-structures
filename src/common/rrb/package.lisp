@@ -7,7 +7,6 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.common.rrb)
   (:export
-   #:+all-shifts+
    #:+bit-count+
    #:+depth+
    #:+maximum-children-count+

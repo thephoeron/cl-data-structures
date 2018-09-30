@@ -2,6 +2,8 @@
 
 
 (defun splice-content (data count)
+  "Divides DATA into CONTENT (for this node)
+   and everything else (for children nodes)"
   (let* ((size (cl-ds:size data))
          (content (unless (zerop count)
                     (cl-ds.common:sequence-window data 0 count)))

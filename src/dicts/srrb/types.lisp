@@ -177,13 +177,17 @@
          (new-shift (~> new-tree-index-bound
                         1-
                         integer-length
-                        (/ cl-ds.common.rrb:+bit-count+)))
+                        (/ cl-ds.common.rrb:+bit-count+)
+                        1-))
          (shift-difference (- new-shift old-shift))
          (larger? (> shift-difference 0)))
-    (declare (type non-negative-fixnum new-shift shift-difference
-                   new-tree-index-bound old-tree-index-bound
+    (declare (type non-negative-fixnum new-shift
+                   new-tree-index-bound
+                   old-tree-index-bound
                    old-shift position)
-             (type boolean larger?))
+             (type boolean larger?)
+             (type fixnum shift-difference)
+             (type fundamental-sparse-rrb-vector structure))
     (assert (not (zerop shift-difference)))
     (if larger?
         (iterate
@@ -214,11 +218,11 @@
                          highest-current)))
              (cl-ds.common.rrb:with-sparse-rrb-node node
                (setf (cl-ds.common.rrb:sparse-nref node i) root))
-             (return new-root))))
+             (return (values new-root new-shift new-tree-index-bound)))))
         (iterate
           (for byte-position
                from (* cl-ds.common.rrb:+bit-count+
-                       new-shift)
+                       old-shift)
                downto 0
                by cl-ds.common.rrb:+bit-count+)
           (repeat (- shift-difference))
@@ -226,12 +230,15 @@
                         (1- position)))
           (for node initially root
                then (cl-ds.common.rrb:sparse-nref node i))
-          (finally (return node))))))
+          (finally (return (values node new-shift new-tree-index-bound)))))))
 
 
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
-  (setf (access-tree structure)
-        (make-adjusted-tree structure position ownership-tag)))
+  (bind (((:values new-root new-shift new-bound)
+          (make-adjusted-tree structure position ownership-tag)))
+    (setf (access-shift structure) new-shift
+          (access-tree-index-bound structure) new-bound
+          (access-tree structure) new-root)))
 
 
 (-> set-in-tail! (mutable-sparse-rrb-vector

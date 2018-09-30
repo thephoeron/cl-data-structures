@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 34)
+(plan 40)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -92,6 +92,17 @@
   (is (cl-ds:at vector 1) 2)
   (is (cl-ds:at vector 2) 3)
   (is (cl-ds:at vector 32) 10)
-  (is (cl-ds:at vector (* 32 3)) 15))
+  (is (cl-ds:at vector (* 32 3)) 15)
+  (cl-ds.dicts.srrb::adjust-tree-to-new-size! vector 32 nil)
+  (is (cl-ds.dicts.srrb::access-shift vector) 0)
+  (let* ((tree (cl-ds.dicts.srrb::access-tree vector))
+         (content (cl-ds.common.rrb:sparse-rrb-node-content tree)))
+    (is (cl-ds.common.rrb:sparse-rrb-node-bitmask tree)
+        #b111)
+    (is (length content)
+        3)
+    (is (aref content 0) 1)
+    (is (aref content 1) 2)
+    (is (aref content 2) 3)))
 
 (finalize)
