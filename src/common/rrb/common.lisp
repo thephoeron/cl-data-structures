@@ -95,7 +95,7 @@
     (sparse-node-bitmask node)))
 
 
-(-> sparse-rrb-node-contains (sparse-rrb-node node-size) t)
+(-> sparse-nref (sparse-rrb-node node-size) t)
 (defun sparse-nref (node index)
   (with-sparse-rrb-node node
     (aref (sparse-node-content node) (sindex index))))
@@ -103,6 +103,7 @@
 
 (-> (setf sparse-nref) (t sparse-rrb-node node-size) t)
 (defun (setf sparse-nref) (new-value node index)
+  (declare (optimize (debug 3)))
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (bitmask (sparse-node-bitmask node))
@@ -111,25 +112,25 @@
         (let* ((length (length content))
                (new-bitmask (dpb 1 (byte 1 index) bitmask))
                (new-length (max length (logcount new-bitmask)))
-               (new-conntent
+               (new-content
                  (if (eql new-length length)
                      content
                      (make-array
                       new-length
                       :element-type (array-element-type content)))))
           (declare (type rrb-index new-length)
-                   (type node-content new-conntent))
+                   (type simple-vector new-content))
           (setf bitmask new-bitmask
                 (sparse-node-bitmask node) bitmask
                 sindex (sindex index))
           (iterate
             (for i from 0 below sindex)
-            (setf (aref new-conntent i) (aref content i)))
+            (setf (aref new-content i) (aref content i)))
           (iterate
-            (for i from sindex below length)
-            (setf (aref new-conntent (1+ i)) (aref content i)))
-          (setf content new-conntent
-                (sparse-node-content node) new-conntent)))
+            (for i from (1+ sindex) below (logcount bitmask))
+            (setf (aref new-content i) (aref content (1- i))))
+          (setf content new-content
+                (sparse-node-content node) new-content)))
       (setf (aref content sindex) new-value))))
 
 

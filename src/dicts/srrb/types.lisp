@@ -164,6 +164,7 @@
 
 
 (defun make-adjusted-tree (structure position ownership-tag)
+  (declare (optimize (debug 3)))
   (bind (((:accessors (root access-tree)
                       (tree-size access-tree-size)
                       (shift access-shift)
@@ -178,6 +179,7 @@
                         1-
                         integer-length
                         (/ cl-ds.common.rrb:+bit-count+)
+                        ceiling
                         1-))
          (shift-difference (- new-shift old-shift))
          (larger? (> shift-difference 0)))
@@ -195,6 +197,7 @@
           (with new-root = (cl-ds.common.rrb:make-sparse-rrb-node
                             :content (make-array 1)
                             :ownership-tag ownership-tag))
+          (with node = new-root)
           (repeat (1- shift-difference))
           (for byte-position
                from (* cl-ds.common.rrb:+bit-count+
@@ -203,17 +206,14 @@
                by cl-ds.common.rrb:+bit-count+)
           (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                         highest-current))
-
-          (for p-i previous i)
-          (for node initially new-root
-               then (cl-ds.common.rrb:sparse-nref node i))
           (for present =
                (cl-ds.common.rrb:sparse-rrb-node-contains node i))
           (unless present
             (insert-new-node! node i))
+          (setf node (cl-ds.common.rrb:sparse-nref node i))
           (finally
            (let ((i (ldb (byte cl-ds.common.rrb:+bit-count+
-                               (* shift-difference
+                               (* (1+ old-shift)
                                   cl-ds.common.rrb:+bit-count+))
                          highest-current)))
              (cl-ds.common.rrb:with-sparse-rrb-node node
@@ -390,6 +390,7 @@
           ((< position tree-bound)
            (iterate
              (with tree = (access-tree vect))
+             (with node = tree)
              (with shift = (access-shift vect))
              (for byte-position
                   from (* cl-ds.common.rrb:+bit-count+
@@ -398,13 +399,12 @@
                   by cl-ds.common.rrb:+bit-count+)
              (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                            position))
-             (for node initially tree
-                  then (cl-ds.common.rrb:sparse-nref node i))
              (for present =
                   (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                              i))
              (unless present
                (leave (values nil nil)))
+             (setf node (cl-ds.common.rrb:sparse-nref node i))
              (finally (return (values node t)))))
           (t (let* ((offset (- position tree-bound))
                     (present (ldb-test (byte 1 offset)
