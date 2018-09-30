@@ -5,13 +5,28 @@
 (define-constant +bit-count+ 5)
 (define-constant +maximal-shift+ (iterate
                                    (for c
-                                        initially most-positive-fixnum
-                                        then (ash c (- +bit-count+)))
-                                   (until (zerop c))
+                                        initially (ash 1 +bit-count+)
+                                        then (ash c +bit-count+))
+                                   (while (non-negative-fixnum-p c))
                                    (counting t)))
 (define-constant +maximum-children-count+ (ash 1 +bit-count+))
-(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0) most-positive-fixnum))
+(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0)
+                                  most-positive-fixnum))
+(define-constant +all-shifts+
+    #.(iterate
+        (with result = (make-array cl-ds.common.rrb:+maximal-shift+
+                                   :element-type 'non-negative-fixnum))
+        (for i from 0 below cl-ds.common.rrb:+maximal-shift+)
+        (for c initially cl-ds.common.rrb:+maximum-children-count+
+             then (* c cl-ds.common.rrb:+maximum-children-count+))
+        (setf (aref result i) c)
+        (finally (return result)))
+  :test 'equalp)
 
+
+(deftype shifts-vector ()
+  `(simple-array positive-fixnum (,+maximum-children-count+)))
+(declaim (type shifts-vector +all-shifts+))
 
 (deftype node-content ()
   "Vector with content of the node"
@@ -110,10 +125,12 @@
         (let* ((length (length content))
                (new-bitmask (dpb 1 (byte 1 index) bitmask))
                (new-length (max length (logcount new-bitmask)))
-               (new-conntent (if (eql new-length length)
-                                 content
-                                 (make-array new-length
-                                             :element-type (array-element-type content)))))
+               (new-conntent
+                 (if (eql new-length length)
+                     content
+                     (make-array
+                      new-length
+                      :element-type (array-element-type content)))))
           (declare (type rrb-index new-length)
                    (type node-content new-conntent))
           (setf bitmask new-bitmask
@@ -451,8 +468,11 @@
          initially (make-rrb-node :content tail
                                   :ownership-tag ownership-tag)
          then (if (null old-node)
-                  (lret ((n (make-rrb-node :content (make-node-content (array-element-type tail))
-                                           :ownership-tag ownership-tag)))
+                  (lret ((n (make-rrb-node
+                             :content (~> tail
+                                          array-element-type
+                                          make-node-content)
+                             :ownership-tag ownership-tag)))
                     (setf (nref n position) node))
                   (rrb-node-push-into-copy old-node
                                            position
