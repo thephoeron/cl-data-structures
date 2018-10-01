@@ -157,6 +157,8 @@
                     (setf (access-tail structure) nil)))))))
     (setf (access-tail-mask structure) 0
           (access-tree-index-bound structure) (access-index-bound structure))
+    (when (eql tail-mask cl-ds.common.rrb:+tail-mask+)
+      (setf (access-tail structure) nil))
     (incf (access-index-bound structure)
           cl-ds.common.rrb:+maximum-children-count+)
     (incf (access-tree-size structure) (logcount tail-mask)))
