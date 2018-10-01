@@ -102,9 +102,9 @@
          cluster)))
 
 
-(-> sum-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
+(-> average-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
     single-float)
-(defun sum-distance-to-element (state element cluster)
+(defun average-distance-to-element (state element cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
     (iterate
@@ -126,7 +126,7 @@
              (for other-cluster in-vector sample)
              (when (eq other-cluster cluster)
                (next-iteration))
-             (minimize (sum-distance-to-element state k other-cluster))))
+             (minimize (average-distance-to-element state k other-cluster))))
          cluster)))
 
 
@@ -160,11 +160,11 @@
                                                                  sample
                                                                  sub))
                  (for intra-distances = (intra-cluster-distances state sub))
-                 (for average-intra-distance = (mean intra-distances))
-                 (for average-inter-distance = (mean inter-distances))
-                 (sum (distance-difference average-intra-distance
-                                           average-inter-distance)
-                      into sum)
+                 (sum (~> (map 'vector
+                               #'distance-difference
+                               intra-distances
+                               inter-distances)
+                          (reduce #'+ _)))
                  (finally (return (/ sum (length sample)))))))
       (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
