@@ -160,17 +160,14 @@
                                                                  sample
                                                                  sub))
                  (for intra-distances = (intra-cluster-distances state sub))
-                 (sum (~> (map 'vector
-                               #'distance-difference
-                               intra-distances
-                               inter-distances)
+                 (sum (~> (map '(vector single-float) #'distance-difference
+                               intra-distances inter-distances)
                           (reduce #'+ _))
                       into sum)
                  (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
       (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
-           (lparallel:pmap 'vector #'silhouette)
-           mean))))
+           (lparallel:pmap 'vector #'silhouette)))))
 
 
 (-> choose-effective-medoid (pam-algorithm-state (vector t)) boolean)
@@ -425,7 +422,7 @@
 
 (defun update-result-cluster (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (let ((silhouette (silhouette state)))
+    (let ((silhouette (mean (silhouette state))))
       (when (or (null %silhouette)
                 (> silhouette %silhouette))
         (setf %silhouette silhouette
