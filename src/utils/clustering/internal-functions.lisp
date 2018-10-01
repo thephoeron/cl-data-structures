@@ -151,25 +151,21 @@
     (labels ((distance-difference (intra inter)
                (if (= intra inter)
                    0.0
-                   (coerce (/ (- intra inter) (max intra inter))
+                   (coerce (/ (- inter intra) (max intra inter))
                            'single-float)))
-             (silhouette-value (intra inter)
-               (map '(vector single-float)
-                    distance-difference
-                    intra inter))
              (silhouette (sample)
                (iterate
-                 (with sum = 0.0)
                  (for sub in-vector sample)
                  (for inter-distances = (inter-cluster-distances state
                                                                  sample
                                                                  sub))
                  (for intra-distances = (intra-cluster-distances state sub))
-                 (iterate
-                   (for inter in-vector inter-distances)
-                   (for intra in-vector intra-distances)
-                   (incf sum (distance-difference intra inter)))
-                 (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
+                 (for average-intra-distance = (mean intra-distances))
+                 (for average-inter-distance = (mean inter-distances))
+                 (sum (distance-difference average-intra-distance
+                                           average-inter-distance)
+                      into sum)
+                 (finally (return (/ sum (length sample)))))))
       (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
            (lparallel:pmap 'vector #'silhouette)
