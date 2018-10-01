@@ -257,7 +257,6 @@
          (present (ldb-test (byte 1 offset) tail-mask)))
     (declare (type (or null cl-ds.common.rrb:node-content) tail)
              (type cl-ds.common.rrb:sparse-rrb-mask tail-mask)
-             (type cl-ds.common.rrb:rrb-node-position offset)
              (type boolean present))
     (if present
         (bind ((old-bucket (aref tail offset))
