@@ -5,12 +5,13 @@
 (define-constant +bit-count+ 5)
 (define-constant +maximal-shift+ (iterate
                                    (for c
-                                        initially most-positive-fixnum
-                                        then (ash c (- +bit-count+)))
-                                   (until (zerop c))
+                                        initially (ash 1 +bit-count+)
+                                        then (ash c +bit-count+))
+                                   (while (non-negative-fixnum-p c))
                                    (counting t)))
 (define-constant +maximum-children-count+ (ash 1 +bit-count+))
-(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0) most-positive-fixnum))
+(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0)
+                                  most-positive-fixnum))
 
 
 (deftype node-content ()
@@ -32,6 +33,8 @@
   `(simple-array * (,+maximal-shift+)))
 (deftype sparse-rrb-mask ()
   `(unsigned-byte ,+maximum-children-count+))
+(deftype rrb-node-position ()
+  `(integer 0 ,+maximum-children-count+))
 
 
 (defstruct sparse-node
@@ -72,7 +75,7 @@
   `(let ((,node (if (listp ,node) (car ,node) ,node)))
      (declare (type sparse-node ,node))
      (macrolet ((sindex (index)
-                  `(logcount (ldb (byte ,index 0) (sparse-node-bitmask ,',node)))))
+                  `(1- (logcount (ldb (byte (1+ ,index) 0) (sparse-node-bitmask ,',node))))))
        ,@body)))
 
 
@@ -92,7 +95,7 @@
     (sparse-node-bitmask node)))
 
 
-(-> sparse-rrb-node-contains (sparse-rrb-node node-size) t)
+(-> sparse-nref (sparse-rrb-node node-size) t)
 (defun sparse-nref (node index)
   (with-sparse-rrb-node node
     (aref (sparse-node-content node) (sindex index))))
@@ -100,6 +103,7 @@
 
 (-> (setf sparse-nref) (t sparse-rrb-node node-size) t)
 (defun (setf sparse-nref) (new-value node index)
+  (declare (optimize (debug 3)))
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (bitmask (sparse-node-bitmask node))
@@ -108,23 +112,25 @@
         (let* ((length (length content))
                (new-bitmask (dpb 1 (byte 1 index) bitmask))
                (new-length (max length (logcount new-bitmask)))
-               (new-conntent (if (eql new-length length)
-                                 content
-                                 (make-array new-length
-                                             :element-type (array-element-type content)))))
+               (new-content
+                 (if (eql new-length length)
+                     content
+                     (make-array
+                      new-length
+                      :element-type (array-element-type content)))))
           (declare (type rrb-index new-length)
-                   (type node-content new-conntent))
+                   (type simple-vector new-content))
           (setf bitmask new-bitmask
                 (sparse-node-bitmask node) bitmask
                 sindex (sindex index))
           (iterate
             (for i from 0 below sindex)
-            (setf (aref new-conntent i) (aref content i)))
+            (setf (aref new-content i) (aref content i)))
           (iterate
-            (for i from sindex below length)
-            (setf (aref new-conntent (1+ i)) (aref content i)))
-          (setf content new-conntent
-                (sparse-node-content node) new-conntent)))
+            (for i from (1+ sindex) below (logcount bitmask))
+            (setf (aref new-content i) (aref content (1- i))))
+          (setf content new-content
+                (sparse-node-content node) new-content)))
       (setf (aref content sindex) new-value))))
 
 
@@ -449,8 +455,11 @@
          initially (make-rrb-node :content tail
                                   :ownership-tag ownership-tag)
          then (if (null old-node)
-                  (lret ((n (make-rrb-node :content (make-node-content (array-element-type tail))
-                                           :ownership-tag ownership-tag)))
+                  (lret ((n (make-rrb-node
+                             :content (~> tail
+                                          array-element-type
+                                          make-node-content)
+                             :ownership-tag ownership-tag)))
                     (setf (nref n position) node))
                   (rrb-node-push-into-copy old-node
                                            position

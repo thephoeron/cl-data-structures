@@ -240,6 +240,7 @@
   serapeum:random-in-range
   serapeum:finc
   serapeum:make
+  serapeum:vector=
   serapeum:fbind
   serapeum:take
   serapeum:drop
