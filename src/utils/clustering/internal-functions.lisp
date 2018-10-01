@@ -164,8 +164,9 @@
                                #'distance-difference
                                intra-distances
                                inter-distances)
-                          (reduce #'+ _)))
-                 (finally (return (/ sum (length sample)))))))
+                          (reduce #'+ _))
+                      into sum)
+                 (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
       (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
            (lparallel:pmap 'vector #'silhouette)
