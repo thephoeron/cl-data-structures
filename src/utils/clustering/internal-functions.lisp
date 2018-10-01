@@ -84,21 +84,22 @@
         (vector-push-extend i (aref %cluster-contents assignment))))))
 
 
-(-> intra-cluster-distances (pam-algorithm-state vector) (vector single-float))
+(-> intra-cluster-distances (pam-algorithm-state vector) vector)
 (defun intra-cluster-distances (state cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (map '(vector single-float)
+    (map 'vector
          (lambda (c)
            (iterate
+             (with length = (length cluster))
              (for k in-vector cluster)
              (when (eql c k)
                (next-iteration))
              (sum (cl-ds.utils:mref %distance-matrix c k)
                   into sum)
-             (finally (return (coerce (/ sum (length cluster))
-                                      'single-float))))
-           ;; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
-           )
+             (finally (return (if (eql 1 length)
+                                  nil
+                                  (coerce (/ sum (1- length))
+                                          'single-float))))))
          cluster)))
 
 
@@ -133,7 +134,7 @@
 (defun select-random-cluster-subsets (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (let* ((sample-size %silhouette-sample-size)
-           (sample-ratio (min 1 (/ sample-size (length %input-data)))))
+           (sample-ratio (min 1 (/ sample-size %sample-size))))
       (map 'vector
            (lambda (cluster)
              (let* ((size (length cluster))
@@ -149,10 +150,11 @@
   (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (labels ((distance-difference (intra inter)
-               (if (= intra inter)
-                   0.0
-                   (coerce (/ (- inter intra) (max intra inter))
-                           'single-float)))
+               (cond ((null intra) 0.0)
+                     ((null inter) -1.0)
+                     ((= intra inter) 0.0)
+                     (t (coerce (/ (- inter intra) (max intra inter))
+                                'single-float))))
              (silhouette (sample)
                (iterate
                  (for sub in-vector sample)
