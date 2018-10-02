@@ -84,27 +84,28 @@
         (vector-push-extend i (aref %cluster-contents assignment))))))
 
 
-(-> intra-cluster-distances (pam-algorithm-state vector) (vector single-float))
+(-> intra-cluster-distances (pam-algorithm-state vector) vector)
 (defun intra-cluster-distances (state cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
-    (map '(vector single-float)
+    (map 'vector
          (lambda (c)
            (iterate
+             (with length = (length cluster))
              (for k in-vector cluster)
              (when (eql c k)
                (next-iteration))
              (sum (cl-ds.utils:mref %distance-matrix c k)
                   into sum)
-             (finally (return (coerce (/ sum (length cluster))
-                                      'single-float))))
-           ;; should be 1- length but it gets problematic for length = 1 so to keep it simple we are just a little bit incorrect here
-           )
+             (finally (return (if (eql 1 length)
+                                  nil
+                                  (coerce (/ sum (1- length))
+                                          'single-float))))))
          cluster)))
 
 
-(-> sum-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
+(-> average-distance-to-element (pam-algorithm-state non-negative-fixnum vector)
     single-float)
-(defun sum-distance-to-element (state element cluster)
+(defun average-distance-to-element (state element cluster)
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
     (iterate
@@ -126,14 +127,14 @@
              (for other-cluster in-vector sample)
              (when (eq other-cluster cluster)
                (next-iteration))
-             (minimize (sum-distance-to-element state k other-cluster))))
+             (minimize (average-distance-to-element state k other-cluster))))
          cluster)))
 
 
 (defun select-random-cluster-subsets (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
     (let* ((sample-size %silhouette-sample-size)
-           (sample-ratio (min 1 (/ sample-size (length %input-data)))))
+           (sample-ratio (min 1 (/ sample-size %sample-size))))
       (map 'vector
            (lambda (cluster)
              (let* ((size (length cluster))
@@ -149,31 +150,26 @@
   (declare (optimize (speed 3) (safety 1)))
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (labels ((distance-difference (intra inter)
-               (if (= intra inter)
-                   0.0
-                   (coerce (/ (- intra inter) (max intra inter))
-                           'single-float)))
-             (silhouette-value (intra inter)
-               (map '(vector single-float)
-                    distance-difference
-                    intra inter))
+               (cond ((null intra) 0.0)
+                     ((null inter) -1.0)
+                     ((= intra inter) 0.0)
+                     (t (coerce (/ (- inter intra) (max intra inter))
+                                'single-float))))
              (silhouette (sample)
                (iterate
-                 (with sum = 0.0)
                  (for sub in-vector sample)
                  (for inter-distances = (inter-cluster-distances state
                                                                  sample
                                                                  sub))
                  (for intra-distances = (intra-cluster-distances state sub))
-                 (iterate
-                   (for inter in-vector inter-distances)
-                   (for intra in-vector intra-distances)
-                   (incf sum (distance-difference intra inter)))
+                 (sum (~> (map '(vector single-float) #'distance-difference
+                               intra-distances inter-distances)
+                          (reduce #'+ _))
+                      into sum)
                  (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
       (~>> (map-into (make-array %silhouette-sample-count)
                      (curry #'select-random-cluster-subsets state))
-           (lparallel:pmap 'vector #'silhouette)
-           mean))))
+           (lparallel:pmap 'vector #'silhouette)))))
 
 
 (-> choose-effective-medoid (pam-algorithm-state (vector t)) boolean)
@@ -428,7 +424,7 @@
 
 (defun update-result-cluster (state)
   (cl-ds.utils:with-slots-for (state clara-algorithm-state)
-    (let ((silhouette (silhouette state)))
+    (let ((silhouette (mean (silhouette state))))
       (when (or (null %silhouette)
                 (> silhouette %silhouette))
         (setf %silhouette silhouette
