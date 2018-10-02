@@ -186,10 +186,9 @@
     (declare (type non-negative-fixnum new-shift
                    new-tree-index-bound
                    old-tree-index-bound
-                   old-shift position)
+                   old-shift)
              (type boolean larger?)
-             (type fixnum shift-difference)
-             (type fundamental-sparse-rrb-vector structure))
+             (type fixnum shift-difference))
     (assert (not (zerop shift-difference)))
     (if larger?
         (iterate
