@@ -34,6 +34,18 @@
   ())
 
 
+(defclass functional-sparse-rrb-vector (fundamental-sparse-rrb-vector
+                                        cl-ds:functional)
+  ())
+
+
+(defclass transactional-sparse-rrb-bector
+    (mutable-sparse-rrb-vector
+     cl-ds.common.abstract:fundamental-ownership-tagged-object
+     cl-ds:transactional)
+  ())
+
+
 (defun insert-tail-handle-root-overflow (shift tree new-node ownership-tag)
   (iterate
     (repeat shift)
@@ -319,48 +331,78 @@
                                              (structure mutable-sparse-rrb-vector)
                                              container
                                              position &rest all &key value)
-  (let ((tree-bound (access-tree-index-bound structure)))
+  (let ((tree-bound (access-tree-index-bound structure))
+        (operation-type (type-of operation))
+        (final-status nil))
     (cond ((negative-fixnum-p position)
-           cl-ds.utils:todo) ; should signal proper error if position is negative
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative"
+                  :text "Sparse vector index can not be negative."))
           ((< position tree-bound)
-           (iterate
-             (with tree = (access-tree structure))
-             (with shift = (access-shift structure))
-             (with all-exist = t)
-             (for position
-                  from (* cl-ds.common.rrb:+bit-count+
-                          shift)
-                  downto 0
-                  by cl-ds.common.rrb:+bit-count+)
-             (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ position)
-                           position))
-             (for p-i previous i)
-             (for node
-                  initially tree
-                  then (cl-ds.common.rrb:sparse-nref node i))
-             (for present =
-                  (cl-ds.common.rrb:sparse-rrb-node-contains node i))
-             (unless present
-               (setf all-exist nil)
-               (insert-new-node! node i))
-             (finally
-              (cl-ds.common.rrb:with-sparse-rrb-node node
-                (if all-exist
-                    (bind ((current (cl-ds.common.rrb:sparse-nref node i))
-                           ((:values new-bucket status changed)
-                            (apply #'cl-ds.meta:grow-bucket! operation
-                                   container current all)))
-                      (when changed
-                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket))
-                      (values structure status))
-                    (bind (((:values new-bucket status changed)
-                            (apply #'cl-ds.meta:make-bucket
-                                   operation container
-                                   value all)))
-                      (when changed
-                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
-                        (incf (access-tree-size structure)))
-                      (values structure status)))))))
+           (labels ((impl (node byte-position depth)
+                      (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                                     position))
+                             (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+                        (when (and (not present)
+                                   (member operation-type
+                                           '(cl-ds.meta:update!-function
+                                             cl-ds.meta:update-if!-function)))
+                          (return-from cl-ds.meta:position-modification
+                            (values structure
+                                    cl-ds.common:empty-eager-modification-operation-status)))
+                        (if (zerop depth)
+                            (if present
+                                (bind ((current (cl-ds.common.rrb:sparse-nref node i))
+                                       ((:values new-bucket status changed)
+                                        (apply #'cl-ds.meta:grow-bucket! operation
+                                               container current all)))
+                                  (if changed
+                                      (progn
+                                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                                        (return-from cl-ds.meta:position-modification
+                                          (values structure status)))
+                                      (return-from cl-ds.meta:position-modification
+                                        (values structure
+                                                cl-ds.common:empty-eager-modification-operation-status))))
+                                (bind (((:values new-bucket status changed)
+                                        (apply #'cl-ds.meta:make-bucket
+                                               operation container
+                                               value all))
+                                       (node (or node (cl-ds.common.rrb:make-sparse-rrb-node
+                                                       :content (make-array
+                                                                 1
+                                                                 :element-type (read-element-type structure))))))
+                                  (if changed
+                                      (progn
+                                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
+                                              final-status status)
+                                        (incf (access-tree-size structure))
+                                        node)
+                                      (return-from cl-ds.meta:position-modification
+                                        (values structure
+                                                status)))))
+                            (if present
+                                (let* ((next-node (cl-ds.common.rrb:sparse-nref node i))
+                                       (new-node (impl next-node
+                                                       (- byte-position cl-ds.common.rrb:+bit-count+)
+                                                       (1- depth))))
+                                  (unless (eq new-node next-node)
+                                    (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
+                                  node)
+                                (let* ((current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
+                                                               :content (make-array 1))))
+                                       (new-node (impl nil
+                                                       (- byte-position cl-ds.common.rrb:+bit-count+)
+                                                       (1- depth))))
+                                  (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
+                                  current-node))))))
+             (let ((shift (access-shift structure)))
+               (impl (access-tree structure)
+                     (* cl-ds.common.rrb:+bit-count+ shift)
+                     shift))
+             (values structure final-status)))
           (t (let* ((offset (- position tree-bound)))
                (if (< offset cl-ds.common.rrb:+maximum-children-count+)
                    (set-in-tail! structure operation container
