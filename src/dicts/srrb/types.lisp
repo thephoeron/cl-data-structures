@@ -397,8 +397,10 @@
                                  (values structure
                                          final-status))
                                (progn
-                                 (unless (cl-ds.common.abstract:acquire-ownership node ownership-tag)
-                                   (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 ownership-tag)))
+                                 (unless (cl-ds.common.abstract:acquire-ownership
+                                          node ownership-tag)
+                                   (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                               node 0 ownership-tag)))
                                  (setf (cl-ds.common.rrb:sparse-nref node i) new-node)
                                  node)))
                          (let ((new-node (impl nil
