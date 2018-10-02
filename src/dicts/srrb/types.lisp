@@ -408,10 +408,13 @@
                                                        :content (make-array 1)))))
                            (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                            current-node))))))
-      (let ((shift (access-shift structure)))
-        (impl (access-tree structure)
-              (* cl-ds.common.rrb:+bit-count+ shift)
-              shift))
+      (let* ((shift (access-shift structure))
+             (tree (access-tree structure))
+             (new-tree (impl tree
+                             (* cl-ds.common.rrb:+bit-count+ shift)
+                             shift)))
+        (unless (eq tree new-tree)
+          (setf (access-tree structure) new-tree)))
       (values structure final-status))))
 
 
