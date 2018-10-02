@@ -339,14 +339,14 @@
                             (member operation-type
                                     '(cl-ds.meta:update!-function
                                       cl-ds.meta:update-if!-function)))
-                   (return-from destructive-grow-tree!
+                   (return-from transactional-grow-tree!
                      (values structure
                              cl-ds.common:empty-eager-modification-operation-status)))
                  (if (zerop depth)
                      (if present
                          (bind ((current (cl-ds.common.rrb:sparse-nref node i))
                                 ((:values new-bucket status changed)
-                                 (apply #'cl-ds.meta:grow-bucket! operation
+                                 (apply #'cl-ds.meta:grow-bucket operation
                                         container current all)))
                            (if changed
                                (let ((owned (cl-ds.common.abstract:acquire-ownership
@@ -354,16 +354,15 @@
                                  (if owned
                                      (progn
                                        (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
-                                       (return-from destructive-grow-tree!
+                                       (return-from transactional-grow-tree!
                                          (values structure status)))
                                      (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                                  node 0 ownership-tag)
                                            final-status status
                                            (cl-ds.common.rrb:sparse-nref node i) new-bucket))
                                  node)
-                               (return-from destructive-grow-tree!
-                                 (values structure
-                                         cl-ds.common:empty-eager-modification-operation-status))))
+                               (return-from transactional-grow-tree!
+                                 (values structure status))))
                          (bind (((:values new-bucket status changed)
                                  (apply #'cl-ds.meta:make-bucket
                                         operation container
@@ -373,32 +372,40 @@
                                                           1
                                                           :element-type (read-element-type structure))
                                                 :ownership-tag ownership-tag)))
-                                (owned (cl-ds.common.abstract:acquire-ownership node)))
+                                (owned (cl-ds.common.abstract:acquire-ownership node ownership-tag)))
                            (if changed
-                               (progn
-                                 (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
-                                       final-status status)
-                                 (incf (access-tree-size structure))
-                                 node)
-                               (return-from destructive-grow-tree!
-                                 (values structure
-                                         status)))))
+                               (if owned
+                                   (progn
+                                     (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                                     (return-from transactional-grow-tree!
+                                       (values structure status)))
+                                   (progn
+                                     (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                                 node 0 ownership-tag)
+                                           final-status status
+                                           (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                                     node))
+                               (return-from transactional-grow-tree!
+                                 (values structure status)))))
                      (if present
                          (let* ((next-node (cl-ds.common.rrb:sparse-nref node i))
                                 (new-node (impl next-node
                                                 (- byte-position cl-ds.common.rrb:+bit-count+)
                                                 (1- depth))))
                            (if (eq new-node next-node)
-                               (return-from destructive-grow-tree!
+                               (return-from transactional-grow-tree!
                                  (values structure
                                          final-status))
-                               (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
-                           node)
-                         (let ((current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                       :content (make-array 1))))
-                               (new-node (impl nil
+                               (progn
+                                 (unless (cl-ds.common.abstract:acquire-ownership node ownership-tag)
+                                   (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 ownership-tag)))
+                                 (setf (cl-ds.common.rrb:sparse-nref node i) new-node)
+                                 node)))
+                         (let ((new-node (impl nil
                                                (- byte-position cl-ds.common.rrb:+bit-count+)
-                                               (1- depth))))
+                                               (1- depth)))
+                               (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
+                                                       :content (make-array 1)))))
                            (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                            current-node))))))
       (let ((shift (access-shift structure)))
@@ -434,8 +441,7 @@
                                  (return-from destructive-grow-tree!
                                    (values structure status)))
                                (return-from destructive-grow-tree!
-                                 (values structure
-                                         cl-ds.common:empty-eager-modification-operation-status))))
+                                 (values structure status))))
                          (bind (((:values new-bucket status changed)
                                  (apply #'cl-ds.meta:make-bucket
                                         operation container
@@ -464,11 +470,11 @@
                                          final-status))
                                (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
                            node)
-                         (let ((current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                       :content (make-array 1))))
-                               (new-node (impl nil
+                         (let ((new-node (impl nil
                                                (- byte-position cl-ds.common.rrb:+bit-count+)
-                                               (1- depth))))
+                                               (1- depth)))
+                               (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
+                                                       :content (make-array 1)))))
                            (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                            current-node))))))
       (let ((shift (access-shift structure)))
