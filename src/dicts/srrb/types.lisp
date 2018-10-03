@@ -170,7 +170,7 @@
                     (setf (access-tail structure) nil)))))))
     (setf (access-tail-mask structure) 0
           (access-tree-index-bound structure) (access-index-bound structure))
-    (when (eql tail-mask cl-ds.common.rrb:+tail-mask+)
+    (when (eql tail-mask (lognot cl-ds.common.rrb:+tail-mask+))
       (setf (access-tail structure) nil))
     (incf (access-index-bound structure)
           cl-ds.common.rrb:+maximum-children-count+)
@@ -199,14 +199,48 @@
                                 shift root new-node ownership-tag)))
                  (incf %shift)
                  (setf tree new-root)))
-              (t cl-ds.utils:todo))))
+              (t (bind ((position (* cl-ds.common.rrb:+bit-count+ shift))
+                        (size (access-tree-index-bound structure))
+                        ((:labels impl (node byte-position depth))
+                         (decf depth)
+                         (if (zerop depth)
+                             new-node
+                             (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                                      position)
+                                                size))
+                                    (present (and node (cl-ds.common.rrb:sparse-nref
+                                                        node index)))
+                                    (next-node (and present (cl-ds.common.rrb:sparse-nref
+                                                             node index)))
+                                    (current-node (or node
+                                                      (cl-ds.common.rrb:make-rrb-node
+                                                       :content (make-array 1)
+                                                       :ownership-tag ownership-tag)))
+                                    (owned (cl-ds.common.abstract:acquire-ownership current-node
+                                                                                    ownership-tag))
+                                    (new-node (impl next-node
+                                                    (- byte-position
+                                                       cl-ds.common.rrb:+bit-count+)
+                                                    depth)))
+                               (if owned
+                                   (progn
+                                     (setf (cl-ds.common.rrb:sparse-nref current-node index) new-node)
+                                     current-node)
+                                   (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                                current-node (if present 0 1)
+                                                ownership-tag)))
+                                     (setf (cl-ds.common.rrb:sparse-nref copy index) new-node)
+                                     copy)))))
+                        (new-tree (impl root (* cl-ds.common.rrb:+bit-count+ shift) shift)))
+                   (unless (eq new-tree root)
+                     (setf tree new-tree)))))))
     (setf (access-tail-mask structure) 0
           (access-tree-index-bound structure) (access-index-bound structure))
-    (when (eql tail-mask cl-ds.common.rrb:+tail-mask+)
+    (when (eql tail-mask (lognot cl-ds.common.rrb:+tail-mask+))
       (setf (access-tail structure) nil))
     (incf (access-index-bound structure)
           cl-ds.common.rrb:+maximum-children-count+)
-    (incf (access-tree-size structure) (logcount tail-mask)))
+    (incf (access-tree-size structure) (logcount tail-mask))))
   structure)
 
 
