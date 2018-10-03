@@ -582,10 +582,13 @@
                      (when changed
                        (let* ((tail (cl-ds.common.rrb:make-node-content
                                      (read-element-type structure)))
-                              (offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
-                              (tail-mask (ash 1 offset)))
-                         (transactional-insert-tail! structure nil)
-                         (adjust-tree-to-new-size! structure position nil)
+                              (offset (logandc2 position
+                                                cl-ds.common.rrb:+tail-mask+))
+                              (tail-mask (ash 1 offset))
+                              (tag (cl-ds.common.abstract:read-ownership-tag
+                                    structure)))
+                         (transactional-insert-tail! structure tag)
+                         (adjust-tree-to-new-size! structure position tag)
                          (setf (aref tail offset) bucket
                                (access-tail structure) tail
                                (access-tail-mask structure) tail-mask))
