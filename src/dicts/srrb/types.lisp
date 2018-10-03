@@ -224,7 +224,8 @@
                                                     depth)))
                                (if owned
                                    (progn
-                                     (setf (cl-ds.common.rrb:sparse-nref current-node index) new-node)
+                                     (setf (cl-ds.common.rrb:sparse-nref current-node index)
+                                           new-node)
                                      current-node)
                                    (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                                 current-node (if present 0 1)
