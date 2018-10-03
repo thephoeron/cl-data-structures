@@ -111,4 +111,16 @@
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
 
+(let* ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
+       (input-data (~>> (cl-ds:iota-range :to 5000)
+                        (cl-ds.alg:zip #'list* (cl-ds.alg:shuffled-range 0 5000))
+                        cl-ds.alg:to-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'cl-ds:update! container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
+
 (finalize)

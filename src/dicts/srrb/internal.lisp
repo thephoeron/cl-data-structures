@@ -374,7 +374,7 @@
 
 (-> transactional-grow-tree! (cl-ds.meta:grow-function
                               transactional-sparse-rrb-vector
-                              transactional-sparse-rrb-vector
+                              t
                               fixnum
                               list
                               t)
@@ -474,7 +474,7 @@
 
 (-> destructive-grow-tree! (cl-ds.meta:grow-function
                             mutable-sparse-rrb-vector
-                            mutable-sparse-rrb-vector
+                            t
                             fixnum
                             list
                             t)
@@ -546,4 +546,3 @@
           (* cl-ds.common.rrb:+bit-count+ shift)
           shift)
     (values structure final-status)))
-
