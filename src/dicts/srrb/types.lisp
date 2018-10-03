@@ -46,6 +46,12 @@
   ())
 
 
+(-> insert-tail-handle-root-overflow
+    (fixnum
+     cl-ds.common.rrb:sparse-rrb-node
+     cl-ds.common.rrb:sparse-rrb-node
+     t)
+    cl-ds.common.rrb:sparse-rrb-node)
 (defun insert-tail-handle-root-overflow (shift tree new-node ownership-tag)
   (iterate
     (repeat shift)
@@ -66,6 +72,10 @@
        (return root)))))
 
 
+(-> make-node-from-tail
+    (fundamental-sparse-rrb-vector
+     t)
+    cl-ds.common.rrb:sparse-rrb-node)
 (defun make-node-from-tail (rrb-container ownership-tag)
   (bind (((:slots %tree-size %shift %tree %tail %tail-mask
                   %element-type %tree-index-bound)
@@ -118,6 +128,8 @@
     new-element))
 
 
+(-> insert-tail! (mutable-sparse-rrb-vector)
+    mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
   (declare (optimize (debug 3)))
   (let ((tail-mask (access-tail-mask structure))
@@ -178,6 +190,8 @@
   structure)
 
 
+(-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
+    transactional-sparse-rrb-vector)
 (defun transactional-insert-tail! (structure ownership-tag)
   (declare (optimize (debug 3)))
   (let ((tail-mask (access-tail-mask structure)))
@@ -316,12 +330,15 @@
           (finally (return (values node new-shift new-tree-index-bound)))))))
 
 
+(-> adjust-tree-to-new-size! (mutable-sparse-rrb-vector fixnum t)
+    mutable-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
   (bind (((:values new-root new-shift new-bound)
           (make-adjusted-tree structure position ownership-tag)))
     (setf (access-shift structure) new-shift
           (access-tree-index-bound structure) new-bound
-          (access-tree structure) new-root)))
+          (access-tree structure) new-root)
+    structure))
 
 
 (-> set-in-tail! (mutable-sparse-rrb-vector
