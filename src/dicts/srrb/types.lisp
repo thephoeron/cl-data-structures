@@ -39,7 +39,7 @@
   ())
 
 
-(defclass transactional-sparse-rrb-bector
+(defclass transactional-sparse-rrb-vector
     (mutable-sparse-rrb-vector
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      cl-ds:transactional)
@@ -245,6 +245,8 @@
   structure)
 
 
+(-> make-adjusted-tree (fundamental-sparse-rrb-vector fixnum t)
+    cl-ds.common.rrb:sparse-rrb-node)
 (defun make-adjusted-tree (structure position ownership-tag)
   (declare (optimize (debug 3)))
   (bind (((:accessors (root access-tree)
@@ -364,6 +366,9 @@
           (values structure status)))))
 
 
+(-> insert-new-node! (cl-ds.common.rrb:sparse-rrb-node
+                      cl-ds.common.rrb:rrb-node-position)
+    cl-ds.common.rrb:sparse-rrb-node)
 (defun insert-new-node! (node i)
   (let* ((old-content (cl-ds.common.rrb:sparse-rrb-node-content node))
          (old-content-size (array-dimension old-content 0))
@@ -395,6 +400,13 @@
     node))
 
 
+(-> transactional-grow-tree! (cl-ds.meta:grow-function
+                              transactional-sparse-rrb-vector
+                              transactional-sparse-rrb-vector
+                              fixnum
+                              list
+                              t)
+    transactional-sparse-rrb-vector)
 (defun transactional-grow-tree! (operation structure container position all value)
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
@@ -488,6 +500,13 @@
     (values structure final-status)))
 
 
+(-> destructive-grow-tree! (cl-ds.meta:grow-function
+                            mutable-sparse-rrb-vector
+                            mutable-sparse-rrb-vector
+                            fixnum
+                            list
+                            t)
+    mutable-sparse-rrb-vector)
 (defun destructive-grow-tree! (operation structure container position all value)
   (bind ((final-status nil)
          (operation-type (type-of operation))
@@ -558,7 +577,7 @@
 
 
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
-                                             (structure transactional-sparse-rrb-bector)
+                                             (structure transactional-sparse-rrb-vector)
                                              container
                                              position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
@@ -620,7 +639,8 @@
                      (when changed
                        (let* ((tail (cl-ds.common.rrb:make-node-content
                                      (read-element-type structure)))
-                              (offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
+                              (offset (logandc2 position
+                                                cl-ds.common.rrb:+tail-mask+))
                               (tail-mask (ash 1 offset)))
                          (insert-tail! structure)
                          (adjust-tree-to-new-size! structure position nil)
