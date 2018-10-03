@@ -130,6 +130,8 @@
                                            (:test-file "lazy-tests")))
                              (:module "srrb"
                               :components ((:file "types")
+                                           (:file "internal")
+                                           (:file "api")
                                            (:test-file "tests")))
                              (:test-file "functional-dictionary-test-suite")
                              (:test-file "mutable-dictionary-test-suite")
