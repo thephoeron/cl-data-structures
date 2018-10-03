@@ -210,7 +210,7 @@
       (setf (access-tail structure) nil))
     (incf (access-index-bound structure)
           cl-ds.common.rrb:+maximum-children-count+)
-    (incf (access-tree-size structure) (logcount tail-mask))))
+    (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 
 
@@ -378,7 +378,7 @@
                               fixnum
                               list
                               t)
-    transactional-sparse-rrb-vector)
+    (values transactional-sparse-rrb-vector t))
 (defun transactional-grow-tree! (operation structure container position all value)
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
@@ -478,7 +478,7 @@
                             fixnum
                             list
                             t)
-    mutable-sparse-rrb-vector)
+    (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
   (bind ((final-status nil)
          (operation-type (type-of operation))
