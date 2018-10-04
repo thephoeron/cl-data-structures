@@ -441,8 +441,7 @@
                           (if owned
                               (progn
                                 (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
-                                (return-from transactional-grow-tree!
-                                  (values structure status)))
+                                node)
                               (progn
                                 (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                             node 0 ownership-tag)
@@ -471,7 +470,8 @@
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
                           (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                  :content (make-array 1)))))
+                                                  :content (make-array 1)
+                                                  :ownership-tag ownership-tag))))
                       (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                       current-node)))))
          (shift (access-shift structure))
