@@ -69,8 +69,7 @@
                               (tail-mask (ash 1 offset)))
                          (insert-tail! structure)
                          (adjust-tree-to-new-size! structure
-                                                   (- position
-                                                      cl-ds.common.rrb:+maximum-children-count+)
+                                                   position
                                                    nil)
                          (setf (aref tail offset) bucket
                                (access-tail structure) tail

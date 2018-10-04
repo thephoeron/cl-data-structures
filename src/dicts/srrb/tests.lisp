@@ -111,6 +111,32 @@
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
 
+
+(let* ((count 64)
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
+                        cl-ds.alg:to-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  (setf input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds.alg:shuffled-range 0 count))
+                        cl-ds.alg:to-vector))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  )
+
+
 (let* ((count 50)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)

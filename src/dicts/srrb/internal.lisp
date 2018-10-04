@@ -504,7 +504,8 @@
                                    container current value all)))
                       (if changed
                           (progn
-                            (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                            (setf (cl-ds.common.rrb:sparse-nref node i)
+                                  new-bucket)
                             (return-from destructive-grow-tree!
                               (values structure status)))
                           (return-from destructive-grow-tree!
@@ -517,7 +518,6 @@
                                            :content (make-array
                                                      1
                                                      :element-type (read-element-type structure))))))
-                      (break)
                       (if changed
                           (progn
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
@@ -529,9 +529,9 @@
                                     status)))))
                 (if present
                     (let* ((next-node (cl-ds.common.rrb:sparse-nref node i))
-                           (new-node (print (impl next-node
-                                                  (- byte-position cl-ds.common.rrb:+bit-count+)
-                                                  (1- depth)))))
+                           (new-node (impl next-node
+                                           (- byte-position cl-ds.common.rrb:+bit-count+)
+                                           (1- depth))))
                       (unless (eq new-node next-node)
                         (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
                       node)

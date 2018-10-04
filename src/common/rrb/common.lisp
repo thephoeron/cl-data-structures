@@ -75,7 +75,8 @@
   `(let ((,node (if (listp ,node) (car ,node) ,node)))
      (declare (type sparse-node ,node))
      (macrolet ((sindex (index)
-                  `(1- (logcount (ldb (byte (1+ ,index) 0) (sparse-node-bitmask ,',node))))))
+                  `(1- (logcount (ldb (byte (1+ ,index) 0)
+                                      (sparse-node-bitmask ,',node))))))
        ,@body)))
 
 
@@ -107,7 +108,7 @@
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (bitmask (sparse-node-bitmask node))
-           (sindex 0))
+           (sindex (sindex index)))
       (unless (sparse-rrb-node-contains node index)
         (let* ((length (length content))
                (new-bitmask (dpb 1 (byte 1 index) bitmask))
@@ -127,8 +128,10 @@
             (for i from 0 below sindex)
             (setf (aref new-content i) (aref content i)))
           (iterate
-            (for i from (1+ sindex) below (logcount bitmask))
-            (setf (aref new-content i) (aref content (1- i))))
+            (for i from sindex below (logcount bitmask))
+            (when (eql (1+ i) new-length)
+              (finish))
+            (setf (aref new-content (1+ i)) (aref content i)))
           (setf content new-content
                 (sparse-node-content node) new-content)))
       (setf (aref content sindex) new-value))))
