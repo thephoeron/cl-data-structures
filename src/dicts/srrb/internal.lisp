@@ -252,7 +252,7 @@
           (for present =
                (cl-ds.common.rrb:sparse-rrb-node-contains node i))
           (unless present
-            (insert-new-node! node i))
+            (insert-new-node! node i ownership-tag))
           (setf node (cl-ds.common.rrb:sparse-nref node i))
           (finally
            (let ((i (ldb (byte cl-ds.common.rrb:+bit-count+
