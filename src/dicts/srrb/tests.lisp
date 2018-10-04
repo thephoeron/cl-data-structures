@@ -142,14 +142,16 @@
   (is shift 0))
 
 
-(let* ((count 50)
-       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
+(let* ((count 80)
        (input-data (~>> (cl-ds:iota-range :to count)
-                        (cl-ds.alg:zip #'list* (cl-ds.alg:shuffled-range 0 count))
-                        cl-ds.alg:to-vector)))
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
   (iterate
     (for (position . point) in-vector input-data)
-    (cl-ds.meta:position-modification #'cl-ds:update! container :mock
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                       position :value point))
   (iterate
     (for (position . point) in-vector input-data)
