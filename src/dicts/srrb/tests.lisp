@@ -137,6 +137,11 @@
   )
 
 
+(bind (((:values bound shift) (cl-ds.dicts.srrb::tree-bound-and-shift 47)))
+  (is bound cl-ds.common.rrb:+maximum-children-count+)
+  (is shift 0))
+
+
 (let* ((count 50)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)

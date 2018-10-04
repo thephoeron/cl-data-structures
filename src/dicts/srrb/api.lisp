@@ -62,19 +62,18 @@
                            (apply #'cl-ds.meta:make-bucket
                                   operation container value all)))
                      (when changed
-                       (let* ((tail (cl-ds.common.rrb:make-node-content
-                                     (read-element-type structure)))
-                              (offset (logandc2 position
-                                                cl-ds.common.rrb:+tail-mask+))
-                              (tail-mask (ash 1 offset)))
-                         (insert-tail! structure)
-                         (adjust-tree-to-new-size! structure
-                                                   position
-                                                   nil)
+                       (insert-tail! structure)
+                       (adjust-tree-to-new-size! structure
+                                                 position
+                                                 nil)
+                       (setf offset (- position (access-tree-index-bound structure)))
+                       (let ((tail-mask (ash 1 offset))
+                             (tail (cl-ds.common.rrb:make-node-content
+                                    (read-element-type structure))))
                          (setf (aref tail offset) bucket
                                (access-tail structure) tail
-                               (access-tail-mask structure) tail-mask))
-                       (values structure status)))))))))
+                               (access-tail-mask structure) tail-mask)))
+                     (values structure status))))))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
@@ -84,6 +83,7 @@
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
+  (declare (optimize (debug 3)))
   (cl-ds:assert-one-dimension more-positions)
   (check-type position fixnum)
   (let ((bound (access-index-bound vect))
@@ -106,6 +106,7 @@
                   (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                              i))
              (unless present
+               (break)
                (leave (values nil nil)))
              (setf node (cl-ds.common.rrb:sparse-nref node i))
              (finally (return (values node t)))))
