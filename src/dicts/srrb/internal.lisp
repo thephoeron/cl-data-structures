@@ -567,4 +567,5 @@
                            shift)))
       (unless (eq old-root new-root)
         (setf (access-tree structure) new-root)))
+    (break)
     (values structure final-status)))

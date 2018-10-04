@@ -43,6 +43,7 @@
                                              (structure mutable-sparse-rrb-vector)
                                              container
                                              position &rest all &key value)
+  (format t "~a ~a~%" position value)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -95,6 +96,8 @@
              (with tree = (access-tree vect))
              (with node = tree)
              (with shift = (access-shift vect))
+             (when (null node)
+               (break))
              (for byte-position
                   from (* cl-ds.common.rrb:+bit-count+
                           shift)
@@ -106,7 +109,6 @@
                   (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                              i))
              (unless present
-               (break)
                (leave (values nil nil)))
              (setf node (cl-ds.common.rrb:sparse-nref node i))
              (finally (return (values node t)))))
