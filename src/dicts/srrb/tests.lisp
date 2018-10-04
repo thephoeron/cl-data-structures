@@ -112,7 +112,7 @@
     (is (aref content 2) 3)))
 
 
-(let* ((count 64)
+(let* ((count 80)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
