@@ -341,9 +341,10 @@
 
 
 (-> insert-new-node! (cl-ds.common.rrb:sparse-rrb-node
-                      cl-ds.common.rrb:rrb-node-position)
+                      cl-ds.common.rrb:rrb-node-position
+                      &optional t)
     cl-ds.common.rrb:sparse-rrb-node)
-(defun insert-new-node! (node i)
+(defun insert-new-node! (node i &optional ownership-tag)
   (let* ((old-content (cl-ds.common.rrb:sparse-rrb-node-content node))
          (old-content-size (array-dimension old-content 0))
          (old-bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
@@ -366,6 +367,7 @@
       (setf (aref new-content (1+ i)) (aref old-content i)))
     (setf (aref new-content splice-index)
           (cl-ds.common.rrb:make-sparse-rrb-node
+           :ownership-tag ownership-tag
            :content (make-array 1
                                 :element-type (array-element-type
                                                old-content)))
