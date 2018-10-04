@@ -348,7 +348,7 @@
          (old-content-size (array-dimension old-content 0))
          (old-bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
          (new-bitmask (dpb 1 (byte 1 i) old-bitmask))
-         (splice-index (logcount (ldb (byte i 0) new-bitmask)))
+         (splice-index (1- (logcount (ldb (byte (1+ i) 0) new-bitmask))))
          (old-count (logcount old-bitmask))
          (new-count (1+ old-count))
          (new-content (if (<= new-count old-content-size)
