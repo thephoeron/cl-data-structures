@@ -68,7 +68,10 @@
                                                 cl-ds.common.rrb:+tail-mask+))
                               (tail-mask (ash 1 offset)))
                          (insert-tail! structure)
-                         (adjust-tree-to-new-size! structure position nil)
+                         (adjust-tree-to-new-size! structure
+                                                   (- position
+                                                      cl-ds.common.rrb:+maximum-children-count+)
+                                                   nil)
                          (setf (aref tail offset) bucket
                                (access-tail structure) tail
                                (access-tail-mask structure) tail-mask))
@@ -113,4 +116,3 @@
                (if present
                    (values (aref (access-tail vect) offset) t)
                    (values nil nil)))))))
-
