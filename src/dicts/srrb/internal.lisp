@@ -241,19 +241,14 @@
                             :content (make-array 1)
                             :ownership-tag ownership-tag))
           (with node = new-root)
+          (with byte-position = (* cl-ds.common.rrb:+bit-count+
+                                   new-shift))
           (repeat (1- shift-difference))
-          (for byte-position
-               from (* cl-ds.common.rrb:+bit-count+
-                       new-shift)
-               downto 0
-               by cl-ds.common.rrb:+bit-count+)
           (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                         highest-current))
-          (for present =
-               (cl-ds.common.rrb:sparse-rrb-node-contains node i))
-          (unless present
-            (insert-new-node! node i ownership-tag))
+          (insert-new-node! node i ownership-tag)
           (setf node (cl-ds.common.rrb:sparse-nref node i))
+          (decf byte-position cl-ds.common.rrb:+bit-count+)
           (finally
            (let ((i (ldb (byte cl-ds.common.rrb:+bit-count+
                                (* (1+ old-shift)
