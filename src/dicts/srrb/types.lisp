@@ -10,6 +10,9 @@
      (%tail :initarg :tail
             :accessor access-tail
             :initform nil)
+     (%tail-mask :initarg :tail-mask
+                 :initform 0
+                 :accessor access-tail-mask)
      (%shift :initarg :shift
              :accessor access-shift
              :initform 0)
@@ -22,9 +25,6 @@
      (%index-bound :initarg :index-bound
                    :accessor access-index-bound
                    :initform cl-ds.common.rrb:+maximum-children-count+)
-     (%tail-mask :initarg :tail-mask
-                 :initform 0
-                 :accessor access-tail-mask)
      (%element-type :initarg :element-type
                     :reader read-element-type
                     :initform t))))

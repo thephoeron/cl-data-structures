@@ -133,8 +133,7 @@
                                       position :value point))
   (iterate
     (for (position . point) in-vector input-data)
-    (is (cl-ds:at container position) point))
-  )
+    (is (cl-ds:at container position) point)))
 
 
 (bind (((:values bound shift) (cl-ds.dicts.srrb::tree-bound-and-shift 47)))

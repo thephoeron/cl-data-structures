@@ -115,3 +115,27 @@
                (if present
                    (values (aref (access-tail vect) offset) t)
                    (values nil nil)))))))
+
+
+(defmethod cl-ds:become-mutable ((container transactional-sparse-rrb-vector))
+  (make 'mutable-sparse-rrb-vector
+        :tree (access-tree container)
+        :tail (access-tail container)
+        :tail-mask (access-tail-mask container)
+        :shift (access-shift container)
+        :tree-size (access-tree-size container)
+        :tree-index-bound (access-tree-index-bound container)
+        :index-bound (access-index-bound container)
+        :element-type (read-element-type container)))
+
+
+(defmethod cl-ds:become-transactional ((container mutable-sparse-rrb-vector))
+  (make 'transactional-sparse-rrb-vector
+        :tree (access-tree container)
+        :tail (access-tail container)
+        :tail-mask (access-tail-mask container)
+        :shift (access-shift container)
+        :tree-size (access-tree-size container)
+        :tree-index-bound (access-tree-index-bound container)
+        :index-bound (access-index-bound container)
+        :element-type (read-element-type container)))
