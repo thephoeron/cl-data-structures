@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 287)
+(plan 707)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -136,12 +136,15 @@
     (is (cl-ds:at container position) point)))
 
 
-(bind (((:values bound shift) (cl-ds.dicts.srrb::tree-bound-and-shift 47)))
-  (is bound cl-ds.common.rrb:+maximum-children-count+)
-  (is shift 0))
+(let ((shift (cl-ds.dicts.srrb::shift-for-position 47)))
+  (is shift 1))
 
 
-(let* ((count 80)
+(let ((shift (cl-ds.dicts.srrb::shift-for-position 308)))
+  (is shift 1))
+
+
+(let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
                                        (cl-ds.alg:shuffled-range 0

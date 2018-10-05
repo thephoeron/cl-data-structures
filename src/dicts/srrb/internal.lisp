@@ -273,34 +273,26 @@
           (finally (return node))))))
 
 
-(-> tree-bound-and-shift (fixnum) (values fixnum fixnum))
-(defun tree-bound-and-shift (position)
-  (let* ((new-tree-index-bound
-           (* cl-ds.common.rrb:+maximum-children-count+
-              (truncate position
-                        cl-ds.common.rrb:+maximum-children-count+)))
-         (new-shift (~> new-tree-index-bound
-                        1-
-                        integer-length
-                        (/ cl-ds.common.rrb:+bit-count+)
-                        ceiling
-                        1-)))
-    (values new-tree-index-bound new-shift)))
+(deftype shift () `(integer 0 ,cl-ds.common.rrb:+maximal-shift+))
+(-> shift-for-position (fixnum) shift)
+(defun shift-for-position (position)
+  (~> position
+      1-
+      integer-length
+      (/ cl-ds.common.rrb:+bit-count+)
+      ceiling
+      1-
+      (max 0)))
 
 
 (-> adjust-tree-to-new-size! (mutable-sparse-rrb-vector fixnum t)
     mutable-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
-  (bind (((:values new-tree-index-bound new-shift)
-          (tree-bound-and-shift position)))
-    (assert (<= new-tree-index-bound position))
+  (let ((new-shift (shift-for-position position)))
     (unless (eql new-shift (access-shift structure))
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
         (setf (access-shift structure) new-shift
-              (access-tree-index-bound structure) new-tree-index-bound
-              (access-index-bound structure) (+ new-tree-index-bound
-                                                cl-ds.common.rrb:+maximum-children-count+)
               (access-tree structure) new-root)))
     structure))
 
