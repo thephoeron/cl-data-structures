@@ -117,7 +117,7 @@
                    (values nil nil)))))))
 
 
-(defmethod cl-ds:become-mutable ((container transactional-sparse-rrb-vector))
+(defmethod cl-ds:become-mutable ((container fundamental-sparse-rrb-vector))
   (make 'mutable-sparse-rrb-vector
         :tree (access-tree container)
         :tail (access-tail container)
@@ -129,7 +129,7 @@
         :element-type (read-element-type container)))
 
 
-(defmethod cl-ds:become-transactional ((container mutable-sparse-rrb-vector))
+(defmethod cl-ds:become-transactional ((container fundamental-sparse-rrb-vector))
   (make 'transactional-sparse-rrb-vector
         :tree (access-tree container)
         :tail (access-tail container)

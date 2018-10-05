@@ -30,18 +30,18 @@
                     :initform t))))
 
 
-(defclass mutable-sparse-rrb-vector (fundamental-sparse-rrb-vector
-                                     cl-ds:mutable)
+(defclass mutable-sparse-rrb-vector (cl-ds:mutable
+                                     fundamental-sparse-rrb-vector)
   ())
 
 
-(defclass functional-sparse-rrb-vector (fundamental-sparse-rrb-vector
-                                        cl-ds:functional)
+(defclass functional-sparse-rrb-vector (cl-ds:functional
+                                        fundamental-sparse-rrb-vector)
   ())
 
 
 (defclass transactional-sparse-rrb-vector
-    (mutable-sparse-rrb-vector
+    (cl-ds:transactional
      cl-ds.common.abstract:fundamental-ownership-tagged-object
-     cl-ds:transactional)
+     mutable-sparse-rrb-vector)
   ())
