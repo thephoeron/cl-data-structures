@@ -395,14 +395,14 @@
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
          (operation-type (type-of operation))
+         (update? (member operation-type
+                          '(cl-ds.meta:update!-function
+                            cl-ds.meta:update-if!-function)))
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
                  (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
-            (when (and (not present)
-                       (member operation-type
-                               '(cl-ds.meta:update!-function
-                                 cl-ds.meta:update-if!-function)))
+            (when (and (not present) update?)
               (return-from transactional-grow-tree!
                 (values structure
                         cl-ds.common:empty-eager-modification-operation-status)))
@@ -440,11 +440,12 @@
                       (if changed
                           (if owned
                               (progn
-                                (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
+                                (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
+                                      final-status status)
                                 node)
                               (progn
                                 (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
-                                            node 0 ownership-tag)
+                                            node 1 ownership-tag)
                                       final-status status
                                       (cl-ds.common.rrb:sparse-nref node i) new-bucket)
                                 node))
@@ -495,14 +496,14 @@
   (declare (optimize (debug 3)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
+         (update? (member operation-type
+                          '(cl-ds.meta:update!-function
+                            cl-ds.meta:update-if!-function)))
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
                  (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
-            (when (and (not present)
-                       (member operation-type
-                               '(cl-ds.meta:update!-function
-                                 cl-ds.meta:update-if!-function)))
+            (when (and (not present) update?)
               (return-from destructive-grow-tree!
                 (values structure
                         cl-ds.common:empty-eager-modification-operation-status)))
