@@ -523,7 +523,7 @@
   (cl-ds.utils:with-slots-for (state pam-algorithm-state)
     (let ((last-cluster (cl-ds.utils:pop-last %cluster-contents)))
       (when (emptyp %cluster-contents)
-        (error 'program-error "Can't eleminate subminimal cluster, because it is the only one left."))
+        (error "Can't eleminate subminimal cluster, because it is the only one left."))
       (iterate
         (with sample = (draw-cluster-sample state))
         (for x in-vector last-cluster)
