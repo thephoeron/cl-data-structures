@@ -75,7 +75,8 @@
   `(let ((,node (if (listp ,node) (car ,node) ,node)))
      (declare (type sparse-node ,node))
      (macrolet ((sindex (index)
-                  `(1- (logcount (ldb (byte (1+ ,index) 0) (sparse-node-bitmask ,',node))))))
+                  `(1- (logcount (ldb (byte (1+ ,index) 0)
+                                      (sparse-node-bitmask ,',node))))))
        ,@body)))
 
 
@@ -105,33 +106,37 @@
 (defun (setf sparse-nref) (new-value node index)
   (declare (optimize (debug 3)))
   (with-sparse-rrb-node node
-    (let* ((content (sparse-node-content node))
-           (bitmask (sparse-node-bitmask node))
-           (sindex 0))
-      (unless (sparse-rrb-node-contains node index)
-        (let* ((length (length content))
-               (new-bitmask (dpb 1 (byte 1 index) bitmask))
-               (new-length (max length (logcount new-bitmask)))
-               (new-content
-                 (if (eql new-length length)
-                     content
-                     (make-array
-                      new-length
-                      :element-type (array-element-type content)))))
-          (declare (type rrb-index new-length)
-                   (type simple-vector new-content))
-          (setf bitmask new-bitmask
-                (sparse-node-bitmask node) bitmask
-                sindex (sindex index))
-          (iterate
-            (for i from 0 below sindex)
-            (setf (aref new-content i) (aref content i)))
-          (iterate
-            (for i from (1+ sindex) below (logcount bitmask))
-            (setf (aref new-content i) (aref content (1- i))))
-          (setf content new-content
-                (sparse-node-content node) new-content)))
-      (setf (aref content sindex) new-value))))
+    (let ((content (sparse-node-content node)))
+      (if (sparse-rrb-node-contains node index)
+          (setf (aref content (sindex index)) new-value)
+          (let* ((length (length content))
+                 (bitmask (sparse-node-bitmask node))
+                 (new-bitmask (dpb 1 (byte 1 index) bitmask))
+                 (content (sparse-node-content node))
+                 (new-length (max length (logcount new-bitmask)))
+                 (sindex 0)
+                 (new-content
+                   (if (eql new-length length)
+                       content
+                       (make-array
+                        new-length
+                        :element-type (array-element-type content)))))
+            (declare (type rrb-index new-length)
+                     (type simple-vector new-content))
+            (setf bitmask new-bitmask
+                  (sparse-node-bitmask node) bitmask
+                  sindex (sindex index))
+            (iterate
+              (for i from 0 below sindex)
+              (setf (aref new-content i) (aref content i)))
+            (iterate
+              (for i from sindex below (logcount bitmask))
+              (when (eql (1+ i) new-length)
+                (finish))
+              (setf (aref new-content (1+ i)) (aref content i)))
+            (setf content new-content
+                  (aref content sindex) new-value
+                  (sparse-node-content node) new-content))))))
 
 
 (-> sparse-rrb-node-size (sparse-rrb-node) node-size)

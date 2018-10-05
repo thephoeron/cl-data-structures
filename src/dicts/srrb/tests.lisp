@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 45)
+(plan 287)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -43,7 +43,7 @@
         (aref tail 3) 4)
   (is (cl-ds:size vector) 3)
   (is (cl-ds.dicts.srrb::access-tree vector) nil)
-  (cl-ds.dicts.srrb::insert-tail! vector nil)
+  (cl-ds.dicts.srrb::insert-tail! vector)
   (is (cl-ds.dicts.srrb::access-tail-mask vector) 0)
   (is (cl-ds.dicts.srrb::access-shift vector) 0)
   (ok (cl-ds.dicts.srrb::access-tree vector))
@@ -62,7 +62,7 @@
   (setf (cl-ds.dicts.srrb::access-tail vector) (make-array cl-ds.common.rrb:+maximum-children-count+
                                                            :initial-element 10)
         (cl-ds.dicts.srrb::access-tail-mask vector) #b1)
-  (cl-ds.dicts.srrb::insert-tail! vector nil)
+  (cl-ds.dicts.srrb::insert-tail! vector)
   (is (cl-ds.dicts.srrb::access-shift vector) 1)
   (is (cl-ds.dicts.srrb::access-tree-index-bound vector) (* 2 cl-ds.common.rrb:+maximum-children-count+))
   (let* ((tree (cl-ds.dicts.srrb::access-tree vector))
@@ -71,11 +71,11 @@
     (is (length content) 2))
   (setf (cl-ds.dicts.srrb::access-tail vector) (make-array cl-ds.common.rrb:+maximum-children-count+)
         (cl-ds.dicts.srrb::access-tail-mask vector) #b0)
-  (cl-ds.dicts.srrb::insert-tail! vector nil)
+  (cl-ds.dicts.srrb::insert-tail! vector)
   (setf (cl-ds.dicts.srrb::access-tail vector) (make-array cl-ds.common.rrb:+maximum-children-count+
                                                            :initial-element 15)
         (cl-ds.dicts.srrb::access-tail-mask vector) #b1)
-  (cl-ds.dicts.srrb::insert-tail! vector nil)
+  (cl-ds.dicts.srrb::insert-tail! vector)
   (let* ((tree (cl-ds.dicts.srrb::access-tree vector))
          (content (cl-ds.common.rrb:sparse-rrb-node-content tree))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask tree)))
@@ -110,5 +110,50 @@
     (is (aref content 0) 1)
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
+
+
+(let* ((count 80)
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
+                        cl-ds.alg:to-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  (setf input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds.alg:shuffled-range 0 count))
+                        cl-ds.alg:to-vector))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
+
+
+(bind (((:values bound shift) (cl-ds.dicts.srrb::tree-bound-and-shift 47)))
+  (is bound cl-ds.common.rrb:+maximum-children-count+)
+  (is shift 0))
+
+
+(let* ((count 80)
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
 
 (finalize)
