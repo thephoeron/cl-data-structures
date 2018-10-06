@@ -1,7 +1,6 @@
 (in-package #:cl-user)
 (defpackage statistical-summary-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria :metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use :cl :prove :cl-data-structures.aux-package))
 
 (in-package #:statistical-summary-tests)
 

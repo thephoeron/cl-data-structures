@@ -1,7 +1,6 @@
 (in-package #:cl-user)
 (defpackage simple-linear-regression-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria :metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use :cl-ds :cl :prove :cl-data-structures.aux-package))
 
 (in-package #:simple-linear-regression-tests)
 

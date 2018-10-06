@@ -1,5 +1,6 @@
 (in-package :cl-user)
-(defpackage metric-egnat-tests (:use :prove :cl :iterate))
+(defpackage metric-egnat-tests
+  (:use :prove :cl :iterate))
 (in-package :metric-egnat-tests)
 
 (plan 43)
