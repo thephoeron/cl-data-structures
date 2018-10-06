@@ -148,7 +148,7 @@
 (defmethod cl-ds:become-transactional ((container fundamental-sparse-rrb-vector))
   (make 'transactional-sparse-rrb-vector
         :tree (access-tree container)
-        :tail (access-tail container)
+        :tail (copy-array (access-tail container))
         :tail-mask (access-tail-mask container)
         :shift (access-shift container)
         :tree-size (access-tree-size container)
