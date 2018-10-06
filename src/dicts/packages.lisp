@@ -50,4 +50,5 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.dicts.srrb)
   (:export
-   ))
+   #:make-transactional-sparse-rrb-vector
+   #:make-mutable-sparse-rrb-vector))
