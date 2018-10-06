@@ -1,7 +1,6 @@
 (in-package #:cl-user)
 (defpackage mutual-information-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria :metabang-bind)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use :cl :prove :cl-data-structures.aux-package))
 
 (in-package #:mutual-information-tests)
 

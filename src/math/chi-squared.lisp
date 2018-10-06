@@ -110,7 +110,7 @@
 (defun chi-squared-on-table (&key fields class-counts &allow-other-keys)
   (let* ((marginal-counts (chi-square-marginal-counts class-counts))
          (independent-counts (independent-counts marginal-counts))
-         (generator (cycle-over-address (array-dimensions class-counts))))
+         (generator (cl-ds.utils:cycle-over-address (array-dimensions class-counts))))
     (assert (equal (array-dimensions class-counts)
                    (array-dimensions independent-counts)))
     (iterate
