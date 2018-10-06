@@ -16,34 +16,42 @@
            (transactional-grow-tree! operation structure
                                      container position
                                      all value))
-          (t (let* ((offset (- position tree-bound)))
-               (if (< offset cl-ds.common.rrb:+maximum-children-count+)
-                   (set-in-tail! structure operation container
-                                 offset value all)
-                   (bind (((:values bucket status changed)
-                           (apply #'cl-ds.meta:make-bucket
-                                  operation container value all)))
-                     (when changed
-                       (let* ((tail (cl-ds.common.rrb:make-node-content
-                                     (read-element-type structure)))
-                              (offset (logandc2 position
+          ((< position (access-index-bound structure))
+           (set-in-tail! structure operation container
+                         (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                         value all))
+          (t (bind (((:values bucket status changed)
+                     (apply #'cl-ds.meta:make-bucket
+                            operation container value all)))
+               (when changed
+                 (let* ((new-tree-bound (logand position
                                                 cl-ds.common.rrb:+tail-mask+))
-                              (tail-mask (ash 1 offset))
-                              (tag (cl-ds.common.abstract:read-ownership-tag
-                                    structure)))
-                         (transactional-insert-tail! structure tag)
-                         (adjust-tree-to-new-size! structure position tag)
-                         (setf (aref tail offset) bucket
-                               (access-tail structure) tail
-                               (access-tail-mask structure) tail-mask))
-                       (values structure status)))))))))
+                        (ownership-tag (cl-ds.common.abstract:read-ownership-tag
+                                        structure)))
+                   (transactional-insert-tail! structure ownership-tag)
+                   (adjust-tree-to-new-size! structure new-tree-bound
+                                             ownership-tag)
+                   (setf (access-tree-index-bound structure) new-tree-bound
+                         (access-index-bound structure)
+                         (+ new-tree-bound
+                            cl-ds.common.rrb:+maximum-children-count+)))
+                 (assert (> (access-index-bound structure)
+                            (access-tree-index-bound structure)))
+                 (let* ((offset (logandc2 position
+                                          cl-ds.common.rrb:+tail-mask+))
+                        (tail-mask (ash 1 offset))
+                        (tail (cl-ds.common.rrb:make-node-content
+                               (read-element-type structure))))
+                   (setf (aref tail offset) bucket
+                         (access-tail structure) tail
+                         (access-tail-mask structure) tail-mask)))
+               (values structure status))))))
 
 
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
                                              (structure mutable-sparse-rrb-vector)
                                              container
                                              position &rest all &key value)
-  (declare (optimize (debug 3)))
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -62,14 +70,11 @@
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
-               (let ((new-tree-bound (logand position
-                                             cl-ds.common.rrb:+tail-mask+)))
-                 (when changed
+               (when changed
+                 (let ((new-tree-bound (logand position
+                                               cl-ds.common.rrb:+tail-mask+)))
                    (insert-tail! structure)
-                   (adjust-tree-to-new-size!
-                    structure
-                    new-tree-bound
-                    nil)
+                   (adjust-tree-to-new-size! structure new-tree-bound nil)
                    (setf (access-tree-index-bound structure) new-tree-bound
                          (access-index-bound structure)
                          (+ new-tree-bound

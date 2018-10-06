@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 707)
+(plan 1207)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -151,6 +151,22 @@
                                                                  count))
                         cl-ds.alg:to-vector))
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
+
+(let* ((count 500)
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::transactional-sparse-rrb-vector
+                                 :ownership-tag (cl-ds.common.abstract:make-ownership-tag))))
   (iterate
     (for (position . point) in-vector input-data)
     (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock

@@ -171,16 +171,14 @@
                                 shift root new-node ownership-tag)))
                  (incf %shift)
                  (setf tree new-root)))
-              (t (bind ((position (* cl-ds.common.rrb:+bit-count+ shift))
-                        (size (access-tree-index-bound structure))
+              (t (bind ((size (access-tree-index-bound structure))
                         ((:labels impl (node byte-position depth))
-                         (decf depth)
-                         (if (zerop depth)
+                         (if (eql depth 0)
                              new-node
                              (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
-                                                      position)
+                                                      byte-position)
                                                 size))
-                                    (present (and node (cl-ds.common.rrb:sparse-nref
+                                    (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains
                                                         node index)))
                                     (next-node (and present (cl-ds.common.rrb:sparse-nref
                                                              node index)))
@@ -188,12 +186,13 @@
                                                       (cl-ds.common.rrb:make-rrb-node
                                                        :content (make-array 1)
                                                        :ownership-tag ownership-tag)))
-                                    (owned (cl-ds.common.abstract:acquire-ownership current-node
-                                                                                    ownership-tag))
+                                    (owned (cl-ds.common.abstract:acquire-ownership
+                                            current-node
+                                            ownership-tag))
                                     (new-node (impl next-node
                                                     (- byte-position
                                                        cl-ds.common.rrb:+bit-count+)
-                                                    depth)))
+                                                    (1- depth))))
                                (if owned
                                    (progn
                                      (setf (cl-ds.common.rrb:sparse-nref current-node index)
@@ -204,7 +203,9 @@
                                                 ownership-tag)))
                                      (setf (cl-ds.common.rrb:sparse-nref copy index) new-node)
                                      copy)))))
-                        (new-tree (impl root (* cl-ds.common.rrb:+bit-count+ shift) shift)))
+                        (new-tree (impl root
+                                        (* cl-ds.common.rrb:+bit-count+ shift)
+                                        shift)))
                    (unless (eq new-tree root)
                      (setf tree new-tree)))))))
     (setf (access-tail-mask structure) 0
@@ -408,17 +409,12 @@
                           (let ((owned (cl-ds.common.abstract:acquire-ownership
                                         node ownership-tag)))
                             (if owned
-                                (progn
-                                  (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
-                                  (return-from transactional-grow-tree!
-                                    (values structure status)))
+                                (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket)
                                 (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                             node 0 ownership-tag)
                                       final-status status
                                       (cl-ds.common.rrb:sparse-nref node i) new-bucket))
-                            node)
-                          (return-from transactional-grow-tree!
-                            (values structure status))))
+                            node)))
                     (bind (((:values new-bucket status changed)
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
@@ -511,10 +507,8 @@
                                   new-bucket
                                   final-status status)
                             node)
-                          (progn
-                            (return-from destructive-grow-tree!
-                              (values structure status))
-                            )))
+                          (return-from destructive-grow-tree!
+                            (values structure status))))
                     (bind (((:values new-bucket status changed)
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
