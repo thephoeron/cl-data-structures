@@ -277,6 +277,78 @@
           t))
 
 
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert!-function)
+                                    (container fundamental-sparse-vector)
+                                    bucket
+                                    location
+                                    &rest all
+                                    &key)
+  (declare (ignore all))
+  (values location
+          cl-ds.common:empty-eager-modification-operation-status
+          t))
+
+
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update!-function)
+                                    (container fundamental-sparse-vector)
+                                    bucket
+                                    location
+                                    &rest all
+                                    &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          cl-ds.common:empty-eager-modification-operation-status
+          nil))
+
+
+(defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add!-function)
+                                    (container fundamental-sparse-vector)
+                                    bucket
+                                    location
+                                    &rest all
+                                    &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          cl-ds.common:empty-eager-modification-operation-status
+          nil))
+
+
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
+                                   (container fundamental-sparse-vector)
+                                   bucket
+                                   location
+                                   &rest all
+                                   &key)
+  (declare (ignore all))
+  (values location
+          cl-ds.common:empty-eager-modification-operation-status
+          t))
+
+
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
+                                   (container fundamental-sparse-vector)
+                                   bucket
+                                   location
+                                   &rest all
+                                   &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          cl-ds.common:empty-eager-modification-operation-status
+          nil))
+
+
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
+                                   (container fundamental-sparse-vector)
+                                   bucket
+                                   location
+                                   &rest all
+                                   &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          cl-ds.common:empty-eager-modification-operation-status
+          nil))
+
+
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
                                    (container fundamental-sparse-vector)
                                    location
@@ -294,7 +366,7 @@
                                    &rest all
                                    &key)
   (declare (ignore all))
-  (values nil
+  (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status
           nil))
 
@@ -307,7 +379,7 @@
   (declare (ignore all))
   (values location
           cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          t))
 
 
 (flet ((locate-tuple (container bucket hash location)
