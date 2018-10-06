@@ -76,7 +76,7 @@
                               (apply #'cl-ds.meta:position-modification
                                      t-operation
                                      instance
-                                     container
+                                     instance
                                      location
                                      args))))
              (if (slot-boundp lazy-status '%eager-status)

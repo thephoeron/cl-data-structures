@@ -1,7 +1,6 @@
 (in-package #:cl-user)
 (defpackage chain-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use :cl :cl-ds :prove :cl-data-structures.aux-package))
 
 (in-package #:chain-tests)
 

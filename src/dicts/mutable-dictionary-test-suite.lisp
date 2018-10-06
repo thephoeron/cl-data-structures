@@ -1,8 +1,7 @@
 (in-package :cl-user)
 (defpackage mutable-dictionary-test-suite
-  (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
-  (:shadowing-import-from :iterate :collecting :summing :in)
-  (:export 
+  (:use :cl :prove :cl-ds :cl-data-structures.aux-package)
+  (:export
    :run-suite))
 (in-package :mutable-dictionary-test-suite)
 

@@ -1,7 +1,6 @@
 (in-package :cl-user)
 (defpackage functional-dictionary-test-suite
-  (:use :cl :prove :serapeum :cl-ds :iterate :alexandria)
-  (:shadowing-import-from :iterate :collecting :summing :in)
+  (:use :cl :prove :cl-ds :cl-data-structures.aux-package)
   (:export :run-stress-test
    :run-suite))
 (in-package :functional-dictionary-test-suite)

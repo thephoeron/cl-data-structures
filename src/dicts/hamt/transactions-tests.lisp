@@ -1,7 +1,7 @@
 (in-package :cl-user)
 (defpackage transactional-hamt-dictionary-tests
-  (:use :cl :prove :serapeum :cl-ds :iterate :alexandria :cl-ds.dicts.hamt)
-  (:shadowing-import-from :iterate :collecting :summing :in)
+  (:use :cl :prove :cl-ds :cl-ds.dicts.hamt
+        :cl-data-structures.aux-package)
   (:export :run-stress-test
    :run-suite))
 (in-package :transactional-hamt-dictionary-tests)
