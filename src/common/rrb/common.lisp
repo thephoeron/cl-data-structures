@@ -157,7 +157,10 @@
              #1=(make-sparse-node
                  :content (if (eql size-change 0)
                               (copy-array content)
-                              (make-array desired-size :element-type (array-element-type content)))
+                              (map-into (make-array desired-size
+                                                    :element-type (array-element-type content))
+                                        #'identity
+                                        content))
                  :bitmask (sparse-node-bitmask node)))
             (t (cons #1# tag))))))
 

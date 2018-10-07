@@ -151,61 +151,72 @@
 (defun insert-tail (structure)
   (declare (optimize (debug 3)))
   (let ((tail-mask (access-tail-mask structure)))
-    (unless (zerop tail-mask)
-      (bind ((new-node (make-node-from-tail structure nil))
-             ((:accessors (tree access-tree)
-                          (tree-size access-tree-size)
-                          (%shift access-shift)
-                          (tree-index-bound access-tree-index-bound))
-              structure)
-             (root tree)
-             (shift %shift))
-        (declare (type non-negative-fixnum shift))
-        (cond ((null root)
-               (setf tree new-node))
-              ((>= (ash tree-index-bound (- cl-ds.common.rrb:+bit-count+))
-                   (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
-               (let ((new-root (insert-tail-handle-root-overflow
-                                shift root new-node nil)))
-                 (incf shift)
-                 (setf root new-root)))
-              (t (bind ((size (access-tree-index-bound structure))
-                        ((:labels impl (node byte-position depth))
-                         (if (eql depth 0)
-                             new-node
-                             (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
-                                                      byte-position)
-                                                size))
-                                    (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains
-                                                        node index)))
-                                    (next-node (and present (cl-ds.common.rrb:sparse-nref
-                                                             node index)))
-                                    (current-node (if (null node)
-                                                      (cl-ds.common.rrb:make-rrb-node
-                                                       :content (make-array 1))
-                                                      (cl-ds.common.rrb:deep-copy-sparse-rrb-node
-                                                       node 1)))
-                                    (new-node (impl next-node
-                                                    (- byte-position
-                                                       cl-ds.common.rrb:+bit-count+)
-                                                    (1- depth))))
-                               (setf (cl-ds.common.rrb:sparse-nref current-node index)
-                                     new-node)
-                               current-node))))
-                   (setf root (impl root
-                                    (* cl-ds.common.rrb:+bit-count+ shift)
-                                    shift)))))
+    (if (zerop tail-mask)
         (make (type-of structure)
-              :tree root
+              :tree (access-tree structure)
               :tail nil
               :tail-mask 0
-              :shift shift
+              :shift (access-shift structure)
               :tree-size (+ (access-tree-size structure)
                             (logcount (access-tail-mask structure)))
               :tree-index-bound (access-index-bound structure)
               :index-bound (+ cl-ds.common.rrb:+maximum-children-count+
                               (access-index-bound structure))
-              :element-type (read-element-type structure))))))
+              :element-type (read-element-type structure))
+        (bind ((new-node (make-node-from-tail structure nil))
+               ((:accessors (tree access-tree)
+                            (tree-size access-tree-size)
+                            (%shift access-shift)
+                            (tree-index-bound access-tree-index-bound))
+                structure)
+               (root tree)
+               (shift %shift))
+          (declare (type non-negative-fixnum shift))
+          (cond ((null root)
+                 (setf root new-node))
+                ((>= (ash tree-index-bound (- cl-ds.common.rrb:+bit-count+))
+                     (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
+                 (let ((new-root (insert-tail-handle-root-overflow
+                                  shift root new-node nil)))
+                   (incf shift)
+                   (setf root new-root)))
+                (t (bind ((size (access-tree-index-bound structure))
+                          ((:labels impl (node byte-position depth))
+                           (if (eql depth 0)
+                               new-node
+                               (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                                        byte-position)
+                                                  size))
+                                      (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains
+                                                          node index)))
+                                      (next-node (and present (cl-ds.common.rrb:sparse-nref
+                                                               node index)))
+                                      (current-node (if (null node)
+                                                        (cl-ds.common.rrb:make-rrb-node
+                                                         :content (make-array 1))
+                                                        (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                                         node (if present 0 1))))
+                                      (new-node (impl next-node
+                                                      (- byte-position
+                                                         cl-ds.common.rrb:+bit-count+)
+                                                      (1- depth))))
+                                 (setf (cl-ds.common.rrb:sparse-nref current-node index)
+                                       new-node)
+                                 current-node))))
+                     (setf root (impl root
+                                      (* cl-ds.common.rrb:+bit-count+ shift)
+                                      shift)))))
+          (make (type-of structure)
+                :tree root
+                :tail nil
+                :tail-mask 0
+                :shift shift
+                :tree-size (+ tree-size
+                              (logcount (access-tail-mask structure)))
+                :tree-index-bound (access-index-bound structure)
+                :index-bound (+ cl-ds.common.rrb:+maximum-children-count+
+                                (access-index-bound structure))
+                :element-type (read-element-type structure))))))
 
 
 (-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
@@ -346,8 +357,8 @@
       (max 0)))
 
 
-(-> adjust-tree-to-new-size! (mutable-sparse-rrb-vector fixnum t)
-    mutable-sparse-rrb-vector)
+(-> adjust-tree-to-new-size! (fundamental-sparse-rrb-vector fixnum t)
+    fundamental-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
   (let ((new-shift (shift-for-position position)))
     (unless (eql new-shift (access-shift structure))
@@ -740,8 +751,7 @@
                          shift)))
     (values (make (type-of structure)
                   :tree new-tree
-                  :tail (when-let ((tail (access-tail structure)))
-                          (copy-array tail))
+                  :tail (access-tail structure)
                   :tail-mask (access-tail-mask structure)
                   :shift (access-shift structure)
                   :tree-size (+ size-increased (access-tree-size structure))

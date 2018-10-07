@@ -175,4 +175,34 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
 
+(let* ((count 500)
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds:iota-range))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::functional-sparse-rrb-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (setf container (cl-ds.meta:position-modification #'cl-ds:insert
+                                                      container :mock
+                                                      position :value point)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
+
+(let* ((count 500)
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::functional-sparse-rrb-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (setf container (cl-ds.meta:position-modification #'cl-ds:insert
+                                                      container :mock
+                                                      position :value point)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point)))
+
 (finalize)
