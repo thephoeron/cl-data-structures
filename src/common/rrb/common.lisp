@@ -113,10 +113,10 @@
                  (bitmask (sparse-node-bitmask node))
                  (new-bitmask (dpb 1 (byte 1 index) bitmask))
                  (content (sparse-node-content node))
-                 (new-length (max length (logcount new-bitmask)))
+                 (new-length (logcount new-bitmask))
                  (sindex 0)
                  (new-content
-                   (if (eql new-length length)
+                   (if (>= length new-length)
                        content
                        (make-array
                         new-length
@@ -127,15 +127,13 @@
                   (sparse-node-bitmask node) bitmask
                   sindex (sindex index))
             (iterate
-              (for i from 0 below sindex)
-              (setf (aref new-content i) (aref content i)))
-            (iterate
-              (for i from sindex below (logcount bitmask))
-              (when (eql (1+ i) new-length)
-                (finish))
-              (setf (aref new-content (1+ i)) (aref content i)))
-            (setf content new-content
-                  (aref content sindex) new-value
+              (for i from (1- new-length) above sindex)
+              (setf (aref new-content i) (aref content (1- i))))
+            (unless (eq new-content content)
+              (iterate
+                (for i from 0 below sindex)
+                (setf (aref new-content i) (aref content i))))
+            (setf (aref new-content sindex) new-value
                   (sparse-node-content node) new-content))))))
 
 
@@ -152,15 +150,16 @@
     (let* ((content (sparse-node-content node))
            (current-size (sparse-rrb-node-size node))
            (desired-size (clamp (+ size-change current-size) 0 +maximum-children-count+)))
-      (cond ((zerop desired-size) nil)
-            ((null tag)
+      (cond ((null tag)
              #1=(make-sparse-node
-                 :content (if (eql size-change 0)
-                              (copy-array content)
-                              (map-into (make-array desired-size
-                                                    :element-type (array-element-type content))
-                                        #'identity
-                                        content))
+                 :content (cond ((eql 0 size-change)
+                                 (copy-array content))
+                                (t (lret ((result (make-array
+                                                   desired-size
+                                                   :element-type (array-element-type content))))
+                                     (iterate
+                                       (for i from 0 below current-size)
+                                       (setf (aref result i) (aref content i))))))
                  :bitmask (sparse-node-bitmask node)))
             (t (cons #1# tag))))))
 

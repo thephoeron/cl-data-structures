@@ -4,13 +4,21 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 1207)
+(plan 2707)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
                                     bucket
                                     location
                                     &rest all)
+  (declare (ignore all))
+  (values location :ok t))
+
+(defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
+                                   (container (eql :mock))
+                                   bucket
+                                   location
+                                   &rest all)
   (declare (ignore all))
   (values location :ok t))
 
@@ -180,6 +188,19 @@
                         (cl-ds.alg:zip #'list* (cl-ds:iota-range))
                         cl-ds.alg:to-vector))
        (container (make-instance 'cl-ds.dicts.srrb::functional-sparse-rrb-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (setf container (cl-ds.meta:position-modification #'cl-ds:insert
+                                                      container :mock
+                                                      position :value point)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  (setf input-data (~>> (cl-ds.alg:shuffled-range 0 count)
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
   (iterate
     (for (position . point) in-vector input-data)
     (setf container (cl-ds.meta:position-modification #'cl-ds:insert

@@ -114,7 +114,7 @@
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
-               (when changed
+               (if changed
                  (let ((new-tree-bound (logand position
                                                 cl-ds.common.rrb:+tail-mask+))
                        (new-structure (insert-tail structure)))
@@ -133,8 +133,8 @@
                      (setf (aref tail offset) bucket
                            (access-tail new-structure) tail
                            (access-tail-mask new-structure) tail-mask)
-                     (values new-structure
-                             status)))))))))
+                     (values new-structure status)))
+                 (values structure status)))))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
