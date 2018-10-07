@@ -92,6 +92,51 @@
                (values structure status))))))
 
 
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
+                                             (structure functional-sparse-rrb-vector)
+                                             container
+                                             position &rest all &key value)
+  (let ((tree-bound (access-tree-index-bound structure)))
+    (cond ((negative-fixnum-p position)
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative"
+                  :text "Sparse vector index can not be negative."))
+          ((< position tree-bound)
+           (grow-tree operation structure
+                      container position
+                      all value))
+          ((< position (access-index-bound structure))
+           (set-in-tail structure operation container
+                        (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                        value all))
+          (t (bind (((:values bucket status changed)
+                     (apply #'cl-ds.meta:make-bucket
+                            operation container value all)))
+               (when changed
+                 (let ((new-tree-bound (logand position
+                                                cl-ds.common.rrb:+tail-mask+))
+                       (new-structure (insert-tail structure)))
+                   (adjust-tree-to-new-size! new-structure new-tree-bound nil)
+                   (setf (access-tree-index-bound new-structure) new-tree-bound
+                         (access-index-bound new-structure)
+                         (+ new-tree-bound
+                            cl-ds.common.rrb:+maximum-children-count+))
+                   (assert (> (access-index-bound new-structure)
+                              (access-tree-index-bound new-structure)))
+                   (let* ((offset (logandc2 position
+                                            cl-ds.common.rrb:+tail-mask+))
+                          (tail-mask (ash 1 offset))
+                          (tail (cl-ds.common.rrb:make-node-content
+                                 (read-element-type structure))))
+                     (setf (aref tail offset) bucket
+                           (access-tail new-structure) tail
+                           (access-tail-mask new-structure) tail-mask)
+                     (values new-structure
+                             status)))))))))
+
+
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
   (+ (access-tree-size vect) (logcount (access-tail-mask vect))))
 
@@ -166,5 +211,9 @@
 
 (defun make-mutable-sparse-rrb-vector (&key (element-type t))
   (make-instance 'mutable-sparse-rrb-vector
-                 :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+                 :element-type element-type))
+
+
+(defun make-functional-sparse-rrb-vector (&key (element-type t))
+  (make-instance 'functional-sparse-rrb-vector
                  :element-type element-type))

@@ -580,3 +580,10 @@
                        (cl-ds.common:hash-dict-content-value x)))
        bucket)
   bucket)
+
+
+(defmethod cl-ds.meta:map-bucket ((container fundamental-sparse-vector)
+                                  bucket
+                                  function)
+  (funcall function bucket)
+  bucket)
