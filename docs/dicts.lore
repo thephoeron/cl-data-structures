@@ -30,8 +30,8 @@
  @item{ERASE-IF!}
  @end{list}
 @text{This package adds another set of trait classes, specific to dictionaries.}
-@docclass['cl-ds.dicts:dictionary]
-@docclass['cl-ds.dicts:hashing-dictionary]
+@docclass['cl-ds.dicts:fundamental-dictionary]
+@docclass['cl-ds.dicts:fundamental-hashing-dictionary]
 @docclass['cl-ds.dicts:functional-dictionary]
 @docclass['cl-ds.dicts:mutable-dictionary]
 @docclass['cl-ds.dicts:transactional-dictionary]

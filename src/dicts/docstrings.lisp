@@ -3,10 +3,10 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
-  (type dictionary
+  (type fundamental-dictionary
     (:description "Container that provides location to value mapping. Either ordered or unordered."))
 
-  (type hashing-dictionary
+  (type fundamental-hashing-dictionary
     (:description "Dictionary that uses hashing function. Hashing function is assumed to return fixnum."))
 
   (type functional-hashing-dictionary
