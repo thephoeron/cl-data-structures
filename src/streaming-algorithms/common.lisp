@@ -12,9 +12,7 @@
       (rem width)))
 
 
-(defun make-hash-array (depth)
-  (lret ((result (make-array (list depth 2) :element-type 'fixnum)))
+(defun make-hash-array (count)
+  (lret ((result (make-array (list count 2) :element-type 'fixnum)))
     (map-into (cl-ds.utils:unfold-table result)
-              (lambda () (truncate (1+ (/ (* (random most-positive-fixnum)
-                                        +long-prime+)
-                                     (1- most-positive-fixnum))))))))
+              (curry #'random most-positive-fixnum))))
