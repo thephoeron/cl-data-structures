@@ -215,6 +215,7 @@
   serapeum:batches
   serapeum:supertypep
   serapeum:tuple
+  serapeum:runs
   serapeum:lret
   serapeum:lret*
   serapeum:no
