@@ -2,7 +2,8 @@
   (:use #:cl #:cl-lore
         #:cl-lore.api.syntax
         #:cl-lore.extensions.documentation.api
-        #:cl-lore.extensions.sequence-graphs.api))
+        #:cl-lore.extensions.sequence-graphs.api)
+  (:export #:build-docs))
 
 
 (in-package #:cl-data-structures.documentation)

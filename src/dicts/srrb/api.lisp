@@ -137,6 +137,27 @@
                  (values structure status)))))))
 
 
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
+                                             (structure mutable-sparse-rrb-vector)
+                                             container
+                                             position &rest all)
+  (let ((tree-bound (access-tree-index-bound structure)))
+    (cond ((negative-fixnum-p position)
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative."
+                  :text "Sparse vector index can not be negative."))
+          ((< position tree-bound)
+           (shrink-tree! operation structure
+                         container position all))
+          ((< position (access-index-bound structure))
+           (unset-in-tail! structure operation container
+                           (logandc2 position cl-ds.common.rrb:+tail-mask+)))
+          (t (bind ()
+               cl-ds.utils:todo)))))
+
+
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
   (+ (access-tree-size vect) (logcount (access-tail-mask vect))))
 
