@@ -148,14 +148,17 @@
                   :value position
                   :bounds "Must be non-negative."
                   :text "Sparse vector index can not be negative."))
+          ((eql position (1- tree-bound))
+           (remove-last-node! operation structure
+                              container position all))
           ((< position tree-bound)
            (shrink-tree! operation structure
                          container position all))
           ((< position (access-index-bound structure))
            (unset-in-tail! structure operation container
                            (logandc2 position cl-ds.common.rrb:+tail-mask+)))
-          (t (bind ()
-               cl-ds.utils:todo)))))
+          (t (values structure
+                     cl-ds.common:empty-eager-modification-operation-status)))))
 
 
 (defmethod cl-ds:size ((vect fundamental-sparse-rrb-vector))
