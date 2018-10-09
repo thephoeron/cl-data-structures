@@ -853,7 +853,25 @@
 
 (defun unset-in-tail! (operation structure container offset all)
   (declare (optimize (debug 3)))
-  cl-ds.utils:todo)
+  (let* ((tail-mask (access-tail-mask structure))
+         (present (ldb-test (byte 1 offset) tail-mask)))
+    (if present
+        (bind ((tail (access-tail structure))
+               (current-bucket (aref tail offset))
+               ((:values new-bucket status changed)
+                (apply #'cl-ds.meta:shrink-bucket!
+                       operation container current-bucket all)))
+          (if changed
+              (progn
+                (setf (access-tail-mask structure)
+                      (dpb 0 (byte 1 offset) tail-mask))
+                (unless (cl-ds.meta:null-bucket-p new-bucket)
+                  (setf (aref tail offset) new-bucket))
+                (values structure status))
+              (values structure
+                      cl-ds.common:empty-eager-modification-operation-status)))
+        (values structure
+                cl-ds.common:empty-eager-modification-operation-status))))
 
 
 (defun remove-last-node! (operation structure container position all)
