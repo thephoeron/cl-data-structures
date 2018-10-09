@@ -848,7 +848,36 @@
 
 (defun shrink-tree! (operation structure container position all)
   (declare (optimize (debug 3)))
-  cl-ds.utils:todo)
+  (bind ((final-status nil)
+         ((:labels impl (node byte-position depth))
+          (let ((index (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                            position)))
+            (unless (cl-ds.common.rrb:sparse-rrb-node-contains node index)
+              (return-from shrink-tree!
+                (values structure
+                        cl-ds.common:empty-eager-modification-operation-status)))
+            (if (zerop depth)
+                cl-ds.utils:todo
+                (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
+                       (new-node (impl next-node
+                                       (- byte-position cl-ds.common.rrb:+bit-count+)
+                                       (1- depth))))
+                  (cond ((eq next-node new-node)
+                         (return-from shrink-tree!
+                           (values structure final-status)))
+                        ((null new-node)
+                         cl-ds.utils:todo)
+                        (t (setf (cl-ds.common.rrb:sparse-nref node index)
+                                 new-node)))
+                  node))))
+         (root (access-tree structure))
+         (shift (access-shift structure))
+         (new-root (impl root
+                         (* cl-ds.common.rrb:+bit-count+ shift)
+                         shift)))
+    (unless (eq new-root root)
+      (setf (access-tree structure) new-root))
+    (values structure final-status)))
 
 
 (defun unset-in-tail! (operation structure container offset all)
