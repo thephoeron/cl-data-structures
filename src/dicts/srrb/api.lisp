@@ -156,7 +156,8 @@
                          container position all))
           ((< position (access-index-bound structure))
            (unset-in-tail! structure operation container
-                           (logandc2 position cl-ds.common.rrb:+tail-mask+)))
+                           (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                           all))
           (t (values structure
                      cl-ds.common:empty-eager-modification-operation-status)))))
 

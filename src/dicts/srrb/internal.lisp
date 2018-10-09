@@ -844,3 +844,18 @@
       (unless (eq old-root new-root)
         (setf (access-tree structure) new-root)))
     (values structure final-status)))
+
+
+(defun shrink-tree! (operation structure container position all)
+  (declare (optimize (debug 3)))
+  cl-ds.utils:todo)
+
+
+(defun unset-in-tail! (operation structure container offset all)
+  (declare (optimize (debug 3)))
+  cl-ds.utils:todo)
+
+
+(defun remove-last-node! (operation structure container position all)
+  (declare (optimize (debug 3)))
+  cl-ds.utils:todo)
