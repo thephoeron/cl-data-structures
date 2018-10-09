@@ -860,7 +860,8 @@
                 cl-ds.utils:todo
                 (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
                        (new-node (impl next-node
-                                       (- byte-position cl-ds.common.rrb:+bit-count+)
+                                       (- byte-position
+                                          cl-ds.common.rrb:+bit-count+)
                                        (1- depth))))
                   (cond ((eq next-node new-node)
                          (return-from shrink-tree!
@@ -868,8 +869,8 @@
                         ((null new-node)
                          cl-ds.utils:todo)
                         (t (setf (cl-ds.common.rrb:sparse-nref node index)
-                                 new-node)))
-                  node))))
+                                 new-node)
+                           node))))))
          (root (access-tree structure))
          (shift (access-shift structure))
          (new-root (impl root
