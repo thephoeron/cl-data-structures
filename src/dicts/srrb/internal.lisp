@@ -867,7 +867,8 @@
                          (return-from shrink-tree!
                            (values structure final-status)))
                         ((null new-node)
-                         cl-ds.utils:todo)
+                         (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                           cl-ds.utils:todo))
                         (t (setf (cl-ds.common.rrb:sparse-nref node index)
                                  new-node)
                            node))))))
