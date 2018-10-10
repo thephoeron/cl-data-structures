@@ -857,7 +857,22 @@
                 (values structure
                         cl-ds.common:empty-eager-modification-operation-status)))
             (if (zerop depth)
-                cl-ds.utils:todo
+                (bind ((current-bucket (cl-ds.common.rrb:sparse-nref node index))
+                       ((:values new-bucket status changed)
+                        (apply #'cl-ds.meta:shrink-bucket
+                               operation container current-bucket nil)))
+                  (if changed
+                      (if (cl-ds.meta:null-bucket-p new-bucket)
+                          (progn
+                            (decf (access-tree-size structure))
+                            (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                              cl-ds.utils:todo))
+                          (progn
+                            (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
+                            (return-from shrink-tree!
+                              (values structure status))))
+                      (return-from shrink-tree!
+                        (values structure status))))
                 (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
                        (new-node (impl next-node
                                        (- byte-position
