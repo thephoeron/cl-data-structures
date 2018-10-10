@@ -860,13 +860,14 @@
                 (bind ((current-bucket (cl-ds.common.rrb:sparse-nref node index))
                        ((:values new-bucket status changed)
                         (apply #'cl-ds.meta:shrink-bucket
-                               operation container current-bucket nil)))
+                               operation container current-bucket nil all)))
                   (if changed
                       (if (cl-ds.meta:null-bucket-p new-bucket)
                           (progn
                             (decf (access-tree-size structure))
                             (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
-                              cl-ds.utils:todo))
+                              (cl-ds.common.rrb:sparse-rrb-node-erase! node
+                                                                       index)))
                           (progn
                             (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
                             (return-from shrink-tree!
@@ -883,7 +884,7 @@
                            (values structure final-status)))
                         ((null new-node)
                          (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
-                           cl-ds.utils:todo))
+                           (cl-ds.common.rrb:sparse-rrb-node-erase! node index)))
                         (t (setf (cl-ds.common.rrb:sparse-nref node index)
                                  new-node)
                            node))))))
