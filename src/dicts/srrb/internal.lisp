@@ -921,6 +921,23 @@
                 cl-ds.common:empty-eager-modification-operation-status))))
 
 
-(defun remove-last-node! (operation structure container position all)
-  (declare (optimize (debug 3)))
+(defun scan-index-bound (structure)
   cl-ds.utils:todo)
+
+
+(defun tree-without-in-last-node (operation structure container position all)
+  cl-ds.utils:todo)
+
+
+(defun remove-in-last-node! (operation structure container position all)
+  (declare (optimize (debug 3)))
+  (bind ((root (access-tree structure))
+         ((:values new-root status changed new-shift new-tail)
+          (tree-without-in-last-node operation structure
+                                     container position all)))
+    (unless (eq root new-root)
+      (setf (access-tree structure) new-root))
+    (when changed
+      (decf (access-tree-size structure))
+      (setf (access-shift structure) new-shift
+            (access-tree-index-bound structure) (scan-index-bound structure)))))
