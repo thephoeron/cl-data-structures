@@ -52,6 +52,7 @@
    #:sparse-rrb-node-contains
    #:sparse-rrb-node-contains
    #:sparse-rrb-node-content
+   #:sparse-rrb-node-erase
    #:sparse-rrb-node-erase!
    #:sparse-rrb-node-size
    #:transactional-copy-on-write
