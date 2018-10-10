@@ -137,6 +137,27 @@
                   (sparse-node-content node) new-content))))))
 
 
+(defun sparse-rrb-node-erase! (node i)
+  (with-sparse-rrb-node node
+    (let* ((index (sindex i))
+           (old-content (sparse-rrb-node-content node))
+           (old-bitmask (sparse-rrb-node-bitmask node))
+           (new-bitmask (dpb 0 (byte 1 i) old-bitmask))
+           (old-size (logcount old-bitmask))
+           (new-size (1- old-size))
+           (new-content (make-array new-size
+                                    :element-type (read-element-type old-content))))
+      (iterate
+        (for i from 0 below index)
+        (setf (aref new-content i) (aref old-content i)))
+      (iterate
+        (for i from index below new-size)
+        (setf (aref new-content i) (aref old-content (1+ i))))
+      (setf (sparse-rrb-node-content node) new-content
+            (sparse-rrb-node-bitmask node) new-bitmask)
+      node)))
+
+
 (-> sparse-rrb-node-size (sparse-rrb-node) node-size)
 (defun sparse-rrb-node-size (node)
   (with-sparse-rrb-node node

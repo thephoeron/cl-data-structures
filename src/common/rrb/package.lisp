@@ -9,6 +9,7 @@
   (:export
    #:+bit-count+
    #:+depth+
+   #:+maximal-shift+
    #:+maximum-children-count+
    #:+tail-mask+
    #:access-last-size
@@ -34,7 +35,6 @@
    #:node-content
    #:nref
    #:read-element-type
-   #:+maximal-shift+
    #:remove-tail
    #:rrb-at
    #:rrb-container
@@ -52,6 +52,7 @@
    #:sparse-rrb-node-contains
    #:sparse-rrb-node-contains
    #:sparse-rrb-node-content
+   #:sparse-rrb-node-erase!
    #:sparse-rrb-node-size
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail
