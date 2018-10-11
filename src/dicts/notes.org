@@ -1,0 +1,4 @@
+* Tasks
+** TODO I should consider removing this function. It shouldn't be required to achieve composable containers. 
+   [2018-10-11 czw]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/common.lisp::(defgeneric%20find-content%20(container%20bucket%20location%20&key%20&allow-other-keys))]]
