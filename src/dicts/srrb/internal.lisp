@@ -922,10 +922,12 @@
 
 
 (defun scan-index-bound (structure)
+  "Returns index-bound from the tree."
   cl-ds.utils:todo)
 
 
 (defun tree-without-in-last-node (operation structure container position all)
+  "Attempts to remove element from the last-node."
   cl-ds.utils:todo)
 
 

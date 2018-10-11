@@ -1,0 +1,7 @@
+* Tasks
+** TODO Should walk over the tree to find the right most node index!
+   [2018-10-11 czw]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20scan-index-bound%20(structure)]]
+** TODO Should impement destructive, transactional na functional variants of this function.
+   [2018-10-11 czw]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node%20(operation%20structure%20container%20position%20all)]]
