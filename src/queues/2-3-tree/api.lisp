@@ -380,3 +380,7 @@
                            t))))
         (values (aref head (1- head-position))
                 t))))
+
+
+(defmethod cl-ds:whole-range ((container 2-3-queue))
+  cl-ds.utils:todo)
