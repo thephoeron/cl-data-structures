@@ -168,7 +168,7 @@
 
 (defmethod make-stack-cell ((name (eql :regex-file)) &key path (predicate (constantly t)))
   (make 'regex-file-file-range-stack-cell
-        :predicate (ensure-function predicate)
+        :predicate (ensure-fun predicate)
         :path path))
 
 
@@ -231,7 +231,9 @@
                    (unless (osicat:directory-exists-p prev-path)
                      (push :end (access-state cell))
                      (return-from eat-cell
-                       (values nil nil))))
+                       (values nil nil)))
+                   (setf (access-state cell) (list prev-path))
+                   (go :start))
                  (if-let ((p (~>> cell access-prev-cell eat-cell)))
                    (progn
                      (setf prev-path (merge-pathnames path p))
