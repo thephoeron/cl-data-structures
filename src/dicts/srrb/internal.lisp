@@ -923,7 +923,19 @@
 
 (defun scan-index-bound (structure)
   "Returns index-bound from the tree."
-  cl-ds.utils:todo)
+  (iterate
+    (with shift = (access-shift structure))
+    (with result = 0)
+    (for i from 0 to shift)
+    (for byte-position from (* cl-ds.common.rrb:+bit-count+ shift)
+         downto 0
+         by cl-ds.common.rrb:+bit-count+)
+    (for node
+         initially (access-tree structure)
+         then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
+    (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
+          (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
+    (finally (return result))))
 
 
 (defun tree-without-in-last-node (operation structure container position all)

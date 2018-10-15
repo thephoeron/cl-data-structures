@@ -5,3 +5,6 @@
 ** TODO Should impement destructive, transactional na functional variants of this function.
    [2018-10-11 czw]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node%20(operation%20structure%20container%20position%20all)]]
+** TODO Need to add test for this. Should be possible to do so even now.
+   [2018-10-15 pon]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20scan-index-bound%20(structure)]]
