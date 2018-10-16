@@ -75,8 +75,9 @@
   `(let ((,node (if (listp ,node) (car ,node) ,node)))
      (declare (type sparse-node ,node))
      (macrolet ((sindex (index)
-                  `(1- (logcount (ldb (byte (1+ ,index) 0)
-                                      (sparse-node-bitmask ,',node))))))
+                  `(the node-size
+                        (1- (logcount (ldb (byte (1+ ,index) 0)
+                                           (sparse-node-bitmask ,',node)))))))
        ,@body)))
 
 
@@ -104,7 +105,7 @@
 
 (-> (setf sparse-nref) (t sparse-rrb-node node-size) t)
 (defun (setf sparse-nref) (new-value node index)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (let ((content (sparse-node-content node)))
       (if (sparse-rrb-node-contains node index)
@@ -122,17 +123,24 @@
                         new-length
                         :element-type (array-element-type content)))))
             (declare (type rrb-index new-length)
+                     (type node-size sindex)
                      (type simple-vector new-content))
             (setf bitmask new-bitmask
                   (sparse-node-bitmask node) bitmask
                   sindex (sindex index))
             (iterate
-              (for i from (1- new-length) above sindex)
-              (setf (aref new-content i) (aref content (1- i))))
+              (declare (type node-size i))
+              (with i = (1- new-length))
+              (while (> i sindex))
+              (setf (aref new-content i) (aref content (1- i)))
+              (decf i))
             (unless (eq new-content content)
               (iterate
-                (for i from 0 below sindex)
-                (setf (aref new-content i) (aref content i))))
+                (declare (type node-size i))
+                (with i = 0)
+                (while (< i sindex))
+                (setf (aref new-content i) (aref content i))
+                (incf i)))
             (setf (aref new-content sindex) new-value
                   (sparse-node-content node) new-content))))))
 
