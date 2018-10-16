@@ -935,7 +935,7 @@
          then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
     (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
           (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
-    (finally (return result))))
+    (finally (return (1+ result)))))
 
 
 (defun tree-without-in-last-node (operation structure container position all)
