@@ -10,3 +10,6 @@
    CLOSED: [2018-10-16 wto 12:22]
    [2018-10-15 pon]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20scan-index-bound%20(structure)]]
+** TODO Should recursivly go into the last node. Try removing, ensure that no empty nodes exist.
+   [2018-10-16 wto]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node!%20(operation%20structure%20container%20position%20all)]]
