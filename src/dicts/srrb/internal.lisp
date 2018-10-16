@@ -943,6 +943,16 @@
   cl-ds.utils:todo)
 
 
+(defun tree-without-in-last-node! (operation structure container position all)
+  "Attempts to remove element from the last-node."
+  cl-ds.utils:todo)
+
+
+(defun transactional-tree-without-in-last-node! (operation structure container position all)
+  "Attempts to remove element from the last-node."
+  cl-ds.utils:todo)
+
+
 (defun remove-in-last-node! (operation structure container position all)
   (declare (optimize (debug 3)))
   (bind ((root (access-tree structure))
