@@ -950,18 +950,43 @@
          (new-tail nil)
          ((:labels impl (node depth))
           (if (zerop depth)
-              cl-ds.utils:todo
+              (bind ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
+                     (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
+                     (count (logcount bitmask))
+                     (index (logandc2 position cl-ds.common.rrb:+tail-mask+))
+                     (bucket (aref content index))
+                     ((:values new-bucket status changed)
+                      (apply #'cl-ds.meta:shrink-bucket! operation container
+                             bucket index all)))
+                (unless changed
+                  (return-from tree-without-in-last-node!
+                    (values structure status)))
+                (setf final-status status)
+                (if (cl-ds.meta:null-bucket-p new-bucket)
+                    (unless (zerop count)
+                      (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                      node)
+                    (progn
+                      (setf (cl-ds.common.rrb:sparse-nref node index)
+                            new-bucket)
+                      node)))
               (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
                      (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
                      (count (logcount bitmask))
-                     (current-node (last-elt content))
-                     (new-node (impl current-node (1- depth))))
+                     (index (1- count))
+                     (current-node (aref content index))
+                     (new-node (impl current-node index)))
                 (cond ((eq current-node new-node)
                        node)
                       ((null new-node)
                        (unless (eql count 1)
-                         cl-ds.utils:todo))
-                      (t (setf (last-elt content) new-node)
+                         (cl-ds.common.rrb:sparse-rrb-node-erase!
+                          node
+                          (~> node
+                              cl-ds.common.rrb:sparse-rrb-node-bitmask
+                              logcount
+                              1-))))
+                      (t (setf (aref content index) new-node)
                          node)))))
          (new-root (impl (access-tree structure) shift)))
     cl-ds.utils:todo))
