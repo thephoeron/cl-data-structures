@@ -65,6 +65,7 @@
    #:make-from-traversable
    #:make-of-size
    #:mod-bind
+   #:modulo-range
    #:mutable
    #:mutablep
    #:near

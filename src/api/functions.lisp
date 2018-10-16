@@ -42,3 +42,11 @@
           (when (or (null to)
                     (> i to))
             (send-recur i :i (+ by i)))))))
+
+
+(defun modulo-range (size &key (start 0) (by 1))
+  (check-type size positive-integer)
+  (check-type start non-negative-integer)
+  (check-type by positive-integer)
+  (cl-ds:xpr (:i (rem start size))
+    (cl-ds:send-recur i :i (rem (+ i by) size))))
