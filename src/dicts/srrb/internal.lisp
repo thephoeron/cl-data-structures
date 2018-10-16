@@ -947,6 +947,7 @@
   "Attempts to remove element from the last-node."
   (bind ((final-status nil)
          (shift (access-shift structure))
+         (new-tail nil)
          ((:labels impl (node depth))
           (if (zerop depth)
               cl-ds.utils:todo
