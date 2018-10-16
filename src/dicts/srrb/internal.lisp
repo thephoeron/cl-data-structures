@@ -957,8 +957,8 @@
   (declare (optimize (debug 3)))
   (bind ((root (access-tree structure))
          ((:values new-root status changed new-shift new-tail)
-          (tree-without-in-last-node operation structure
-                                     container position all)))
+          (tree-without-in-last-node! operation structure
+                                      container position all)))
     (unless (eq root new-root)
       (setf (access-tree structure) new-root))
     (when changed
