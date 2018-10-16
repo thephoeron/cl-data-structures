@@ -157,7 +157,9 @@
                   (sparse-node-content node) new-content))))))
 
 
+(-> sparse-rrb-node-erase (sparse-rrb-node node-size &optional t) sparse-rrb-node)
 (defun sparse-rrb-node-erase (node i &optional ownership-tag)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (let* ((index (sindex i))
            (old-content (sparse-rrb-node-content node))
@@ -178,7 +180,10 @@
                             :bitmask new-bitmask))))
 
 
+(declaim (inline sparse-rrb-node-erase!))
+(-> sparse-rrb-node-erase! (sparse-rrb-node node-size) sparse-rrb-node)
 (defun sparse-rrb-node-erase! (node i)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (let* ((index (sindex i))
            (old-content (sparse-rrb-node-content node))
@@ -189,11 +194,17 @@
            (new-content (make-array new-size
                                     :element-type (read-element-type old-content))))
       (iterate
-        (for i from 0 below index)
-        (setf (aref new-content i) (aref old-content i)))
+        (declare (type node-size i))
+        (with i = 0)
+        (while (< i index))
+        (setf (aref new-content i) (aref old-content i))
+        (incf i))
       (iterate
-        (for i from index below new-size)
-        (setf (aref new-content i) (aref old-content (1+ i))))
+        (declare (type node-size i))
+        (with i = index)
+        (while (< i new-size))
+        (setf (aref new-content i) (aref old-content (1+ i)))
+        (incf i))
       (setf (sparse-rrb-node-content node) new-content
             (sparse-rrb-node-bitmask node) new-bitmask)
       node)))
