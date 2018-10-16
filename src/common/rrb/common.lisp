@@ -65,6 +65,7 @@
       (cons content ownership-tag)))
 
 
+(declaim (inline make-sparse-rrb-node))
 (defun make-sparse-rrb-node (&key ownership-tag (content #()) (bitmask 0))
   (if (null ownership-tag)
       (make-sparse-node :content content :bitmask bitmask)
@@ -210,6 +211,7 @@
       node)))
 
 
+(declaim (inline sparse-rrb-node-size))
 (-> sparse-rrb-node-size (sparse-rrb-node) node-size)
 (defun sparse-rrb-node-size (node)
   (with-sparse-rrb-node node
