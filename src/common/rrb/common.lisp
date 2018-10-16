@@ -81,28 +81,40 @@
        ,@body)))
 
 
+(declaim (inline sparse-rrb-node-contains))
 (-> sparse-rrb-node-contains (sparse-rrb-node node-size) boolean)
 (defun sparse-rrb-node-contains (node index)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (ldb-test (byte 1 index) (sparse-node-bitmask node))))
 
 
+(declaim (inline (setf sparse-rbb-node-bitmask)))
+(-> (setf sparse-rrb-node-bitmask) (sparse-rrb-mask sparse-rrb-node)
+    sparse-rrb-mask)
 (defun (setf sparse-rrb-node-bitmask) (new-val node)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (setf (sparse-node-bitmask node) new-val)))
 
 
+(declaim (inline sparse-node-bitmask))
+(-> sparse-rrb-node-bitmask (sparse-rrb-node) sparse-rrb-mask)
 (defun sparse-rrb-node-bitmask (node)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (sparse-node-bitmask node)))
 
 
+(declaim (inline sparse-nref))
 (-> sparse-nref (sparse-rrb-node node-size) t)
 (defun sparse-nref (node index)
+  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (aref (sparse-node-content node) (sindex index))))
 
 
+(declaim (inline (setf sparse-nref)))
 (-> (setf sparse-nref) (t sparse-rrb-node node-size) t)
 (defun (setf sparse-nref) (new-value node index)
   (declare (optimize (speed 3)))
