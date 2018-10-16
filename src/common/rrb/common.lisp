@@ -171,11 +171,17 @@
            (new-content (make-array new-size
                                     :element-type (read-element-type old-content))))
       (iterate
-        (for i from 0 below index)
-        (setf (aref new-content i) (aref old-content i)))
+        (declare (type node-size i))
+        (with i = 0)
+        (while (< i index))
+        (setf (aref new-content i) (aref old-content i))
+        (incf i))
       (iterate
-        (for i from index below new-size)
-        (setf (aref new-content i) (aref old-content (1+ i))))
+        (declare (type node-size i))
+        (with i = index)
+        (while (< i new-size))
+        (setf (aref new-content i) (aref old-content (1+ i)))
+        (incf i))
       (make-sparse-rrb-node :ownership-tag ownership-tag
                             :content new-content
                             :bitmask new-bitmask))))
