@@ -10,6 +10,13 @@
    CLOSED: [2018-10-16 wto 12:22]
    [2018-10-15 pon]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20scan-index-bound%20(structure)]]
-** TODO Should recursivly go into the last node. Try removing, ensure that no empty nodes exist.
+** DONE Should recursivly go into the last node. Try removing, ensure that no empty nodes exist.
+   CLOSED: [2018-10-16 wto 16:10]
+   [2018-10-16 wto]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node!%20(operation%20structure%20container%20position%20all)]]
+** TODO Add tests for tree-without-in-last-node!
+   [2018-10-16 wto]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node!%20(operation%20structure%20container%20position%20all)]]
+** TODO Need to correct shift (if changed).
    [2018-10-16 wto]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/srrb/internal.lisp::(defun%20tree-without-in-last-node!%20(operation%20structure%20container%20position%20all)]]
