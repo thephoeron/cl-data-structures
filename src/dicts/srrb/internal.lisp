@@ -961,8 +961,9 @@
                        (unless (eql count 1)
                          cl-ds.utils:todo))
                       (t (setf (last-elt content) new-node)
-                         node))))))
-    (impl (access-tree structure) shift)))
+                         node)))))
+         (new-root (impl (access-tree structure) shift)))
+    cl-ds.utils:todo))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
