@@ -153,6 +153,7 @@
                              (:file "trait-classes")
                              (:file "common")
                              (:file "api")
+                             (:file "docstrings")
                              (:module "egnat"
                               :components ((:file "api")
                                            (:test-file "tests")))))
