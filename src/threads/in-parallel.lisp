@@ -4,7 +4,9 @@
 (defclass in-parallel-range (cl-ds.alg:transparent-to-chunking-mixin
                              cl-ds.alg:proxy-range)
   ((%limit :initarg :limit
-           :reader read-limit)))
+           :reader read-limit)
+   (%context-function :initarg :context-function
+                      :reader read-context-function)))
 
 
 (defclass forward-in-parallel-range (in-parallel-range
@@ -25,10 +27,11 @@
 (defmethod cl-ds:clone ((range in-parallel-range))
   (make (type-of range)
         :limit (read-limit range)
+        :context-function (read-context-function range)
         :original-range (cl-ds.alg:read-original-range range)))
 
 
-(defun make-in-parallel-read-thread (chunked-range limit)
+(defun make-in-parallel-read-thread (chunked-range limit context-function)
   (bind ((queue (lparallel.queue:make-queue :fixed-capacity limit))
          ((:flet push-queue (element))
           (lparallel.queue:push-queue element queue))
@@ -36,14 +39,16 @@
           (lret ((vector (make-array 128 :adjustable t :fill-pointer 0)))
             (cl-ds:traverse (rcurry #'vector-push-extend vector) x)))
          ((:flet impl ())
-          (cl-ds:traverse
-           (lambda (x)
-             (handler-case (~> (to-vector x)
-                               (list* t)
-                               lparallel:future
-                               push-queue)
-               (error (e) (push-queue (list* e :error)))))
-           chunked-range)
+          (funcall context-function
+                   (lambda ()
+                     (cl-ds:traverse
+                      (lambda (x)
+                        (handler-case (~> (to-vector x)
+                                          (list* t)
+                                          lparallel:future
+                                          push-queue)
+                          (error (e) (push-queue (list* e :error)))))
+                      chunked-range)))
           (push-queue (list* nil nil)))
          (thread (bt:make-thread #'impl :name "in-parallel dispatching thread")))
     (list* thread queue)))
@@ -61,7 +66,8 @@
                (iterate
                  (with (thread . queue) =
                        (make-in-parallel-read-thread chunked-range
-                                                     (read-limit range)))
+                                                     (read-limit range)
+                                                     (read-context-function range)))
                  (with p = (setf pushing thread))
                  (for future = (lparallel.queue:pop-queue queue))
                  (for (data . more) = (lparallel:force future))
@@ -89,10 +95,12 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric in-parallel (range &key limit)
+(defgeneric in-parallel (range &key limit context-function)
   (:generic-function-class in-parallel-function)
-  (:method (range &key (limit 512))
-    (cl-ds.alg.meta:apply-range-function range #'in-parallel :limit 512)))
+  (:method (range &key (limit 512) (context-function #'funcall))
+    (cl-ds.alg.meta:apply-range-function range #'in-parallel
+                                         :limit limit
+                                         :context-function context-function)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)

@@ -37,12 +37,11 @@
          (fn (lambda ()
                (block nil
                  (handler-case
-                     (funcall (funcall
-                               context-function
-                               (lambda ()
-                                 (funcall traverse/accross
-                                          (compose #'enque (rcurry #'list* t))
-                                          og-range))))
+                     (funcall context-function
+                              (lambda ()
+                                (funcall traverse/accross
+                                         (compose #'enque (rcurry #'list* t))
+                                         og-range)))
                    (condition (e)
                      (enque (list* e :error))
                      (return nil))))
@@ -78,7 +77,7 @@
 
 (defgeneric thread-buffer (range limit &key context-function)
   (:generic-function-class thread-buffer-function)
-  (:method (range limit &key (context-function #'identity))
+  (:method (range limit &key (context-function #'funcall))
     (cl-ds.alg.meta:apply-range-function range #'thread-buffer
                                          :limit limit
                                          :context-function context-function)))
