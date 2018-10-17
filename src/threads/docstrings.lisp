@@ -9,4 +9,6 @@
      :returns "BUFFER-RANGE subclass. Depending on the RANGE argument class it may be FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
 
   (function in-parallel
-    (:description "Changes how traverse and accross functions work on inner ranges. Instead for working directly, it will first obtain chunked range, then each chunk will be scheduled to obtain values on lparallel worker. Results are then pushed into queue and read on the caller thread. Useful in conjuction with time consuming on-each functions.")))
+    (:description "Changes how traverse and accross functions work on inner ranges. Instead for working directly, it will first obtain chunked range, then each chunk will be scheduled to obtain values on lparallel worker. Results are then pushed into queue and read on the caller thread. Useful in conjuction with time consuming on-each functions."
+     :notes "This changes how aggregation functions work."
+     :returns "IN-PARALLEL-RANGE subclass.")))
