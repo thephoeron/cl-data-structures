@@ -8,12 +8,12 @@
    (%hashes :initarg :hashes
             :type vector
             :reader read-hashes)
-   (%depth :initarg :depth
+   (%count :initarg :count
            :type fixnum
-           :reader read-depth)
-   (%width :initarg :width
+           :reader read-count)
+   (%space :initarg :space
            :type fixnum
-           :reader read-width)
+           :reader read-space)
    (%size :initarg :size
           :type integer
           :reader cl-ds:size)
@@ -22,7 +22,8 @@
              :type function)))
 
 
-(defmethod cl-ds:at ((container approximated-counts) location &rest more-locations)
+(defmethod cl-ds:at ((container approximated-counts)
+                     location &rest more-locations)
   (unless (endp more-locations)
     (error 'cl-ds:dimensionality-error :bounds '(1)
                                        :value (1+ (length more-locations))
@@ -31,9 +32,9 @@
     (with hash = (funcall (read-hash-fn container) location))
     (with counts = (read-counters container))
     (with hashes = (read-hashes container))
-    (with width = (read-width container))
-    (for j from 0 below (read-depth container))
-    (minimize (aref counts j (hashval hashes width j hash))
+    (with space = (read-space container))
+    (for j from 0 below (read-count container))
+    (minimize (aref counts (hashval hashes space j hash))
               into min)
     (finally (return (values min t)))))
 
@@ -41,23 +42,23 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-  (:range hash-fn depth width &key key hashes)
-  (:range hash-fn depth width &key (key #'identity) hashes)
+  (:range hash-fn space count &key key hashes)
+  (:range hash-fn space count &key (key #'identity) hashes)
 
-  (%width %depth %hash-fn %total %counters %hashes)
+  (%space %count %hash-fn %total %counters %hashes)
 
-  ((&key hash-fn depth width hashes)
-   (check-type depth positive-fixnum)
-   (check-type width positive-fixnum)
-   (check-type hashes (or null (simple-array fixnum (* 2))))
+  ((&key hash-fn count space hashes)
+   (check-type space positive-fixnum)
+   (check-type count positive-fixnum)
+   (check-type hashes (or null (simple-array fixnum (*))))
    (ensure-functionf hash-fn)
    (setf %hash-fn hash-fn
-         %width width
-         %depth depth
+         %count count
+         %space space
          %total 0
-         %counters (make-array (list %depth %width) :initial-element 0)
-         %hashes (or hashes (make-hash-array depth)))
-   (unless (eql %depth (array-dimension %hashes 0))
+         %counters (make-array %space :initial-element 0)
+         %hashes (or hashes (make-hash-array count)))
+   (unless (eql count (array-dimension %hashes 0))
      (error 'cl-ds:invalid-argument
             :argument 'hashes
             :text "Invalid first dimension of %hashes")))
@@ -66,14 +67,14 @@
    (incf %total)
    (iterate
      (with hash = (funcall %hash-fn element))
-     (for j from 0 below %depth)
-     (for hashval = (hashval %hashes %width j hash))
-     (incf (aref %counters j hashval))))
+     (for j from 0 below %count)
+     (for hashval = (hashval %hashes %space j hash))
+     (incf (aref %counters hashval))))
 
   ((make 'approximated-counts
          :hash-fn %hash-fn
          :counters %counters
-         :depth %depth
-         :width %width
+         :space %space
+         :count %count
          :size %total
          :hashes %hashes)))

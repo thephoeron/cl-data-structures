@@ -33,8 +33,8 @@
     (:description "Calculates estimated counts using Min-Count sketch alogrithm. This requiret only a constant ammount of memory."
      :arguments ((range "Object to aggregate.")
                  (hash-fn "Hashing function. SXHASH will do for strings.")
-                 (depth "Positive integer. Along with WIDTH controls size of the internal counters table.")
-                 (width "Positive integer. Along with DEPTH controls size of the internal counters table."))
+                 (space "Positive integer. Size of the counters array")
+                 (count "Number of hashing functions used."))
      :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
              "Sensitive to a hash function. Large avalanche factor is very helpful.")))
