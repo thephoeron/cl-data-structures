@@ -1,7 +1,8 @@
 (in-package #:cl-ds.alg)
 
 
-(defclass latch-proxy (proxy-range)
+(defclass latch-proxy (cl-ds:chunking-mixin
+                       proxy-range)
   ((%latches :initarg :latches
              :accessor read-latches)))
 

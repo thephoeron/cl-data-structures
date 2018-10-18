@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass forward-cartesian-range (cl-ds:fundamental-forward-range)
+(defclass forward-cartesian-range (cl-ds:chunking-mixin
+                                   cl-ds:fundamental-forward-range)
   ((%content :initarg :content
              :type vector
              :reader read-content)

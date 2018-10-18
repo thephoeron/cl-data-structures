@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass shuffled-range (cl-ds:fundamental-forward-range)
+(defclass shuffled-range (cl-ds:chunking-mixin
+                          cl-ds:fundamental-forward-range)
   ((%table :initform (make-hash-table)
            :initarg :table
            :reader read-table)

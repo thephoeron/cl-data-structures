@@ -102,6 +102,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defmethod wrap-chunk ((range forward-only-proxy)
+                       (chunk cl-ds:fundamental-forward-range))
+  (make (type-of range)
+        :key (read-key range)
+        :predicate (read-predicate range)))
+
+
 (defgeneric only (range predicate &key key)
   (:generic-function-class only-function)
   (:method (range predicate &key (key #'identity))

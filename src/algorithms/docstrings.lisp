@@ -36,11 +36,13 @@
                             (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
-    (:description "Creates new range by applying FUNCTION to each element of the RANGE.")
-    (:notes "Works almost like cl:map-and-friends, but lazy evaluated."))
+    (:description "Creates new range by applying FUNCTION to each element of the RANGE."
+     :returns "Another range."
+     :notes "Works almost like cl:map-and-friends, but lazy evaluated."))
 
   (function count-elements
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
+     :returns "Integer with count of elements."
      :examples [(let ((data #(1 2 3 4 5)))
                   (prove:is (length data) (cl-ds.alg:count-elements data))
                   (prove:is 3 (cl-ds:at (cl-ds.alg:count-elements (cl-ds.alg:group-by data :key #'evenp))
@@ -49,6 +51,7 @@
 
   (function hash-join
     (:description "Joins multiple ranges using hash join algorithm."
+     :returns "FORWARD-RANGE"
      :examples [(let ((result (sort (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                          (list (cl-ds:field :data #(1 2 3)
                                                                             :key #'identity))
@@ -58,7 +61,8 @@
                   (map nil (lambda (x) (prove:is (first x) (second x))) result))]))
 
   (function chain
-    (:description "Joins multiple ranges sequentially into one."))
+    (:description "Joins multiple ranges sequentially into one."
+     :returns "Another range."))
 
   (function shuffled-range
     (:description "Creates range of shuffled integers from FROM, to TO."
@@ -93,7 +97,14 @@
      :returns "FORWARD-RANGE"))
 
   (function latch
-    (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from primary range, where, on corresponding positions, each of the latch ranges contains non-nil value."))
+    (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from primary range, where, on corresponding positions, each of the latch ranges contains non-nil value."
+     :arguments-and-values ((range "Primary input range.")
+                            (latch "Range with boolean values.")
+                            (more-latches "Ranges with booleans values."))
+     :returns "Another range."))
+
+  (function zip
+    (:description "Combines multiple ranges into single range by applying function length wise."))
 
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."

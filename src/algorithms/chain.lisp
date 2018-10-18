@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass forward-chain-of-ranges (cl-ds:fundamental-forward-range)
+(defclass forward-chain-of-ranges (cl-ds:chunking-mixin
+                                   cl-ds:fundamental-forward-range)
   ((%content :initarg :content
              :reader read-content)
    (%original-content :initarg :original-content

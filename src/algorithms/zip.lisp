@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass forward-zipped-ranges (cl-ds:fundamental-forward-range)
+(defclass forward-zipped-ranges (cl-ds:chunking-mixin
+                                 cl-ds:fundamental-forward-range)
   ((%ranges :initarg :ranges
             :reader read-ranges)
    (%function :initarg :function

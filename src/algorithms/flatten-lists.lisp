@@ -1,7 +1,8 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass flatten-proxy (proxy-range)
+(defclass flatten-proxy (cl-ds:chunking-mixin
+                         proxy-range)
   ((%key :initarg :key
          :reader read-key)
    (%current :initform nil
