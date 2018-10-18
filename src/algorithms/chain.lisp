@@ -34,11 +34,13 @@
          %original-content)))
 
 
-(defmethod initialize-instance :after ((obj forward-chain-of-ranges) &key &allow-other-keys)
+(defmethod initialize-instance :after ((obj forward-chain-of-ranges)
+                                       &key &allow-other-keys)
   (init-chain-of-range obj))
 
 
-(defmethod reinitialize-instance ((obj forward-chain-of-ranges) &key &allow-other-keys)
+(defmethod reinitialize-instance ((obj forward-chain-of-ranges)
+                                  &key &allow-other-keys)
   (init-chain-of-range obj))
 
 

@@ -1,0 +1,4 @@
+* Tasks
+** TODO Instead of chunking-mixin, it should forward chunking into each of its inner ranges.
+   [2018-10-18 czw]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/algorithms/chain.lisp::(defclass%20forward-chain-of-ranges%20(cl-ds:chunking-mixin]]
