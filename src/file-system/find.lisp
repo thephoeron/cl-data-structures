@@ -168,7 +168,7 @@
 
 (defmethod make-stack-cell ((name (eql :regex-file)) &key path (predicate (constantly t)))
   (make 'regex-file-file-range-stack-cell
-        :predicate (ensure-fun predicate)
+        :predicate (ensure-function predicate)
         :path path))
 
 
