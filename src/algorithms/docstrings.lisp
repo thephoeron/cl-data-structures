@@ -18,6 +18,7 @@
 
   (function split-into-chunks
     (:description "Divides aggregation process into partitions upto size."
+     :returns "split-into-chunks-proxy range subclass."
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
                   (prove:is (cl-ds:size data) 3)
                   (prove:is (cl-ds:at data 0) #(1 2) :test 'equalp)
@@ -26,10 +27,13 @@
 
   (function to-vector
     (:description "Collects all elements into CL:VECTOR."
+     :returns "cl:vector with content of the range."
+     :notes "There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
      :arguments-and-values ((range "Object to aggregate accross.")
-                            (key "Key function used to extract value for vector.")
-                            (element-type ":element-type for result vector.")
-                            (force-copy "Pass NIL to allow returning vector passed as RANGE."))))
+                            (:key "Key function used to extract value for vector.")
+                            (:element-type ":element-type for result vector.")
+                            (:size "Initial size of internal vector. Supplied to optimize memory allocations.")
+                            (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE.")

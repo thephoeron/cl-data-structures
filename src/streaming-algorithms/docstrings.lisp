@@ -41,4 +41,10 @@
 
   (function
     bloom-filter
-    (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if item is absent from the range (if at returns nil, item is certainly absent, if at returns t item either present or not).")))
+    (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if item is absent from the range (if at returns nil, item is certainly absent, if at returns t item either present or not)."
+     :returns "Bloom filter object. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
+     :arguments ((range "Input for the creation of the bloom filter.")
+                 (space "Positive-fixnum. What is the bloom vector size?")
+                 (count "How many bits are used for each item?")
+                 (:key "Function used to extract value for to hashing.")
+                 (:hashes "Optional hashes vector. Needs to be supplied if ensuring same hash values between different filters is required.")))))
