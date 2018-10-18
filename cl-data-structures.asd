@@ -145,6 +145,7 @@
                (:module "queues"
                 :components ((:file "packages")
                              (:file "common")
+                             (:file "docstrings")
                              (:module "2-3-tree"
                               :components ((:file "api")
                                            (:test-file "tests")))))
