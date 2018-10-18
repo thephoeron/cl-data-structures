@@ -355,7 +355,7 @@
                                    &rest all
                                    &key)
   (declare (ignore all))
-  (values location
+  (values (cl-ds:force location)
           cl-ds.common:empty-eager-modification-operation-status
           t))
 
@@ -377,7 +377,7 @@
                                    &rest all
                                    &key)
   (declare (ignore all))
-  (values location
+  (values (cl-ds:force location)
           cl-ds.common:empty-eager-modification-operation-status
           t))
 
