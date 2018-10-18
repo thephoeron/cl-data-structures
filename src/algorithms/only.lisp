@@ -104,7 +104,8 @@
 
 (defmethod wrap-chunk ((range forward-only-proxy)
                        (chunk cl-ds:fundamental-forward-range))
-  (make (type-of range)
+  (make 'forward-only-proxy
+        :original-range chunk
         :key (read-key range)
         :predicate (read-predicate range)))
 
