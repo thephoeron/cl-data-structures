@@ -950,7 +950,7 @@
   "Attempts to remove element from the last-node."
   (bind ((final-status nil)
          (shift (access-shift structure))
-         (new-tail nil)
+         (last-node nil)
          ((:labels impl (node depth))
           (if (zerop depth)
               (bind ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
@@ -963,8 +963,9 @@
                              bucket index all)))
                 (unless changed
                   (return-from tree-without-in-last-node!
-                    (values structure status)))
-                (setf final-status status)
+                    (values structure status nil nil)))
+                (setf final-status status
+                      last-node node)
                 (if (cl-ds.meta:null-bucket-p new-bucket)
                     (unless (zerop count)
                       (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
@@ -1000,7 +1001,7 @@
     (iterate
       (repeat shift-difference)
       cl-ds.utils:todo) ; drop surplus nodes
-    cl-ds.utils:todo))
+    (values structure final-status t last-node)))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
