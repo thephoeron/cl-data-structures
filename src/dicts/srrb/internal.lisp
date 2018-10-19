@@ -946,6 +946,12 @@
   cl-ds.utils:todo)
 
 
+(defun drop-unneded-nodes (tree shift-difference)
+  (iterate
+    (repeat shift-difference)
+    cl-ds.utils:todo))
+
+
 (defun tree-without-in-last-node! (operation structure container position all)
   "Attempts to remove element from the last-node."
   (bind ((final-status nil)
@@ -998,9 +1004,9 @@
                         (ceiling cl-ds.common.rrb:+bit-count+)
                         1-))
          (shift-difference (- shift new-shift)))
-    (iterate
-      (repeat shift-difference)
-      cl-ds.utils:todo) ; drop surplus nodes
+    (setf new-root (drop-unneded-nodes new-root shift-difference)
+          (access-tree structure) new-root
+          (access-shift structure) shift)
     (values structure final-status t last-node)))
 
 
