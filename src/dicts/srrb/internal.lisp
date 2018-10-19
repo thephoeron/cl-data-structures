@@ -992,7 +992,10 @@
                       (t (setf (aref content index) new-node)
                          node)))))
          (new-root (impl (access-tree structure) shift))
-         (new-tree-index-bound (tree-index-bound new-root shift)))
+         (new-tree-index-bound (tree-index-bound new-root shift))
+         (new-shift (~> new-tree-index-bound integer-length
+                        (ceiling cl-ds.common.rrb:+bit-count+)
+                        1-)))
     cl-ds.utils:todo))
 
 
