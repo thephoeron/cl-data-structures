@@ -997,6 +997,9 @@
                         (ceiling cl-ds.common.rrb:+bit-count+)
                         1-))
          (shift-difference (- shift new-shift)))
+    (iterate
+      (repeat shift-difference)
+      cl-ds.utils:todo) ; drop surplus nodes
     cl-ds.utils:todo))
 
 
