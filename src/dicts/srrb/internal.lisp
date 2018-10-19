@@ -995,7 +995,8 @@
          (new-tree-index-bound (tree-index-bound new-root shift))
          (new-shift (~> new-tree-index-bound 1- integer-length
                         (ceiling cl-ds.common.rrb:+bit-count+)
-                        1-)))
+                        1-))
+         (shift-difference (- shift new-shift)))
     cl-ds.utils:todo))
 
 
