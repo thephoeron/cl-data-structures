@@ -921,21 +921,24 @@
                 cl-ds.common:empty-eager-modification-operation-status))))
 
 
-(defun scan-index-bound (structure)
-  "Returns index-bound from the tree."
+(defun tree-index-bound (tree shift)
   (iterate
-    (with shift = (access-shift structure))
     (with result = 0)
     (for i from 0 to shift)
     (for byte-position from (* cl-ds.common.rrb:+bit-count+ shift)
          downto 0
          by cl-ds.common.rrb:+bit-count+)
     (for node
-         initially (access-tree structure)
+         initially tree
          then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
     (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
           (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
     (finally (return (1+ result)))))
+
+
+(defun scan-index-bound (structure)
+  "Returns index-bound from the tree."
+  (tree-index-bound (access-tree structure) (access-shift structure)))
 
 
 (defun tree-without-in-last-node (operation structure container position all)
@@ -988,7 +991,8 @@
                               1-))))
                       (t (setf (aref content index) new-node)
                          node)))))
-         (new-root (impl (access-tree structure) shift)))
+         (new-root (impl (access-tree structure) shift))
+         (new-tree-index-bound (tree-index-bound new-root shift)))
     cl-ds.utils:todo))
 
 
