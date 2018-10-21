@@ -127,7 +127,7 @@
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
 
-(let* ((count 65)
+(let* ((count 64)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
@@ -145,9 +145,9 @@
     (is (cl-ds.dicts.srrb::access-shift container) 0)
     (is final-status :ok)
     (is (cl-ds.dicts.srrb::access-tail-mask container)
-        (dpb 0 (byte 1 0) (ldb (byte 32 0) most-positive-fixnum)))
+        (ldb (byte 32 0) most-positive-fixnum))
     (iterate
-      (for i from 0 below 32)
+      (for i from 1 below 64)
       (is (cl-ds:at container i) i))))
 
 (let* ((count 500)

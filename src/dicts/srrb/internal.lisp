@@ -922,18 +922,20 @@
 
 
 (defun tree-index-bound (tree shift)
-  (iterate
-    (with result = 0)
-    (for i from 0 to shift)
-    (for byte-position from (* cl-ds.common.rrb:+bit-count+ shift)
-         downto 0
-         by cl-ds.common.rrb:+bit-count+)
-    (for node
-         initially tree
-         then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
-    (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
-          (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
-    (finally (return (1+ result)))))
+  (if (null tree)
+      0
+      (iterate
+        (with result = 0)
+        (for i from 0 to shift)
+        (for byte-position from (* cl-ds.common.rrb:+bit-count+ shift)
+             downto 0
+             by cl-ds.common.rrb:+bit-count+)
+        (for node
+             initially tree
+             then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
+        (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
+              (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
+        (finally (return (1+ result))))))
 
 
 (defun scan-index-bound (structure)
@@ -947,20 +949,22 @@
 
 
 (defun drop-unneded-nodes (tree shift-difference)
-  (iterate
-    (repeat shift-difference)
-    (for node
-         initially tree
-         then (~> node
-                  cl-ds.common.rrb:sparse-rrb-node-content
-                  first-elt))
-    (finally (return node))))
+  (unless (null tree)
+    (iterate
+      (repeat shift-difference)
+      (for node
+           initially tree
+           then (~> node
+                    cl-ds.common.rrb:sparse-rrb-node-content
+                    first-elt))
+      (finally (return node)))))
 
 
 (defun tree-without-in-last-node! (operation structure container position all)
   "Attempts to remove element from the last-node."
   (bind ((final-status nil)
          (shift (access-shift structure))
+         (old-tail-mask (access-tail-mask structure))
          (size-decreased nil)
          (last-node nil)
          ((:labels impl (node depth))
@@ -979,10 +983,13 @@
                 (if (cl-ds.meta:null-bucket-p new-bucket)
                     (progn
                       (setf size-decreased t)
-                      (cl-ds.common.rrb:sparse-rrb-node-erase! node index))
-                    (setf (cl-ds.common.rrb:sparse-nref node index)
-                          new-bucket))
-                nil)
+                      (unless (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask
+                                  logcount (eql 1))
+                        (cl-ds.common.rrb:sparse-rrb-node-erase! node index)))
+                    (progn
+                      (setf (cl-ds.common.rrb:sparse-nref node index)
+                            new-bucket)
+                      node)))
               (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
                      (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
                      (count (logcount bitmask))
@@ -1001,29 +1008,33 @@
                               1-))))
                       (t (setf (aref content index) new-node)
                          node)))))
-         (new-root (impl (access-tree structure) shift))
-         (new-tree-index-bound (tree-index-bound new-root shift))
-         (new-shift (~> new-tree-index-bound 1- integer-length
-                        (ceiling cl-ds.common.rrb:+bit-count+)
-                        1-))
-         (new-tail (~> structure read-element-type cl-ds.common.rrb:make-node-content))
-         (last-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
-         (last-node-content (cl-ds.common.rrb:sparse-rrb-node-content last-node))
-         (shift-difference (- shift new-shift)))
-    (iterate
-      (with j = 0)
-      (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-      (for present = (ldb-test (byte 1 i) last-mask))
-      (when present
-        (setf (aref new-tail i) (aref last-node-content j)
-              j (1+ j))))
+         (new-root (impl (access-tree structure) shift)))
     (when size-decreased
-      (setf new-root (drop-unneded-nodes new-root shift-difference)
-            (access-tree-index-bound structure) new-tree-index-bound
-            (access-tail structure) new-tail
-            (access-tail-mask structure) last-mask
-            (access-tree structure) new-root
-            (access-shift structure) new-shift))
+      (when (zerop old-tail-mask)
+        (let ((new-tail (~> structure
+                            read-element-type
+                            cl-ds.common.rrb:make-node-content))
+              (last-node-content (cl-ds.common.rrb:sparse-rrb-node-content last-node))
+              (last-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node)))
+          (iterate
+            (with j = 0)
+            (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+            (for present = (ldb-test (byte 1 i) last-mask))
+            (when present
+              (setf (aref new-tail i) (aref last-node-content j)
+                    j (1+ j))))
+          (setf (access-tail structure) new-tail
+                (access-tail-mask structure) last-mask)))
+      (let* ((new-tree-index-bound (tree-index-bound new-root shift))
+             (new-shift (~> new-tree-index-bound 1- integer-length
+                            (ceiling cl-ds.common.rrb:+bit-count+)
+                            1-
+                            (max 0)))
+             (shift-difference (- shift new-shift)))
+        (setf new-root (drop-unneded-nodes new-root shift-difference)
+              (access-tree-index-bound structure) new-tree-index-bound
+              (access-tree structure) new-root
+              (access-shift structure) new-shift)))
     final-status))
 
 
