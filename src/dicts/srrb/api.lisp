@@ -149,8 +149,8 @@
                   :bounds "Must be non-negative."
                   :text "Sparse vector index can not be negative."))
           ((eql position (1- tree-bound))
-           (remove-in-last-node! operation structure
-                                 container position all))
+           (tree-without-in-last-node! operation structure
+                                       container position all))
           ((< position tree-bound)
            (shrink-tree! operation structure
                          container position all))

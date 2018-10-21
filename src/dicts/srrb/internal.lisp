@@ -1009,15 +1009,9 @@
               (access-tree-index-bound structure) new-tree-index-bound
               (access-tree structure) new-root
               (access-shift structure) new-shift)))
-    final-status))
+    (values structure final-status)))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
   "Attempts to remove element from the last-node."
   cl-ds.utils:todo)
-
-
-(defun remove-in-last-node! (operation structure container position all)
-  (let ((status (tree-without-in-last-node! operation structure
-                                            container position all)))
-    (values structure status)))
