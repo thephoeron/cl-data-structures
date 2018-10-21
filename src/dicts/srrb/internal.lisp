@@ -949,7 +949,12 @@
 (defun drop-unneded-nodes (tree shift-difference)
   (iterate
     (repeat shift-difference)
-    cl-ds.utils:todo))
+    (for node
+         initially tree
+         then (~> node
+                  cl-ds.common.rrb:sparse-rrb-node-content
+                  first-elt))
+    (finally (return node))))
 
 
 (defun tree-without-in-last-node! (operation structure container position all)
@@ -960,8 +965,6 @@
          ((:labels impl (node depth))
           (if (zerop depth)
               (bind ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
-                     (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
-                     (count (logcount bitmask))
                      (index (logandc2 position cl-ds.common.rrb:+tail-mask+))
                      (bucket (aref content index))
                      ((:values new-bucket status changed)
@@ -969,23 +972,20 @@
                              bucket index all)))
                 (unless changed
                   (return-from tree-without-in-last-node!
-                    (values structure status nil nil)))
+                    (values structure status nil)))
                 (setf final-status status
                       last-node node)
                 (if (cl-ds.meta:null-bucket-p new-bucket)
-                    (unless (zerop count)
-                      (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
-                      node)
-                    (progn
-                      (setf (cl-ds.common.rrb:sparse-nref node index)
-                            new-bucket)
-                      node)))
+                    (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                    (setf (cl-ds.common.rrb:sparse-nref node index)
+                          new-bucket))
+                nil)
               (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content node))
                      (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
                      (count (logcount bitmask))
                      (index (1- count))
                      (current-node (aref content index))
-                     (new-node (impl current-node index)))
+                     (new-node (impl current-node (1- depth))))
                 (cond ((eq current-node new-node)
                        node)
                       ((null new-node)
@@ -1003,11 +1003,24 @@
          (new-shift (~> new-tree-index-bound 1- integer-length
                         (ceiling cl-ds.common.rrb:+bit-count+)
                         1-))
+         (new-tail (~> structure read-element-type cl-ds.common.rrb:make-node-content))
+         (last-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
+         (last-node-content (cl-ds.common.rrb:sparse-rrb-node-content last-node))
          (shift-difference (- shift new-shift)))
+    (iterate
+      (with j = 0)
+      (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+      (for present = (ldb-test (byte 1 i) last-mask))
+      (when present
+        (setf (aref new-tail i) (aref last-node-content j)
+              j (1+ j))))
     (setf new-root (drop-unneded-nodes new-root shift-difference)
+          (access-tree-index-bound structure) new-tree-index-bound
+          (access-tail structure) new-tail
+          (access-tail-mask structure) last-mask
           (access-tree structure) new-root
           (access-shift structure) shift)
-    (values structure final-status t last-node)))
+    (values structure final-status t)))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)

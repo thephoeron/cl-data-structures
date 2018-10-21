@@ -199,7 +199,7 @@
            (old-size (logcount old-bitmask))
            (new-size (1- old-size))
            (new-content (make-array new-size
-                                    :element-type (read-element-type old-content))))
+                                    :element-type (array-element-type old-content))))
       (iterate
         (declare (type node-size i))
         (with i = 0)
