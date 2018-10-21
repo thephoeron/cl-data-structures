@@ -1020,7 +1020,7 @@
           (access-tail-mask structure) last-mask
           (access-tree structure) new-root
           (access-shift structure) new-shift)
-    (values structure final-status t)))
+    (values final-status t)))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
