@@ -1019,7 +1019,7 @@
           (access-tail structure) new-tail
           (access-tail-mask structure) last-mask
           (access-tree structure) new-root
-          (access-shift structure) shift)
+          (access-shift structure) new-shift)
     (values structure final-status t)))
 
 

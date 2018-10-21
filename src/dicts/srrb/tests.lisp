@@ -127,8 +127,31 @@
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
 
+(let* ((count 65)
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
+                        cl-ds.alg:to-vector)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  (bind (((:values structure final-status changed)
+          (cl-ds.dicts.srrb::tree-without-in-last-node! #'cl-ds:erase! container :mock 0 nil)))
+    (is (cl-ds.dicts.srrb::access-tree-index-bound structure) 32)
+    (is (cl-ds.dicts.srrb::access-shift structure) 0)
+    (is final-status :ok)
+    (is (cl-ds.dicts.srrb::access-tail-mask structure)
+        (dpb 0 (byte 1 0) (ldb (byte 32 0) most-positive-fixnum)))
+    (ok changed)
+    (iterate
+      (for i from 0 below 32)
+      (is (cl-ds:at container i) i))))
 
-(let* ((count 257)
+(let* ((count 500)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
@@ -151,15 +174,7 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point))
   (is (cl-ds.dicts.srrb::access-tree-index-bound container)
-      (cl-ds.dicts.srrb::scan-index-bound container))
-  (bind (((:values structure final-status changed)
-          (cl-ds.dicts.srrb::tree-without-in-last-node! #'cl-ds:erase! container :mock 0 nil)))
-    (is (cl-ds.dicts.srrb::access-tree-index-bound structure) (- 256 32))
-    (is (cl-ds.dicts.srrb::access-shift structure) 1)
-    (is final-status :ok)
-    (is (cl-ds.dicts.srrb::access-tail-mask structure)
-        (dpb 0 (byte 1 0) (ldb (byte 32 0) most-positive-fixnum)))
-    (is changed t)))
+      (cl-ds.dicts.srrb::scan-index-bound container)))
 
 
 (let ((shift (cl-ds.dicts.srrb::shift-for-position 47)))
