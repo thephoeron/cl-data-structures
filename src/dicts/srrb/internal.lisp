@@ -961,6 +961,7 @@
   "Attempts to remove element from the last-node."
   (bind ((final-status nil)
          (shift (access-shift structure))
+         (size-decreased nil)
          (last-node nil)
          ((:labels impl (node depth))
           (if (zerop depth)
@@ -972,11 +973,13 @@
                              bucket index all)))
                 (unless changed
                   (return-from tree-without-in-last-node!
-                    (values structure status nil)))
+                    status))
                 (setf final-status status
                       last-node node)
                 (if (cl-ds.meta:null-bucket-p new-bucket)
-                    (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                    (progn
+                      (setf size-decreased t)
+                      (cl-ds.common.rrb:sparse-rrb-node-erase! node index))
                     (setf (cl-ds.common.rrb:sparse-nref node index)
                           new-bucket))
                 nil)
@@ -1014,13 +1017,14 @@
       (when present
         (setf (aref new-tail i) (aref last-node-content j)
               j (1+ j))))
-    (setf new-root (drop-unneded-nodes new-root shift-difference)
-          (access-tree-index-bound structure) new-tree-index-bound
-          (access-tail structure) new-tail
-          (access-tail-mask structure) last-mask
-          (access-tree structure) new-root
-          (access-shift structure) new-shift)
-    (values final-status t)))
+    (when size-decreased
+      (setf new-root (drop-unneded-nodes new-root shift-difference)
+            (access-tree-index-bound structure) new-tree-index-bound
+            (access-tail structure) new-tail
+            (access-tail-mask structure) last-mask
+            (access-tree structure) new-root
+            (access-shift structure) new-shift))
+    final-status))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
@@ -1029,14 +1033,6 @@
 
 
 (defun remove-in-last-node! (operation structure container position all)
-  (declare (optimize (debug 3)))
-  (bind ((root (access-tree structure))
-         ((:values new-root status changed new-shift new-tail)
-          (tree-without-in-last-node! operation structure
-                                      container position all)))
-    (unless (eq root new-root)
-      (setf (access-tree structure) new-root))
-    (when changed
-      (decf (access-tree-size structure))
-      (setf (access-shift structure) new-shift
-            (access-tree-index-bound structure) (scan-index-bound structure)))))
+  (let ((status (tree-without-in-last-node! operation structure
+                                            container position all)))
+    (values structure status)))
