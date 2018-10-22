@@ -854,7 +854,7 @@
           (let ((index (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                             position)))
             (unless (cl-ds.common.rrb:sparse-rrb-node-contains node index)
-              (return-from transactional-shrink-tree-common!
+              (return-from shrink-tree-common
                 (values structure
                         cl-ds.common:empty-eager-modification-operation-status
                         nil
@@ -880,7 +880,7 @@
                             (progn
                               (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
                               node)))
-                      (return-from transactional-shrink-tree-common!
+                      (return-from shrink-tree-common
                         (values structure status nil last-node))))
                 (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
                        (new-node (impl next-node
