@@ -849,6 +849,7 @@
 (defun transactional-shrink-tree-common! (operation structure container position all)
   (bind ((final-status nil)
          (size-decreased nil)
+         (tag (cl-ds.common.abstract:read-ownership-tag structure))
          (last-node nil)
          ((:labels impl (node byte-position depth))
           (let ((index (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
@@ -867,17 +868,21 @@
                   (setf last-node node
                         final-status status)
                   (if changed
-                      (if (cl-ds.meta:null-bucket-p new-bucket)
-                          (progn
-                            (decf (access-tree-size structure))
-                            (setf size-decreased t)
-                            (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
-                              (cl-ds.common.rrb:sparse-rrb-node-erase! node
-                                                                       index)))
-                          (progn
-                            (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
-                            (return-from transactional-shrink-tree-common!
-                              (values structure status nil last-node))))
+                      (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
+                                      node
+                                      (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag))))
+                        (if (cl-ds.meta:null-bucket-p new-bucket)
+                            (progn
+                              (decf (access-tree-size structure))
+                              (setf size-decreased t)
+                              (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                                (cl-ds.common.rrb:sparse-rrb-node-erase! node
+                                                                         index))
+                              node)
+                            (progn
+                              (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
+                              (return-from transactional-shrink-tree-common!
+                                (values structure status nil last-node)))))
                       (return-from transactional-shrink-tree-common!
                         (values structure status nil last-node))))
                 (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
@@ -890,10 +895,17 @@
                            (values structure final-status size-decreased last-node)))
                         ((null new-node)
                          (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
-                           (cl-ds.common.rrb:sparse-rrb-node-erase! node index)))
-                        (t (setf (cl-ds.common.rrb:sparse-nref node index)
-                                 new-node)
-                           node))))))
+                           (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
+                                           node
+                                           (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag))))
+                             (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                             node)))
+                        (t (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
+                                           node
+                                           (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag))))
+                             (setf (cl-ds.common.rrb:sparse-nref node index)
+                                   new-node)
+                             node)))))))
          (root (access-tree structure))
          (shift (access-shift structure))
          (new-root (impl root
