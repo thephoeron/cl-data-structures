@@ -865,12 +865,12 @@
                        ((:values new-bucket status changed)
                         (apply #'cl-ds.meta:shrink-bucket
                                operation container current-bucket nil all)))
-                  (setf last-node node
-                        final-status status)
+                  (setf final-status status)
                   (if changed
                       (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
                                       node
                                       (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag))))
+                        (setf last-node node)
                         (if (cl-ds.meta:null-bucket-p new-bucket)
                             (progn
                               (decf (access-tree-size structure))
