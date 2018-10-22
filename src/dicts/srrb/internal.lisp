@@ -984,6 +984,16 @@
                                             all))))
 
 
+(defun transactional-shrink-tree! (operation structure container position all)
+  (declare (optimize (debug 3)))
+  (values structure
+          (nth-value 1 (transactional-shrink-tree-common! operation
+                                                          structure
+                                                          container
+                                                          position
+                                                          all))))
+
+
 (defun unset-in-tail! (operation structure container offset all)
   (declare (optimize (debug 3)))
   (let* ((tail-mask (access-tail-mask structure))
@@ -1078,6 +1088,13 @@
               (access-tree structure) new-root
               (access-shift structure) new-shift)))
     (values structure final-status)))
+
+
+(defun transactional-tree-without-in-last-node! (operation structure container position all)
+  "Attempts to remove element from the last-node."
+  (bind (((:values structure final-status size-decreased last-node)
+          (transactional-shrink-tree-common! operation structure container position all)))
+    (shrink-handle-tail! structure final-status size-decreased last-node)))
 
 
 (defun tree-without-in-last-node! (operation structure container position all)
