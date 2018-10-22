@@ -139,7 +139,7 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point))
-  (bind (((:values final-status)
+  (bind (((:values structure final-status)
           (cl-ds.dicts.srrb::tree-without-in-last-node! #'cl-ds:erase! container :mock 0 nil)))
     (is (cl-ds.dicts.srrb::access-tree-index-bound container) 32)
     (is (cl-ds.dicts.srrb::access-shift container) 0)

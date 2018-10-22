@@ -981,7 +981,7 @@
   (bind ((old-tail-mask (access-tail-mask structure))
          (shift (access-shift structure))
          ((:values structure final-status size-decreased last-node)
-          (shrink-tree! operation structure container position all))
+          (shrink-tree-common! operation structure container position all))
          (new-root (access-tree structure)))
     (when size-decreased
       (when (zerop old-tail-mask)
