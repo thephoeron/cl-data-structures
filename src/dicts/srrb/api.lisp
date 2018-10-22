@@ -203,7 +203,7 @@
                                       container position all))
           ((< position tree-bound)
            (shrink-tree operation structure
-                                      container position all))
+                        container position all))
           ((< position (access-index-bound structure))
            (unset-in-tail structure operation container
                           (logandc2 position cl-ds.common.rrb:+tail-mask+)
