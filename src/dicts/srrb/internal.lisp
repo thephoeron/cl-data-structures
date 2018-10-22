@@ -1102,8 +1102,3 @@
   (bind (((:values structure final-status size-decreased last-node)
           (shrink-tree-common! operation structure container position all)))
     (shrink-handle-tail! structure final-status size-decreased last-node)))
-
-
-(defun transactional-tree-without-in-last-node! (operation structure container position all)
-  "Attempts to remove element from the last-node."
-  cl-ds.utils:todo)
