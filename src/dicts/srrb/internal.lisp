@@ -998,7 +998,8 @@
               (setf (aref new-tail i) (aref last-node-content j)
                     j (1+ j))))
           (setf (access-tail structure) new-tail
-                (access-tail-mask structure) last-mask)))
+                (access-tail-mask structure) last-mask)
+          (decf (access-tree-size structure) (logcount last-mask))))
       (let* ((new-tree-index-bound (tree-index-bound new-root shift))
              (new-shift (~> new-tree-index-bound 1- integer-length
                             (ceiling cl-ds.common.rrb:+bit-count+)
