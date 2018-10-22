@@ -882,8 +882,7 @@
                               node)
                             (progn
                               (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
-                              (return-from transactional-shrink-tree-common!
-                                (values structure status nil last-node)))))
+                              node)))
                       (return-from transactional-shrink-tree-common!
                         (values structure status nil last-node))))
                 (let* ((next-node (cl-ds.common.rrb:sparse-nref node index))
