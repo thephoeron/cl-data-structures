@@ -112,7 +112,7 @@
 (defun sparse-nref (node index)
   (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
-    (aref (sparse-node-content node) (sindex index))))
+    (svref (sparse-node-content node) (sindex index))))
 
 
 (declaim (inline (setf sparse-nref)))
@@ -122,7 +122,7 @@
   (with-sparse-rrb-node node
     (let ((content (sparse-node-content node)))
       (if (sparse-rrb-node-contains node index)
-          (setf (aref content (sindex index)) new-value)
+          (setf (svref content (sindex index)) new-value)
           (let* ((length (length content))
                  (bitmask (sparse-node-bitmask node))
                  (new-bitmask (dpb 1 (byte 1 index) bitmask))
@@ -145,16 +145,16 @@
               (declare (type node-size i))
               (with i = (1- new-length))
               (while (> i sindex))
-              (setf (aref new-content i) (aref content (1- i)))
+              (setf (svref new-content i) (svref content (1- i)))
               (decf i))
             (unless (eq new-content content)
               (iterate
                 (declare (type node-size i))
                 (with i = 0)
                 (while (< i sindex))
-                (setf (aref new-content i) (aref content i))
+                (setf (svref new-content i) (svref content i))
                 (incf i)))
-            (setf (aref new-content sindex) new-value
+            (setf (svref new-content sindex) new-value
                   (sparse-node-content node) new-content))))))
 
 
@@ -174,13 +174,13 @@
         (declare (type node-size i))
         (with i = 0)
         (while (< i index))
-        (setf (aref new-content i) (aref old-content i))
+        (setf (svref new-content i) (svref old-content i))
         (incf i))
       (iterate
         (declare (type node-size i))
         (with i = index)
         (while (< i new-size))
-        (setf (aref new-content i) (aref old-content (1+ i)))
+        (setf (svref new-content i) (svref old-content (1+ i)))
         (incf i))
       (make-sparse-rrb-node :ownership-tag ownership-tag
                             :content new-content
@@ -204,13 +204,13 @@
         (declare (type node-size i))
         (with i = 0)
         (while (< i index))
-        (setf (aref new-content i) (aref old-content i))
+        (setf (svref new-content i) (svref old-content i))
         (incf i))
       (iterate
         (declare (type node-size i))
         (with i = index)
         (while (< i new-size))
-        (setf (aref new-content i) (aref old-content (1+ i)))
+        (setf (svref new-content i) (svref old-content (1+ i)))
         (incf i))
       (setf (sparse-rrb-node-content node) new-content
             (sparse-rrb-node-bitmask node) new-bitmask)
@@ -240,7 +240,7 @@
                                                    :element-type (array-element-type content))))
                                      (iterate
                                        (for i from 0 below current-size)
-                                       (setf (aref result i) (aref content i))))))
+                                       (setf (svref result i) (svref content i))))))
                  :bitmask (sparse-node-bitmask node)))
             (t (cons #1# tag))))))
 
@@ -257,10 +257,10 @@
      (setf (sparse-node-bitmask new-node) new-mask)
      (iterate
        (for i from 0 below skipped-index)
-       (setf (aref new-content i) (aref old-content i)))
+       (setf (svref new-content i) (svref old-content i)))
      (iterate
        (for i from skipped-index below length)
-       (setf (aref new-content i) (aref old-content (1- i))))
+       (setf (svref new-content i) (svref old-content (1- i))))
      new-node)))
 
 
@@ -277,11 +277,11 @@
      (setf (sparse-node-bitmask new-node) new-mask)
      (iterate
        (for i from 0 below new-index)
-       (setf (aref new-content i) (aref old-content i)))
+       (setf (svref new-content i) (svref old-content i)))
      (iterate
        (for i from new-index below length)
-       (setf (aref new-content (1+ i)) (aref old-content i)))
-     (setf (aref new-content new-index) new-element)
+       (setf (svref new-content (1+ i)) (svref old-content i)))
+     (setf (svref new-content new-index) new-element)
      new-node)))
 
 
@@ -308,15 +308,15 @@
 
 (defun nref (node position)
   (if (listp node)
-      (aref (car node) position)
-      (aref node position)))
+      (svref (car node) position)
+      (svref node position)))
 
 
 (defun (setf nref) (new-value node position)
   (if (listp node)
-      (setf (aref (car node) position)
+      (setf (svref (car node) position)
             new-value)
-      (setf (aref node position) new-value)))
+      (setf (svref node position) new-value)))
 
 
 (defun rrb-node-push! (node position element)
@@ -327,10 +327,10 @@
 (defun rrb-node-push-into-copy (node position element ownership-tag)
   (let* ((source-content (rrb-node-content node))
          (result-content (make-node-content (array-element-type source-content))))
-    (setf (aref result-content position) element)
+    (setf (svref result-content position) element)
     (iterate
       (for i from 0 below position)
-      (setf (aref result-content i) (aref source-content i)))
+      (setf (svref result-content i) (svref source-content i)))
     (make-rrb-node :ownership-tag ownership-tag
                    :content result-content)))
 
@@ -339,7 +339,7 @@
   (unless (zerop position)
     (let* ((source-content (rrb-node-content node))
            (result-content (copy-array source-content)))
-      (setf (aref result-content position) nil)
+      (setf (svref result-content position) nil)
       (make-rrb-node :ownership-tag ownership-tag
                      :content result-content))))
 
@@ -513,7 +513,7 @@
              then (nref node i))
         (finally (return node)))
       (let ((offset (- index (access-size container))))
-        (~> container access-tail (aref offset)))))
+        (~> container access-tail (svref offset)))))
 
 
 (defmethod cl-ds:at ((container rrb-container) index &rest more)
@@ -673,7 +673,7 @@
     (iterate
       (with tail = (access-tail object))
       (for i from 0 below (access-tail-size object))
-      (funcall function (aref tail i)))
+      (funcall function (svref tail i)))
     object))
 
 
