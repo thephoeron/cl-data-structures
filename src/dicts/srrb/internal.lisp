@@ -976,13 +976,10 @@
       (finally (return node)))))
 
 
-(defun tree-without-in-last-node! (operation structure container position all)
-  "Attempts to remove element from the last-node."
-  (bind ((old-tail-mask (access-tail-mask structure))
-         (shift (access-shift structure))
-         ((:values structure final-status size-decreased last-node)
-          (shrink-tree-common! operation structure container position all))
-         (new-root (access-tree structure)))
+(defun shrink-handle-tail! (structure final-status size-decreased last-node)
+  (let ((new-root (access-tree structure))
+        (old-tail-mask (access-tail-mask structure))
+        (shift (access-shift structure)))
     (when size-decreased
       (when (zerop old-tail-mask)
         (let ((new-tail (~> structure
@@ -1011,6 +1008,13 @@
               (access-tree structure) new-root
               (access-shift structure) new-shift)))
     (values structure final-status)))
+
+
+(defun tree-without-in-last-node! (operation structure container position all)
+  "Attempts to remove element from the last-node."
+  (bind (((:values structure final-status size-decreased last-node)
+          (shrink-tree-common! operation structure container position all)))
+    (shrink-handle-tail! structure final-status size-decreased last-node)))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
