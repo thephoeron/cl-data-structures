@@ -865,7 +865,8 @@
                        ((:values new-bucket status changed)
                         (apply #'cl-ds.meta:shrink-bucket
                                operation container current-bucket nil all)))
-                  (setf final-status status)
+                  (setf final-status status
+                        last-node node)
                   (if changed
                       (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
                                       node
