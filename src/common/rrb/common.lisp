@@ -82,6 +82,37 @@
        ,@body)))
 
 
+(defmacro with-sparse-rrb-node-path ((tree index shift path indexes length)
+                                     &body body)
+  `(once-only (index shift)
+     (let ((,path (make-array (1+ +maximal-shift+)))
+           (,indexes (make-array (1+ +maximal-shift+)
+                                 :element-type 'node-size))
+           (,length 1))
+       (declare (type fixnum length)
+                (dynamic-extent path indexes length))
+       (iterate
+         (with node = ,tree)
+         (for j from 0)
+         (for byte-position
+           from (* cl-ds.common.rrb:+bit-count+
+                   ,shift)
+           downto 0
+           by cl-ds.common.rrb:+bit-count+)
+         (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                       ,index))
+         (for present =
+           (cl-ds.common.rrb:sparse-rrb-node-contains node
+                                                      i))
+         (setf (aref ,indexes j) i
+               ,length (the fixnum (1+ ,length))
+               (aref ,path j) node)
+         (unless present
+           (leave))
+         (setf node (cl-ds.common.rrb:sparse-nref node i)))
+       ,@body)))
+
+
 (declaim (inline sparse-rrb-node-contains))
 (-> sparse-rrb-node-contains (sparse-rrb-node node-size) boolean)
 (defun sparse-rrb-node-contains (node index)
