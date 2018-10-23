@@ -1,10 +1,11 @@
 (in-package #:cl-data-structures.dicts.srrb)
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
-                                             (structure transactional-sparse-rrb-vector)
-                                             container
-                                             position &rest all &key value)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure transactional-sparse-rrb-vector)
+     container
+     position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -48,10 +49,11 @@
                (values structure status))))))
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
-                                             (structure mutable-sparse-rrb-vector)
-                                             container
-                                             position &rest all &key value)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure mutable-sparse-rrb-vector)
+     container
+     position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -92,10 +94,11 @@
                (values structure status))))))
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:grow-function)
-                                             (structure functional-sparse-rrb-vector)
-                                             container
-                                             position &rest all &key value)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure functional-sparse-rrb-vector)
+     container
+     position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -137,10 +140,11 @@
                  (values structure status)))))))
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
-                                             (structure mutable-sparse-rrb-vector)
-                                             container
-                                             position &rest all)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:shrink-function)
+     (structure mutable-sparse-rrb-vector)
+     container
+     position &rest all)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
