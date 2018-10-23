@@ -275,7 +275,8 @@
                                    (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                                 current-node (if present 0 1)
                                                 ownership-tag)))
-                                     (setf (cl-ds.common.rrb:sparse-nref copy index) new-node)
+                                     (setf (cl-ds.common.rrb:sparse-nref copy index)
+                                           new-node)
                                      copy)))))
                         (new-tree (impl root
                                         (* cl-ds.common.rrb:+bit-count+ shift)
@@ -1129,7 +1130,8 @@
              initially tree
              then (~> node cl-ds.common.rrb:sparse-rrb-node-content last-elt))
         (setf (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position) result)
-              (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask integer-length 1-))
+              (~> node cl-ds.common.rrb:sparse-rrb-node-bitmask
+                  integer-length 1-))
         (finally (return (1+ result))))))
 
 
