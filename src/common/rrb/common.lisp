@@ -110,7 +110,18 @@
          (unless present
            (leave))
          (setf node (cl-ds.common.rrb:sparse-nref node i)))
-       ,@body)))
+       (macrolet ((reduce-path ((prev-node index node)
+                                &body body)
+                    (with-gensyms (!i !prev-node)
+                      `(let ((,!prev-node (aref ,',path (1- ,',length))))
+                         (iterate
+                           (for ,!i from (- ,',length 2) downto 0)
+                           (let ((,index (aref ,',indexes ,!i))
+                                 (,prev-node ,!prev-node)
+                                 (,node (aref ,',path ,!i)))
+                             (setf ,!prev-node (progn ,@body)))
+                           (finally (return ,!prev-node)))))))
+         ,@body))))
 
 
 (declaim (inline sparse-rrb-node-contains))
