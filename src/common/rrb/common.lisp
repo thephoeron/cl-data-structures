@@ -88,7 +88,7 @@
      (let ((,path (make-array ,(1+ +maximal-shift+)))
            (,indexes (make-array ,(1+ +maximal-shift+)
                                  :element-type 'node-size))
-           (,length 1))
+           (,length 0))
        (declare (type fixnum length)
                 (dynamic-extent path indexes length))
        (iterate
