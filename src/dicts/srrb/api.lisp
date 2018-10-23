@@ -162,10 +162,11 @@
                      cl-ds.common:empty-eager-modification-operation-status)))))
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
-                                             (structure transactional-sparse-rrb-vector)
-                                             container
-                                             position &rest all)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:shrink-function)
+     (structure transactional-sparse-rrb-vector)
+     container
+     position &rest all)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
@@ -187,10 +188,11 @@
                      cl-ds.common:empty-eager-modification-operation-status)))))
 
 
-(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:shrink-function)
-                                             (structure functional-sparse-rrb-vector)
-                                             container
-                                             position &rest all)
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:shrink-function)
+     (structure functional-sparse-rrb-vector)
+     container
+     position &rest all)
   (let ((tree-bound (access-tree-index-bound structure)))
     (cond ((negative-fixnum-p position)
            (error 'cl-ds:argument-out-of-bounds
