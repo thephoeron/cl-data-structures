@@ -230,24 +230,26 @@
     (cond ((not (< -1 position bound))
            (values nil nil))
           ((< position tree-bound)
-           (iterate
-             (with tree = (access-tree vect))
-             (with node = tree)
-             (with shift = (access-shift vect))
-             (for byte-position
-                  from (* cl-ds.common.rrb:+bit-count+
-                          shift)
-                  downto 0
-                  by cl-ds.common.rrb:+bit-count+)
-             (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
-                           position))
-             (for present =
-                  (cl-ds.common.rrb:sparse-rrb-node-contains node
-                                                             i))
-             (unless present
-               (leave (values nil nil)))
-             (setf node (cl-ds.common.rrb:sparse-nref node i))
-             (finally (return (values node t)))))
+           (let ((tree (access-tree vect)))
+             (if (null tree)
+                 (values nil nil)
+                 (iterate
+                   (with node = tree)
+                   (with shift = (access-shift vect))
+                   (for byte-position
+                        from (* cl-ds.common.rrb:+bit-count+
+                                shift)
+                        downto 0
+                        by cl-ds.common.rrb:+bit-count+)
+                   (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                                 position))
+                   (for present =
+                        (cl-ds.common.rrb:sparse-rrb-node-contains node
+                                                                   i))
+                   (unless present
+                     (leave (values nil nil)))
+                   (setf node (cl-ds.common.rrb:sparse-nref node i))
+                   (finally (return (values node t)))))))
           (t (let* ((offset (- position tree-bound))
                     (present (ldb-test (byte 1 offset)
                                        (access-tail-mask vect))))

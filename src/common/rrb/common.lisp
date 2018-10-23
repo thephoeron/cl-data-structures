@@ -90,29 +90,32 @@
              (,indexes (make-array ,(1+ +maximal-shift+)
                                    :element-type 'node-size))
              (,all-present t)
-             (,length 1))
+             (,length 0))
          (declare (type fixnum ,length)
                   (dynamic-extent ,path ,indexes ,length))
-         (setf (aref ,path 0) ,tree)
-         (iterate
-           (with inner-node = ,tree)
-           (for byte-position
-                from (* cl-ds.common.rrb:+bit-count+
-                        ,shift)
-                downto 0
-                by cl-ds.common.rrb:+bit-count+)
-           (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
-                         ,index))
-           (for present =
-                (cl-ds.common.rrb:sparse-rrb-node-contains inner-node
-                                                           i))
-           (unless present
-             (setf ,all-present nil)
-             (leave))
-           (setf inner-node (cl-ds.common.rrb:sparse-nref inner-node i)
-                 (aref ,path ,length) inner-node
-                 (aref ,indexes (1- ,length)) i)
-           (incf ,length))
+         (when (not (null ,tree))
+           (setf (aref ,path 0) ,tree
+                 ,all-present t
+                 ,length 1)
+           (iterate
+             (with inner-node = ,tree)
+             (for byte-position
+                  from (* cl-ds.common.rrb:+bit-count+
+                          ,shift)
+                  downto 0
+                  by cl-ds.common.rrb:+bit-count+)
+             (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                           ,index))
+             (for present =
+                  (cl-ds.common.rrb:sparse-rrb-node-contains inner-node
+                                                             i))
+             (unless present
+               (setf ,all-present nil)
+               (leave))
+             (setf inner-node (cl-ds.common.rrb:sparse-nref inner-node i)
+                   (aref ,path ,length) inner-node
+                   (aref ,indexes (1- ,length)) i)
+             (incf ,length)))
          (macrolet ((reduce-path ((prev-node index node)
                                   &body body)
                       (with-gensyms (!i !prev-node)

@@ -1242,7 +1242,7 @@
                    (zerop last-node-size))
           (let ((tail-mask (access-tail-mask structure))
                 (tree-index-bound (scan-index-bound structure)))
-            (adjust-tree-to-new-size! structure (1- tree-index-bound) nil)
+            (adjust-tree-to-new-size! structure tree-index-bound nil)
             (if (zerop tail-mask)
                 (setf (access-tree-index-bound structure) tree-index-bound
                       (access-index-bound structure)
