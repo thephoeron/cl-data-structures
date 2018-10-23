@@ -58,6 +58,10 @@
     new-node))
 
 
+(defun has-single-child-p (node)
+  (~> node cl-ds.common.rrb:sparse-rrb-node-size (eql 1)))
+
+
 (defun insert-into-node! (into new-element index)
   (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content into))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask into))
@@ -867,18 +871,20 @@
                   (setf final-status status
                         last-node node)
                   (if changed
-                      (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0)))
+                      (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                   node 0)))
                         (setf last-node node)
                         (if (cl-ds.meta:null-bucket-p new-bucket)
                             (progn
                               (decf (access-tree-size structure))
                               (setf size-decreased t)
-                              (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                              (unless (has-single-child-p node)
                                 (cl-ds.common.rrb:sparse-rrb-node-erase! node
                                                                          index))
                               node)
                             (progn
-                              (setf (cl-ds.common.rrb:sparse-nref node index) new-bucket)
+                              (setf (cl-ds.common.rrb:sparse-nref node index)
+                                    new-bucket)
                               node)))
                       (return-from shrink-tree-common
                         (values structure status nil last-node))))
@@ -888,11 +894,13 @@
                                           cl-ds.common.rrb:+bit-count+)
                                        (1- depth))))
                   (cond ((null new-node)
-                         (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
-                           (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag)))
+                         (unless (has-single-child-p node)
+                           (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                        node 0)))
                              (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
                              node)))
-                        (t (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag)))
+                        (t (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                        node 0)))
                              (setf (cl-ds.common.rrb:sparse-nref node index)
                                    new-node)
                              node)))))))
@@ -937,7 +945,7 @@
                             (progn
                               (decf (access-tree-size structure))
                               (setf size-decreased t)
-                              (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                              (unless (has-single-child-p node)
                                 (cl-ds.common.rrb:sparse-rrb-node-erase! node
                                                                          index))
                               node)
@@ -955,7 +963,7 @@
                          (return-from transactional-shrink-tree-common!
                            (values structure final-status size-decreased last-node)))
                         ((null new-node)
-                         (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                         (unless (has-single-child-p node)
                            (let ((node (if (cl-ds.common.abstract:acquire-ownership node tag)
                                            node
                                            (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag))))
@@ -1002,7 +1010,7 @@
                           (progn
                             (decf (access-tree-size structure))
                             (setf size-decreased t)
-                            (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                            (unless (has-single-child-p node)
                               (cl-ds.common.rrb:sparse-rrb-node-erase! node
                                                                        index)))
                           (progn
@@ -1020,7 +1028,7 @@
                          (return-from shrink-tree-common!
                            (values structure final-status size-decreased last-node)))
                         ((null new-node)
-                         (unless (eql 1 (cl-ds.common.rrb:sparse-rrb-node-size node))
+                         (unless (has-single-child-p node) 
                            (cl-ds.common.rrb:sparse-rrb-node-erase! node index)))
                         (t (setf (cl-ds.common.rrb:sparse-nref node index)
                                  new-node)
