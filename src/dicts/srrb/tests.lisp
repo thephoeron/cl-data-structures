@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 130429)
+(plan 130295)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -127,29 +127,6 @@
     (is (aref content 1) 2)
     (is (aref content 2) 3)))
 
-(let* ((count 64)
-       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
-       (input-data (~>> (cl-ds:iota-range :to count)
-                        (cl-ds.alg:zip #'list* (cl-ds:iota-range :to count))
-                        cl-ds.alg:to-vector)))
-  (iterate
-    (for (position . point) in-vector input-data)
-    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
-                                      position :value point))
-  (iterate
-    (for (position . point) in-vector input-data)
-    (is (cl-ds:at container position) point))
-  (bind (((:values structure final-status)
-          (cl-ds.dicts.srrb::tree-without-in-last-node! #'cl-ds:erase! container :mock 0 nil)))
-    (is (cl-ds.dicts.srrb::access-tree-index-bound container) 32)
-    (is (cl-ds.dicts.srrb::access-shift container) 0)
-    (is final-status :ok)
-    (is (cl-ds.dicts.srrb::access-tail-mask container)
-        (ldb (byte 32 0) most-positive-fixnum))
-    (iterate
-      (for i from 1 below 64)
-      (is (cl-ds:at container i) i))))
-
 (let* ((count 500)
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector))
        (input-data (~>> (cl-ds:iota-range :to count)
@@ -199,14 +176,14 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point))
   (iterate
-    (for i from 0 below (length input-data))
-    (for position = (car (aref input-data i)))
+    (repeat (1- (length input-data)))
+    (for position = (car (aref input-data 0)))
     (for (values structure status) = (cl-ds.meta:position-modification
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
     (is status :ok)
     (is (nth-value 1 (cl-ds:at container position)) nil)
-    (cl-ds.utils:swapop input-data i)
+    (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))

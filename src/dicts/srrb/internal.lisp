@@ -1029,7 +1029,7 @@
                          (return-from shrink-tree-common!
                            (values structure final-status size-decreased last-node)))
                         ((null new-node)
-                         (unless (has-single-child-p node) 
+                         (unless (has-single-child-p node)
                            (cl-ds.common.rrb:sparse-rrb-node-erase! node index)))
                         (t (setf (cl-ds.common.rrb:sparse-nref node index)
                                  new-node)
@@ -1198,8 +1198,57 @@
     (shrink-handle-tail! structure final-status size-decreased last-node)))
 
 
-(defun tree-without-in-last-node! (operation structure container position all)
+(defun shrink-tree! (operation structure container position all)
+  (declare (optimize (debug 3)))
   "Attempts to remove element from the last-node."
-  (bind (((:values structure final-status size-decreased last-node)
-          (shrink-tree-common! operation structure container position all)))
-    (shrink-handle-tail! structure final-status size-decreased last-node)))
+  (bind ((shift (access-shift structure))
+         (tree (access-tree structure)))
+    (cl-ds.common.rrb:with-sparse-rrb-node-path
+        (tree position shift path indexes length all-present)
+      (unless all-present
+        (return-from shrink-tree!
+          (values structure
+                  cl-ds.common:empty-eager-modification-operation-status)))
+      (bind ((current-bucket (svref path (1- length)))
+             (last-node (svref path (- length 2)))
+             (last-node-size (cl-ds.common.rrb:sparse-rrb-node-size last-node))
+             ((:values new-bucket status changed)
+              (apply #'cl-ds.meta:shrink-bucket!
+                     operation container current-bucket nil all)))
+        (unless changed
+          (return-from shrink-tree!
+            (values structure status)))
+        (when (cl-ds.meta:null-bucket-p new-bucket)
+          (decf last-node-size)
+          (decf (access-tree-size structure)))
+        (setf (svref path (1- length)) new-bucket)
+        (block end
+          (let ((result
+                  (cl-ds.common.rrb:reduce-path
+                   (prev index node)
+                   (if (cl-ds.meta:null-bucket-p prev)
+                       (if (has-single-child-p node)
+                           cl-ds.meta:null-bucket
+                           (progn (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                                  node))
+                       (let ((current (cl-ds.common.rrb:sparse-nref node index)))
+                         (cond ((eql current prev)
+                                (return-from end))
+                               (t (setf (cl-ds.common.rrb:sparse-nref node index) prev)
+                                  node)))))))
+            (setf (access-tree structure) (unless (cl-ds.meta:null-bucket-p result)
+                                            result))))
+        (when (and (eql position (1- (access-tree-index-bound structure)))
+                   (zerop last-node-size))
+          (let ((tail-mask (access-tail-mask structure))
+                (tree-index-bound (scan-index-bound structure)))
+            (adjust-tree-to-new-size! structure (1- tree-index-bound) nil)
+            (if (zerop tail-mask)
+                (setf (access-tree-index-bound structure) tree-index-bound
+                      (access-index-bound structure)
+                      (+ tree-index-bound
+                         cl-ds.common.rrb:+maximum-children-count+))
+                (progn
+                  (setf (access-tree-index-bound structure) tree-index-bound)
+                  (insert-tail! structure)))))
+        (values structure status)))))
