@@ -57,5 +57,6 @@
    #:sparse-rrb-node-size
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail
+   #:reduce-path
    #:with-sparse-rrb-node-path
    #:with-sparse-rrb-node))
