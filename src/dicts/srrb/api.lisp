@@ -155,7 +155,7 @@
            (shrink-tree! operation structure
                          container position all))
           ((< position (access-index-bound structure))
-           (unset-in-tail! structure operation container
+           (unset-in-tail! operation structure container
                            (logandc2 position cl-ds.common.rrb:+tail-mask+)
                            all))
           (t (values structure

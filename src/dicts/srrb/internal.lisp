@@ -1094,7 +1094,7 @@
                (current-bucket (aref tail offset))
                ((:values new-bucket status changed)
                 (apply #'cl-ds.meta:shrink-bucket!
-                       operation container current-bucket all)))
+                       operation container current-bucket nil all)))
           (if changed
               (progn
                 (if (cl-ds.meta:null-bucket-p new-bucket)
