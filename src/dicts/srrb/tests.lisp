@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 129429)
+(plan 130429)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -201,8 +201,10 @@
   (iterate
     (for i from 0 below (length input-data))
     (for position = (car (aref input-data i)))
-    (cl-ds.meta:position-modification #'cl-ds:erase! container
-                                      :mock position)
+    (for (values structure status) = (cl-ds.meta:position-modification
+                                      #'cl-ds:erase! container :mock position))
+    (is structure container)
+    (is status :ok)
     (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data i)
     (iterate
