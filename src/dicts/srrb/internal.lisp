@@ -340,13 +340,16 @@
                  (assert (eq (cl-ds.common.rrb:sparse-nref node i)
                              root))
                  (return new-root)))))
-        (iterate
-          (with node = root)
-          (repeat (- shift-difference))
-          (setf node (~> node
-                         cl-ds.common.rrb:sparse-rrb-node-content
-                         first-elt))
-          (finally (return node))))))
+        (if (null root)
+            (cl-ds.common.rrb:make-sparse-rrb-node
+             :ownership-tag ownership-tag)
+            (iterate
+              (with node = root)
+              (repeat (- shift-difference))
+              (setf node (~> node
+                             cl-ds.common.rrb:sparse-rrb-node-content
+                             first-elt))
+              (finally (return node)))))))
 
 
 (deftype shift () `(integer 0 ,cl-ds.common.rrb:+maximal-shift+))
@@ -1107,8 +1110,12 @@
           (if changed
               (progn
                 (if (cl-ds.meta:null-bucket-p new-bucket)
-                    (setf (access-tail-mask structure)
-                          (dpb 0 (byte 1 offset) tail-mask))
+                    (let ((new-tail-mask (dpb 0 (byte 1 offset) tail-mask)))
+                      (setf (access-tail-mask structure) new-tail-mask)
+                      (when (zerop new-tail-mask)
+                        (let ((tree (access-tree structure)))
+                          (when (null tree)
+                            (setf (access-tree-index-bound structure) 0)))))
                     (setf (aref tail offset) new-bucket))
                 (values structure status))
               (values structure
@@ -1211,6 +1218,7 @@
                   cl-ds.common:empty-eager-modification-operation-status)))
       (bind ((current-bucket (svref path (1- length)))
              (last-node (svref path (- length 2)))
+             (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
              (last-node-size (cl-ds.common.rrb:sparse-rrb-node-size last-node))
              ((:values new-bucket status changed)
               (apply #'cl-ds.meta:shrink-bucket!
@@ -1238,17 +1246,23 @@
                                   node)))))))
             (setf (access-tree structure) (unless (cl-ds.meta:null-bucket-p result)
                                             result))))
-        (when (and (eql position (1- (access-tree-index-bound structure)))
-                   (zerop last-node-size))
-          (let ((tail-mask (access-tail-mask structure))
-                (tree-index-bound (scan-index-bound structure)))
-            (adjust-tree-to-new-size! structure tree-index-bound nil)
-            (if (zerop tail-mask)
-                (setf (access-tree-index-bound structure) tree-index-bound
-                      (access-index-bound structure)
-                      (+ tree-index-bound
-                         cl-ds.common.rrb:+maximum-children-count+))
-                (progn
-                  (setf (access-tree-index-bound structure) tree-index-bound)
-                  (insert-tail! structure)))))
+        (let* ((index-bound (access-tree-index-bound structure))
+               (new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
+               (is-last (eql position (1- index-bound))))
+          (when is-last
+            (decf (access-tree-index-bound structure)
+                  (- (integer-length last-node-mask)
+                     (integer-length new-last-node-mask))))
+          (when (and is-last (zerop last-node-size))
+            (let ((tail-mask (access-tail-mask structure))
+                  (tree-index-bound (scan-index-bound structure)))
+              (adjust-tree-to-new-size! structure tree-index-bound nil)
+              (if (zerop tail-mask)
+                  (setf (access-tree-index-bound structure) tree-index-bound
+                        (access-index-bound structure)
+                        (+ tree-index-bound
+                           cl-ds.common.rrb:+maximum-children-count+))
+                  (progn
+                    (setf (access-tree-index-bound structure) tree-index-bound)
+                    (insert-tail! structure))))))
         (values structure status)))))
