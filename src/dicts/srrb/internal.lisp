@@ -1017,8 +1017,9 @@
 
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
-  (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask new-last-node))
-         (is-last (eql position (1- (access-index-bound structure)))))
+  (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
+                              new-last-node))
+         (is-last (~> structure access-index-bound 1- (eql position))))
     (when is-last
       (decf (access-tree-index-bound structure)
             (- (integer-length last-node-mask)
