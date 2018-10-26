@@ -1073,7 +1073,7 @@
              (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
              (last-node-size (logcount last-node-mask))
              ((:values new-bucket status changed)
-              (apply #'cl-ds.meta:shrink-bucket!
+              (apply #'cl-ds.meta:shrink-bucket
                      operation container current-bucket nil all)))
         (unless changed
           (return-from transactional-shrink-tree!
