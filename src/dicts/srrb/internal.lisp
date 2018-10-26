@@ -1228,7 +1228,8 @@
                    (if (cl-ds.meta:null-bucket-p prev)
                        (if (has-single-child-p node)
                            cl-ds.meta:null-bucket
-                           (progn (cl-ds.common.rrb:sparse-rrb-node-erase! node index)
+                           (progn (cl-ds.common.rrb:sparse-rrb-node-erase!
+                                   node index)
                                   node))
                        (let ((current (cl-ds.common.rrb:sparse-nref node index)))
                          (cond ((eql current prev)
@@ -1239,4 +1240,5 @@
                   (if (cl-ds.meta:null-bucket-p result)
                       (cl-ds.common.rrb:make-sparse-rrb-node)
                       result))))
-        (shrink-handle-tail! structure position status last-node-size last-node-mask last-node)))))
+        (shrink-handle-tail! structure position status
+                             last-node-size last-node-mask last-node)))))
