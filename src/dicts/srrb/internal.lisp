@@ -229,11 +229,45 @@
   (let ((tail-mask (access-tail-mask structure)))
     (unless (zerop tail-mask)
       (bind ((new-node (make-node-from-tail structure ownership-tag))
+             (size (access-tree-index-bound structure))
              ((:accessors (tree access-tree)
                           (tree-size access-tree-size)
                           (%shift access-shift)
                           (tree-index-bound access-tree-index-bound))
               structure)
+             ((:labels impl (node byte-position depth))
+              (if (eql depth 0)
+                  new-node
+                  (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                           byte-position)
+                                     size))
+                         (present (and node
+                                       (cl-ds.common.rrb:sparse-rrb-node-contains
+                                        node index)))
+                         (next-node (and present (cl-ds.common.rrb:sparse-nref
+                                                  node index)))
+                         (current-node (or node
+                                           (cl-ds.common.rrb:make-rrb-node
+                                            :content (make-array 1)
+                                            :ownership-tag ownership-tag)))
+                         (owned (cl-ds.common.abstract:acquire-ownership
+                                 current-node
+                                 ownership-tag))
+                         (new-node (impl next-node
+                                         (- byte-position
+                                            cl-ds.common.rrb:+bit-count+)
+                                         (1- depth))))
+                    (if owned
+                        (progn
+                          (setf (cl-ds.common.rrb:sparse-nref current-node index)
+                                new-node)
+                          current-node)
+                        (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                     current-node (if present 0 1)
+                                     ownership-tag)))
+                          (setf (cl-ds.common.rrb:sparse-nref copy index)
+                                new-node)
+                          copy)))))
              (root tree)
              (shift %shift))
         (declare (type non-negative-fixnum shift))
@@ -245,42 +279,9 @@
                                 shift root new-node ownership-tag)))
                  (incf %shift)
                  (setf tree new-root)))
-              (t (bind ((size (access-tree-index-bound structure))
-                        ((:labels impl (node byte-position depth))
-                         (if (eql depth 0)
-                             new-node
-                             (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
-                                                      byte-position)
-                                                size))
-                                    (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains
-                                                        node index)))
-                                    (next-node (and present (cl-ds.common.rrb:sparse-nref
-                                                             node index)))
-                                    (current-node (or node
-                                                      (cl-ds.common.rrb:make-rrb-node
-                                                       :content (make-array 1)
-                                                       :ownership-tag ownership-tag)))
-                                    (owned (cl-ds.common.abstract:acquire-ownership
-                                            current-node
-                                            ownership-tag))
-                                    (new-node (impl next-node
-                                                    (- byte-position
-                                                       cl-ds.common.rrb:+bit-count+)
-                                                    (1- depth))))
-                               (if owned
-                                   (progn
-                                     (setf (cl-ds.common.rrb:sparse-nref current-node index)
-                                           new-node)
-                                     current-node)
-                                   (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
-                                                current-node (if present 0 1)
-                                                ownership-tag)))
-                                     (setf (cl-ds.common.rrb:sparse-nref copy index)
-                                           new-node)
-                                     copy)))))
-                        (new-tree (impl root
-                                        (* cl-ds.common.rrb:+bit-count+ shift)
-                                        shift)))
+              (t (let ((new-tree (impl root
+                                       (* cl-ds.common.rrb:+bit-count+ shift)
+                                       shift)))
                    (unless (eq new-tree root)
                      (setf tree new-tree)))))))
     (setf (access-tail-mask structure) 0

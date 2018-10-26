@@ -235,7 +235,8 @@
                                 shift)
                         downto 0
                         by cl-ds.common.rrb:+bit-count+)
-                   (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
+                   (for i = (ldb (byte cl-ds.common.rrb:+bit-count+
+                                       byte-position)
                                  position))
                    (for present =
                         (cl-ds.common.rrb:sparse-rrb-node-contains node
