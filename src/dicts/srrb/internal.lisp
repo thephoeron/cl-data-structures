@@ -789,6 +789,7 @@
          (update? (member operation-type
                           '(cl-ds.meta:update!-function
                             cl-ds.meta:update-if!-function)))
+         ((:accessors (element-type read-element-type)) structure)
          (size-increased 0)
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
@@ -816,10 +817,10 @@
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
                                    value all))
-                           (node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                           :content (make-array
-                                                     1
-                                                     :element-type (read-element-type structure))))))
+                           (node (or node
+                                     (cl-ds.common.rrb:make-sparse-rrb-node
+                                      :content (make-array
+                                                1 :element-type element-type)))))
                       (if changed
                           (progn
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
@@ -921,6 +922,13 @@
     (if present
         (bind ((tail (access-tail structure))
                (current-bucket (aref tail offset))
+               ((:accessors (tree-index-bound access-tree-index-bound)
+                            (index-bound access-index-bound)
+                            (tree-size access-tree-size)
+                            (element-type read-element-type)
+                            (shift access-shift)
+                            (tree access-tree))
+                structure)
                ((:values new-bucket status changed)
                 (apply #'cl-ds.meta:shrink-bucket
                        operation container current-bucket all)))
@@ -932,19 +940,19 @@
                 (unless (cl-ds.meta:null-bucket-p new-bucket)
                   (setf (aref tail offset) new-bucket))
                 (values (make (type-of structure)
-                              :tree (access-tree structure)
+                              :tree tree
                               :tail tail
                               :tail-mask tail-mask
-                              :shift (access-shift structure)
-                              :tree-size (access-tree-size structure)
-                              :tree-index-bound (access-tree-index-bound structure)
-                              :element-type (read-element-type structure)
-                              :index-bound (access-index-bound structure))
+                              :shift shift
+                              :tree-size tree-size
+                              :tree-index-bound tree-index-bound
+                              :element-type element-type
+                              :index-bound index-bound)
                         status))
-              (values structure
-                      cl-ds.common:empty-eager-modification-operation-status)))
-        (values structure
-                cl-ds.common:empty-eager-modification-operation-status))))
+              #1=(values
+                  structure
+                  cl-ds.common:empty-eager-modification-operation-status)))
+        #1#)))
 
 
 (defun unset-in-tail! (operation structure container offset all)
