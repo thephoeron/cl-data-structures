@@ -909,9 +909,8 @@
                                   (cl-ds.common.rrb:sparse-nref node index) prev)
                             node)))))))
             (setf (access-tree structure)
-                  (if (cl-ds.meta:null-bucket-p result)
-                      (cl-ds.common.rrb:make-sparse-rrb-node)
-                      result))))
+                  (unless (cl-ds.meta:null-bucket-p result)
+                    (cl-ds.common.rrb:make-sparse-rrb-node)))))
         (shrink-handle-tail! structure position status
                              last-node-size last-node-mask last-node)))))
 
@@ -1017,11 +1016,9 @@
 
 
 (defun shrink-handle-tail! (structure position final-status
-                            old-last-node-size last-node-mask new-last-node)
-  (let* ((index-bound (access-tree-index-bound structure))
-         (new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask new-last-node))
-         (last-node-size old-last-node-size)
-         (is-last (eql position (1- index-bound))))
+                            last-node-size last-node-mask new-last-node)
+  (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask new-last-node))
+         (is-last (eql position (1- (access-index-bound structure)))))
     (when is-last
       (decf (access-tree-index-bound structure)
             (- (integer-length last-node-mask)
@@ -1029,7 +1026,9 @@
     (when (and is-last (zerop last-node-size))
       (let ((tail-mask (access-tail-mask structure))
             (tree-index-bound (scan-index-bound structure)))
-        (adjust-tree-to-new-size! structure tree-index-bound nil)
+        (adjust-tree-to-new-size! structure
+                                  tree-index-bound
+                                  nil)
         (if (zerop tail-mask)
             (setf (access-tree-index-bound structure) tree-index-bound
                   (access-index-bound structure)
@@ -1072,18 +1071,16 @@
                    (if (cl-ds.meta:null-bucket-p prev)
                        (if (has-single-child-p node)
                            cl-ds.meta:null-bucket
-                           (progn (cl-ds.common.rrb:sparse-rrb-node-erase!
-                                   node index)
-                                  node))
+                           (cl-ds.common.rrb:sparse-rrb-node-erase!
+                            node index))
                        (let ((current (cl-ds.common.rrb:sparse-nref node index)))
                          (cond ((eql current prev)
                                 (return-from end))
                                (t (setf (cl-ds.common.rrb:sparse-nref node index) prev)
                                   node)))))))
             (setf (access-tree structure)
-                  (if (cl-ds.meta:null-bucket-p result)
-                      (cl-ds.common.rrb:make-sparse-rrb-node)
-                      result))))
+                  (unless (cl-ds.meta:null-bucket-p result)
+                    result))))
         (shrink-handle-tail! structure position status
                              last-node-size last-node-mask last-node)))))
 
@@ -1125,9 +1122,8 @@
                        node))))
                (tail (access-tail structure))
                (result (make (type-of structure)
-                             :tree (if (cl-ds.meta:null-bucket-p root)
-                                       (cl-ds.common.rrb:make-sparse-rrb-node)
-                                       root)
+                             :tree (unless (cl-ds.meta:null-bucket-p root)
+                                     (cl-ds.common.rrb:make-sparse-rrb-node))
                              :tail (unless (null tail)
                                      (copy-array tail))
                              :tail-mask (access-tail-mask structure)
