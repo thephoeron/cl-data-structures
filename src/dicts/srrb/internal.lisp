@@ -868,7 +868,8 @@
                   cl-ds.common:empty-eager-modification-operation-status)))
       (bind ((current-bucket (svref path (1- length)))
              (last-node (svref path (- length 2)))
-             (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
+             (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
+                              last-node))
              (last-node-size (logcount last-node-mask))
              ((:values new-bucket status changed)
               (apply #'cl-ds.meta:shrink-bucket
@@ -894,16 +895,18 @@
                                (cl-ds.common.rrb:sparse-rrb-node-erase
                                 node index tag)))
                        (let ((current (cl-ds.common.rrb:sparse-nref node index)))
-                         (cond ((eql current prev)
-                                (return-from end))
-                               ((cl-ds.common.abstract:acquire-ownership
-                                 node tag)
-                                (setf (cl-ds.common.rrb:sparse-nref node index) prev)
-                                node)
-                               (t
-                                (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0 tag)
-                                      (cl-ds.common.rrb:sparse-nref node index) prev)
-                                node)))))))
+                         (cond
+                           ((eql current prev)
+                            (return-from end))
+                           ((cl-ds.common.abstract:acquire-ownership
+                             node tag)
+                            (setf (cl-ds.common.rrb:sparse-nref node index) prev)
+                            node)
+                           (t
+                            (setf node (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                        node 0 tag)
+                                  (cl-ds.common.rrb:sparse-nref node index) prev)
+                            node)))))))
             (setf (access-tree structure)
                   (if (cl-ds.meta:null-bucket-p result)
                       (cl-ds.common.rrb:make-sparse-rrb-node)
@@ -922,7 +925,8 @@
                 (apply #'cl-ds.meta:shrink-bucket
                        operation container current-bucket all)))
           (if changed
-              (let ((tail-mask (dpb (if (cl-ds.meta:null-bucket-p new-bucket) 0 1)
+              (let ((tail-mask (dpb (if (cl-ds.meta:null-bucket-p new-bucket)
+                                        0 1)
                                     (byte 1 offset) tail-mask))
                     (tail (copy-array tail)))
                 (unless (cl-ds.meta:null-bucket-p new-bucket)
