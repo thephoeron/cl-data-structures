@@ -261,8 +261,8 @@
         (setf (svref new-content i) (svref old-content (1+ i)))
         (incf i))
       (setf (sparse-rrb-node-content node) new-content
-            (sparse-rrb-node-bitmask node) new-bitmask)
-      node)))
+            (sparse-rrb-node-bitmask node) new-bitmask)))
+  node)
 
 
 (declaim (inline sparse-rrb-node-size))
