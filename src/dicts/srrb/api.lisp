@@ -175,9 +175,6 @@
                   :value position
                   :bounds "Must be non-negative."
                   :text "Sparse vector index can not be negative."))
-          ((eql position (1- tree-bound))
-           (transactional-tree-without-in-last-node! operation structure
-                                                     container position all))
           ((< position tree-bound)
            (transactional-shrink-tree! operation structure
                                        container position all))
