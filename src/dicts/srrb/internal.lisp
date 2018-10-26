@@ -1107,8 +1107,7 @@
                          cl-ds.meta:null-bucket
                          (cl-ds.common.rrb:sparse-rrb-node-erase
                           node index))
-                     (let ((current (cl-ds.common.rrb:sparse-nref node index))
-                           (node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0)))
+                     (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0)))
                        (setf (cl-ds.common.rrb:sparse-nref node index) prev)
                        node))))
                (tail (access-tail structure))
