@@ -1164,38 +1164,29 @@
       (finally (return node)))))
 
 
-(defun shrink-handle-tail! (structure final-status size-decreased last-node)
-  (let ((new-root (access-tree structure))
-        (old-tail-mask (access-tail-mask structure))
-        (shift (access-shift structure)))
-    (when size-decreased
-      (when (zerop old-tail-mask)
-        (let ((new-tail (~> structure
-                            read-element-type
-                            cl-ds.common.rrb:make-node-content))
-              (last-node-content (cl-ds.common.rrb:sparse-rrb-node-content last-node))
-              (last-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node)))
-          (iterate
-            (with j = 0)
-            (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-            (for present = (ldb-test (byte 1 i) last-mask))
-            (when present
-              (setf (aref new-tail i) (aref last-node-content j)
-                    j (1+ j))))
-          (setf (access-tail structure) new-tail
-                (access-tail-mask structure) last-mask)
-          (decf (access-tree-size structure) (logcount last-mask))))
-      (let* ((new-tree-index-bound (tree-index-bound new-root shift))
-             (new-shift (~> new-tree-index-bound 1- integer-length
-                            (ceiling cl-ds.common.rrb:+bit-count+)
-                            1-
-                            (max 0)))
-             (shift-difference (- shift new-shift)))
-        (setf new-root (drop-unneded-nodes new-root shift-difference)
-              (access-tree-index-bound structure) new-tree-index-bound
-              (access-tree structure) new-root
-              (access-shift structure) new-shift)))
-    (values structure final-status)))
+(defun shrink-handle-tail! (structure position final-status
+                            old-last-node-size last-node-mask new-last-node)
+  (let* ((index-bound (access-tree-index-bound structure))
+         (new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask new-last-node))
+         (last-node-size old-last-node-size)
+         (is-last (eql position (1- index-bound))))
+    (when is-last
+      (decf (access-tree-index-bound structure)
+            (- (integer-length last-node-mask)
+               (integer-length new-last-node-mask))))
+    (when (and is-last (zerop last-node-size))
+      (let ((tail-mask (access-tail-mask structure))
+            (tree-index-bound (scan-index-bound structure)))
+        (adjust-tree-to-new-size! structure tree-index-bound nil)
+        (if (zerop tail-mask)
+            (setf (access-tree-index-bound structure) tree-index-bound
+                  (access-index-bound structure)
+                  (+ tree-index-bound
+                     cl-ds.common.rrb:+maximum-children-count+))
+            (progn
+              (setf (access-tree-index-bound structure) tree-index-bound)
+              (insert-tail! structure))))))
+  (values structure final-status))
 
 
 (defun transactional-tree-without-in-last-node! (operation structure container position all)
@@ -1219,7 +1210,7 @@
       (bind ((current-bucket (svref path (1- length)))
              (last-node (svref path (- length 2)))
              (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
-             (last-node-size (cl-ds.common.rrb:sparse-rrb-node-size last-node))
+             (last-node-size (logcount last-node-mask))
              ((:values new-bucket status changed)
               (apply #'cl-ds.meta:shrink-bucket!
                      operation container current-bucket nil all)))
@@ -1248,23 +1239,4 @@
                   (if (cl-ds.meta:null-bucket-p result)
                       (cl-ds.common.rrb:make-sparse-rrb-node)
                       result))))
-        (let* ((index-bound (access-tree-index-bound structure))
-               (new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
-               (is-last (eql position (1- index-bound))))
-          (when is-last
-            (decf (access-tree-index-bound structure)
-                  (- (integer-length last-node-mask)
-                     (integer-length new-last-node-mask))))
-          (when (and is-last (zerop last-node-size))
-            (let ((tail-mask (access-tail-mask structure))
-                  (tree-index-bound (scan-index-bound structure)))
-              (adjust-tree-to-new-size! structure tree-index-bound nil)
-              (if (zerop tail-mask)
-                  (setf (access-tree-index-bound structure) tree-index-bound
-                        (access-index-bound structure)
-                        (+ tree-index-bound
-                           cl-ds.common.rrb:+maximum-children-count+))
-                  (progn
-                    (setf (access-tree-index-bound structure) tree-index-bound)
-                    (insert-tail! structure))))))
-        (values structure status)))))
+        (shrink-handle-tail! structure position status last-node-size last-node-mask last-node)))))
