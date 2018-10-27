@@ -208,7 +208,6 @@
 
 (-> sparse-rrb-node-erase (sparse-rrb-node node-size &optional t) sparse-rrb-node)
 (defun sparse-rrb-node-erase (node i &optional ownership-tag)
-  (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
     (let* ((index (sindex i))
            (old-content (sparse-rrb-node-content node))
@@ -217,7 +216,7 @@
            (old-size (logcount old-bitmask))
            (new-size (1- old-size))
            (new-content (make-array new-size
-                                    :element-type (read-element-type old-content))))
+                                    :element-type (array-element-type old-content))))
       (iterate
         (declare (type node-size i))
         (with i = 0)
@@ -246,8 +245,8 @@
            (new-bitmask (dpb 0 (byte 1 i) old-bitmask))
            (old-size (logcount old-bitmask))
            (new-size (1- old-size))
-           (new-content (make-array new-size
-                                    :element-type (array-element-type old-content))))
+           (element-type (array-element-type old-content))
+           (new-content (make-array new-size :element-type element-type)))
       (iterate
         (declare (type node-size i))
         (with i = 0)

@@ -179,7 +179,7 @@
            (transactional-shrink-tree! operation structure
                                        container position all))
           ((< position (access-index-bound structure))
-           (unset-in-tail! structure operation container
+           (unset-in-tail! operation structure container
                            (logandc2 position cl-ds.common.rrb:+tail-mask+)
                            all))
           (t (values structure
@@ -245,7 +245,7 @@
                      (leave (values nil nil)))
                    (setf node (cl-ds.common.rrb:sparse-nref node i))
                    (finally (return (values node t)))))))
-          (t (let* ((offset (- position tree-bound))
+          (t (let* ((offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
                     (present (ldb-test (byte 1 offset)
                                        (access-tail-mask vect))))
                (if present
