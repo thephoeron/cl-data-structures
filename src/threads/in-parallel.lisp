@@ -105,20 +105,26 @@
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn in-parallel-function)
-                                       &rest all &key limit)
+                                       &rest all &key limit context-function)
   (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'forward-in-parallel-range :limit limit))
+  (cl-ds.alg:make-proxy range 'forward-in-parallel-range
+                        :limit limit
+                        :context-function context-function))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
                                        (fn in-parallel-function)
-                                       &rest all &key)
+                                       &rest all &key limit context-function)
   (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'random-in-parallel-range))
+  (cl-ds.alg:make-proxy range 'random-in-parallel-range
+                        :limit limit
+                        :context-function context-function))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-bidirectional-range)
                                        (fn in-parallel-function)
-                                       &rest all &key)
+                                       &rest all &key limit context-function)
   (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'bidirectional-in-parallel-range))
+  (cl-ds.alg:make-proxy range 'bidirectional-in-parallel-range
+                        :limit limit
+                        :context-function context-function))
