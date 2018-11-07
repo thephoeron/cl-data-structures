@@ -22,8 +22,16 @@
 
 (defmethod cl-ds:clone ((range forward-chain-of-ranges))
   (make (type-of range)
-        :content (mapcar #'clone (read-content range))
-        :original-content (mapcar #'clone (read-content range))))
+        :content (iterate
+                   (with result = (make 'flexichain:standard-flexichain))
+                   (with content = (read-content range))
+                   (for i from 0 below (flexichain:nb-elements content))
+                   (flexichain:push-end result (clone (flexichain:element* content i)))
+                   (finally (return result)))
+        :original-content (iterate
+                            (with content = (read-content range))
+                            (for i from 0 below (flexichain:nb-elements content))
+                            (collecting (clone (flexichain:element* content i))))))
 
 
 (defun init-chain-of-range (obj)
