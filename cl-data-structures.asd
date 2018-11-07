@@ -4,7 +4,7 @@
 (asdf:defsystem cl-data-structures
   :name "cl-data-structures"
   :version "0.0.0"
-  :license "MIT"
+  :license "BSD simplified"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate          :alexandria
