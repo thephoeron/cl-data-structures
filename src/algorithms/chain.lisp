@@ -57,6 +57,23 @@
           :original-content ranges)))
 
 
+(defun chain-traversable (traversable)
+  (check-type traversable cl-ds:traversable)
+  (let ((ranges nil))
+    (cl-ds:across (lambda (x)
+                    (check-type x cl-ds:fundamental-forward-range)
+                    (push x ranges))
+                  traversable)
+    (setf ranges (nreverse ranges))
+    (let ((fundamental-type (common-fundamental-range-class ranges)))
+      (assert fundamental-type)
+      (make (eswitch (fundamental-type)
+              ('fundamental-forward-range 'forward-chain-of-ranges)
+              ('fundamental-bidirectional-range 'bidirectional-chain-of-ranges)
+              ('fundamental-random-access-range 'random-access-chain-of-ranges))
+            :original-content ranges))))
+
+
 (defmethod cl-ds:reset! ((range forward-chain-of-ranges))
   (reinitialize-instance range)
   range)

@@ -66,6 +66,7 @@
    #:group-by
    #:group-by-function
    #:hash-join
+   #:chain-traversable
    #:latch
    #:make-hash-table-range
    #:make-proxy
