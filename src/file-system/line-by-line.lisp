@@ -83,10 +83,10 @@
            (with stream = (read-stream range))
            (for line = (read-line stream nil nil))
            (until (null line))
-           (funcall function line)
-           (finally (return range)))
+           (funcall function line))
       (setf (access-reached-end range) t)
-      (close-stream range))))
+      (close-stream range)))
+  range)
 
 
 (defmethod cl-ds:across (function (range line-by-line-range))
@@ -103,8 +103,8 @@
         (iterate
           (for line = (read-line stream nil nil))
           (until (null line))
-          (funcall function line)
-          (finally (return range)))))))
+          (funcall function line)))))
+  range)
 
 
 (defun line-by-line (path)
