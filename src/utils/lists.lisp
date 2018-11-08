@@ -171,3 +171,22 @@
   (if (array-has-fill-pointer-p vector)
       (map `(vector ,(array-element-type vector)) #'identity vector)
       vector))
+
+
+(defun select-top (vector count predicate &key (key 'identity))
+  (bind ((result (make-array count))
+         (size 0)
+         ((:labels insert (elt))
+          (cond ((eql size count)
+                 (let ((bound (lower-bound result elt predicate :key key)))
+                   (unless (eql bound size)
+                     (setf (aref result bound) elt))))
+                ((eql (1+ size) count)
+                 (setf (aref result size) elt
+                       result (sort result predicate :key key)))
+                (t (setf (aref result size) elt)
+                   (incf size)))))
+    (iterate
+      (for elt in-vector vector)
+      (insert elt))
+    result))

@@ -66,20 +66,19 @@
 
 
 (declaim (inline lower-bound))
-(-> lower-bound (vector t (-> (t t) t) &key (:key function) (:start non-negative-fixnum)) index)
-(defun lower-bound (vector element comparsion &key (key #'identity) (start 0))
+(-> lower-bound (vector t (-> (t t) t) &key (:key function) (:start non-negative-fixnum) (:end non-negative-fixnum))
+    index)
+(defun lower-bound (vector element comparsion &key (key #'identity) (start 0) (end (length vector)))
   (declare (optimize (speed 3)))
-  (let ((length (length vector)))
-    (iterate
-      (with end = length)
-      (for current = (truncate (/ (+ end start) 2)))
-      (until (eql end start))
-      (if (funcall comparsion
-                   (funcall key (aref vector current))
-                   element)
-          (setf start (the index (1+ current)))
-          (setf end (the index current)))
-      (finally (return current)))))
+  (iterate
+    (for current = (truncate (/ (+ end start) 2)))
+    (until (eql end start))
+    (if (funcall comparsion
+                 (funcall key (aref vector current))
+                 element)
+        (setf start (the index (1+ current)))
+        (setf end (the index current)))
+    (finally (return current))))
 
 
 (declaim (inline binary-search))

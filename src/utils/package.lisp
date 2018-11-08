@@ -70,6 +70,7 @@
    #:read-size
    #:rebind
    #:skip-vector-without
+   #:select-top
    #:sref
    #:start-execution
    #:swap-if
