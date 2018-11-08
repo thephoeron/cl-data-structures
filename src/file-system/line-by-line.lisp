@@ -29,7 +29,7 @@
 
 (defun ensure-stream (range)
   (when (~> range read-stream null)
-    (setf (slot-value range '%stream) (~> range read-path open))))
+    (setf (car (slot-value range '%stream)) (~> range read-path open))))
 
 
 (defmethod cl-ds:reset! ((range line-by-line-range))

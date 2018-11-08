@@ -3,9 +3,13 @@
 
 (defclass file-range-mixin ()
   ((%stream :initarg :stream
-            :initform nil
-            :type (or stream null)
-            :reader read-stream)))
+            :initform '(nil)
+            :type (or stream null))))
+
+
+(defun read-stream (object)
+  (check-type object file-range-mixin)
+  (car (slot-value object '%stream)))
 
 
 (defun close-silence-errors (stream) ; in case if closing already close streams produces error
@@ -17,7 +21,7 @@
   (:method ((range file-range-mixin))
     (when-let ((stream (read-stream range)))
       (close-silence-errors stream)
-      (setf (slot-value range '%stream) nil))
+      (setf (car (slot-value range '%stream)) nil))
     range))
 
 
@@ -44,16 +48,20 @@
                        extra-vars)))))))
 
 
+(defun enclose-finalizer (stream-cons)
+  (lambda ()
+    (unless (null (car stream-cons))
+      (close-silence-errors (car stream-cons)))))
+
+
 (defmethod initialize-instance :after ((range file-range-mixin)
                                        &rest all)
   (declare (ignore all))
-  (unless (null (read-stream range))
-    (trivial-garbage:finalize
-     range
-     (curry #'close-silence-errors (read-stream range)))))
+  (trivial-garbage:finalize range
+                            (enclose-finalizer (slot-value range '%stream))))
 
 
 (defun close-stream (range)
   (unless (~> range read-stream null)
-     (~> range read-stream close-silence-errors)
-    (setf (slot-value range '%stream) nil)))
+     (~> range read-stream car close-silence-errors)
+     (setf (car (slot-value range '%stream)) nil)))
