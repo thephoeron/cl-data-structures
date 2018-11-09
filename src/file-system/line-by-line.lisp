@@ -20,7 +20,7 @@
 (defmethod cl-ds:clone ((range line-by-line-range))
   (make 'line-by-line-range
         :path (read-path range)
-        :stream nil
+        :stream (list nil)
         :reached-end (access-reached-end range)
         :initial-position (if (read-stream range)
                               (file-position (read-stream range))
