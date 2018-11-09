@@ -39,5 +39,14 @@
   (function ancestor-p
     (:description "Checks if ANCESTOR is ancestor of CHILD in tree represented as ALL-ANCESTORS-VECTOR. ALL-ANCESTORS-VECTOR should be constructed by ALL-PARENTS function."))
 
+  (function select-top
+    (:description "Selects top elements from the vector, using heap select algorithm."
+     :returns "Vector containing COUNT of top elements from the vector."
+     :arguments-and-values ((vector "Input data.")
+                            (count "Number of elements to select.")
+                            (predicate "Function used to compare elements.")
+                            (:key "Key function used to extract element for the predicate."))
+     :side-effects "Will mutate orderd of elements in the VECTOR."))
+
   (function as-cons-tree
     (:description "Scans tree of arbitrary objects (CHILDREN-FN is supposed to return CL:SEQUENCE of children nodes) and returns it as a tree composed of cons cells.")))
