@@ -174,19 +174,44 @@
 
 
 (defun select-top (vector count predicate &key (key 'identity))
-  (bind ((result (make-array count))
-         (size 0)
-         ((:labels insert (elt))
-          (cond ((eql size count)
-                 (let ((bound (lower-bound result elt predicate :key key)))
-                   (unless (eql bound size)
-                     (setf (aref result bound) elt))))
-                ((eql (1+ size) count)
-                 (setf (aref result size) elt
-                       result (sort result predicate :key key)))
-                (t (setf (aref result size) elt)
-                   (incf size)))))
+  (bind ((length (length vector))
+         (count (min length count))
+         (result (make-array count))
+         (last (1- length))
+         (youngest-parent (truncate last 2))
+         ((:labels move-down (first last))
+          (iterate
+            (with largest = (1+ (* 2 first)))
+            (while (<= largest last))
+            (when (and (< largest last)
+                       (funcall predicate
+                                (funcall key (aref vector (1+ largest)))
+                                (funcall key (aref vector largest))
+                                ))
+              (incf largest))
+            (if (funcall predicate
+                         (funcall key (aref vector largest))
+                         (funcall key (aref vector first)))
+                (progn
+                  (rotatef (aref vector first) (aref vector largest))
+                  (setf first largest
+                        largest (1+ (* 2 first))))
+                (leave))))
+         ((:labels heap-select (k))
+          (iterate
+            (for i from youngest-parent downto 0)
+            (move-down i last))
+          (iterate
+            (with limit = (- length k))
+            (for i from last above limit)
+            (when (funcall predicate
+                           (funcall key (aref vector 0))
+                           (funcall key (aref vector i)))
+              (rotatef (aref vector 0) (aref vector i))
+              (move-down 0 (1- i))))))
     (iterate
-      (for elt in-vector vector)
-      (insert elt))
+      (for i from 0 below count)
+      (for k from 1)
+      (heap-select k)
+      (setf (aref result i) (aref vector 0)))
     result))
