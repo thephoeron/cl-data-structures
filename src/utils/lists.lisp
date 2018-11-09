@@ -180,7 +180,8 @@
   (ensure-functionf predicate key)
   (let* ((length (length vector))
          (count (min length count))
-         (result (make-array count))
+         (result (make-array count
+                             :element-type (array-element-type vector)))
          (last (1- length))
          (youngest-parent (truncate last 2)))
     (declare (type fixnum youngest-parent last count length))
