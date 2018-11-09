@@ -201,11 +201,9 @@
                  (if (funcall predicate
                               (funcall key (aref vector largest))
                               (funcall key (aref vector first)))
-                     (progn
+                     (let ((next (the fixnum (1+ (the fixnum (* 2 first))))))
                        (rotatef (aref vector first) (aref vector largest))
-                       (shiftf first
-                               largest
-                               (the fixnum (1+ (the fixnum (* 2 first))))))
+                       (shiftf first largest next))
                      (leave))))
              (heap-select (k)
                (declare (type fixnum k))
