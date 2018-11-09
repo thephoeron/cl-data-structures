@@ -210,7 +210,7 @@
                (declare (type fixnum k))
                (iterate
                  (declare (type fixnum i))
-                 (for i from youngest-parent downto (1- k))
+                 (for i from youngest-parent downto 0)
                  (move-down i last))
                (iterate
                  (declare (type fixnum i limit))
