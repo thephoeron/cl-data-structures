@@ -35,6 +35,7 @@
    #:node-content
    #:nref
    #:read-element-type
+   #:node-size
    #:remove-tail
    #:rrb-at
    #:rrb-container

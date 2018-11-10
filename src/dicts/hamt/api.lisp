@@ -519,6 +519,14 @@ Methods. Those will just call non generic functions.
         :container container))
 
 
+(defmethod cl-ds:whole-range ((container functional-hamt-dictionary))
+  (make 'cl-ds.common:forward-tree-range
+        :obtain-value #'obtain-value
+        :key (get-range-key-function container)
+        :forward-stack (list (new-cell (access-root container)))
+        :container container))
+
+
 (defmethod cl-ds:across (function (container hamt-dictionary))
   (labels ((impl (node)
              (if (listp node)

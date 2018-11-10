@@ -1,0 +1,4 @@
+* Tasks
+** TODO Needs implementation for the transactional variant of this code.
+   [2018-11-11 nie]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/dicts/hamt/api.lisp::(defmethod%20cl-ds:whole-range%20((container%20mutable-hamt-dictionary))]]
