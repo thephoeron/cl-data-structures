@@ -298,8 +298,8 @@
   (end 0 :type cl-ds.common.rrb:node-size)
   (depth 0 :type non-negative-fixnum)
   (upper-bits 0 :type non-negative-fixnum)
-  container
   (is-tail nil :type boolean)
+  container
   node-content
   node-bitmask)
 
@@ -314,41 +314,44 @@
          (container (srrb-range-stack-cell-container cell))
          (node-content (srrb-range-stack-cell-node-content cell))
          (node-bitmask (srrb-range-stack-cell-node-bitmask cell))
+         (is-tail (srrb-range-stack-cell-is-tail cell))
          (is-leaf (eql depth (access-shift cell))))
     (if reached-end
         (values nil nil)
-        (let* ((at (~> node-content
-                       (aref start)))
-               (position (~> start
-                             (byte _ 0)
-                             (ldb node-bitmask)
-                             logcount))
-               (next-bits (dpb position
-                               (byte cl-ds.common.rrb:+bit-count+
-                                     (* depth cl-ds.common.rrb:+bit-count+))
-                               upper-bits))
-               (next-cell (make-srrb-range-stack-cell
-                           :start (1+ start)
-                           :end end
-                           :depth depth
-                           :upper-bits upper-bits
-                           :container container
-                           :node-content node-content
-                           :node-bitmask node-bitmask)))
-          (if is-leaf
-              (values (list* next-bits at)
-                      next-cell)
-              (values
-               (make-srrb-range-stack-cell
-                :start 0
-                :end (~> at cl-ds.common.rrb:sparse-rrb-node-bitmask
-                         logcount)
-                :depth (1+ depth)
-                :upper-bits next-bits
-                :container container
-                :node-content (cl-ds.common.rrb:sparse-rrb-node-content at)
-                :node-bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask at))
-               next-cell))))))
+        (if is-tail
+            cl-ds.utils:todo
+            (let* ((at (~> node-content
+                           (aref start)))
+                   (position (~> start
+                                 (byte _ 0)
+                                 (ldb node-bitmask)
+                                 logcount))
+                   (next-bits (dpb position
+                                   (byte cl-ds.common.rrb:+bit-count+
+                                         (* depth cl-ds.common.rrb:+bit-count+))
+                                   upper-bits))
+                   (next-cell (make-srrb-range-stack-cell
+                               :start (1+ start)
+                               :end end
+                               :depth depth
+                               :upper-bits upper-bits
+                               :container container
+                               :node-content node-content
+                               :node-bitmask node-bitmask)))
+              (if is-leaf
+                  (values (list* next-bits at)
+                          next-cell)
+                  (values
+                   (make-srrb-range-stack-cell
+                    :start 0
+                    :end (~> at cl-ds.common.rrb:sparse-rrb-node-bitmask
+                             logcount)
+                    :depth (1+ depth)
+                    :upper-bits next-bits
+                    :container container
+                    :node-content (cl-ds.common.rrb:sparse-rrb-node-content at)
+                    :node-bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask at))
+                   next-cell)))))))
 
 
 (defun obtain-value (pull push)
@@ -363,12 +366,36 @@
           (funcall push new-cell)))))
 
 
-(defun make-range-root (container)
-  cl-ds.utils:todo)
+(defun make-range-from-root (container)
+  (let ((root (access-tree container)))
+    (when root
+      (let ((content (cl-ds.common.rrb:sparse-rrb-node-content root))
+            (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask root)))
+        (make-srrb-range-stack-cell
+         :start 0
+         :end (logcount bitmask)
+         :node-content content
+         :node-bitmask bitmask
+         :container container)))))
+
+
+(defun make-range-from-tail (container)
+  (let ((tail (access-tail container))
+        (tail-mask (access-tail-mask container)))
+    (unless (zerop tail-mask)
+      (make-srrb-range-stack-cell
+       :start 0
+       :end cl-ds.common.rrb:+maximum-children-count+
+       :node-content tail
+       :node-bitmask tail-mask
+       :container container))))
 
 
 (defmethod cl-ds:whole-range ((container functional-sparse-rrb-vector))
   (make 'cl-ds.common:forward-tree-range
         :obtain-value #'obtain-value
         :key #'identity
-        :forward-stack (list (make-range-root container))))
+        :forward-stack (~>> (list (make-range-from-root container)
+                                  (make-range-from-tail container))
+                            (delete nil))
+        :container container))
