@@ -315,11 +315,28 @@
          (node-content (srrb-range-stack-cell-node-content cell))
          (node-bitmask (srrb-range-stack-cell-node-bitmask cell))
          (is-tail (srrb-range-stack-cell-is-tail cell))
-         (is-leaf (eql depth (access-shift cell))))
+         (is-leaf (eql depth (access-shift container))))
     (if reached-end
         (values nil nil)
         (if is-tail
-            cl-ds.utils:todo
+            (let* ((index (iterate
+                           (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+                           (summing (ldb (byte 1 i) node-bitmask) into sum)
+                           (until (eql (1- sum) start))
+                            (finally (return i)))))
+              (if (ldb-test (byte index 0) node-bitmask)
+                  (values (list* (+ index (access-tree-index-bound container))
+                                 (aref node-content index))
+                          (make-srrb-range-stack-cell
+                           :start (1+ start)
+                           :end end
+                           :depth depth
+                           :upper-bits upper-bits
+                           :is-tail t
+                           :container container
+                           :node-content node-content
+                           :node-bitmask node-bitmask))
+                  (values nil nil)))
             (let* ((at (~> node-content
                            (aref start)))
                    (position (~> start
@@ -384,14 +401,16 @@
         (tail-mask (access-tail-mask container)))
     (unless (zerop tail-mask)
       (make-srrb-range-stack-cell
+       :depth (access-shift container)
        :start 0
        :end cl-ds.common.rrb:+maximum-children-count+
        :node-content tail
        :node-bitmask tail-mask
+       :is-tail t
        :container container))))
 
 
-(defmethod cl-ds:whole-range ((container functional-sparse-rrb-vector))
+(defmethod cl-ds:whole-range ((container fundamental-sparse-rrb-vector))
   (make 'cl-ds.common:forward-tree-range
         :obtain-value #'obtain-value
         :key #'identity
