@@ -12,6 +12,8 @@
    #:insert-front-into-tree
    #:insert-front-into-tree!
    #:node
+   #:2-node
+   #:3-node
    #:access-left
    #:access-right
    #:access-middle

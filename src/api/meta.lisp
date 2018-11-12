@@ -286,6 +286,10 @@
 
 
 (defgeneric map-bucket (container bucket function)
+  (:method (container (bucket (eql null-bucket)) function)
+    nil)
+  (:method (container (bucket t) function)
+    (funcall function bucket))
   (:method (container (bucket sequence) function)
     (map nil function bucket)))
 

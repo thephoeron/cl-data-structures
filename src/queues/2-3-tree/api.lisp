@@ -403,3 +403,37 @@
                                         &rest arguments)
   (~> (mutable-from-traversable traversable arguments)
       cl-ds:become-functional))
+
+
+(defmethod cl-ds:traverse (function (container 2-3-queue))
+  (ensure-functionf function)
+  (labels ((visit-node (node)
+             (typecase node
+               (cl-ds.common.2-3:3-node
+                (visit-node (cl-ds.common.2-3:access-right node))
+                (visit-node (cl-ds.common.2-3:access-middle node))
+                (visit-node (cl-ds.common.2-3:access-left node)))
+               (cl-ds.common.2-3:2-node
+                (visit-node (cl-ds.common.2-3:access-right node))
+                (visit-node (cl-ds.common.2-3:access-left node))
+                )
+               (t
+                (unless (cl-ds.meta:null-bucket-p node)
+                  (map nil
+                       (lambda (x) (cl-ds.meta:map-bucket container x function))
+                       node))))))
+    (let ((tail (access-tail container))
+          (tail-size (access-tail-position container)))
+      (unless (null tail)
+        (iterate
+          (for i from 0 below tail-size)
+          (cl-ds.meta:map-bucket container (aref tail i) function))))
+    (visit-node (cl-ds.common.2-3:access-root container))
+    (let ((head (access-head container))
+          (head-size (access-head-position container)))
+      (unless (null head)
+        (iterate
+          (for i from 0 below head-size)
+          (cl-ds.meta:map-bucket container (aref head i) function))))
+    (cl-ds.meta:map-bucket container (access-tail container) function)
+    container))
