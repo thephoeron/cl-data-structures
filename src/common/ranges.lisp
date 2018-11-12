@@ -33,12 +33,12 @@
   (if (null stack)
       (values stack nil nil)
       (bind (((:dflet push-to-stack (x))
-              (push x stack))
+              (push (cons x nil nil) stack))
              ((:dflet pop-stack ())
               (when (endp stack)
                 (return-from read-implementation
                   (values stack nil nil)))
-              (pop stack))
+              (car (pop stack)))
              (result (funcall obtain-value #'pop-stack #'push-to-stack)))
         (values stack result t))))
 
@@ -84,12 +84,18 @@
     (new-value (range assignable-forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
+                      (container read-container)
                       (key read-key)
                       (store-value read-store-value))
           range)
-         ((:values _ result found)
-          (read-implementation stack obtain-value)))
-    (values (when found (funcall store-value result new-value)) found)))
+         ((:values stack result found)
+          (read-implementation stack obtain-value))
+         (stack-front (first stack)))
+    (when found
+      (funcall store-value container new-value)
+      (setf (elt stack-front 1) t
+            (elt stack-front 2) new-value))
+    (values (when found new-value found))))
 
 
 (defmethod cl-ds:consume-front ((range forward-tree-range))
