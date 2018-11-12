@@ -419,6 +419,7 @@
                    t old-value))
               t)))
 
+
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update-function)
                                       (container fundamental-hashing-dictionary)
                                       (bucket list)
@@ -438,6 +439,7 @@
                     (cl-ds.common:make-eager-modification-operation-status
                      t old-value)
                     t)))))
+
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add-function)
                                       (container fundamental-hashing-dictionary)
