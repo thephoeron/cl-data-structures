@@ -5,7 +5,7 @@
   (:export :run-suite))
 (in-package :hamt-range-tests)
 
-(plan 18)
+(plan 16)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -57,14 +57,7 @@
                               (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
                               (cl-ds.math:variance :key #'cdr))))
     (is (cl-ds:at divided-variance nil) 1)
-    (is (cl-ds:at divided-variance t) 1))
-  (let ((range (cl-ds:whole-range dict))
-        (result nil))
-    (setf (cl-ds:peek-front range) 'value)
-    (is (cdr (cl-ds:peek-front range)) 'value)
-    (cl-ds:traverse (lambda (x) (push x result))
-                    range)
-    (is (cdr (find 'value result :key #'cdr)) 'value)))
+    (is (cl-ds:at divided-variance t) 1)))
 
 (let ((dict (cl-ds:make-from-traversable
              'cl-ds.dicts.hamt:mutable-hamt-dictionary

@@ -850,11 +850,6 @@
                    :initial-upper-bound (cl-ds:size container)))
 
 
-(defmethod cl-ds:whole-range ((container mutable-rrb-range))
-  (make 'mutable-rrb-range :container container
-                           :initial-lower-bound 0
-                           :initial-upper-bound (cl-ds:size container)))
-
 ;; TODO very innefficient!
 (defun init-rrb (instance container &key (from 0) (to (cl-ds:size container)))
   (bind (((:slots %start %last-size %content %lower-bound
