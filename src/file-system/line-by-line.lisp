@@ -22,8 +22,8 @@
         :path (read-path range)
         :reached-end (access-reached-end range)
         :initial-position (if (read-stream range)
-                              (file-position (read-stream range))
-                              0)))
+                              (~> range read-stream file-position)
+                              (read-initial-position range))))
 
 
 (defun ensure-stream (range)
@@ -70,7 +70,6 @@
                         (read-line nil nil))))
           (if (null line)
               (progn
-                (close-stream range)
                 (setf (access-reached-end range) t)
                 (values nil nil))
               (values line t))))))
