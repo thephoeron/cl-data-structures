@@ -3,8 +3,8 @@
 
 (defclass file-range-mixin ()
   ((%stream :initarg :stream
-            :initform '(nil)
-            :type (or stream null))))
+            :initform (list nil)
+            :type list)))
 
 
 (defun read-stream (object)
