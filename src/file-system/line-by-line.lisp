@@ -110,5 +110,4 @@
 (defun line-by-line (path)
   (check-type path (or string pathname))
   (make 'line-by-line-range
-        :path path
-        :stream (open path)))
+        :path path))
