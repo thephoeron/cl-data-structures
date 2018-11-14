@@ -56,29 +56,27 @@
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
   (bind ((og-range (cl-ds.alg::read-original-range range))
-         (chunked-range (cl-ds:chunked og-range))
-         (pushing nil))
+         (chunked-range (cl-ds:chunked og-range)))
     (if (null chunked-range)
         (funcall traverse/accross function og-range)
-        (unwind-protect
-             (progn
-               (lparallel:check-kernel)
-               (iterate
-                 (with (thread . queue) =
-                       (make-in-parallel-read-thread chunked-range
-                                                     (read-limit range)
-                                                     (read-context-function range)))
-                 (with p = (setf pushing thread))
-                 (for future = (lparallel.queue:pop-queue queue))
-                 (for (data . more) = (lparallel:force future))
-                 (while more)
-                 (if (eq :error more)
-                     (error data)
-                     (map nil function data))
-                 (finally (bt:join-thread p)
-                          (setf pushing nil))))
-          (unless (null pushing)
-            (bt:destroy-thread pushing))))
+        (progn
+          (lparallel:check-kernel)
+          (bind (((pushing . queue) (make-in-parallel-read-thread
+                                     chunked-range
+                                     (read-limit range)
+                                     (read-context-function range))))
+            (unwind-protect
+                 (iterate
+                   (for future = (lparallel.queue:pop-queue queue))
+                   (for (data . more) = (lparallel:force future))
+                   (while more)
+                   (if (eq :error more)
+                       (error data)
+                       (map nil function data))
+                   (finally (bt:join-thread pushing)
+                            (setf pushing nil)))
+              (unless (null pushing)
+                (bt:destroy-thread pushing))))))
     range))
 
 
