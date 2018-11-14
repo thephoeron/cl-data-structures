@@ -20,7 +20,6 @@
 (defmethod cl-ds:clone ((range line-by-line-range))
   (make 'line-by-line-range
         :path (read-path range)
-        :stream (list nil)
         :reached-end (access-reached-end range)
         :initial-position (if (read-stream range)
                               (file-position (read-stream range))
@@ -29,7 +28,9 @@
 
 (defun ensure-stream (range)
   (when (~> range read-stream null)
-    (setf (car (slot-value range '%stream)) (~> range read-path open))))
+    (let ((file (~> range read-path open)))
+      (setf (car (slot-value range '%stream)) file)
+      (file-position file (read-initial-position range)))))
 
 
 (defmethod cl-ds:reset! ((range line-by-line-range))
