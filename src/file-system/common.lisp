@@ -63,5 +63,5 @@
 
 (defun close-stream (range)
   (unless (~> range read-stream null)
-     (~> range read-stream car close-silence-errors)
+     (~> range read-stream close-silence-errors)
      (setf (car (slot-value range '%stream)) nil)))
