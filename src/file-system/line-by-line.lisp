@@ -11,26 +11,30 @@
                  :type boolean
                  :accessor access-reached-end
                  :initform nil)
+   (%current-position :initarg :initial-position
+                      :accessor access-current-position
+                      :type non-negative-integer)
    (%initial-position :initarg :initial-position
-                      :initform 0
                       :type non-negative-integer
-                      :reader read-initial-position)))
+                      :reader read-initial-position))
+  (:default-initargs :initial-position 0))
 
 
 (defmethod cl-ds:clone ((range line-by-line-range))
   (make 'line-by-line-range
         :path (read-path range)
         :reached-end (access-reached-end range)
-        :initial-position (if (read-stream range)
-                              (~> range read-stream file-position)
-                              (read-initial-position range))))
+        :initial-position (read-current-position range)))
 
 
 (defun ensure-stream (range)
   (when (~> range read-stream null)
     (let ((file (~> range read-path open)))
-      (setf (car (slot-value range '%stream)) file)
-      (file-position file (read-initial-position range)))))
+      (unless (file-position file (read-initial-position range))
+        (error 'cl-ds:textual-error
+               :text "Can't change position in the stream."))
+      (setf (car (slot-value range '%stream)) file
+            (access-current-position range) (read-initial-position range)))))
 
 
 (defmethod cl-ds:reset! ((range line-by-line-range))
@@ -39,7 +43,8 @@
                          (read-initial-position range))
     (error 'cl-ds:textual-error
            :text "Can't change position in the stream."))
-  (setf (access-reached-end range) nil)
+  (setf (access-reached-end range) nil
+        (access-current-position range) (read-initial-position range))
   range)
 
 
@@ -48,9 +53,9 @@
       (values nil nil)
       (progn
         (ensure-stream range)
-        (let ((file-position (~> range read-stream file-position))
-              (line (~> range read-stream
-                        (read-line :eof-value nil))))
+        (let* ((stream (read-stream range))
+               (file-position (file-position stream))
+               (line (read-line stream :eof-value nil)))
           (if (null line)
               (values nil nil)
               (progn
@@ -66,25 +71,28 @@
       (values nil nil)
       (progn
         (ensure-stream range)
-        (let ((line (~> range read-stream
-                        (read-line nil nil))))
+        (let* ((stream (read-stream range))
+               (line (read-line stream nil nil)))
+          (setf (access-current-position range) (file-position stream))
           (if (null line)
               (progn
                 (setf (access-reached-end range) t)
+                (close-stream range)
                 (values nil nil))
               (values line t))))))
 
 
 (defmethod cl-ds:traverse (function (range line-by-line-range))
   (unless (~> range access-reached-end)
+    (ensure-stream range)
     (unwind-protect
-         (ensure-stream range)
          (iterate
            (with stream = (read-stream range))
            (for line = (read-line stream nil nil))
            (until (null line))
            (funcall function line))
-      (setf (access-reached-end range) t)
+      (setf (access-reached-end range) t
+            (access-current-position range) (~> range read-stream file-position))
       (close-stream range)))
   range)
 
