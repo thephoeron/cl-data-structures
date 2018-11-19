@@ -55,25 +55,23 @@
   ())
 
 
-(-> make-functional-hamt-dictionary ((-> (t) fixnum)
-                                     (-> (t t) boolean))
+(-> make-functional-hamt-dictionary ((or function symbol) (or function symbol))
     functional-hamt-dictionary)
 (defun make-functional-hamt-dictionary (hash-fn equal-fn)
   (declare (optimize (safety 3)))
   (assure functional-hamt-dictionary (make 'functional-hamt-dictionary
-                                           :hash-fn hash-fn
+                                           :hash-fn (ensure-function hash-fn)
                                            :root nil
-                                           :equal-fn equal-fn)))
+                                           :equal-fn (ensure-function equal-fn))))
 
 
-(-> make-mutable-hamt-dictionary ((-> (t) fixnum)
-                                  (-> (t t) boolean))
+(-> make-mutable-hamt-dictionary ((or function symbol) (or function symbol))
     mutable-hamt-dictionary)
 (defun make-mutable-hamt-dictionary (hash-fn equal-fn)
   (declare (optimize (safety 3)))
   (assure mutable-hamt-dictionary (make 'mutable-hamt-dictionary
-                                        :equal-fn equal-fn
-                                        :hash-fn hash-fn
+                                        :equal-fn (ensure-function equal-fn)
+                                        :hash-fn (ensure-function hash-fn)
                                         :root nil)))
 
 
