@@ -7,7 +7,7 @@
 (let ((data nil)
       (expression (cl-ds:xpr (:iteration 1)
                     (when (< iteration 5)
-                      (send-recur iteration :iteration (1+ iteration))))))
+                      (cl-ds:send-recur iteration :iteration (1+ iteration))))))
   (is (cl-ds:peek-front expression) 1)
   (cl-ds:across (lambda (x) (push x data))
                 expression)
@@ -24,8 +24,8 @@
                      (unless (endp stack)
                        (let ((front (first stack)))
                          (cond ((atom front)
-                                (send-recur front :stack (rest stack)))
-                               (t (recur :stack (append front (rest stack))))))))))
+                                (cl-ds:send-recur front :stack (rest stack)))
+                               (t (cl-ds:recur :stack (append front (rest stack))))))))))
   (let ((result nil))
     (cl-ds:traverse (lambda (x) (push x result)) expression)
     (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
@@ -35,8 +35,8 @@
                      (unless (endp stack)
                        (destructuring-bind (front . stack) stack
                          (cond ((atom front)
-                                (send-recur front :stack stack))
-                               (t (recur :stack (iterate
+                                (cl-ds:send-recur front :stack stack))
+                               (t (cl-ds:recur :stack (iterate
                                                   (for elt in front)
                                                   (push elt stack)
                                                   (finally (return stack)))))))))))
