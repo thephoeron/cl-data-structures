@@ -24,7 +24,7 @@
   (make 'line-by-line-range
         :path (read-path range)
         :reached-end (access-reached-end range)
-        :initial-position (read-current-position range)))
+        :initial-position (access-current-position range)))
 
 
 (defun ensure-stream (range)
