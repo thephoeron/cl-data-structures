@@ -96,7 +96,7 @@
     (with seen = (read-seen range))
     (with range = (read-original-range range))
     (with key = (read-key range))
-    (for (values data more) = (cl-ds:consume-front seen))
+    (for (values data more) = (cl-ds:consume-front range))
     (unless more
       (leave (values nil nil)))
     (for key-value = (funcall key data))

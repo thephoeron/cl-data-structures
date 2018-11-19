@@ -22,7 +22,7 @@
   (fbind ((key (read-key range))
           (predicate (read-predicate range)))
     (iterate
-      (with outer = (read-outer range))
+      (with outer = (read-original-range range))
       (for (values value more) = (cl-ds:peek-front outer))
       (when (null more)
         (return (values nil nil)))
@@ -35,7 +35,7 @@
   (fbind ((key (read-key aggregator))
           (predicate (read-predicate aggregator)))
     (iterate
-      (with outer = (read-outer aggregator))
+      (with outer = (read-original-range aggregator))
       (for (values value more) = (cl-ds:consume-front outer))
       (when (null more)
         (return (values nil nil)))
@@ -47,7 +47,7 @@
   (fbind ((key (read-key aggregator))
           (predicate (read-predicate aggregator)))
     (iterate
-      (with outer = (read-outer aggregator))
+      (with outer = (read-original-range aggregator))
       (for (values value more) = (cl-ds:peek-back outer))
       (when (null more)
         (return (values nil nil)))
@@ -60,7 +60,7 @@
   (fbind ((key (read-key aggregator))
           (predicate (read-predicate aggregator)))
     (iterate
-      (with outer = (read-outer aggregator))
+      (with outer = (read-original-range aggregator))
       (for (values value more) = (cl-ds:consume-back outer))
       (when (null more)
         (return (values nil nil)))
