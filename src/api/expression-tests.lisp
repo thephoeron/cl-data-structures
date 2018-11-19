@@ -36,10 +36,11 @@
                        (destructuring-bind (front . stack) stack
                          (cond ((atom front)
                                 (cl-ds:send-recur front :stack stack))
-                               (t (cl-ds:recur :stack (iterate
-                                                  (for elt in front)
-                                                  (push elt stack)
-                                                  (finally (return stack)))))))))))
+                               (t (cl-ds:recur
+                                   :stack (iterate
+                                            (for elt in front)
+                                            (push elt stack)
+                                            (finally (return stack)))))))))))
   (let ((result nil))
     (cl-ds:traverse (lambda (x) (push x result)) expression)
     (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
