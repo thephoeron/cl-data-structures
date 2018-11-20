@@ -82,7 +82,9 @@
 
 (defmethod cl-ds:reset! ((range distinct-proxy))
   (bt:with-lock-held ((read-mutex range))
-    (setf (slot-value range '%seen) (cl-ds:become-transactional (read-seen range))))
+    (setf (slot-value range '%seen) (~> range
+                                        read-seen
+                                        cl-ds:become-transactional)))
   (call-next-method))
 
 
