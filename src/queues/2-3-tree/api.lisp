@@ -415,8 +415,7 @@
                 (visit-node (cl-ds.common.2-3:access-left node)))
                (cl-ds.common.2-3:2-node
                 (visit-node (cl-ds.common.2-3:access-right node))
-                (visit-node (cl-ds.common.2-3:access-left node))
-                )
+                (visit-node (cl-ds.common.2-3:access-left node)))
                (t
                 (unless (cl-ds.meta:null-bucket-p node)
                   (map nil

@@ -16,9 +16,13 @@
    (%key :type (-> (t) t)
          :initarg :key
          :reader read-key)
+   (%mutex :type bt:lock
+           :initarg :mutex
+           :reader read-mutex)
    (%container :type cl-ds:fundamental-container
                :initarg :container
-               :reader read-container)))
+               :reader read-container))
+  (:default-initargs :mutex (bt:make-lock)))
 
 
 (defclass assignable-forward-tree-range
@@ -33,7 +37,7 @@
   (if (null stack)
       (values stack nil nil)
       (bind (((:dflet push-to-stack (x))
-              (push (cons x nil nil) stack))
+              (push (cons x nil) stack))
              ((:dflet pop-stack ())
               (when (endp stack)
                 (return-from read-implementation
@@ -44,7 +48,9 @@
 
 
 (defmethod cl-ds:across (function (range forward-tree-range))
-  (let* ((stack (access-forward-stack range))
+  (let* ((mutex (read-mutex range))
+         (stack (bt:with-lock-held (mutex)
+                  (access-forward-stack range)))
          (obtain-value (read-obtain-value range))
          (key (read-key range)))
     (iterate
@@ -57,7 +63,9 @@
 
 
 (defmethod cl-ds:traverse (function (range forward-tree-range))
-  (let* ((stack (access-forward-stack range))
+  (let* ((mutex (read-mutex range))
+         (stack (bt:with-lock-held (mutex)
+                  (access-forward-stack range)))
          (obtain-value (read-obtain-value range))
          (key (read-key range)))
     (iterate
@@ -73,10 +81,12 @@
 (defmethod cl-ds:peek-front ((range forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
+                      (mutex read-mutex)
                       (key read-key))
           range)
          ((:values _ result found)
-          (read-implementation stack obtain-value)))
+          (read-implementation (bt:with-lock-held (mutex) stack)
+                               obtain-value)))
     (values (when found (funcall key result)) found)))
 
 
@@ -86,10 +96,12 @@
                       (obtain-value read-obtain-value)
                       (container read-container)
                       (key read-key)
+                      (mutex read-mutex)
                       (store-value read-store-value))
           range)
          ((:values stack result found)
-          (read-implementation stack obtain-value))
+          (read-implementation (bt:with-lock-held (mutex) stack)
+                               obtain-value))
          (stack-front (first stack)))
     (when found
       (funcall store-value container new-value)
@@ -101,38 +113,44 @@
 (defmethod cl-ds:consume-front ((range forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
+                      (mutex read-mutex)
                       (key read-key))
           range)
          ((:values new-stack result found)
-          (read-implementation stack obtain-value)))
-    (setf stack new-stack)
+          (read-implementation (bt:with-lock-held (mutex) stack) obtain-value)))
+    (bt:with-lock-held (mutex)
+      (setf stack new-stack))
     (values (when found (funcall key result)) found)))
 
 
 (defmethod cl-ds:drop-front ((range forward-tree-range) count)
   (let ((stack (access-forward-stack range))
-        (obtain-value (read-obtain-value range)))
-    (iterate
-      (until (null stack))
-      (repeat count)
-      (setf stack (nth-value 1 (read-implementation stack
-                                                    obtain-value))))
-    (setf (access-forward-stack range) stack))
+        (obtain-value (read-obtain-value range))
+        (mutex (read-mutex range)))
+    (bt:with-lock-held (mutex)
+      (iterate
+        (until (null stack))
+        (repeat count)
+        (setf stack (nth-value 1 (read-implementation stack
+                                                      obtain-value))))
+      (setf (access-forward-stack range) stack)))
   range)
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))
-  (make (type-of range)
-        :container (read-container range)
-        :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
-        :initial-stack (mapcar #'cl-ds:clone (read-initial-stack range))
-        :obtain-value (read-obtain-value range)
-        :key (read-key range)))
+  (bt:with-lock-held ((read-mutex range))
+    (make (type-of range)
+          :container (read-container range)
+          :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
+          :initial-stack (mapcar #'cl-ds:clone (access-forward-stack range))
+          :obtain-value (read-obtain-value range)
+          :key (read-key range))))
 
 
 (defmethod cl-ds:reset! ((range forward-tree-range))
-  (bind (((:slots %initial-stack %forward-stack) range))
-    (setf %forward-stack (mapcar #'cl-ds:clone %initial-stack)))
+  (bind (((:slots %initial-stack %forward-stack %mutex) range))
+    (bt:with-lock-held (%mutex)
+      (setf %forward-stack (mapcar #'cl-ds:clone %initial-stack))))
   range)
 
 
