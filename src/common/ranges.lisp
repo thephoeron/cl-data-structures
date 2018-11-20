@@ -158,7 +158,8 @@
                                 &body body)
   `(defmethod ,method-name ,lambda-list
      (symbol-macrolet ((,stack ,stack-place))
-       (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list lambda-list)
+       (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list
+                                lambda-list)
                   ,@body))
          (,method-name ,@(cl-ds.utils:lambda-list-to-bindings lambda-list))))))
 
@@ -167,6 +168,7 @@
                                      &body body)
   `(defmethod ,method-name ,lambda-list
      (let ((,stack ,init))
-       (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list lambda-list)
+       (labels ((,method-name ,(cl-ds.utils:method-lambda-list-to-function-lambda-list
+                                lambda-list)
                   ,@body))
          (,method-name ,@(cl-ds.utils:lambda-list-to-bindings lambda-list))))))
