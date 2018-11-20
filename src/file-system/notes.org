@@ -1,0 +1,4 @@
+* Tasks
+** TODO clone should be thread safe
+   [2018-11-20 wto]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/file-system/line-by-line.lisp::(defmethod%20cl-ds:clone%20((range%20line-by-line-range))]]

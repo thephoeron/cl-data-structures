@@ -34,6 +34,7 @@
         (error 'cl-ds:textual-error
                :text "Can't change position in the stream."))
       (setf (car (slot-value range '%stream)) file
+            (access-reached-end range) nil
             (access-current-position range) (read-initial-position range)))))
 
 
@@ -67,7 +68,7 @@
 
 
 (defmethod cl-ds:consume-front ((range line-by-line-range))
-  (if (~> range access-reached-end)
+  (if (access-reached-end range)
       (values nil nil)
       (progn
         (ensure-stream range)
@@ -92,20 +93,18 @@
            (until (null line))
            (funcall function line))
       (setf (access-reached-end range) t
-            (access-current-position range) (~> range read-stream file-position))
+            (access-current-position range) (~> range
+                                                read-stream
+                                                file-position))
       (close-stream range)))
   range)
 
 
 (defmethod cl-ds:across (function (range line-by-line-range))
   (unless (~> range access-reached-end)
-    (let ((initial-position (if (read-stream range)
-                                (~> range
-                                    read-stream
-                                    file-position)
-                                0)))
+    (let ((position (access-current-position range)))
       (with-open-file (stream (read-path range))
-        (unless (file-position stream initial-position)
+        (unless (file-position stream position)
           (error 'cl-ds:textual-error
                  :text "Can't change position in the stream."))
         (iterate
