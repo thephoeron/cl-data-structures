@@ -727,6 +727,9 @@
 (defclass rrb-range (cl-ds:fundamental-random-access-range)
   ((%start :type fixnum
            :accessor access-start)
+   (%mutex :type bt:lock
+           :reader read-mutex
+           :initarg :mutex)
    (%last-size :type fixnum
                :accessor access-last-size)
    (%lower-bound :type fixnum
@@ -742,7 +745,8 @@
                          :reader read-initial-upper-bound)
    (%content :reader read-content)
    (%container :initarg :container
-               :accessor access-container)))
+               :accessor access-container))
+  (:default-initargs :mutex (bt:make-lock)))
 
 
 (defclass chunked-rrb-range (cl-ds:fundamental-forward-range)
@@ -769,7 +773,7 @@
 
 (defmethod cl-ds:consume-front ((range chunked-rrb-range))
   (bind (((:slots %start %last-size %lower-bound %upper-bound %container
-                  %initial-lower-bound %initial-upper-bound %content)
+                  %initial-lower-bound %mutex %initial-upper-bound %content)
           (read-rrb-range range))
          ((:slots %vectors-in-chunk) range))
     (if (or (eql %lower-bound %upper-bound) (null %content))

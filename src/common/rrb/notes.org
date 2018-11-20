@@ -1,5 +1,8 @@
 * Tasks
-** TODO 
+** TODO
    [2018-10-11 czw]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/common/rrb/common.lisp::;;%20TODO%20very%20innefficient!]]
    Walking over whole vector to obtain children nodes is just stupid. It should be a lot better to use tree structure in the range (perhaps by having separate ref to tail AND head).
+** TODO Need to protect objects of those class from race condition on cl-ds:clone.
+   [2018-11-20 wto]
+   [[file:~/quicklisp/local-projects/cl-data-structures/src/common/rrb/common.lisp::(%25mutex%20:type%20bt:lock]]
