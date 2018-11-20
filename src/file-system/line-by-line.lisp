@@ -21,6 +21,7 @@
 
 
 (defmethod cl-ds:clone ((range line-by-line-range))
+  (close-stream range)
   (make 'line-by-line-range
         :path (read-path range)
         :reached-end (access-reached-end range)
@@ -30,22 +31,21 @@
 (defun ensure-stream (range)
   (when (~> range read-stream null)
     (let ((file (~> range read-path open)))
-      (unless (file-position file (read-initial-position range))
+      (unless (file-position file (access-current-position range))
         (error 'cl-ds:textual-error
                :text "Can't change position in the stream."))
       (setf (car (slot-value range '%stream)) file
-            (access-reached-end range) nil
-            (access-current-position range) (read-initial-position range)))))
+            (access-reached-end range) nil))))
 
 
 (defmethod cl-ds:reset! ((range line-by-line-range))
+  (setf (access-current-position range) (read-initial-position range))
   (ensure-stream range)
   (unless (file-position (read-stream range)
                          (read-initial-position range))
     (error 'cl-ds:textual-error
            :text "Can't change position in the stream."))
-  (setf (access-reached-end range) nil
-        (access-current-position range) (read-initial-position range))
+  (setf (access-reached-end range) nil)
   range)
 
 
