@@ -29,7 +29,9 @@
                                        :value (1+ (length more-locations))
                                        :text "Approximated-counts does not accept more-locations"))
   (iterate
-    (with hash = (funcall (read-hash-fn container) location))
+    (with hash = (ldb (byte 32 0)
+                      (funcall (read-hash-fn container)
+                               location)))
     (with counts = (read-counters container))
     (with hashes = (read-hashes container))
     (with space = (read-space container))
@@ -56,7 +58,8 @@
          %count count
          %space space
          %total 0
-         %counters (make-array %space :initial-element 0)
+         %counters (make-array %space :initial-element 0
+                                      :element-type 'non-negative-fixnum)
          %hashes (or hashes (make-hash-array count)))
    (unless (eql count (array-dimension %hashes 0))
      (error 'cl-ds:invalid-argument

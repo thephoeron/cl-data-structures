@@ -49,7 +49,7 @@
    (setf %bits bits
          %hash-fn hash-fn
          %registers (make-array (ash 1 bits)
-                                :element-type 'unsigned-byte)))
+                                :element-type '(unsigned-byte 8))))
 
   ((element)
    (bind ((hash (ldb (byte 32 0) (funcall %hash-fn element)))

@@ -28,7 +28,9 @@
                                        :value (1+ (length more-locations))
                                        :text "Approximated-counts does not accept more-locations"))
   (iterate
-    (with hash = (funcall (read-hash-fn container) location))
+    (with hash = (ldb (byte 32 0)
+                      (funcall (read-hash-fn container)
+                               location)))
     (with counts = (read-counters container))
     (with hashes = (read-hashes container))
     (with count = (read-count container))
