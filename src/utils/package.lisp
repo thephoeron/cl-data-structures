@@ -27,6 +27,7 @@
    #:draw-sample-vector
    #:each-in-matrix
    #:end-execution
+   #:ensure-call-ahead-of
    #:erase-from-vector
    #:extendable-vector
    #:fill-distance-matrix-from-vector
@@ -69,8 +70,9 @@
    #:pop-last
    #:read-size
    #:rebind
-   #:skip-vector-without
+   #:remove-fill-pointer
    #:select-top
+   #:skip-vector-without
    #:sref
    #:start-execution
    #:swap-if
@@ -82,5 +84,4 @@
    #:unfold-table
    #:with-rebind
    #:with-slots-for
-   #:remove-fill-pointer
    #:with-vectors))

@@ -134,3 +134,30 @@
        (when (bt:threadp (aref %vector %index))
          (bt:join-thread (aref %vector %index)))
        (setf (aref %vector %index) (bt:make-thread (curry #'apply %function all)))))))
+
+
+(defun ensure-call-ahead-of (function)
+  (let ((cv (bt:make-condition-variable))
+        (mutex (bt:make-lock))
+        (err nil)
+        (first-time t)
+        (called nil))
+    (lambda (&rest args)
+      (bt:with-lock-held (mutex)
+        (cond ((shiftf first-time nil)
+               (handler-case
+                   (progn (setf called t)
+                          (apply function args)
+                          (bt:condition-notify cv))
+                 (condition (e)
+                   (setf err e)
+                   (bt:condition-notify cv)
+                   (signal e))))
+              (called (unless (null err) (signal err)))
+              (t
+               (iterate
+                 (bt:condition-wait cv mutex)
+                 (until called)
+                 (finally
+                  (unless (null err) (signal err)))))))
+      nil)))
