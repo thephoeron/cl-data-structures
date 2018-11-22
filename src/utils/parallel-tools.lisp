@@ -137,6 +137,7 @@
 
 
 (defun ensure-call-ahead-of (function)
+  (ensure-functionf function)
   (let ((cv (bt:make-condition-variable))
         (mutex (bt:make-lock))
         (err nil)
