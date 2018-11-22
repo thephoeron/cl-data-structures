@@ -155,9 +155,8 @@
                          called t)
                    (bt:condition-notify cv)
                    (signal e))))
-              (called
-               (unwind-protect (unless (null err) (signal err))
-                 (bt:condition-notify cv)))
+              (err (bt:condition-notify cv) (signal err))
+              (called (bt:condition-notify cv))
               (t
                (iterate
                  (bt:condition-wait cv mutex)
