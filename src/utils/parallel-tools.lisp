@@ -147,11 +147,12 @@
       (bt:with-lock-held (mutex)
         (cond ((shiftf first-time nil)
                (handler-case
-                   (progn (setf called t)
-                          (apply function args)
+                   (progn (apply function args)
+                          (setf called t)
                           (bt:condition-notify cv))
                  (condition (e)
-                   (setf err e)
+                   (setf err e
+                         called t)
                    (bt:condition-notify cv)
                    (signal e))))
               (called
