@@ -154,11 +154,14 @@
                    (setf err e)
                    (bt:condition-notify cv)
                    (signal e))))
-              (called (unless (null err) (signal err)))
+              (called
+               (unwind-protect (unless (null err) (signal err))
+                 (bt:condition-notify cv)))
               (t
                (iterate
                  (bt:condition-wait cv mutex)
                  (until called)
                  (finally
-                  (unless (null err) (signal err)))))))
+                  (unwind-protect (unless (null err) (signal err))
+                    (bt:condition-notify cv)))))))
       nil)))
