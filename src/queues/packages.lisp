@@ -17,4 +17,6 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.queues.2-3-tree)
   (:export #:make-mutable-2-3-queue
+           #:make-functional-2-3-queue
+           #:functional-2-3-queue
            #:mutable-2-3-queue))

@@ -63,19 +63,48 @@
         :tail-end (access-tail-end container)))
 
 
-(defmethod cl-ds:become-transactional ((container transactional-2-3-queue))
+(defmethod cl-ds:empty-clone ((container 2-3-queue))
+  (make (type-of container)
+        :empty-type (read-element-type container)))
+
+
+(defun copy-array-if-not-nil (array)
+  (unless (null array)
+    (copy-array array)))
+
+
+(defmethod cl-ds:empty-clone ((container transactional-2-3-queue))
+  (make (type-of container)
+        :empty-type (read-element-type container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+
+
+(defmethod cl-ds:become-transactional ((container 2-3-queue))
   (make 'transactional-2-3-queue
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
         :root (cl-ds.common.2-3:access-root container)
-        :head (access-head container)
+        :head (copy-array-if-not-nil (access-head container))
         :element-type (read-element-type container)
         :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (copy-array-if-not-nil (access-tail container))
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-mutable ((container functional-2-3-queue))
+  (make 'mutable-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :size (cl-ds:size container)
+        :head (access-head container)
+        :element-type (read-element-type container)
         :head-position (access-head-position container)
         :tail (access-tail container)
         :tail-position (access-tail-position container)
         :tail-end (access-tail-end container)))
 
 
-(defmethod cl-ds:become-mutable ((container functional-2-3-queue))
+(defmethod cl-ds:become-mutable ((container transactional-2-3-queue))
   (make 'mutable-2-3-queue
         :root (cl-ds.common.2-3:access-root container)
         :size (cl-ds:size container)
