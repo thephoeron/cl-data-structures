@@ -67,43 +67,37 @@
 
 (defmethod cl-ds:put! ((container fundamental-mutable-queue)
                        item)
-  (cl-ds.meta:position-modification #'cl-ds:put!
-                                    container
-                                    container
-                                    item))
+  (cl-ds.meta:position-modification #'cl-ds:put! container
+                                    container item))
+
+
+(defmethod cl-ds:put! ((container fundamental-transactional-queue)
+                       item)
+  (cl-ds.meta:position-modification #'cl-ds:put! container
+                                    container item))
 
 
 (defmethod cl-ds:take-out! ((container fundamental-mutable-queue))
-  (cl-ds.meta:position-modification #'cl-ds:take-out!
-                                    container
-                                    container
-                                    nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out! container
+                                    container nil))
 
 
 (defmethod cl-ds:take-out! ((container fundamental-transactional-queue))
-  (cl-ds.meta:position-modification #'cl-ds:take-out!
-                                    container
-                                    container
-                                    nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out! container
+                                    container nil))
 
 
 (defmethod cl-ds:take-out ((container fundamental-functional-queue))
-  (cl-ds.meta:position-modification #'cl-ds:take-out
-                                    container
-                                    container
-                                    nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out container
+                                    container nil))
 
 
 (defmethod cl-ds:put ((container fundamental-functional-queue)
                       item)
-  (cl-ds.meta:position-modification #'cl-ds:put
-                                    container
-                                    container
-                                    item))
+  (cl-ds.meta:position-modification #'cl-ds:put container
+                                    container item))
 
 
 (defmethod cl-ds:take-out! ((container fundamental-functional-queue))
-  (cl-ds.meta:position-modification #'cl-ds:take-out
-                                    container
-                                    container
-                                    nil))
+  (cl-ds.meta:position-modification #'cl-ds:take-out container
+                                    container nil))
