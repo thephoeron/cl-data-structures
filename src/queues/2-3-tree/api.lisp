@@ -299,10 +299,8 @@
                        (head-position (access-head-position structure))
                        ((:values shrinked-bucket status)
                         (apply #'cl-ds.meta:shrink-bucket
-                               operation
-                               container
-                               bucket
-                               location
+                               operation container
+                               bucket location
                                all))
                        (tail-end head-position)
                        (tail-position 0)
@@ -327,10 +325,8 @@
                      (cl-ds.common.2-3:access-root structure)))
                    ((:values new-bucket status changed)
                     (apply #'cl-ds.meta:shrink-bucket
-                           operation
-                           container
-                           (aref buffer 0)
-                           location
+                           operation container
+                           (aref buffer 0) location
                            all))
                    (tail buffer)
                    (tail-end +buffer-size+)
