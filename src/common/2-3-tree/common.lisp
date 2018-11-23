@@ -1,8 +1,9 @@
 (in-package #:cl-data-structures.common.2-3-tree)
 
 
-(defclass tree ()
+(defclass tree (cl-ds:fundamental-container)
   ((%root :initform cl-ds.meta:null-bucket
+          :initarg :root
           :accessor access-root)))
 
 
