@@ -1,5 +1,6 @@
 * Tasks
-** TODO Can simply become-functional and wrap that to form forward-range!
+** DONE Can simply become-functional and wrap that to form forward-range!
+   CLOSED: [2018-11-23 pią 20:09]
    [2018-10-11 czw]
    [[file:~/quicklisp/local-projects/cl-data-structures/src/queues/2-3-tree/api.lisp::cl-ds.utils:todo)]]
 *** Even better: become-transactional.
