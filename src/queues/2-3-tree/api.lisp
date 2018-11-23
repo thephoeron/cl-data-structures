@@ -80,8 +80,7 @@
                 (visit (cl-data-structures.common.2-3-tree:access-left node)))
                (cl-data-structures.common.2-3-tree::2-node
                 (visit (cl-data-structures.common.2-3-tree:access-right node))
-                (visit (cl-data-structures.common.2-3-tree:access-left node))
-                )
+                (visit (cl-data-structures.common.2-3-tree:access-left node)))
                (t
                 (map nil function node)))))
     (visit (cl-ds.common.2-3:access-root container))
