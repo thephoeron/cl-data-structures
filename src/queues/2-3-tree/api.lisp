@@ -81,9 +81,20 @@
                (cl-data-structures.common.2-3-tree::2-node
                 (visit (cl-data-structures.common.2-3-tree:access-right node))
                 (visit (cl-data-structures.common.2-3-tree:access-left node)))
-               (t
+               (vector
                 (map nil function node)))))
     (visit (cl-ds.common.2-3:access-root container))
+    (let ((head (access-head container))
+          (tail (access-tail container))
+          (tail-position (access-tail-position container))
+          (head-position (access-head-position container))
+          (tail-end (access-tail-end container)))
+      (iterate
+        (for i from tail-position below tail-end)
+        (funcall function (aref tail i)))
+      (iterate
+        (for i from 0 below head-position)
+        (funcall function (aref head i))))
     container))
 
 
