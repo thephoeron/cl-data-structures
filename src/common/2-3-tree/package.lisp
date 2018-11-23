@@ -11,6 +11,8 @@
    #:delete-back-from-tree!
    #:insert-front-into-tree
    #:insert-front-into-tree!
+   #:transactional-insert-front-into-tree!
+   #:transactional-delete-back-from-tree!
    #:node
    #:2-node
    #:3-node

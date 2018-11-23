@@ -42,6 +42,17 @@
           t))
 
 
+(defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:shrink-function)
+                                     (container fundamental-transactional-queue)
+                                     bucket
+                                     location
+                                     &rest all)
+  (declare (ignore location all))
+  (values cl-ds.meta:null-bucket
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket)
+          t))
+
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:shrink-function)
                                       (container fundamental-mutable-queue)
                                       bucket

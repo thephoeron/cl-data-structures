@@ -216,6 +216,43 @@
 
 
 (defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:put!-function)
+     (structure transactional-2-3-queue)
+     container
+     location
+     &rest all)
+  (let ((head-position (access-head-position structure))
+        (size (cl-ds.queues:access-size structure))
+        (head (ensure (access-head structure)
+                #1=(make-array +buffer-size+
+                               :element-type (read-element-type structure)))))
+    (declare (type buffer-index head-position)
+             (type queue-buffer head))
+    (cond ((eql head-position +buffer-size+)
+           (cl-ds.common.2-3:transactional-insert-front-into-tree!
+            structure
+            (lambda () head))
+           (setf (access-head-position structure) 1
+                 head #1#
+                 (access-head structure) head
+                 (aref head 0) (apply #'cl-ds.meta:make-bucket
+                                      operation
+                                      container
+                                      location
+                                      all)
+                 (cl-ds.queues:access-size structure) (1+ size))
+           (values structure
+                   cl-ds.common:empty-eager-modification-operation-status))
+          (t (setf (aref head head-position) (cl-ds.meta:make-bucket operation
+                                                                     container
+                                                                     location)
+                   (access-head-position structure) (1+ head-position)
+                   (cl-ds.queues:access-size structure) (1+ size))
+             (values structure
+                     cl-ds.common:empty-eager-modification-operation-status)))))
+
+
+(defmethod cl-ds.meta:position-modification
     ((operation cl-ds.meta:take-out-function)
      (structure functional-2-3-queue)
      container
@@ -316,6 +353,76 @@
                             :tail-position tail-position
                             :tail-end tail-end)
                       status))))))
+
+
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:take-out!-function)
+     (structure transactional-2-3-queue)
+     container
+     location
+     &rest all)
+  (let ((tail-position (access-tail-position structure))
+        (root (cl-ds.common.2-3:access-root structure))
+        (tail (access-tail structure))
+        (tail-end (access-tail-end structure)))
+    (declare (type buffer-index tail-position)
+             (type (or null queue-buffer) tail))
+    (if (< tail-position tail-end)
+        (bind ((bucket (aref tail tail-position))
+               ((:values new-buffer status changed)
+                (apply #'cl-ds.meta:shrink-bucket!
+                       operation container
+                       bucket location all)))
+          (if (cl-ds.meta:null-bucket-p new-buffer)
+              (progn
+                (decf (cl-ds.queues:access-size structure))
+                (incf (access-tail-position structure)))
+              (setf (aref tail tail-position) new-buffer))
+          (values structure status))
+        (if (cl-ds.meta:null-bucket-p root)
+            (if (~> structure cl-ds:size zerop)
+                (error 'cl-ds:operation-not-allowed
+                       :text "Can't reduce size of the empty queue!")
+                (bind ((head (access-head structure))
+                       (bucket (aref head 0))
+                       (head-position (access-head-position structure))
+                       ((:values shrinked-bucket status)
+                        (apply #'cl-ds.meta:shrink-bucket!
+                               operation
+                               container
+                               bucket
+                               location
+                               all)))
+                  (setf (access-tail-end structure) head-position
+                        (access-head-position structure) 0
+                        (access-head structure) nil
+                        (access-tail structure) head
+                        (access-tail-position structure) 0)
+                  (if (cl-ds.meta:null-bucket-p shrinked-bucket)
+                      (progn
+                        (decf (cl-ds.queues:access-size structure))
+                        (incf (access-tail-position structure)))
+                      (setf (aref head 0) shrinked-bucket))
+                  (values structure status)))
+            (bind (((:values _ buffer)
+                    (cl-ds.common.2-3:transactional-delete-back-from-tree!
+                     structure))
+                   ((:values new-bucket status changed)
+                    (apply #'cl-ds.meta:shrink-bucket
+                           operation
+                           container
+                           (aref buffer 0)
+                           location
+                           all)))
+              (setf (access-tail-position structure) 0
+                    (access-tail-end structure) +buffer-size+
+                    (access-tail structure) buffer)
+              (if (cl-ds.meta:null-bucket-p new-bucket)
+                  (progn
+                    (decf (cl-ds.queues:access-size structure))
+                    (incf (access-tail-position structure)))
+                  (setf (aref buffer 0) new-bucket))
+              (values structure status))))))
 
 
 (defmethod cl-ds.meta:position-modification
