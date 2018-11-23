@@ -41,6 +41,13 @@
   ())
 
 
+(defclass 2-3-queue-range (cl-ds:fundamental-forward-range)
+  ((%mutex :initform (bt:make-lock)
+           :reader read-mutex)
+   (%container :initarg :container
+               :accessor access-container)))
+
+
 (defclass functional-2-3-queue
     (2-3-queue cl-ds.queues:fundamental-functional-queue)
   ())
@@ -61,6 +68,24 @@
         :tail (access-tail container)
         :tail-position (access-tail-position container)
         :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:across (function (container 2-3-queue))
+  (ensure-functionf function)
+  (labels ((visit (node)
+             (etypecase node
+               (cl-data-structures.common.2-3-tree:3-node
+                (visit (cl-data-structures.common.2-3-tree:access-right node))
+                (visit (cl-data-structures.common.2-3-tree:access-middle node))
+                (visit (cl-data-structures.common.2-3-tree:access-left node)))
+               (cl-data-structures.common.2-3-tree::2-node
+                (visit (cl-data-structures.common.2-3-tree:access-right node))
+                (visit (cl-data-structures.common.2-3-tree:access-left node))
+                )
+               (t
+                (map nil function node)))))
+    (visit (cl-ds.common.2-3:access-root container))
+    container))
 
 
 (defmethod cl-ds:empty-clone ((container 2-3-queue))
@@ -531,7 +556,37 @@
 
 
 (defmethod cl-ds:whole-range ((container 2-3-queue))
-  cl-ds.utils:todo)
+  (make '2-3-queue-range
+        :container (cl-ds:become-transactional container)))
+
+
+(defmethod cl-ds:peek-front ((range 2-3-queue-range))
+  (let ((container (access-container range)))
+    (if (~> container cl-ds:size zerop)
+        (values nil nil)
+        (values (cl-ds:at container :front) t))))
+
+
+(defmethod cl-ds:consume-front ((range 2-3-queue-range))
+  (let ((container (access-container range)))
+    (if (~> container cl-ds:size zerop)
+        (values nil nil)
+        (cl-ds:mod-bind (container found value) (cl-ds:take-out! container)
+          (values value t)))))
+
+
+(defmethod cl-ds:clone ((range 2-3-queue-range))
+  (bt:with-lock-held ((read-mutex range))
+    (let ((container (access-container range)))
+      (setf (access-container container)
+            (cl-ds:become-transactional container))
+      (make '2-3-queue-range
+            :container (cl-ds:become-transactional container)))))
+
+
+(defmethod cl-ds:across (function (range 2-3-queue-range))
+  (ensure-functionf function)
+  (cl-ds:across function (access-container range)))
 
 
 (defun mutable-from-traversable (traversable arguments)
