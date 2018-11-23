@@ -54,7 +54,9 @@
 
 
 (defclass transactional-2-3-queue
-    (2-3-queue cl-ds.queues:fundamental-transactional-queue)
+    (2-3-queue
+     cl-ds.common.abstract:fundamental-ownership-tagged-object
+     cl-ds.queues:fundamental-transactional-queue)
   ())
 
 
@@ -110,14 +112,14 @@
 
 (defmethod cl-ds:empty-clone ((container transactional-2-3-queue))
   (make (type-of container)
-        :empty-type (read-element-type container)
-        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+        :empty-type (read-element-type container)))
 
 
 (defmethod cl-ds:become-transactional ((container 2-3-queue))
   (make 'transactional-2-3-queue
-        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
         :root (cl-ds.common.2-3:access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
         :head (copy-array-if-not-nil (access-head container))
         :element-type (read-element-type container)
         :size (cl-ds:size container)
@@ -400,7 +402,7 @@
     (if (< tail-position tail-end)
         (bind ((bucket (aref tail tail-position))
                ((:values new-buffer status changed)
-                (apply #'cl-ds.meta:shrink-bucket!
+                (apply #'cl-ds.meta:shrink-bucket
                        operation container
                        bucket location all)))
           (if (cl-ds.meta:null-bucket-p new-buffer)

@@ -2,7 +2,7 @@
 (defpackage 2-3-queue-tests (:use :cl :prove :cl-data-structures.aux-package))
 (in-package :2-3-queue-tests)
 
-(plan 1188)
+(plan 1394)
 
 (let ((queue (make 'cl-ds.queues.2-3-tree::mutable-2-3-queue)))
   (iterate
@@ -27,6 +27,14 @@
   (let ((i 0))
     (cl-ds:across (lambda (s) (is s i) (incf i))
                   queue)
+    (is i 100))
+  (let ((i 0))
+    (cl-ds:across (lambda (s) (is s i) (incf i))
+                  (cl-ds:whole-range queue))
+    (is i 100))
+  (let ((i 0))
+    (cl-ds:traverse (lambda (s) (is s i) (incf i))
+                    (cl-ds:whole-range queue))
     (is i 100))
   (is (cl-ds:size empty) 0)
   (setf og-queue queue)
