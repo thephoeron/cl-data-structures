@@ -36,18 +36,18 @@
               :initform 0)))
 
 
-(defclass mutable-2-3-queue (2-3-queue
-                             cl-ds.queues:fundamental-mutable-queue)
+(defclass mutable-2-3-queue
+    (2-3-queue cl-ds.queues:fundamental-mutable-queue)
   ())
 
 
-(defclass functional-2-3-queue (2-3-queue
-                                cl-ds.queues:fundamental-functional-queue)
+(defclass functional-2-3-queue
+    (2-3-queue cl-ds.queues:fundamental-functional-queue)
   ())
 
 
-(defclass transactional-2-3-queue (2-3-queue
-                                   cl-ds.queues:fundamental-transactional-queue)
+(defclass transactional-2-3-queue
+    (2-3-queue cl-ds.queues:fundamental-transactional-queue)
   ())
 
 
@@ -166,16 +166,17 @@
                     (size (1+ size)))
                (setf (aref head head-position)
                      (cl-ds.meta:make-bucket operation container location))
-               (values (make (type-of structure)
-                             :head head
-                             :element-type element-type
-                             :size size
-                             :head-position (1+ head-position)
-                             :tail (access-tail structure)
-                             :tail-position (access-tail-position structure)
-                             :root (cl-ds.common.2-3:access-root structure)
-                             :tail-end (access-tail-end structure))
-                       cl-ds.common:empty-eager-modification-operation-status))))))
+               (values
+                (make (type-of structure)
+                      :head head
+                      :element-type element-type
+                      :size size
+                      :head-position (1+ head-position)
+                      :tail (access-tail structure)
+                      :tail-position (access-tail-position structure)
+                      :root (cl-ds.common.2-3:access-root structure)
+                      :tail-end (access-tail-end structure))
+                cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (defmethod cl-ds.meta:position-modification
@@ -210,8 +211,9 @@
                                                                      location)
                    (access-head-position structure) (1+ head-position)
                    (cl-ds.queues:access-size structure) (1+ size))
-             (values structure
-                     cl-ds.common:empty-eager-modification-operation-status)))))
+             (values
+              structure
+              cl-ds.common:empty-eager-modification-operation-status)))))
 
 
 (defmethod cl-ds.meta:position-modification
@@ -247,8 +249,9 @@
                                                                      location)
                    (access-head-position structure) (1+ head-position)
                    (cl-ds.queues:access-size structure) (1+ size))
-             (values structure
-                     cl-ds.common:empty-eager-modification-operation-status)))))
+             (values
+              structure
+              cl-ds.common:empty-eager-modification-operation-status)))))
 
 
 (defmethod cl-ds.meta:position-modification
@@ -568,7 +571,8 @@
                (t
                 (unless (cl-ds.meta:null-bucket-p node)
                   (map nil
-                       (lambda (x) (cl-ds.meta:map-bucket container x function))
+                       (lambda (x)
+                         (cl-ds.meta:map-bucket container x function))
                        node))))))
     (let ((tail (access-tail container))
           (tail-size (access-tail-position container)))
