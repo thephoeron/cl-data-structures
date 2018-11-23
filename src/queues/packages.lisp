@@ -6,6 +6,7 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.queues)
   (:export #:fundamental-queue
+           #:fundamental-transactional-queue
            #:fundamental-mutable-queue
            #:fundamental-functional-queue
            #:access-size))

@@ -42,12 +42,29 @@
 
 
 (defclass functional-2-3-queue (2-3-queue
-                                cl-ds.queues:fundamental-mutable-queue)
+                                cl-ds.queues:fundamental-functional-queue)
+  ())
+
+
+(defclass transactional-2-3-queue (2-3-queue
+                                   cl-ds.queues:fundamental-transactional-queue)
   ())
 
 
 (defmethod cl-ds:become-functional ((container mutable-2-3-queue))
   (make 'functional-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :head (access-head container)
+        :element-type (read-element-type container)
+        :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (access-tail container)
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-transactional ((container transactional-2-3-queue))
+  (make 'transactional-2-3-queue
         :root (cl-ds.common.2-3:access-root container)
         :head (access-head container)
         :element-type (read-element-type container)

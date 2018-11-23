@@ -12,6 +12,10 @@
   ())
 
 
+(defclass fundamental-transactional-queue (cl-ds:transactional fundamental-queue)
+  ())
+
+
 (defclass fundamental-functional-queue (cl-ds:functional fundamental-queue)
   ())
 
