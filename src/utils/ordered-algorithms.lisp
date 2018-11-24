@@ -11,7 +11,7 @@
     (for pelt previous elt)
     (if-first-time
      t
-     (always (funcall fn pelt elt))))) ()
+     (always (funcall fn pelt elt)))))
 
 
 (-> merge-ordered-vectors ((or vector null) (-> (t t) boolean) vector &rest vector)
@@ -228,9 +228,3 @@
       (vector-push-extend v result))
     (finally (return (adjust-array result
                                    (fill-pointer result))))))
-
-
-(defun block-exchange (vector l m r)
-  (revert-block vector l m)
-  (revert-block vector (1+ m) r)
-  (revert-block vector l r))
