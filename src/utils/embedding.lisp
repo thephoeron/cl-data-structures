@@ -19,7 +19,7 @@
     (bind ((length (length vector-of-elements))
            (embeddings (make-array length))
            (m1 (ceiling (log length 2)))
-           (m2 (ceiling (* c (log length 2))))
+           (m2 (ceiling (* c (log length))))
            (element-type (array-element-type vector-of-elements))
            ((:dflet sample-size (j))
             (ceiling (* length (expt 2 (- j)))))
