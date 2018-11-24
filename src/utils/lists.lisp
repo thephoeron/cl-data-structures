@@ -185,13 +185,16 @@
          (last (1- length))
          (youngest-parent (truncate last 2)))
     (declare (type fixnum youngest-parent last count length))
-    (cases ((simple-vector-p vector)
-            (typep vector '(vector fixnum))
-            (typep vector '(vector non-negative-fixnum))
-            (typep vector '(vector single-float))
-            (typep vector '(vector double-float))
-            (eq predicate #'>)
-            (eq predicate #'<))
+    (cases ((eq key #'identity)
+            (simple-vector-p vector)
+            (:variant
+             (typep vector '(vector fixnum))
+             (typep vector '(vector non-negative-fixnum))
+             (typep vector '(vector single-float))
+             (typep vector '(vector double-float)))
+            (:variant
+             (eq predicate #'>)
+             (eq predicate #'<)))
       (labels ((move-down (first last)
                  (declare (type fixnum first last))
                  (iterate

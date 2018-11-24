@@ -139,13 +139,29 @@
   @end(list)"
   (generate-if-else tests forms))
 
-
-(defmacro cases (tests &body form)
+(defmacro cases (all-cases &body form)
   "Macro, used for elemination of code branches by duplicating code."
-  (let* ((count (length tests)))
-    `(cond+ ,tests
-       ,@(mapcar (lambda (x) `(,x ,@form))
-                 (every-possible-combination count)))))
+  (bind ((tests (remove :variant all-cases
+                        :key (lambda (x) (when (listp x) (first x)))))
+         (count (length tests))
+         (variants (~>> (remove :variant all-cases
+                                :key (lambda (x)
+                                       (when (listp x)
+                                         (first x)))
+                                :test-not #'eql)
+                        (mapcar #'rest)
+                        (mapcar (lambda (x) (append x '(t))))))
+         ((:labels expand-variants (&optional (var variants)))
+          (if (endp var)
+              `(progn ,@form)
+              `(cond ,@(mapcar (lambda (x)
+                                 `(,x ,(expand-variants (rest var))))
+                               (first var))))))
+    (if (null tests)
+        (expand-variants)
+        `(cond+ ,tests
+           ,@(mapcar (lambda (x) `(,x ,(expand-variants)))
+                     (every-possible-combination count))))))
 
 
 (defmacro cond-compare ((a b) < = >)
@@ -329,4 +345,3 @@
 (defmacro lparallel-future (variables &body body)
   `(with-rebind ,variables
      (lparallel:future (rebind ,@body))))
-

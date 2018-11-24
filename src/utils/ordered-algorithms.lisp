@@ -104,14 +104,21 @@
   (check-type second-order vector)
   (cases ((simple-vector-p first-order)
           (simple-vector-p second-order)
-          (eq less #'<)
-          (eq less #'>)
-          (typep first-order '(vector fixnum))
-          (typep second-order '(vector fixnum))
-          (typep second-order '(vector non-negative-fixnum))
-          (typep first-order '(vector non-negative-fixnum)))
+          (:variant
+           (eq same #'=)
+           (eq same #'eql))
+          (:variant
+           (eq less #'<)
+           (eq less #'>))
+          (:variant
+           (typep first-order '(vector fixnum))
+           (typep first-order '(vector non-negative-fixnum)))
+          (:variant
+           (typep second-order '(vector non-negative-fixnum))
+           (typep second-order '(vector fixnum))))
     (with-vectors (first-order second-order)
       (iterate
+        (declare (type fixnum a b first-length second-length))
         (with a = 0)
         (with b = 0)
         (with first-length = (length first-order))
@@ -135,9 +142,11 @@
                  (incf b))))
         (finally
          (iterate
+           (declare (type fixnum i))
            (for i from a below (length first-order))
            (funcall on-first-missing (first-order i)))
          (iterate
+           (declare (type fixnum i))
            (for i from b below (length second-order))
            (funcall on-second-missing (second-order i))))))))
 
