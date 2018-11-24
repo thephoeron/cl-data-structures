@@ -99,36 +99,47 @@
                                   (second-key key)
                                   (same #'=)
                                   (less #'<))
-  (with-vectors (first-order second-order)
-    (iterate
-      (with a = 0)
-      (with b = 0)
-      (with first-length = (length first-order))
-      (with second-length = (length second-order))
-      (while (< a first-length))
-      (while (< b second-length))
-      (for av = (funcall first-key (first-order a)))
-      (for bv = (funcall second-key (second-order b)))
-      (cond ((funcall same av bv)
-             (progn
-               (funcall function (first-order a) (second-order b))
-               (incf a)
-               (incf b)))
-            ((funcall less av bv)
-             (progn
-               (funcall on-first-missing (first-order a))
-               (incf a)))
-            (t
-             (progn
-               (funcall on-second-missing (second-order b))
-               (incf b))))
-      (finally
-       (iterate
-         (for i from a below (length first-order))
-         (funcall on-first-missing (first-order i)))
-       (iterate
-         (for i from b below (length second-order))
-         (funcall on-second-missing (second-order i)))))))
+  (declare (optimize (speed 3) (safety 1)))
+  (check-type first-order vector)
+  (check-type second-order vector)
+  (cases ((simple-vector-p first-order)
+          (simple-vector-p second-order)
+          (eq less #'<)
+          (eq less #'>)
+          (typep first-order '(vector fixnum))
+          (typep second-order '(vector fixnum))
+          (typep second-order '(vector non-negative-fixnum))
+          (typep first-order '(vector non-negative-fixnum)))
+    (with-vectors (first-order second-order)
+      (iterate
+        (with a = 0)
+        (with b = 0)
+        (with first-length = (length first-order))
+        (with second-length = (length second-order))
+        (while (< a first-length))
+        (while (< b second-length))
+        (for av = (funcall first-key (first-order a)))
+        (for bv = (funcall second-key (second-order b)))
+        (cond ((funcall same av bv)
+               (progn
+                 (funcall function (first-order a) (second-order b))
+                 (incf a)
+                 (incf b)))
+              ((funcall less av bv)
+               (progn
+                 (funcall on-first-missing (first-order a))
+                 (incf a)))
+              (t
+               (progn
+                 (funcall on-second-missing (second-order b))
+                 (incf b))))
+        (finally
+         (iterate
+           (for i from a below (length first-order))
+           (funcall on-first-missing (first-order i)))
+         (iterate
+           (for i from b below (length second-order))
+           (funcall on-second-missing (second-order i))))))))
 
 
 (defun ordered-intersection (compare-fn test-fn vector &rest more-vectors)
