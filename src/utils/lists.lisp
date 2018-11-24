@@ -187,9 +187,11 @@
     (declare (type fixnum youngest-parent last count length))
     (cases ((simple-vector-p vector)
             (typep vector '(vector fixnum))
+            (typep vector '(vector non-negative-fixnum))
+            (typep vector '(vector single-float))
+            (typep vector '(vector double-float))
             (eq predicate #'>)
-            (eq predicate #'<)
-            (typep vector '(vector non-negative-fixnum)))
+            (eq predicate #'<))
       (labels ((move-down (first last)
                  (declare (type fixnum first last))
                  (iterate
