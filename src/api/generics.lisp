@@ -80,7 +80,7 @@
   (:generic-function-class cl-ds.meta:update-if!-function))
 
 (defgeneric become-functional (container)
-  (:method ((container functional)) container))
+  (:method :around ((container functional)) container))
 
 (defgeneric become-mutable (container)
   (:method ((container mutable)) container))

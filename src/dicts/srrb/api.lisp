@@ -253,6 +253,18 @@
                    (values nil nil)))))))
 
 
+(defmethod cl-ds:become-functional ((container fundamental-sparse-rrb-vector))
+  (make 'functional-sparse-rrb-vector
+        :tree (access-tree container)
+        :tail (access-tail container)
+        :tail-mask (access-tail-mask container)
+        :shift (access-shift container)
+        :tree-size (access-tree-size container)
+        :tree-index-bound (access-tree-index-bound container)
+        :index-bound (access-index-bound container)
+        :element-type (read-element-type container)))
+
+
 (defmethod cl-ds:become-mutable ((container fundamental-sparse-rrb-vector))
   (make 'mutable-sparse-rrb-vector
         :tree (access-tree container)
@@ -282,6 +294,7 @@
   (make-instance 'transactional-sparse-rrb-vector
                  :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
                  :element-type element-type))
+
 
 (defun make-mutable-sparse-rrb-vector (&key (element-type t))
   (make-instance 'mutable-sparse-rrb-vector
