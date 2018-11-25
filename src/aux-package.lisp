@@ -223,6 +223,7 @@
   serapeum:nand
   serapeum:econd
   serapeum:ordering
+  serapeum:defalias
   serapeum:nest
   serapeum:nlet
   serapeum:flip
