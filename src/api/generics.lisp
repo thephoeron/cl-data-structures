@@ -80,10 +80,16 @@
   (:generic-function-class cl-ds.meta:update-if!-function))
 
 (defgeneric become-functional (container)
-  (:method :around ((container functional)) container))
+  (:method :around ((container functional))
+    (if (typep container 'lazy)
+        (call-next-method)
+        container)))
 
 (defgeneric become-mutable (container)
-  (:method ((container mutable)) container))
+  (:method :around ((container mutable))
+    (if (transactionalp container)
+        (call-next-method)
+        container)))
 
 (defgeneric become-transactional (container))
 
