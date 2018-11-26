@@ -329,12 +329,12 @@
 
 
 (defun regex-matches (regex path)
-  (~> path
-      (osicat:unmerge-pathnames (cl-fad:pathname-parent-directory path))
-      namestring
-      (cl-ppcre:scan regex _)
-      not
-      null))
+  (~>> (make-pathname :directory (pathname-directory path))
+       (osicat:unmerge-pathnames path )
+       namestring
+       (cl-ppcre:scan regex)
+       not
+       null))
 
 
 (defun not-greater (times depth)
