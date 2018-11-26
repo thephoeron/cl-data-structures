@@ -329,8 +329,7 @@
 
 
 (defun regex-matches (regex path)
-  (~>> (make-pathname :directory (pathname-directory path))
-       (osicat:unmerge-pathnames path )
+  (~>> (pathname-name path)
        namestring
        (cl-ppcre:scan regex)
        not
