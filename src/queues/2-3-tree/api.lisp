@@ -44,6 +44,8 @@
 (defclass 2-3-queue-range (cl-ds:fundamental-forward-range)
   ((%mutex :initform (bt:make-lock)
            :reader read-mutex)
+   (%og-container :initarg :og-container
+                  :accessor access-og-container)
    (%container :initarg :container
                :accessor access-container)))
 
@@ -575,7 +577,8 @@
 
 (defmethod cl-ds:whole-range ((container 2-3-queue))
   (make '2-3-queue-range
-        :container (cl-ds:become-transactional container)))
+        :container (cl-ds:become-transactional container)
+        :og-container container))
 
 
 (defmethod cl-ds:peek-front ((range 2-3-queue-range))
@@ -599,7 +602,30 @@
       (setf (access-container container)
             (cl-ds:become-transactional container))
       (make '2-3-queue-range
-            :container (cl-ds:become-transactional container)))))
+            :container (cl-ds:become-transactional container)
+            :og-container container))))
+
+
+(defmethod cl-ds:reset! ((queue mutable-2-3-queue))
+  (setf (access-head-position queue) 0
+        (access-tail-end queue) 0
+        (cl-ds.queues:access-size queue) 0
+        (cl-ds.common.2-3:access-root) cl-ds.meta:null-bucket)
+  queue)
+
+
+(defmethod cl-ds:reset! ((queue transactional-2-3-queue))
+  (setf (access-head-position queue) 0
+        (access-tail-end queue) 0
+        (cl-ds.queues:access-size queue) 0
+        (cl-ds.common.2-3:access-root) cl-ds.meta:null-bucket)
+  queue)
+
+
+(defmethod cl-ds:reset! ((range 2-3-queue-range))
+  (setf (access-container container)
+        (~> range access-og-container cl-ds:become-transactional))
+  range)
 
 
 (defmethod cl-ds:across (function (range 2-3-queue-range))
