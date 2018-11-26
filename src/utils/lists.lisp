@@ -204,14 +204,14 @@
                    (when (and (< largest last)
                               (funcall predicate
                                        (funcall key
-                                                (aref vector
-                                                      (the fixnum (1+ largest))))
+                                                (aref vector largest))
                                        (funcall key
-                                                (aref vector largest))))
+                                                (aref vector
+                                                      (the fixnum (1+ largest))))))
                      (incf largest))
                    (if (funcall predicate
-                                (funcall key (aref vector largest))
-                                (funcall key (aref vector first)))
+                                (funcall key (aref vector first))
+                                (funcall key (aref vector largest)))
                        (let ((next (the fixnum (1+ (the fixnum (* 2 first))))))
                          (rotatef (aref vector first) (aref vector largest))
                          (shiftf first largest next))
@@ -223,7 +223,7 @@
                    (for i from youngest-parent downto 0)
                    (move-down i last))
                  (iterate
-                   (declare (type fixnum i limit))
+                   (declare (type non-negative-fixnum i limit))
                    (with limit = (- length k))
                    (for i from last above limit)
                    (when (funcall predicate
@@ -234,9 +234,8 @@
         (declare (inline move-down heap-select)
                  (dynamic-extent #'move-down #'heap-select))
         (iterate
-          (declare (type fixnum i k))
           (for i from 0 below count)
-          (for k from 1)
+          (for k from count downto 1)
           (heap-select k)
           (setf (aref result i) (aref vector 0)))))
     result))
