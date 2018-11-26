@@ -162,14 +162,14 @@
 (defmethod make-stack-cell ((name (eql :regex-directory)) &key path (times 1) (predicate (constantly t)))
   (make 'regex-directory-file-range-stack-cell
         :predicate (ensure-function predicate)
-        :path path
+        :path (cl-ppcre:create-scanner path)
         :times times))
 
 
 (defmethod make-stack-cell ((name (eql :regex-file)) &key path (predicate (constantly t)))
   (make 'regex-file-file-range-stack-cell
         :predicate (ensure-function predicate)
-        :path path))
+        :path (cl-ppcre:create-scanner path)))
 
 
 (defmethod make-stack-cell ((name (eql :file)) &key path (predicate (constantly t)))

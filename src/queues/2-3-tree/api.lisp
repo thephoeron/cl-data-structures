@@ -165,8 +165,7 @@
 
 (defun make-transactional-2-3-queue (&key (element-type t))
   (make 'transactional-2-3-queue
-        :element-type element-type
-        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+        :element-type element-type))
 
 
 (defmethod cl-ds.meta:position-modification
