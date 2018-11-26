@@ -329,7 +329,8 @@
 
 
 (defun regex-matches (regex path)
-  (~>> (pathname-name path)
+  (~>> (make-pathname :name (pathname-name path)
+                      :type (pathname-type path))
        namestring
        (cl-ppcre:scan regex)
        not
