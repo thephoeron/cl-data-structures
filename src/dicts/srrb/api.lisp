@@ -431,3 +431,17 @@
                                   (make-range-from-tail container))
                             (delete nil))
         :container container))
+
+
+(defmethod cl-ds:reset! ((vector mutable-sparse-rrb-vector))
+  (setf (access-tree vector) nil
+        (access-tail-mask vector) 0
+        (access-shift vector) 0
+        (access-tree-size vector) 0
+        (access-tree-index-bound vector) 0
+        (access-index-bound vector) cl-ds.common.rrb:+maximum-children-count+)
+  vector)
+
+
+(defmethod cl-ds:empty-clone ((vector fundamental-sparse-rrb-vector))
+  (make (type-of vector) :element-type (read-element-type vector)))

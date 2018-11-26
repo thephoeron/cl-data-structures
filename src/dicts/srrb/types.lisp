@@ -42,4 +42,5 @@
     (cl-ds:transactional
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      mutable-sparse-rrb-vector)
-  ())
+  ()
+  (:default-initargs :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
