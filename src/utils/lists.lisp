@@ -232,8 +232,8 @@
                       (aref vector (1- heap-size)))
                 (heapify 0))
               (decf heap-size)))
-     (declare (inline extract-min heapify right
-                      left compare))
+     (declare (inline extract-min heapify
+                      right left compare))
      (iterate
        (declare (type fixnum i start))
        (with start = (truncate (1- heap-size) 2))
