@@ -222,10 +222,9 @@
                   (setf smallest r))
                 (if (eql smallest i)
                     (leave)
-                    (progn
-                      (rotatef (aref vector smallest)
-                               (aref vector i))
-                      (setf i smallest)))))
+                    (psetf i smallest
+                           (aref vector smallest) (aref vector i)
+                           (aref vector i) (aref vector smallest)))))
             (extract-min ()
               (when (> heap-size 1)
                 (setf (aref vector 0)
