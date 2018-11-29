@@ -52,12 +52,12 @@
   ())
 
 
-(defclass chunked-range (fundamental-forward-range)
+(defclass chunking-mixin ()
+  ())
+
+
+(defclass chunked-range (chunking-mixin fundamental-forward-range)
   ((%original-range :initarg :original-range
                     :reader read-original-range)
    (%chunk-size :initarg :chunk-size
                 :reader read-chunk-size)))
-
-
-(defclass chunking-mixin ()
-  ())
