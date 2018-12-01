@@ -91,7 +91,7 @@
                  :initial-stack (access-stack range)
                  :container (read-container range)
                  :near (read-near range)
-                 :read-margin (read-margin range)))
+                 :margin (read-margin range)))
 
 
 (defmethod cl-ds:clone ((container fundamental-egnat-container))
