@@ -136,10 +136,11 @@
            (return (< (length av) (length bv))))))))
 
 
-(defun add-to-list (list data)
+(defun add-to-list (list data &optional (function #'identity))
   (reduce (flip #'cons)
           data
-          :initial-value list))
+          :initial-value list
+          :key function))
 
 
 (defun normalize-sequence-to-sum (sequence sum)
