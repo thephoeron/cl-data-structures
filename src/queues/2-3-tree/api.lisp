@@ -77,16 +77,17 @@
 (defmethod cl-ds:across (function (container 2-3-queue))
   (ensure-functionf function)
   (labels ((visit (node)
-             (etypecase node
-               (cl-data-structures.common.2-3-tree:3-node
-                (visit (cl-data-structures.common.2-3-tree:access-right node))
-                (visit (cl-data-structures.common.2-3-tree:access-middle node))
-                (visit (cl-data-structures.common.2-3-tree:access-left node)))
-               (cl-data-structures.common.2-3-tree::2-node
-                (visit (cl-data-structures.common.2-3-tree:access-right node))
-                (visit (cl-data-structures.common.2-3-tree:access-left node)))
-               (vector
-                (map nil function node)))))
+             (unless (cl-ds.meta:null-bucket-p node)
+               (etypecase node
+                 (cl-data-structures.common.2-3-tree:3-node
+                  (visit (cl-data-structures.common.2-3-tree:access-right node))
+                  (visit (cl-data-structures.common.2-3-tree:access-middle node))
+                  (visit (cl-data-structures.common.2-3-tree:access-left node)))
+                 (cl-data-structures.common.2-3-tree::2-node
+                  (visit (cl-data-structures.common.2-3-tree:access-right node))
+                  (visit (cl-data-structures.common.2-3-tree:access-left node)))
+                 (vector
+                  (map nil function node))))))
     (visit (cl-ds.common.2-3:access-root container))
     (let ((head (access-head container))
           (tail (access-tail container))
