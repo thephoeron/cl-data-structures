@@ -84,7 +84,7 @@
           (for (values f-val more) = (cl-ds:consume-front outer))
           (when (not more)
             (leave (values nil nil)))
-          (setf current (funcall key value))
+          (setf current (funcall key f-val))
           (for result = (value))
           (unless (null result)
             (leave (values result t))))
