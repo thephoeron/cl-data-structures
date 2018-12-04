@@ -131,19 +131,18 @@
 
 
 (defmethod print-object ((obj hash-table-range) stream)
-  (format stream "<HT-range:~%")
-  (let ((count 10))
-    (block map-block
-      (maphash (lambda (key value)
-                 (format stream " {~a} ~%" key)
-                 (decf count)
-                 (when (zerop count)
-                   (return-from map-block)))
-               (read-hash-table obj)))
-    (when (> (hash-table-count (read-hash-table obj)) 3)
-      (format stream " ~a~%" "..."))
-    (format stream ">")
-    obj))
+  (print-unreadable-object (obj stream :type t)
+    (let ((count 10))
+      (block map-block
+        (maphash (lambda (key value) (declare (ignore value))
+                   (format stream "{~a} " key)
+                   (decf count)
+                   (when (zerop count)
+                     (return-from map-block)))
+                 (read-hash-table obj)))
+      (when (> (hash-table-count (read-hash-table obj)) 3)
+        (format stream "..."))
+      obj)))
 
 
 (defmethod cl-ds:traverse (function (range hash-table-range))
