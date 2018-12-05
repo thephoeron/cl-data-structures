@@ -21,7 +21,6 @@
 
 
 (defmethod cl-ds:clone ((range line-by-line-range))
-  (close-stream range)
   (make 'line-by-line-range
         :path (read-path range)
         :reached-end (access-reached-end range)

@@ -279,7 +279,7 @@ Range releated functions.
 (defmethod chunked ((range chunking-mixin) &optional chunk-size-hint)
   (make 'chunked-range
         :original-range (cl-ds:clone range)
-        :chunk-size (or chunk-size-hint 521)))
+        :chunk-size (or chunk-size-hint 512)))
 
 (defmethod consume-front ((range chunked-range))
   (bind ((og-range (read-original-range range))
