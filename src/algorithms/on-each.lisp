@@ -19,17 +19,19 @@
          :reader read-key)))
 
 
-(defclass forward-proxy-box-range (proxy-box-range forward-proxy-range)
+(defclass forward-proxy-box-range (transparent-to-chunking-mixin
+                                   proxy-box-range
+                                   forward-proxy-range)
   ())
 
 
-(defclass bidirectional-proxy-box-range (bidirectional-proxy-range
-                                         forward-proxy-box-range)
+(defclass bidirectional-proxy-box-range (forward-proxy-box-range
+                                         bidirectional-proxy-range)
   ())
 
 
-(defclass random-access-proxy-box-range (random-access-proxy-range
-                                         bidirectional-proxy-box-range)
+(defclass random-access-proxy-box-range (bidirectional-proxy-box-range
+                                         random-access-proxy-range)
   ())
 
 
