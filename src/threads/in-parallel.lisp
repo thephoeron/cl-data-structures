@@ -58,7 +58,7 @@
     (list* thread queue)))
 
 
-(defun traverse/accross-thread-buffer-range (traverse/accross range function)
+(defun traverse/accross-in-parallel-buffer-range (traverse/accross range function)
   (bind ((og-range (cl-ds.alg::read-original-range range))
          (chunked-range (cl-ds:chunked og-range (read-chunk-size-hint range))))
     (if (null chunked-range)
@@ -85,11 +85,11 @@
 
 
 (defmethod cl-ds:traverse (function (range in-parallel-range))
-  (traverse/accross-thread-buffer-range #'cl-ds:traverse range function))
+  (traverse/accross-in-parallel-buffer-range #'cl-ds:traverse range function))
 
 
 (defmethod cl-ds:across (function (range in-parallel-range))
-  (traverse/accross-thread-buffer-range #'cl-ds:across range function))
+  (traverse/accross-in-parallel-buffer-range #'cl-ds:across range function))
 
 
 (defclass in-parallel-function (cl-ds.alg.meta:layer-function)

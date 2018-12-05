@@ -299,6 +299,37 @@ Range releated functions.
                   t))
         (values nil nil))))
 
+
+(defmethod cl-ds:across (function (range chunked-range))
+  (bind ((og-range (read-original-range range))
+         (chunk-size (read-chunk-size range))
+         (vector #1=(make-array chunk-size :fill-pointer 0)))
+    (cl-ds:across (lambda (x)
+                    (vector-push-extend x vector)
+                    (unless (< (length vector) chunk-size)
+                      (funcall function (cl-ds:whole-range vector))
+                      (setf vector #1#)))
+                  og-range)
+    (unless (emptyp vector)
+      (funcall function (cl-ds:whole-range vector)))
+    range))
+
+
+(defmethod cl-ds:traverse (function (range chunked-range))
+  (bind ((og-range (read-original-range range))
+         (chunk-size (read-chunk-size range))
+         (vector #1=(make-array chunk-size :fill-pointer 0)))
+    (cl-ds:traverse (lambda (x)
+                      (vector-push-extend x vector)
+                      (unless (< (length vector) chunk-size)
+                        (funcall function (cl-ds:whole-range vector))
+                        (setf vector #1#)))
+                    og-range)
+    (unless (emptyp vector)
+      (funcall function (cl-ds:whole-range vector)))
+    range))
+
+
 (defmethod peek-front ((range chunked-range))
   (bind ((og-range (~> range read-original-range cl-ds:clone))
          ((:values item more) (consume-front og-range)))

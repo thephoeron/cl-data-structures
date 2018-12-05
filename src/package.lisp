@@ -13,6 +13,7 @@
    #:assert-one-dimension
    #:at
    #:become-functional
+   #:chunked-range
    #:become-lazy
    #:become-mutable
    #:become-transactional
