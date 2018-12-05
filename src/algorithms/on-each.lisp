@@ -19,7 +19,7 @@
          :reader read-key)))
 
 
-(defclass forward-proxy-box-range (transparent-to-chunking-mixin
+(defclass forward-proxy-box-range (chunked-proxy-range
                                    proxy-box-range
                                    forward-proxy-range)
   ())

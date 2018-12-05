@@ -10,7 +10,8 @@
                     :reader read-original-range)))
 
 
-(defclass chunked-proxy-range (proxy-range
+(defclass chunked-proxy-range (cl-ds:chunking-mixin
+                               proxy-range
                                cl-ds:fundamental-forward-range)
   ((%chunked-range :initarg :chunked-range
                    :reader read-chunked-range)))
