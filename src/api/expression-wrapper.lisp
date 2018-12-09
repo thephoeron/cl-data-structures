@@ -96,7 +96,7 @@
          ((:values function arguments-closure) (apply %construct-function %arguments)))
     (setf %closure function
           %arguments-closure arguments-closure)
-    (c2mop:set-funcallable-instance-function obj (lambda () (funcall function))))
+    (c2mop:set-funcallable-instance-function obj function))
   obj)
 
 
