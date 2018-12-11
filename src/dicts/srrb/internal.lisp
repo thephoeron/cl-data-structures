@@ -90,7 +90,7 @@
 (-> insert-tail! (mutable-sparse-rrb-vector)
     mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((tail-mask (access-tail-mask structure))
         (ownership-tag nil))
     (unless (zerop tail-mask)
@@ -103,7 +103,7 @@
              (root tree)
              (shift %shift))
         (declare (type non-negative-fixnum shift))
-        (cond ((null root)
+        (cond ((cl-ds.meta:null-bucket-p root)
                (setf tree new-node))
               ((>= (ash tree-index-bound (- cl-ds.common.rrb:+bit-count+))
                    (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
@@ -112,6 +112,7 @@
                  (incf %shift)
                  (setf tree new-root)))
               (t (iterate
+                   (declare (type fixnum size position index))
                    (with size = (access-tree-index-bound structure))
                    (with node = root)
                    (with position = (* cl-ds.common.rrb:+bit-count+ shift))
@@ -175,7 +176,7 @@
                (root tree)
                (shift %shift))
           (declare (type non-negative-fixnum shift))
-          (cond ((null root)
+          (cond ((cl-ds.meta:null-bucket-p root)
                  (setf root new-node))
                 ((>= (ash tree-index-bound (- cl-ds.common.rrb:+bit-count+))
                      (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
@@ -194,7 +195,7 @@
                                                           node index)))
                                       (next-node (and present (cl-ds.common.rrb:sparse-nref
                                                                node index)))
-                                      (current-node (if (null node)
+                                      (current-node (if (cl-ds.meta:null-bucket-p node)
                                                         (cl-ds.common.rrb:make-rrb-node
                                                          :content (make-array 1))
                                                         (cl-ds.common.rrb:deep-copy-sparse-rrb-node
@@ -225,53 +226,76 @@
 (-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
     transactional-sparse-rrb-vector)
 (defun transactional-insert-tail! (structure ownership-tag)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((tail-mask (access-tail-mask structure)))
+    (declare (type fixnum tail-mask))
     (unless (zerop tail-mask)
       (bind ((new-node (make-node-from-tail structure ownership-tag))
-             (size (access-tree-index-bound structure))
+             (size (the fixnum (access-tree-index-bound structure)))
              ((:accessors (tree access-tree)
                           (tree-size access-tree-size)
                           (%shift access-shift)
                           (tree-index-bound access-tree-index-bound))
               structure)
              ((:labels impl (node byte-position depth))
-              (if (eql depth 0)
-                  new-node
-                  (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
-                                           byte-position)
-                                     size))
-                         (present (and node
-                                       (cl-ds.common.rrb:sparse-rrb-node-contains
-                                        node index)))
-                         (next-node (and present (cl-ds.common.rrb:sparse-nref
-                                                  node index)))
-                         (current-node (or node
-                                           (cl-ds.common.rrb:make-rrb-node
-                                            :content (make-array 1)
-                                            :ownership-tag ownership-tag)))
-                         (owned (cl-ds.common.abstract:acquire-ownership
-                                 current-node
-                                 ownership-tag))
-                         (new-node (impl next-node
-                                         (- byte-position
-                                            cl-ds.common.rrb:+bit-count+)
-                                         (1- depth))))
-                    (if owned
-                        (progn
-                          (setf (cl-ds.common.rrb:sparse-nref current-node index)
-                                new-node)
-                          current-node)
-                        (let ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
-                                     current-node (if present 0 1)
-                                     ownership-tag)))
-                          (setf (cl-ds.common.rrb:sparse-nref copy index)
-                                new-node)
-                          copy)))))
+              (declare (type fixnum byte-position depth))
+              (let* ((next-depth (1- depth))
+                     (current-node (if (cl-ds.meta:null-bucket-p node)
+                                       (cl-ds.common.rrb:make-rrb-node
+                                        :content (make-array 1)
+                                        :ownership-tag ownership-tag)
+                                       node))
+                     (owned (cl-ds.common.abstract:acquire-ownership
+                             current-node
+                             ownership-tag)))
+                (if (zerop next-depth)
+                    (let ((final-index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                                  cl-ds.common.rrb:+bit-count+)
+                                            size)))
+                      (if owned
+                          (progn
+                            (insert-into-node! current-node new-node final-index)
+                            current-node)
+                          (lret ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                       current-node 1
+                                       ownership-tag)))
+                            (insert-into-node! copy new-node final-index))))
+                    (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                             byte-position)
+                                       size))
+                           (present (and (not (cl-ds.meta:null-bucket-p node))
+                                         (cl-ds.common.rrb:sparse-rrb-node-contains
+                                          node index)))
+                           (next-node (and present (cl-ds.common.rrb:sparse-nref
+                                                    node index)))
+
+                           (new-node (impl next-node
+                                          (- byte-position
+                                             cl-ds.common.rrb:+bit-count+)
+                                          next-depth)))
+                      (cl-ds.utils:cond+ (owned present)
+                        ((t t)
+                         (setf (cl-ds.common.rrb:sparse-nref current-node index)
+                               new-node)
+                         current-node)
+                        ((t nil)
+                         (insert-into-node! current-node new-node index)
+                         current-node)
+                        ((nil t)
+                         (lret ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                       current-node (if present 0 1)
+                                       ownership-tag)))
+                           (setf (cl-ds.common.rrb:sparse-nref copy index)
+                                 new-node)))
+                        ((nil nil)
+                         (lret ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                       current-node (if present 0 1)
+                                       ownership-tag)))
+                           (insert-into-node! copy new-node index))))))))
              (root tree)
              (shift %shift))
         (declare (type non-negative-fixnum shift))
-        (cond ((null root)
+        (cond ((cl-ds.meta:null-bucket-p root)
                (setf tree new-node))
               ((>= (ash tree-index-bound (- cl-ds.common.rrb:+bit-count+))
                    (ash 1 (* cl-ds.common.rrb:+bit-count+ shift))) ; overflow
@@ -315,7 +339,7 @@
              (type fixnum shift-difference))
     (assert (not (zerop shift-difference)))
     (if larger?
-        (if (null root)
+        (if (cl-ds.meta:null-bucket-p root)
             (cl-ds.common.rrb:make-sparse-rrb-node
              :ownership-tag ownership-tag)
             (iterate
@@ -341,7 +365,7 @@
                  (assert (eq (cl-ds.common.rrb:sparse-nref node i)
                              root))
                  (return new-root)))))
-        (if (null root)
+        (if (cl-ds.meta:null-bucket-p root)
             (cl-ds.common.rrb:make-sparse-rrb-node
              :ownership-tag ownership-tag)
             (iterate
@@ -518,6 +542,7 @@
                               t)
     (values transactional-sparse-rrb-vector t))
 (defun transactional-grow-tree! (operation structure container position all value)
+  (declare (optimize (debug 3)))
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
          (operation-type (type-of operation))
@@ -528,7 +553,8 @@
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
-                 (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+                 (present (and (not (cl-ds.meta:null-bucket-p node))
+                               (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
             (when (and (not present) update?)
               (return-from transactional-grow-tree!
                 (values structure
@@ -555,11 +581,13 @@
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
                                    value all))
-                           (node (or node (cl-ds.common.rrb:make-sparse-rrb-node
+                           (node (if (cl-ds.meta:null-bucket-p node)
+                                     (cl-ds.common.rrb:make-sparse-rrb-node
                                            :content (make-array
                                                      1
                                                      :element-type (read-element-type structure))
-                                           :ownership-tag ownership-tag)))
+                                           :ownership-tag ownership-tag)
+                                     node))
                            (owned (cl-ds.common.abstract:acquire-ownership node ownership-tag)))
                       (if changed
                           (if owned
@@ -590,12 +618,14 @@
                                           node 0 ownership-tag)))
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-node)
                             node)))
-                    (let ((new-node (impl nil
+                    (let ((new-node (impl cl-ds.meta:null-bucket
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
-                          (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                  :content (make-array 1)
-                                                  :ownership-tag ownership-tag))))
+                          (current-node (if (cl-ds.meta:null-bucket-p node)
+                                            (cl-ds.common.rrb:make-sparse-rrb-node
+                                             :content (make-array 1)
+                                             :ownership-tag ownership-tag)
+                                            node)))
                       (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                       current-node)))))
          (shift (access-shift structure))
@@ -723,7 +753,7 @@
                                    value all)))
                       (if changed
                           (progn
-                            (setf node (if (null node)
+                            (setf node (if (cl-ds.meta:null-bucket-p node)
                                            (cl-ds.common.rrb:make-sparse-rrb-node
                                             :content (make-array
                                                       1
@@ -749,7 +779,7 @@
                     (let ((new-node (impl nil
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
-                          (current-node (if (null node)
+                          (current-node (if (cl-ds.meta:null-bucket-p node)
                                             (cl-ds.common.rrb:make-sparse-rrb-node
                                              :content (make-array 1))
                                             (cl-ds.common.rrb:deep-copy-sparse-rrb-node
@@ -795,7 +825,8 @@
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
-                 (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+                 (present (and (not (cl-ds.meta:null-bucket-p node))
+                               (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
             (when (and (not present) update?)
               (return-from destructive-grow-tree!
                 (values structure
@@ -818,10 +849,11 @@
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
                                    value all))
-                           (node (or node
+                           (node (if (cl-ds.meta:null-bucket-p node)
                                      (cl-ds.common.rrb:make-sparse-rrb-node
                                       :content (make-array
-                                                1 :element-type element-type)))))
+                                                1 :element-type element-type))
+                                     node)))
                       (if changed
                           (progn
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
@@ -839,11 +871,13 @@
                       (unless (eq new-node next-node)
                         (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
                       node)
-                    (let ((new-node (impl nil
+                    (let ((new-node (impl cl-ds.meta:null-bucket
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
-                          (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                  :content (make-array 1)))))
+                          (current-node (if (cl-ds.meta:null-bucket-p node)
+                                            (cl-ds.common.rrb:make-sparse-rrb-node
+                                             :content (make-array 1))
+                                            node)))
                       (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                       current-node)))))
          (shift (access-shift structure)))
@@ -858,7 +892,7 @@
 
 
 (defun transactional-shrink-tree! (operation structure container position all)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((shift (access-shift structure))
          (tag (cl-ds.common.abstract:read-ownership-tag structure))
          (tree (access-tree structure)))
@@ -892,12 +926,12 @@
                            cl-ds.meta:null-bucket
                            (if (cl-ds.common.abstract:acquire-ownership
                                 node tag)
-                               (progn
-                                 (cl-ds.common.rrb:sparse-rrb-node-erase!
-                                  node index))
+                               (cl-ds.common.rrb:sparse-rrb-node-erase!
+                                node index)
                                (cl-ds.common.rrb:sparse-rrb-node-erase
                                 node index tag)))
                        (let ((current (cl-ds.common.rrb:sparse-nref node index)))
+                         (assert (cl-ds.common.rrb:sparse-rrb-node-contains node index))
                          (cond
                            ((eql current prev)
                             (return-from end))
@@ -911,8 +945,7 @@
                                   (cl-ds.common.rrb:sparse-nref node index) prev)
                             node)))))))
             (setf (access-tree structure)
-                  (unless (cl-ds.meta:null-bucket-p result)
-                    result))))
+                  result)))
         (transactional-shrink-handle-tail! structure position status
                                            last-node-size last-node-mask last-node)))))
 
@@ -932,7 +965,7 @@
                 structure)
                ((:values new-bucket status changed)
                 (apply #'cl-ds.meta:shrink-bucket
-                       operation container current-bucket all)))
+                       operation container current-bucket offset all)))
           (if changed
               (let ((tail-mask (dpb (if (cl-ds.meta:null-bucket-p new-bucket)
                                         0 1)
@@ -972,7 +1005,7 @@
                       (setf (access-tail-mask structure) new-tail-mask)
                       (when (zerop new-tail-mask)
                         (let ((tree (access-tree structure)))
-                          (when (null tree)
+                          (when (cl-ds.meta:null-bucket-p tree)
                             (setf (access-tree-index-bound structure) 0)))))
                     (setf (aref tail offset) new-bucket))
                 (values structure status))
@@ -983,7 +1016,7 @@
 
 
 (defun tree-index-bound (tree shift)
-  (if (null tree)
+  (if (cl-ds.meta:null-bucket-p tree)
       0
       (iterate
         (with result = 0)
@@ -1074,7 +1107,7 @@
 
 
 (defun shrink-tree! (operation structure container position all)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((shift (access-shift structure))
          (tree (access-tree structure)))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
@@ -1112,14 +1145,13 @@
                                (t (setf (cl-ds.common.rrb:sparse-nref node index) prev)
                                   node)))))))
             (setf (access-tree structure)
-                  (unless (cl-ds.meta:null-bucket-p result)
-                    result))))
+                  result)))
         (shrink-handle-tail! structure position status
                              last-node-size last-node-mask last-node)))))
 
 
 (defun shrink-tree (operation structure container position all)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((shift (access-shift structure))
          (tree (access-tree structure)))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
@@ -1132,6 +1164,7 @@
              (last-node (svref path (- length 2)))
              (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask last-node))
              (last-node-size (logcount last-node-mask))
+             (tail (access-tail structure))
              ((:values new-bucket status changed)
               (apply #'cl-ds.meta:shrink-bucket
                      operation container current-bucket nil all)))
@@ -1152,11 +1185,9 @@
                           node index))
                      (let ((node (cl-ds.common.rrb:deep-copy-sparse-rrb-node node 0)))
                        (setf (cl-ds.common.rrb:sparse-nref node index) prev)
-                       tail))))
-               (node (access-tail structure))
+                       node))))
                (result (make (type-of structure)
-                             :tree (unless (cl-ds.meta:null-bucket-p root)
-                                     (cl-ds.common.rrb:make-sparse-rrb-node))
+                             :tree root
                              :tail (unless (null tail)
                                      (copy-array tail))
                              :tail-mask (access-tail-mask structure)

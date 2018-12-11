@@ -217,6 +217,8 @@
            (new-size (1- old-size))
            (new-content (make-array new-size
                                     :element-type (array-element-type old-content))))
+      (assert (not (zerop new-bitmask)))
+      (assert (not (zerop new-size)))
       (iterate
         (declare (type node-size i))
         (with i = 0)

@@ -202,7 +202,7 @@
            (shrink-tree operation structure
                         container position all))
           ((< position (access-index-bound structure))
-           (unset-in-tail structure operation container
+           (unset-in-tail operation structure container
                           (logandc2 position cl-ds.common.rrb:+tail-mask+)
                           all))
           (t (values structure
@@ -223,6 +223,8 @@
         (tree-bound (access-tree-index-bound vect)))
     (cond ((not (< -1 position bound))
            (values nil nil))
+          ((cl-ds.meta:null-bucket-p (access-tree vect))
+           (values nil nil))
           ((< position tree-bound)
            (let ((tree (access-tree vect)))
              (if (null tree)
@@ -242,6 +244,7 @@
                         (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                                    i))
                    (unless present
+                     (break)
                      (leave (values nil nil)))
                    (setf node (cl-ds.common.rrb:sparse-nref node i))
                    (finally (return (values node t)))))))
@@ -434,7 +437,7 @@
 
 
 (defmethod cl-ds:reset! ((vector mutable-sparse-rrb-vector))
-  (setf (access-tree vector) nil
+  (setf (access-tree vector) cl-ds.meta:null-bucket
         (access-tail-mask vector) 0
         (access-shift vector) 0
         (access-tree-size vector) 0

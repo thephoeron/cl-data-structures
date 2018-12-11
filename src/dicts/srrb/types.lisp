@@ -1,9 +1,17 @@
 (in-package #:cl-data-structures.dicts.srrb)
 
+(defmethod (setf access-tree) :before (new-value object)
+  (when (null new-value)
+    (break)))
+
+
+(defmethod access-tree :before (object)
+  (when (null (slot-value object '%tree))
+    (break)))
 
 (defclass fundamental-sparse-rrb-vector (cl-ds.dicts:fundamental-sparse-vector)
   ((%tree :initarg :tree
-          :initform nil
+          :initform cl-ds.meta:null-bucket
           :accessor access-tree)
    (%tail :initarg :tail
           :accessor access-tail

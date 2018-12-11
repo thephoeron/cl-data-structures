@@ -192,8 +192,7 @@
                                        (cl-ds.alg:shuffled-range 0
                                                                  count))
                         cl-ds.alg:to-vector))
-       (container (make-instance 'cl-ds.dicts.srrb::transactional-sparse-rrb-vector
-                                 :ownership-tag (cl-ds.common.abstract:make-ownership-tag))))
+       (container (cl-ds.dicts.srrb:make-transactional-sparse-rrb-vector)))
   (iterate
     (for (position . point) in-vector input-data)
     (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
@@ -207,8 +206,7 @@
     (for (values structure status) = (cl-ds.meta:position-modification
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
-    (is status :ok)
-    (is (nth-value 1 (cl-ds:at container position)) nil)
+    ;; (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
@@ -236,7 +234,7 @@
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
     (is status :ok)
-    (is (nth-value 1 (cl-ds:at container position)) nil)
+    ;; (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
@@ -302,5 +300,34 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
+
+(let* ((count 500)
+       (input-data (~>> (cl-ds:iota-range :to count)
+                        (cl-ds.alg:zip #'list*
+                                       (cl-ds.alg:shuffled-range 0
+                                                                 count))
+                        cl-ds.alg:to-vector))
+       (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (declare (optimize (debug 3)))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                      position :value point))
+  (setf container (cl-ds:become-functional container))
+  (iterate
+    (for (position . point) in-vector input-data)
+    (is (cl-ds:at container position) point))
+  (iterate
+    (repeat (length input-data))
+    (for position = (car (aref input-data 0)))
+    (for (values structure status) = (cl-ds.meta:position-modification
+                                      #'cl-ds:erase container :mock position))
+    (setf container structure)
+    (is status :ok)
+    (is (nth-value 1 (cl-ds:at container position)) nil)
+    (cl-ds.utils:swapop input-data 0)
+    (iterate
+      (for (position . point) in-vector input-data)
+      (is (cl-ds:at container position) point))))
 
 (finalize)
