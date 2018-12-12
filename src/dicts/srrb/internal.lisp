@@ -1063,21 +1063,17 @@
          (is-last (~> structure access-tree-index-bound 1- (eql position))))
     (when is-last
       (if (zerop last-node-size)
-          (let ((tail-mask (access-tail-mask structure))
-                (tree-index-bound (scan-index-bound structure)))
+          (let* ((tail-mask (access-tail-mask structure))
+                 (tree-index-bound (scan-index-bound structure))
+                 (tail-empty (zerop tail-mask)))
             (adjust-tree-to-new-size! structure
                                       tree-index-bound
                                       nil)
-            (if (zerop tail-mask)
-                (setf (access-index-bound structure)
-                      (+ tree-index-bound
-                         cl-ds.common.rrb:+maximum-children-count+)
-                      (access-tree-index-bound structure) tree-index-bound)
-                (progn
-                  (print "not zerop")
-                  (print (access-tail structure))
-                  (setf (access-tree-index-bound structure) tree-index-bound)
-                  (insert-tail! structure))))
+            (when tail-empty
+              (setf (access-index-bound structure)
+                    (+ tree-index-bound
+                       cl-ds.common.rrb:+maximum-children-count+)
+                    (access-tree-index-bound structure) tree-index-bound)))
           (decf (access-tree-index-bound structure)
                 (- (integer-length last-node-mask)
                    (integer-length new-last-node-mask))))))
@@ -1093,19 +1089,17 @@
          (is-last (~> structure access-tree-index-bound 1- (eql position))))
     (when is-last
       (if (zerop last-node-size)
-          (let ((tail-mask (access-tail-mask structure))
-                (tree-index-bound (scan-index-bound structure)))
+          (let* ((tail-mask (access-tail-mask structure))
+                 (tree-index-bound (scan-index-bound structure))
+                 (tail-empty (zerop tail-mask)))
             (adjust-tree-to-new-size! structure
                                       tree-index-bound
                                       tag)
-            (if (zerop tail-mask)
-                (setf (access-index-bound structure)
-                      (+ tree-index-bound
-                         cl-ds.common.rrb:+maximum-children-count+)
-                      (access-tree-index-bound structure) tree-index-bound)
-                (progn
-                  (setf (access-tree-index-bound structure) tree-index-bound)
-                  (transactional-insert-tail! structure tag))))
+            (when tail-empty
+              (setf (access-index-bound structure)
+                    (+ tree-index-bound
+                       cl-ds.common.rrb:+maximum-children-count+)
+                    (access-tree-index-bound structure) tree-index-bound)))
           (decf (access-tree-index-bound structure)
                 (- (integer-length last-node-mask)
                    (integer-length new-last-node-mask))))))
