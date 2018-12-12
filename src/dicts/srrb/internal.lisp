@@ -63,6 +63,7 @@
 
 
 (defun insert-into-node! (into new-element index)
+  (assert (not (cl-ds.common.rrb:sparse-rrb-node-contains into index)))
   (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content into))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask into))
          (new-bitmask (dpb 1 (byte 1 index) bitmask))
@@ -394,7 +395,9 @@
     fundamental-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
   (let ((new-shift (shift-for-position position)))
+    (print "adjusting...")
     (unless (eql new-shift (access-shift structure))
+      (print "really adjusting...")
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
         (setf (access-shift structure) new-shift
@@ -727,7 +730,8 @@
          ((:labels impl (node byte-position depth))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
-                 (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+                 (present (and (not (cl-ds.meta:null-bucket-p node))
+                               (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
             (when (and (not present) update?)
               (return-from grow-tree
                 (values structure
@@ -776,7 +780,7 @@
                                   node 0 ownership-tag)
                             (cl-ds.common.rrb:sparse-nref node i) new-node)
                       node)
-                    (let ((new-node (impl nil
+                    (let ((new-node (impl cl-ds.meta:null-bucket
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
                           (current-node (if (cl-ds.meta:null-bucket-p node)
@@ -1025,7 +1029,6 @@
              downto 0
              by cl-ds.common.rrb:+bit-count+)
         (for bitmask = (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
-        (until (zerop bitmask))
         (for index = (~> bitmask integer-length 1-))
         (for last = (~> bitmask logcount 1-))
         (for node
@@ -1071,6 +1074,8 @@
                          cl-ds.common.rrb:+maximum-children-count+)
                       (access-tree-index-bound structure) tree-index-bound)
                 (progn
+                  (print "not zerop")
+                  (print (access-tail structure))
                   (setf (access-tree-index-bound structure) tree-index-bound)
                   (insert-tail! structure))))
           (decf (access-tree-index-bound structure)
@@ -1143,6 +1148,7 @@
                          (cond ((eql current prev)
                                 (return-from end))
                                (t (setf (cl-ds.common.rrb:sparse-nref node index) prev)
+                                  (assert (cl-ds.common.rrb:sparse-rrb-node-contains node index))
                                   node)))))))
             (setf (access-tree structure)
                   result)))
