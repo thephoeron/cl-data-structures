@@ -321,7 +321,7 @@
 (-> make-adjusted-tree (fundamental-sparse-rrb-vector fixnum fixnum t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-adjusted-tree (structure position new-shift ownership-tag)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind (((:accessors (root access-tree)
                       (tree-size access-tree-size)
                       (shift access-shift)
