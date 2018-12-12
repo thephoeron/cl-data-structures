@@ -1085,7 +1085,8 @@
 
 
 (defun transactional-shrink-handle-tail! (structure position final-status
-                                          last-node-size last-node-mask new-last-node)
+                                          last-node-size last-node-mask
+                                          new-last-node)
   (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
                               new-last-node))
          (tag (cl-ds.common.abstract:read-ownership-tag structure))
