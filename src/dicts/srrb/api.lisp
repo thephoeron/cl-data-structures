@@ -7,7 +7,7 @@
      container
      position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
-    (cond ((negative-fixnum-p position)
+    (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
                   :value position
@@ -55,7 +55,7 @@
      container
      position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
-    (cond ((negative-fixnum-p position)
+    (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
                   :value position
@@ -100,7 +100,7 @@
      container
      position &rest all &key value)
   (let ((tree-bound (access-tree-index-bound structure)))
-    (cond ((negative-fixnum-p position)
+    (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
                   :value position
