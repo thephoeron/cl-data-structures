@@ -1071,37 +1071,37 @@
 
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
-  (let ((is-last (~> structure access-tree-index-bound 1- (eql position))))
-    (when (and is-last (zerop last-node-size))
-      (let* ((tail-mask (access-tail-mask structure))
-             (tree-index-bound (scan-index-bound structure))
-             (tail-empty (zerop tail-mask)))
-        (adjust-tree-to-new-size! structure
-                                  tree-index-bound
-                                  nil)
-        (when tail-empty
-          (setf (access-index-bound structure)
-                (+ tree-index-bound
-                   cl-ds.common.rrb:+maximum-children-count+))))))
+  (when (and (~> structure access-tree-index-bound 1- (eql position))
+             (zerop last-node-size))
+    (let* ((tail-mask (access-tail-mask structure))
+           (tree-index-bound (scan-index-bound structure))
+           (tail-empty (zerop tail-mask)))
+      (adjust-tree-to-new-size! structure
+                                tree-index-bound
+                                nil)
+      (when tail-empty
+        (setf (access-index-bound structure)
+              (+ tree-index-bound
+                 cl-ds.common.rrb:+maximum-children-count+)))))
   (values structure final-status))
 
 
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
-  (let ((is-last (~> structure access-tree-index-bound 1- (eql position)))
-        (tag (cl-ds.common.abstract:read-ownership-tag structure)))
-    (when (and is-last (zerop last-node-size))
-      (let* ((tail-mask (access-tail-mask structure))
-             (tree-index-bound (scan-index-bound structure))
-             (tail-empty (zerop tail-mask)))
-        (adjust-tree-to-new-size! structure
-                                  tree-index-bound
-                                  tag)
-        (when tail-empty
-          (setf (access-index-bound structure)
-                (+ tree-index-bound
-                   cl-ds.common.rrb:+maximum-children-count+))))))
+  (when (and (~> structure access-tree-index-bound 1- (eql position))
+             (zerop last-node-size))
+    (let* ((tail-mask (access-tail-mask structure))
+           (tag (cl-ds.common.abstract:read-ownership-tag structure))
+           (tree-index-bound (scan-index-bound structure))
+           (tail-empty (zerop tail-mask)))
+      (adjust-tree-to-new-size! structure
+                                tree-index-bound
+                                tag)
+      (when tail-empty
+        (setf (access-index-bound structure)
+              (+ tree-index-bound
+                 cl-ds.common.rrb:+maximum-children-count+)))))
   (values structure final-status))
 
 
