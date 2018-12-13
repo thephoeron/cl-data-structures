@@ -657,9 +657,13 @@
                           '(cl-ds.meta:update!-function
                             cl-ds.meta:update-if!-function)))
          ((:labels impl (node byte-position depth))
+          (declare (type fixnum depth byte-position))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
-                 (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+                 (present (and (not (cl-ds.meta:null-bucket-p node))
+                               (cl-ds.common.rrb:sparse-rrb-node-contains node i))))
+            (declare (type fixnum i)
+                     (type boolean present))
             (when (and (not present) update?)
               (return-from destructive-grow-tree!
                 (values structure
@@ -682,10 +686,12 @@
                             (apply #'cl-ds.meta:make-bucket
                                    operation container
                                    value all))
-                           (node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                           :content (make-array
-                                                     1
-                                                     :element-type (read-element-type structure))))))
+                           (node (if (cl-ds.meta:null-bucket-p node)
+                                     (cl-ds.common.rrb:make-sparse-rrb-node
+                                      :content (make-array
+                                                1
+                                                :element-type (read-element-type structure)))
+                                     node)))
                       (if changed
                           (progn
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
@@ -702,11 +708,13 @@
                       (unless (eq new-node next-node)
                         (setf (cl-ds.common.rrb:sparse-nref node i) new-node))
                       node)
-                    (let ((new-node (impl nil
+                    (let ((new-node (impl cl-ds.meta:null-bucket
                                           (- byte-position cl-ds.common.rrb:+bit-count+)
                                           (1- depth)))
-                          (current-node (or node (cl-ds.common.rrb:make-sparse-rrb-node
-                                                  :content (make-array 1)))))
+                          (current-node (if (cl-ds.meta:null-bucket-p node)
+                                            (cl-ds.common.rrb:make-sparse-rrb-node
+                                             :content (make-array 1))
+                                            node)))
                       (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                       current-node)))))
          (shift (access-shift structure)))
@@ -1108,8 +1116,9 @@
 
 (defun shrink-tree! (operation structure container position all)
   (declare (optimize (speed 3)))
-  (bind ((shift (access-shift structure))
-         (tree (access-tree structure)))
+  (let ((shift (access-shift structure))
+        (tree (access-tree structure)))
+    (declare (type fixnum shift tree))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
         (tree position shift path indexes length all-present)
       (unless all-present
@@ -1128,7 +1137,7 @@
             (values structure status)))
         (when (cl-ds.meta:null-bucket-p new-bucket)
           (decf last-node-size)
-          (decf (access-tree-size structure)))
+          (decf (the fixnum (access-tree-size structure))))
         (setf (svref path (1- length)) new-bucket)
         (block end
           (let ((result
@@ -1152,7 +1161,7 @@
 
 
 (defun shrink-tree (operation structure container position all)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (bind ((shift (access-shift structure))
          (tree (access-tree structure)))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
@@ -1174,7 +1183,7 @@
             (values structure status)))
         (when (cl-ds.meta:null-bucket-p new-bucket)
           (decf last-node-size)
-          (decf (access-tree-size structure)))
+          (decf (the fixnum (access-tree-size structure))))
         (setf (svref path (1- length)) new-bucket)
         (let* ((root
                 (cl-ds.common.rrb:reduce-path
