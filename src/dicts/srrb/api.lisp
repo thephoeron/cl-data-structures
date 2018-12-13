@@ -216,7 +216,7 @@
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (cl-ds:assert-one-dimension more-positions)
   (check-type position fixnum)
   (let ((bound (access-index-bound vect))
@@ -244,7 +244,6 @@
                         (cl-ds.common.rrb:sparse-rrb-node-contains node
                                                                    i))
                    (unless present
-                     (break)
                      (leave (values nil nil)))
                    (setf node (cl-ds.common.rrb:sparse-nref node i))
                    (finally (return (values node t)))))))

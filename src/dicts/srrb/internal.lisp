@@ -155,7 +155,7 @@
 
 
 (defun insert-tail (structure)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (let ((tail-mask (access-tail-mask structure)))
     (if (zerop tail-mask)
         (make (type-of structure)
@@ -395,9 +395,7 @@
     fundamental-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
   (let ((new-shift (shift-for-position position)))
-    (print "adjusting...")
     (unless (eql new-shift (access-shift structure))
-      (print "really adjusting...")
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
         (setf (access-shift structure) new-shift
@@ -545,7 +543,7 @@
                               t)
     (values transactional-sparse-rrb-vector t))
 (defun transactional-grow-tree! (operation structure container position all value)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
          (operation-type (type-of operation))
@@ -650,7 +648,7 @@
                             t)
     (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
          (update? (member operation-type
@@ -818,7 +816,7 @@
                             t)
     (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
          (update? (member operation-type

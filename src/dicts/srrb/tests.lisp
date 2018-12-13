@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 257113)
+(plan 382863)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -66,7 +66,7 @@
         (aref tail 2) 3
         (aref tail 3) 4)
   (is (cl-ds:size vector) 3)
-  (is (cl-ds.dicts.srrb::access-tree vector) nil)
+  (is (cl-ds.dicts.srrb::access-tree vector) cl-ds.meta:null-bucket)
   (cl-ds.dicts.srrb::insert-tail! vector)
   (is (cl-ds.dicts.srrb::access-tail-mask vector) 0)
   (is (cl-ds.dicts.srrb::access-shift vector) 0)
@@ -206,7 +206,7 @@
     (for (values structure status) = (cl-ds.meta:position-modification
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
-    ;; (is (nth-value 1 (cl-ds:at container position)) nil)
+    (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
@@ -234,7 +234,7 @@
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
     (is status :ok)
-    ;; (is (nth-value 1 (cl-ds:at container position)) nil)
+    (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
@@ -324,7 +324,7 @@
                                       #'cl-ds:erase container :mock position))
     (setf container structure)
     (is status :ok)
-    ;; (is (nth-value 1 (cl-ds:at container position)) nil)
+    (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
       (for (position . point) in-vector input-data)
