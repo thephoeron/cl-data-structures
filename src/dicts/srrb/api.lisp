@@ -99,7 +99,9 @@
      (structure functional-sparse-rrb-vector)
      container
      position &rest all &key value)
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (let ((tree-bound (access-tree-index-bound structure)))
+    (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
@@ -112,7 +114,8 @@
                       all value))
           ((< position (access-index-bound structure))
            (set-in-tail structure operation container
-                        (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                        (logandc2 (the fixnum position)
+                                  cl-ds.common.rrb:+tail-mask+)
                         value all))
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
@@ -128,12 +131,15 @@
                             cl-ds.common.rrb:+maximum-children-count+))
                    (assert (> (access-index-bound new-structure)
                               (access-tree-index-bound new-structure)))
-                   (let* ((offset (logandc2 position
+                   (let* ((offset (logandc2 (the fixnum position)
                                             cl-ds.common.rrb:+tail-mask+))
                           (tail-mask (ash 1 offset))
                           (tail (cl-ds.common.rrb:make-node-content
                                  (read-element-type structure))))
-                     (setf (aref tail offset) bucket
+                     (declare (type cl-ds.common.rrb:rrb-node-position offset)
+                              (type fixnum tail-mask)
+                              (type simple-vector tail))
+                     (setf (svref tail offset) bucket
                            (access-tail new-structure) tail
                            (access-tail-mask new-structure) tail-mask)
                      (values new-structure status)))
