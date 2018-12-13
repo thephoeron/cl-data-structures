@@ -6,7 +6,10 @@
      (structure transactional-sparse-rrb-vector)
      container
      position &rest all &key value)
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
+    (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
@@ -19,11 +22,13 @@
                                      all value))
           ((< position (access-index-bound structure))
            (set-in-tail! structure operation container
-                         (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                         (logandc2 (the fixnum position)
+                                   cl-ds.common.rrb:+tail-mask+)
                          value all))
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
                (when changed
                  (let* ((new-tree-bound (logand position
                                                 cl-ds.common.rrb:+tail-mask+))
@@ -43,6 +48,9 @@
                         (tail-mask (ash 1 offset))
                         (tail (cl-ds.common.rrb:make-node-content
                                (read-element-type structure))))
+                   (declare (type cl-ds.common.rrb:rrb-node-position offset)
+                            (type fixnum tail-mask)
+                            (type simple-vector tail))
                    (setf (aref tail offset) bucket
                          (access-tail structure) tail
                          (access-tail-mask structure) tail-mask)))
@@ -54,7 +62,8 @@
      (structure mutable-sparse-rrb-vector)
      container
      position &rest all &key value)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -75,6 +84,7 @@
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
                (when changed
                  (let ((new-tree-bound (logand position
                                                cl-ds.common.rrb:+tail-mask+)))
@@ -105,7 +115,8 @@
      (structure functional-sparse-rrb-vector)
      container
      position &rest all &key value)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -126,10 +137,11 @@
           (t (bind (((:values bucket status changed)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
                (if changed
-                 (let ((new-tree-bound (logand position
-                                                cl-ds.common.rrb:+tail-mask+))
-                       (new-structure (insert-tail structure)))
+                   (let ((new-tree-bound (logand position
+                                                 cl-ds.common.rrb:+tail-mask+))
+                         (new-structure (insert-tail structure)))
                    (adjust-tree-to-new-size! new-structure new-tree-bound nil)
                    (setf (access-tree-index-bound new-structure) new-tree-bound
                          (access-index-bound new-structure)
@@ -157,7 +169,8 @@
      (structure mutable-sparse-rrb-vector)
      container
      position &rest all)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -183,7 +196,8 @@
      (structure transactional-sparse-rrb-vector)
      container
      position &rest all)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -209,7 +223,8 @@
      (structure functional-sparse-rrb-vector)
      container
      position &rest all)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -239,7 +254,8 @@
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
   (cl-ds:assert-one-dimension more-positions)
   (check-type position fixnum)
   (let ((bound (access-index-bound vect))
