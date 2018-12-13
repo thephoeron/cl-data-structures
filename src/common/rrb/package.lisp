@@ -59,5 +59,7 @@
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail
    #:reduce-path
+   #:rrb-index
+   #:shift
    #:with-sparse-rrb-node-path
    #:with-sparse-rrb-node))

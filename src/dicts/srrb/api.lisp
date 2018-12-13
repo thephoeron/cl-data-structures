@@ -216,11 +216,12 @@
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (cl-ds:assert-one-dimension more-positions)
   (check-type position fixnum)
   (let ((bound (access-index-bound vect))
         (tree-bound (access-tree-index-bound vect)))
+    (declare (type fixnum bound tree-bound))
     (cond ((not (< -1 position bound))
            (values nil nil))
           ((cl-ds.meta:null-bucket-p (access-tree vect))
@@ -230,6 +231,9 @@
              (if (null tree)
                  (values nil nil)
                  (iterate
+                   (declare (type fixnum byte-position i)
+                            (type cl-ds.common.rrb:shift shift)
+                            (type boolean present))
                    (with node = tree)
                    (with shift = (access-shift vect))
                    (for byte-position
@@ -250,6 +254,7 @@
           (t (let* ((offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
                     (present (ldb-test (byte 1 offset)
                                        (access-tail-mask vect))))
+               (declare (type cl-ds.common.rrb:rrb-node-position offset))
                (if present
                    (values (aref (access-tail vect) offset) t)
                    (values nil nil)))))))

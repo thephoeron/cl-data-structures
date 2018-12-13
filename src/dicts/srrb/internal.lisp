@@ -32,10 +32,11 @@
      t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-node-from-tail (rrb-container ownership-tag)
+  (declare (optimize (speed 3)))
   (bind (((:slots %tree-size %shift %tree %tail %tail-mask
                   %element-type %tree-index-bound)
           rrb-container)
-         (tail-mask %tail-mask)
+         (tail-mask (the fixnum %tail-mask))
          (tail-size (logcount tail-mask))
          (tail %tail)
          (element-type (array-element-type tail))
@@ -43,6 +44,7 @@
           (if (eql tail-size cl-ds.common.rrb:+maximum-children-count+)
               tail
               (iterate
+                (declare (type fixnum j i))
                 (with result = (make-array tail-size :element-type element-type))
                 (with j = 0)
                 (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)

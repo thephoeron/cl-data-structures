@@ -76,7 +76,7 @@
   `(let ((,node (if (listp ,node) (car ,node) ,node)))
      (declare (type sparse-node ,node))
      (macrolet ((sindex (index)
-                  `(the node-size
+                  `(the rrb-node-position
                         (1- (logcount (ldb (byte (1+ ,index) 0)
                                            (sparse-node-bitmask ,',node)))))))
        ,@body)))
