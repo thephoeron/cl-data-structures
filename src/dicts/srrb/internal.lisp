@@ -402,7 +402,10 @@
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
         (setf (access-shift structure) new-shift
-              (access-tree-index-bound structure) position
+
+              (access-tree-index-bound structure)
+              (ceiling position cl-ds.common.rrb:+maximum-children-count+)
+
               (access-tree structure) new-root)))
     structure))
 
@@ -1068,49 +1071,37 @@
 
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
-  (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
-                              new-last-node))
-         (is-last (~> structure access-tree-index-bound 1- (eql position))))
-    (when is-last
-      (if (zerop last-node-size)
-          (let* ((tail-mask (access-tail-mask structure))
-                 (tree-index-bound (scan-index-bound structure))
-                 (tail-empty (zerop tail-mask)))
-            (adjust-tree-to-new-size! structure
-                                      tree-index-bound
-                                      nil)
-            (when tail-empty
-              (setf (access-index-bound structure)
-                    (+ tree-index-bound
-                       cl-ds.common.rrb:+maximum-children-count+))))
-          (decf (access-tree-index-bound structure)
-                (- (integer-length last-node-mask)
-                   (integer-length new-last-node-mask))))))
+  (let ((is-last (~> structure access-tree-index-bound 1- (eql position))))
+    (when (and is-last (zerop last-node-size))
+      (let* ((tail-mask (access-tail-mask structure))
+             (tree-index-bound (scan-index-bound structure))
+             (tail-empty (zerop tail-mask)))
+        (adjust-tree-to-new-size! structure
+                                  tree-index-bound
+                                  nil)
+        (when tail-empty
+          (setf (access-index-bound structure)
+                (+ tree-index-bound
+                   cl-ds.common.rrb:+maximum-children-count+))))))
   (values structure final-status))
 
 
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
-  (let* ((new-last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
-                              new-last-node))
-         (tag (cl-ds.common.abstract:read-ownership-tag structure))
-         (is-last (~> structure access-tree-index-bound 1- (eql position))))
-    (when is-last
-      (if (zerop last-node-size)
-          (let* ((tail-mask (access-tail-mask structure))
-                 (tree-index-bound (scan-index-bound structure))
-                 (tail-empty (zerop tail-mask)))
-            (adjust-tree-to-new-size! structure
-                                      tree-index-bound
-                                      tag)
-            (when tail-empty
-              (setf (access-index-bound structure)
-                    (+ tree-index-bound
-                       cl-ds.common.rrb:+maximum-children-count+))))
-          (decf (access-tree-index-bound structure)
-                (- (integer-length last-node-mask)
-                   (integer-length new-last-node-mask))))))
+  (let ((is-last (~> structure access-tree-index-bound 1- (eql position)))
+        (tag (cl-ds.common.abstract:read-ownership-tag structure)))
+    (when (and is-last (zerop last-node-size))
+      (let* ((tail-mask (access-tail-mask structure))
+             (tree-index-bound (scan-index-bound structure))
+             (tail-empty (zerop tail-mask)))
+        (adjust-tree-to-new-size! structure
+                                  tree-index-bound
+                                  tag)
+        (when tail-empty
+          (setf (access-index-bound structure)
+                (+ tree-index-bound
+                   cl-ds.common.rrb:+maximum-children-count+))))))
   (values structure final-status))
 
 

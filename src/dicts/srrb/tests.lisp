@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 382863)
+(plan 382886)
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
@@ -243,6 +243,59 @@
     (iterate
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))
+
+(let ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    800 :value 5)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1024 :value 0)
+  (is (cl-ds:at container 800) 5)
+  (is (cl-ds:at container 1024) 0)
+  (is (cl-ds:size container) 2)
+  (cl-ds.meta:position-modification
+   #'cl-ds:erase! container :mock 800)
+  (is (cl-ds:at container 800) nil)
+  (is (cl-ds:size container) 1)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    800 :value 5)
+  (is (cl-ds:size container) 2)
+  (is (cl-ds:at container 1024) 0))
+
+(let ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1024 :value 5)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    5 :value 0)
+  (is (cl-ds:size container) 2)
+  (is (cl-ds:at container 1024) 5)
+  (is (cl-ds:at container 5) 0)
+  (cl-ds.meta:position-modification
+   #'cl-ds:erase! container :mock 5)
+  (is (cl-ds:at container 5) nil)
+  (is (cl-ds:size container) 1)
+  (is (cl-ds:at container 1024) 5))
+
+(let ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1024 :value 5)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1022 :value 1)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1023 :value 0)
+  (is (cl-ds:size container) 3)
+  (is (cl-ds:at container 1024) 5)
+  (is (cl-ds:at container 1023) 0)
+  (is (cl-ds:at container 1022) 1)
+  (cl-ds.meta:position-modification
+   #'cl-ds:erase! container :mock 1023)
+  (is (cl-ds:at container 1023) nil)
+  (is (cl-ds:at container 1022) 1)
+  (is (cl-ds:size container) 2)
+  (is (cl-ds:at container 1024) 5)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1023 :value 5)
+  (is (cl-ds:size container) 3)
+  (is (cl-ds:at container 1023) 5))
 
 (print "test4")
 

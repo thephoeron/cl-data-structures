@@ -263,11 +263,9 @@
     (declare (type fixnum bound tree-bound))
     (cond ((not (< -1 position bound))
            (values nil nil))
-          ((cl-ds.meta:null-bucket-p (access-tree vect))
-           (values nil nil))
           ((< position tree-bound)
            (let ((tree (access-tree vect)))
-             (if (null tree)
+             (if (cl-ds.meta:null-bucket-p tree)
                  (values nil nil)
                  (iterate
                    (declare (type fixnum byte-position i)
