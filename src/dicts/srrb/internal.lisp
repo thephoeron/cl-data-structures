@@ -194,8 +194,9 @@
                                (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
                                                         byte-position)
                                                   size))
-                                      (present (and node (cl-ds.common.rrb:sparse-rrb-node-contains
-                                                          node index)))
+                                      (present (and (not (cl-ds.meta:null-bucket-p node))
+                                                    (cl-ds.common.rrb:sparse-rrb-node-contains
+                                                     node index)))
                                       (next-node (and present (cl-ds.common.rrb:sparse-nref
                                                                node index)))
                                       (current-node (if (cl-ds.meta:null-bucket-p node)
