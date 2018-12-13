@@ -145,8 +145,10 @@
      (structure mutable-sparse-rrb-vector)
      container
      position &rest all)
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (let ((tree-bound (access-tree-index-bound structure)))
-    (cond ((negative-fixnum-p position)
+    (declare (type fixnum tree-bound))
+    (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
                   :value position
@@ -157,7 +159,8 @@
                          container position all))
           ((< position (access-index-bound structure))
            (unset-in-tail! operation structure container
-                           (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                           (logandc2 (the fixnum position)
+                                     cl-ds.common.rrb:+tail-mask+)
                            all))
           (t (values structure
                      cl-ds.common:empty-eager-modification-operation-status)))))
@@ -168,8 +171,10 @@
      (structure transactional-sparse-rrb-vector)
      container
      position &rest all)
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (let ((tree-bound (access-tree-index-bound structure)))
-    (cond ((negative-fixnum-p position)
+    (declare (type fixnum tree-bound))
+    (cond ((negative-integer-p position)
            (error 'cl-ds:argument-out-of-bounds
                   :argument 'position
                   :value position
@@ -180,7 +185,8 @@
                                        container position all))
           ((< position (access-index-bound structure))
            (unset-in-tail! operation structure container
-                           (logandc2 position cl-ds.common.rrb:+tail-mask+)
+                           (logandc2 (the fixnum position)
+                                     cl-ds.common.rrb:+tail-mask+)
                            all))
           (t (values structure
                      cl-ds.common:empty-eager-modification-operation-status)))))
