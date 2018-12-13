@@ -186,6 +186,8 @@
 (let ((shift (cl-ds.dicts.srrb::shift-for-position 308)))
   (is shift 1))
 
+(print "test6")
+
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
@@ -211,6 +213,8 @@
     (iterate
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))
+
+(print "test5")
 
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
@@ -240,6 +244,8 @@
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))
 
+(print "test4")
+
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
@@ -255,6 +261,8 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
+
+(print "test3")
 
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
@@ -285,6 +293,8 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
 
+(print "test2")
+
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
@@ -300,6 +310,8 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
+
+(print "test1")
 
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)

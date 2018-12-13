@@ -402,6 +402,7 @@
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
         (setf (access-shift structure) new-shift
+              (access-tree-index-bound structure) position
               (access-tree structure) new-root)))
     structure))
 
@@ -1081,8 +1082,7 @@
             (when tail-empty
               (setf (access-index-bound structure)
                     (+ tree-index-bound
-                       cl-ds.common.rrb:+maximum-children-count+)
-                    (access-tree-index-bound structure) tree-index-bound)))
+                       cl-ds.common.rrb:+maximum-children-count+))))
           (decf (access-tree-index-bound structure)
                 (- (integer-length last-node-mask)
                    (integer-length new-last-node-mask))))))
@@ -1107,8 +1107,7 @@
             (when tail-empty
               (setf (access-index-bound structure)
                     (+ tree-index-bound
-                       cl-ds.common.rrb:+maximum-children-count+)
-                    (access-tree-index-bound structure) tree-index-bound)))
+                       cl-ds.common.rrb:+maximum-children-count+))))
           (decf (access-tree-index-bound structure)
                 (- (integer-length last-node-mask)
                    (integer-length new-last-node-mask))))))
