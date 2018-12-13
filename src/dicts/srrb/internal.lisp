@@ -1118,7 +1118,7 @@
   (declare (optimize (speed 3)))
   (let ((shift (access-shift structure))
         (tree (access-tree structure)))
-    (declare (type fixnum shift tree))
+    (declare (type fixnum shift))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
         (tree position shift path indexes length all-present)
       (unless all-present
