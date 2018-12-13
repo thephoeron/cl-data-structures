@@ -116,7 +116,9 @@
                  (setf tree new-root)))
               (t (iterate
                    (declare (type fixnum size position index))
-                   (with size = (access-tree-index-bound structure))
+                   (with size = (~> structure
+                                    access-index-bound
+                                    (- cl-ds.common.rrb:+maximum-children-count+)))
                    (with node = root)
                    (with position = (* cl-ds.common.rrb:+bit-count+ shift))
                    (with p-node = nil)
@@ -235,7 +237,9 @@
     (declare (type fixnum tail-mask))
     (unless (zerop tail-mask)
       (bind ((new-node (make-node-from-tail structure ownership-tag))
-             (size (the fixnum (access-tree-index-bound structure)))
+             (size (~> structure
+                       access-index-bound
+                       (- cl-ds.common.rrb:+maximum-children-count+)))
              ((:accessors (tree access-tree)
                           (tree-size access-tree-size)
                           (%shift access-shift)
@@ -354,7 +358,7 @@
               (with node = new-root)
               (with byte-position = (* cl-ds.common.rrb:+bit-count+
                                        new-shift))
-              (repeat (1- shift-difference))
+              (repeat shift-difference)
               (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                             highest-current))
               (setf node (insert-new-node! node i ownership-tag))
@@ -404,7 +408,8 @@
         (setf (access-shift structure) new-shift
 
               (access-tree-index-bound structure)
-              (ceiling position cl-ds.common.rrb:+maximum-children-count+)
+              (* (ceiling position cl-ds.common.rrb:+maximum-children-count+)
+                 cl-ds.common.rrb:+maximum-children-count+)
 
               (access-tree structure) new-root)))
     structure))

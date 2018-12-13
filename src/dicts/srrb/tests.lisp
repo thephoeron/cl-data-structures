@@ -273,7 +273,13 @@
    #'cl-ds:erase! container :mock 5)
   (is (cl-ds:at container 5) nil)
   (is (cl-ds:size container) 1)
-  (is (cl-ds:at container 1024) 5))
+  (is (cl-ds:at container 1024) 5)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    2000 :value 10)
+  (is (cl-ds:size container) 2)
+  (is (cl-ds:at container 2000) 10)
+  (is (cl-ds:at container 5) nil)
+  )
 
 (let ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock

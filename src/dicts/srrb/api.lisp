@@ -34,13 +34,15 @@
                                                 cl-ds.common.rrb:+tail-mask+))
                         (ownership-tag (cl-ds.common.abstract:read-ownership-tag
                                         structure)))
-                   (transactional-insert-tail! structure ownership-tag)
-                   (adjust-tree-to-new-size! structure new-tree-bound
+                   (adjust-tree-to-new-size! structure
+                                             (max 0 (- position cl-ds.common.rrb:+maximum-children-count+))
                                              ownership-tag)
-                   (setf (access-tree-index-bound structure) new-tree-bound
-                         (access-index-bound structure)
-                         (+ new-tree-bound
-                            cl-ds.common.rrb:+maximum-children-count+)))
+                   (transactional-insert-tail! structure ownership-tag)
+                   (setf (access-index-bound structure)
+                         (~>> cl-ds.common.rrb:+maximum-children-count+
+                              (ceiling position)
+                              (* cl-ds.common.rrb:+maximum-children-count+)
+                              (+ cl-ds.common.rrb:+maximum-children-count+))))
                  (assert (> (access-index-bound structure)
                             (access-tree-index-bound structure)))
                  (let* ((offset (logandc2 position
@@ -86,14 +88,16 @@
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
                (when changed
-                 (let ((new-tree-bound (logand position
-                                               cl-ds.common.rrb:+tail-mask+)))
-                   (insert-tail! structure)
-                   (adjust-tree-to-new-size! structure new-tree-bound nil)
-                   (setf (access-tree-index-bound structure) new-tree-bound
-                         (access-index-bound structure)
-                         (+ new-tree-bound
-                            cl-ds.common.rrb:+maximum-children-count+)))
+                 (insert-tail! structure)
+                 (adjust-tree-to-new-size!
+                  structure
+                  (max 0 (- position cl-ds.common.rrb:+maximum-children-count+))
+                  nil)
+                 (setf (access-index-bound structure)
+                       (~>> cl-ds.common.rrb:+maximum-children-count+
+                            (ceiling position)
+                            (* cl-ds.common.rrb:+maximum-children-count+)
+                            (+ cl-ds.common.rrb:+maximum-children-count+)))
                  (assert (> (access-index-bound structure)
                             (access-tree-index-bound structure)))
                  (let* ((offset (logandc2 (the fixnum position)
@@ -145,8 +149,10 @@
                    (adjust-tree-to-new-size! new-structure new-tree-bound nil)
                    (setf (access-tree-index-bound new-structure) new-tree-bound
                          (access-index-bound new-structure)
-                         (+ new-tree-bound
-                            cl-ds.common.rrb:+maximum-children-count+))
+                         (~>> cl-ds.common.rrb:+maximum-children-count+
+                              (ceiling position)
+                              (* cl-ds.common.rrb:+maximum-children-count+)
+                              (+ cl-ds.common.rrb:+maximum-children-count+)))
                    (assert (> (access-index-bound new-structure)
                               (access-tree-index-bound new-structure)))
                    (let* ((offset (logandc2 (the fixnum position)
@@ -254,7 +260,7 @@
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
-  (declare (optimize (speed 3) (space 0) (debug 0))
+  (declare (optimize (speed 0) (space 0) (debug 3))
            (type integer position))
   (cl-ds:assert-one-dimension more-positions)
   (check-type position fixnum)
