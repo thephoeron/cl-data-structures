@@ -1154,8 +1154,7 @@
                                (t (setf (cl-ds.common.rrb:sparse-nref node index) prev)
                                   (assert (cl-ds.common.rrb:sparse-rrb-node-contains node index))
                                   node)))))))
-            (setf (access-tree structure)
-                  result)))
+            (setf (access-tree structure) result)))
         (shrink-handle-tail! structure position status
                              last-node-size last-node-mask last-node)))))
 
