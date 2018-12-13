@@ -92,16 +92,18 @@
              (,all-present t)
              (,length 0))
          (declare (type fixnum ,length)
+                  (type boolean ,all-present)
                   (dynamic-extent ,path ,indexes ,length))
          (when (not (null ,tree))
            (setf (aref ,path 0) ,tree
                  ,all-present t
                  ,length 1)
            (iterate
+             (declare (type fixnum i byte-position))
              (with inner-node = ,tree)
              (for byte-position
-                  from (* cl-ds.common.rrb:+bit-count+
-                          ,shift)
+                  from (the fixnum (* cl-ds.common.rrb:+bit-count+
+                                      (the fixnum ,shift)))
                   downto 0
                   by cl-ds.common.rrb:+bit-count+)
              (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
@@ -113,18 +115,20 @@
                (setf ,all-present nil)
                (leave))
              (setf inner-node (cl-ds.common.rrb:sparse-nref inner-node i)
-                   (aref ,path ,length) inner-node
-                   (aref ,indexes (1- ,length)) i)
-             (incf ,length)))
+                   (aref ,path (the fixnum ,length)) inner-node
+                   (aref ,indexes (the fixnum (1- ,length))) i)
+             (the fixnum (incf ,length))))
          (macrolet ((reduce-path ((prev-node index node)
                                   &body body)
                       (with-gensyms (!i !prev-node)
-                        `(let ((,!prev-node (aref ,',path (1- ,',length))))
+                        `(let ((,!prev-node (aref ,',path (the fixnum (1- ,',length)))))
                            (iterate
-                             (for ,!i from (- ,',length 2) downto 0)
+                             (declare (type fixnum ,!i))
+                             (for ,!i from (the fixnum (- ,',length 2)) downto 0)
                              (let ((,index (aref ,',indexes ,!i))
                                    (,prev-node ,!prev-node)
                                    (,node (aref ,',path ,!i)))
+                               (declare (type fixnum ,index))
                                (setf ,!prev-node (progn ,@body)))
                              (finally (return ,!prev-node)))))))
            ,@body)))))
