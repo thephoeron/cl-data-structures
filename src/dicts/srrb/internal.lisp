@@ -813,7 +813,7 @@
          (old-tail (access-tail structure))
          (result (make (type-of structure)
                        :tree new-tree
-                       :tail (and old-tail (copy-array old-tail))
+                       :tail old-tail
                        :tail-mask (access-tail-mask structure)
                        :shift (access-shift structure)
                        :tree-size (+ size-increased (access-tree-size structure))
@@ -1089,7 +1089,7 @@
                                       tree-index-bound
                                       nil)
             (setf (access-index-bound structure)
-                  (the fixnum (+ tree-index-bound
+                  (the fixnum (+ (the fixnum (access-tree-index-bound structure))
                                  cl-ds.common.rrb:+maximum-children-count+))))
           (progn
             (adjust-tree-to-new-size! structure
@@ -1123,7 +1123,7 @@
                                       tree-index-bound
                                       tag)
             (setf (access-index-bound structure)
-                  (the fixnum (+ tree-index-bound
+                  (the fixnum (+ (the fixnum (access-tree-index-bound structure))
                                  cl-ds.common.rrb:+maximum-children-count+))))
           (progn
             (adjust-tree-to-new-size! structure
