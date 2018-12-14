@@ -245,7 +245,8 @@
                                    location
                                    &rest all
                                    &key hash value)
-  (declare (ignore hash value location))
+  (declare (ignore hash value location)
+           (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values nil
           cl-ds.common:empty-eager-modification-operation-status
           nil))
@@ -354,7 +355,8 @@
                                    location
                                    &rest all
                                    &key)
-  (declare (ignore all))
+  (declare (ignore all)
+           (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values (cl-ds:force location)
           cl-ds.common:empty-eager-modification-operation-status
           t))

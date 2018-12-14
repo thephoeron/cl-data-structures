@@ -29,17 +29,20 @@
 
 
 (defclass mutable-sparse-rrb-vector (cl-ds:mutable
+                                     cl-ds.dicts:mutable-sparse-vector
                                      fundamental-sparse-rrb-vector)
   ())
 
 
 (defclass functional-sparse-rrb-vector (cl-ds:functional
+                                        cl-ds.dicts:functional-sparse-vector
                                         fundamental-sparse-rrb-vector)
   ())
 
 
 (defclass transactional-sparse-rrb-vector
     (cl-ds:transactional
+     cl-ds.dicts:transactional-sparse-vector
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      mutable-sparse-rrb-vector)
   ()

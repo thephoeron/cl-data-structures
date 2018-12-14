@@ -162,7 +162,7 @@
 (declaim (inline sparse-nref))
 (-> sparse-nref (sparse-rrb-node node-size) t)
 (defun sparse-nref (node index)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (space 0) (debug 0)))
   (with-sparse-rrb-node node
     (svref (sparse-node-content node) (sindex index))))
 

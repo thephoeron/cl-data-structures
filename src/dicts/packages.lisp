@@ -12,6 +12,9 @@
    #:fundamental-sparse-vector
    #:bucket
    #:find-content
+   #:functional-sparse-vector
+   #:mutable-sparse-vector
+   #:transactional-sparse-vector
    #:functional-dictionary
    #:functional-hashing-dictionary
    #:hashing-dictionary
@@ -51,5 +54,6 @@
   (:nicknames #:cl-ds.dicts.srrb)
   (:export
    #:make-transactional-sparse-rrb-vector
+   #:sparse-rrb-vector-at
    #:make-functional-sparse-rrb-vector
    #:make-mutable-sparse-rrb-vector))

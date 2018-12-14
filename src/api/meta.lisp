@@ -310,6 +310,7 @@
 (define-constant null-bucket 'null-bucket)
 
 
+(declaim (inline null-bucket-p))
 (defun null-bucket-p (bucket)
   (eq bucket 'null-bucket))
 

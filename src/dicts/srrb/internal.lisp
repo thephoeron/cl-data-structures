@@ -32,14 +32,14 @@
      t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-node-from-tail (rrb-container ownership-tag)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind (((:slots %tree-size %shift %tree %tail %tail-mask
                   %element-type %tree-index-bound)
           rrb-container)
          (tail-mask (the fixnum %tail-mask))
          (tail-size (logcount tail-mask))
          (tail %tail)
-         (element-type (array-element-type tail))
+         (element-type (read-element-type rrb-container))
          (new-content
           (if (eql tail-size cl-ds.common.rrb:+maximum-children-count+)
               tail
@@ -65,6 +65,7 @@
 
 
 (defun insert-into-node! (into new-element index)
+  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (assert (not (cl-ds.common.rrb:sparse-rrb-node-contains into index)))
   (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content into))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask into))
@@ -78,12 +79,16 @@
                           :element-type (array-element-type content))))
                  (setf (cl-ds.common.rrb:sparse-rrb-node-content into) r))
                content)))
+    (declare (type fixnum length new-bitmask bitmask position)
+             (type simple-vector new-content content))
     (setf (cl-ds.common.rrb:sparse-rrb-node-bitmask into)
           new-bitmask)
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below position)
       (setf (aref new-content i) (aref content i)))
     (iterate
+      (declare (type fixnum i))
       (for i from position below (logcount bitmask))
       (setf (aref new-content (1+ i)) (aref content i)))
     (setf (aref new-content position) new-element)
@@ -93,7 +98,7 @@
 (-> insert-tail! (mutable-sparse-rrb-vector)
     mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
-  (declare (optimize (debug 3)))
+  (declare (optimize (debug 0) (debug 0) (space 0)))
   (let ((tail-mask (access-tail-mask structure))
         (ownership-tag nil))
     (unless (zerop tail-mask)
@@ -157,7 +162,7 @@
 
 
 (defun insert-tail (structure)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (let ((tail-mask (access-tail-mask structure)))
     (if (zerop tail-mask)
         (make (type-of structure)
@@ -237,7 +242,7 @@
 (-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
     transactional-sparse-rrb-vector)
 (defun transactional-insert-tail! (structure ownership-tag)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (let ((tail-mask (access-tail-mask structure)))
     (declare (type fixnum tail-mask))
     (unless (zerop tail-mask)
@@ -333,7 +338,7 @@
 (-> make-adjusted-tree (fundamental-sparse-rrb-vector fixnum fixnum t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-adjusted-tree (structure position new-shift ownership-tag)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind (((:accessors (root access-tree)
                       (tree-size access-tree-size)
                       (shift access-shift)
@@ -424,6 +429,7 @@
                   list)
     (values mutable-sparse-rrb-vector t))
 (defun set-in-tail! (structure operation container offset value all)
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (bind (((:accessors (element-type read-element-type)
                       (%tail-mask access-tail-mask)
                       (%tail access-tail))
@@ -431,11 +437,11 @@
          (tail %tail)
          (tail-mask %tail-mask)
          (present (ldb-test (byte 1 offset) tail-mask)))
-    (declare (type (or null cl-ds.common.rrb:node-content) tail)
+    (declare (type (or null simple-vector) tail)
              (type cl-ds.common.rrb:sparse-rrb-mask tail-mask)
              (type boolean present))
     (if present
-        (bind ((old-bucket (aref tail offset))
+        (bind ((old-bucket (aref (the simple-vector tail) offset))
                ((:values bucket status changed)
                 (apply #'cl-ds.meta:grow-bucket! operation
                        container old-bucket value all)))
@@ -451,7 +457,7 @@
                     (or tail
                         (make-array
                          cl-ds.common.rrb:+maximum-children-count+
-                         :element-type element-type))))
+                         :element-type t))))
               (setf (aref tail-array offset) bucket
                     %tail-mask (dpb 1 (byte 1 offset) tail-mask))
               (unless (eq tail tail-array)
@@ -487,7 +493,7 @@
                        container old-bucket value all)))
           (when changed
             (setf final-status status
-                  new-tail (tail-copy tail element-type)
+                  new-tail (tail-copy tail t)
                   (aref new-tail offset) bucket)))
         (bind (((:values bucket status changed)
                 (apply #'cl-ds.meta:make-bucket
@@ -495,7 +501,7 @@
                        value all)))
           (setf final-status status)
           (when changed
-            (setf new-tail (tail-copy tail element-type)
+            (setf new-tail (tail-copy tail t)
                   (aref new-tail offset) bucket
                   tail-mask (dpb 1 (byte 1 offset) tail-mask)))))
     (values (if (null new-tail)
@@ -557,7 +563,7 @@
                               t)
     (values transactional-sparse-rrb-vector t))
 (defun transactional-grow-tree! (operation structure container position all value)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind ((final-status nil)
          (ownership-tag (cl-ds.common.abstract:read-ownership-tag structure))
          (operation-type (type-of operation))
@@ -662,7 +668,7 @@
                             t)
     (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
          (update? (member operation-type
@@ -838,7 +844,7 @@
                             t)
     (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
          (update? (member operation-type
@@ -916,7 +922,7 @@
 
 
 (defun transactional-shrink-tree! (operation structure container position all)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (bind ((shift (access-shift structure))
          (tag (cl-ds.common.abstract:read-ownership-tag structure))
          (tree (access-tree structure)))
@@ -994,7 +1000,7 @@
               (let ((tail-mask (dpb (if (cl-ds.meta:null-bucket-p new-bucket)
                                         0 1)
                                     (byte 1 offset) tail-mask))
-                    (tail (tail-copy tail (read-element-type structure))))
+                    (tail (tail-copy tail t)))
                 (unless (cl-ds.meta:null-bucket-p new-bucket)
                   (setf (aref tail offset) new-bucket))
                 (values (make (type-of structure)
@@ -1079,7 +1085,7 @@
 
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
-  (declare (optimize (speed 3))
+  (declare (optimize (debug 0))
            (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
              (eql (access-tree-index-bound structure)
@@ -1110,7 +1116,7 @@
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
-  (declare (optimize (speed 3))
+  (declare (optimize (debug 0))
            (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
              (eql (access-tree-index-bound structure)
@@ -1140,7 +1146,7 @@
 
 
 (defun shrink-tree! (operation structure container position all)
-  (declare (optimize (speed 3)))
+  (declare (optimize (debug 0)))
   (let ((shift (access-shift structure))
         (tree (access-tree structure)))
     (declare (type fixnum shift))
@@ -1185,7 +1191,7 @@
 
 
 (defun shrink-tree (operation structure container position all)
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (debug 0) (space 0) (debug 0)))
   (bind ((shift (access-shift structure))
          (tree (access-tree structure)))
     (cl-ds.common.rrb:with-sparse-rrb-node-path

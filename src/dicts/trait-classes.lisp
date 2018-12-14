@@ -25,6 +25,18 @@
   ())
 
 
+(defclass functional-sparse-vector (fundamental-sparse-vector)
+  ())
+
+
+(defclass mutable-sparse-vector (fundamental-sparse-vector)
+  ())
+
+
+(defclass transactional-sparse-vector (mutable-sparse-vector)
+  ())
+
+
 (defclass functional-dictionary (fundamental-dictionary cl-ds:functional)
   ())
 

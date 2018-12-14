@@ -40,7 +40,7 @@
                                    (access-tree-index-bound structure)))
                         (tail-mask (ash 1 offset))
                         (element-type (read-element-type structure))
-                        (tail (cl-ds.common.rrb:make-node-content element-type)))
+                        (tail (cl-ds.common.rrb:make-node-content t)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
                             (type fixnum tail-mask)
                             (type simple-vector tail))
@@ -88,11 +88,10 @@
                  (adjust-tree-to-new-size! structure
                                            position
                                            nil)
-                 (let* ((offset (- (the fixnum position)
-                                   (access-tree-index-bound structure)))
+                 (let* ((offset (- position
+                                   (the fixnum (access-tree-index-bound structure))))
                         (tail-mask (ash 1 offset))
-                        (element-type (read-element-type structure))
-                        (tail (cl-ds.common.rrb:make-node-content element-type)))
+                        (tail (cl-ds.common.rrb:make-node-content t)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
                             (type fixnum tail-mask)
                             (type simple-vector tail))
@@ -101,9 +100,9 @@
                          (access-tail-mask structure) tail-mask
 
                          (access-index-bound structure)
-                         (* (ceiling (1+ position)
-                                     cl-ds.common.rrb:+maximum-children-count+)
-                            cl-ds.common.rrb:+maximum-children-count+))))
+                         (the fixnum (* (the fixnum (ceiling (the fixnum (1+ position))
+                                                             cl-ds.common.rrb:+maximum-children-count+))
+                                        cl-ds.common.rrb:+maximum-children-count+)))))
                (values structure status))))))
 
 
@@ -144,7 +143,7 @@
                                        (access-tree-index-bound new-structure)))
                             (tail-mask (ash 1 offset))
                             (element-type (read-element-type structure))
-                            (tail (cl-ds.common.rrb:make-node-content element-type))
+                            (tail (cl-ds.common.rrb:make-node-content t))
                             (index-bound (* (ceiling (1+ position)
                                                      cl-ds.common.rrb:+maximum-children-count+)
                                             cl-ds.common.rrb:+maximum-children-count+)))
@@ -164,7 +163,7 @@
      (structure mutable-sparse-rrb-vector)
      container
      position &rest all)
-  (declare (optimize (speed 0) (space 0) (debug 3))
+  (declare (optimize (speed 3) (space 0) (debug 0))
            (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
@@ -246,13 +245,9 @@
                  (logcount (the fixnum (access-tail-mask vect))))))
 
 
-(defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
-                     position
-                     &rest more-positions)
-  (declare (optimize (speed 0) (space 0) (debug 3))
+(defun sparse-rrb-vector-at (vect position)
+  (declare (optimize (speed 3) (space 0) (debug 0) (safety 0))
            (type integer position))
-  (cl-ds:assert-one-dimension more-positions)
-  (check-type position fixnum)
   (let ((bound (access-index-bound vect))
         (tree-bound (access-tree-index-bound vect)))
     (declare (type fixnum bound tree-bound))
@@ -263,8 +258,9 @@
              (if (cl-ds.meta:null-bucket-p tree)
                  (values nil nil)
                  (iterate
-                   (declare (type fixnum byte-position i)
+                   (declare (type fixnum byte-position position i)
                             (type cl-ds.common.rrb:shift shift)
+                            (type t node)
                             (type boolean present))
                    (with node = tree)
                    (with shift = (access-shift vect))
@@ -277,11 +273,14 @@
                                        byte-position)
                                  position))
                    (for present =
-                        (cl-ds.common.rrb:sparse-rrb-node-contains node
-                                                                   i))
+                        (cl-ds.common.rrb:sparse-rrb-node-contains
+                         (the cl-ds.common.rrb:sparse-rrb-node node)
+                         i))
                    (unless present
                      (leave (values nil nil)))
-                   (setf node (cl-ds.common.rrb:sparse-nref node i))
+                   (setf node (cl-ds.common.rrb:sparse-nref
+                               (the cl-ds.common.rrb:sparse-rrb-node node)
+                               i))
                    (finally (return (values node t)))))))
           (t (let* ((offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
                     (present (ldb-test (byte 1 offset)
@@ -290,6 +289,15 @@
                (if present
                    (values (aref (access-tail vect) offset) t)
                    (values nil nil)))))))
+
+
+(defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
+                     position
+                     &rest more-positions)
+  (declare (optimize (speed 3) (space 0) (debug 0) (safety 1))
+           (type integer position))
+  (cl-ds:assert-one-dimension more-positions)
+  (sparse-rrb-vector-at vect position))
 
 
 (defmethod cl-ds:become-functional ((container fundamental-sparse-rrb-vector))
