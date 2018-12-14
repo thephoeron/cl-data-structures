@@ -502,3 +502,86 @@
 
 (defmethod cl-ds:empty-clone ((vector fundamental-sparse-rrb-vector))
   (make (type-of vector) :element-type (read-element-type vector)))
+
+
+(defmethod cl-ds:across (function (vector fundamental-sparse-rrb-vector))
+  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (ensure-functionf function)
+  (labels ((impl (node depth upper-bits)
+             (declare (type fixnum depth upper-bits))
+             (if (zerop depth)
+                 (unless (cl-ds.meta:null-bucket-p node)
+                   (iterate
+                     (declare (type simple-vector content)
+                              (type fixnum j i))
+                     (with content =
+                           (cl-ds.common.rrb:sparse-rrb-node-content node))
+                     (with bitmask =
+                           (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
+                     (with j = 0)
+                     (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+                     (when (ldb-test (byte 1 i) bitmask)
+                       (funcall function (list* (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
+                                                     upper-bits)
+                                                (aref content j)))
+                       (incf j))))
+                 (iterate
+                   (declare (type simple-vector content)
+                            (type fixnum j i))
+                   (with content =
+                         (cl-ds.common.rrb:sparse-rrb-node-content node))
+                   (with bitmask =
+                         (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
+                   (with j = 0)
+                   (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+                   (when (ldb-test (byte 1 i) bitmask)
+                     (impl (aref content j) (1- depth)
+                           (logior (ash upper-bits cl-ds.common.rrb:+bit-count+)
+                                   i))
+                     (incf j))))))
+    (impl (access-tree vector)
+          (access-shift vector)
+          0)
+    (iterate
+      (declare (type simple-vector tail)
+               (type fixnum i tail-start))
+      (with tail = (access-tail vector))
+      (with bitmask = (access-tail-mask vector))
+      (with tail-start = (- (the fixnum (access-index-bound vector))
+                            cl-ds.common.rrb:+maximum-children-count+))
+      (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+      (when (ldb-test (byte 1 i) bitmask)
+        (funcall function (list* (+ tail-start i)
+                                 (aref tail i)))))
+    vector))
+
+
+(defmethod cl-ds:traverse (function (vector fundamental-sparse-rrb-vector))
+  (cl-ds:across function vector))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-sparse-rrb-vector))
+                                        traversable
+                                        &rest arguments)
+  (lret ((i 0)
+         (result (apply #'make-mutable-sparse-rrb-vector arguments)))
+    (cl-ds:traverse (lambda (x)
+                      (setf (cl-ds:at result i) x)
+                      (incf i))
+                    traversable)))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'functional-sparse-rrb-vector))
+                                        traversable
+                                        &rest arguments)
+  (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
+             traversable arguments)
+      cl-ds:become-functional))
+
+
+(defmethod cl-ds:make-from-traversable ((class (eql 'transactional-sparse-rrb-vector))
+                                        traversable
+                                        &rest arguments)
+  (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
+             traversable arguments)
+      cl-ds:become-transactional))

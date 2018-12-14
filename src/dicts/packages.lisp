@@ -53,7 +53,10 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.dicts.srrb)
   (:export
-   #:make-transactional-sparse-rrb-vector
-   #:sparse-rrb-vector-at
+   #:functional-sparse-rrb-vector
    #:make-functional-sparse-rrb-vector
-   #:make-mutable-sparse-rrb-vector))
+   #:make-mutable-sparse-rrb-vector
+   #:make-transactional-sparse-rrb-vector
+   #:mutable-sparse-rrb-vector
+   #:sparse-rrb-vector-at
+   #:transactional-sparse-rrb-vector))
