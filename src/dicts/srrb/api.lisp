@@ -254,14 +254,14 @@
     (cond ((not (< -1 position bound))
            (values nil nil))
           ((< position tree-bound)
-           (let ((tree (access-tree vect)))
+           (let ((tree (slot-value vect '%tree)))
              (if (cl-ds.meta:null-bucket-p tree)
                  (values nil nil)
                  (iterate
                    (declare (type fixnum byte-position position i)
                             (type cl-ds.common.rrb:shift shift))
                    (with node = tree)
-                   (with shift = (access-shift vect))
+                   (with shift = (slot-value vect '%shift))
                    (for byte-position
                         from (* cl-ds.common.rrb:+bit-count+
                                 shift)
