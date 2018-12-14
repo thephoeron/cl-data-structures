@@ -36,8 +36,8 @@
                    (adjust-tree-to-new-size! structure
                                              position
                                              ownership-tag))
-                 (let* ((offset (logandc2 (the fixnum position)
-                                          cl-ds.common.rrb:+tail-mask+))
+                 (let* ((offset (- (the fixnum position)
+                                   (access-tree-index-bound structure)))
                         (tail-mask (ash 1 offset))
                         (element-type (read-element-type structure))
                         (tail (cl-ds.common.rrb:make-node-content element-type)))
@@ -88,8 +88,8 @@
                  (adjust-tree-to-new-size! structure
                                            position
                                            nil)
-                 (let* ((offset (logandc2 (the fixnum position)
-                                          cl-ds.common.rrb:+tail-mask+))
+                 (let* ((offset (- (the fixnum position)
+                                   (access-tree-index-bound structure)))
                         (tail-mask (ash 1 offset))
                         (element-type (read-element-type structure))
                         (tail (cl-ds.common.rrb:make-node-content element-type)))
