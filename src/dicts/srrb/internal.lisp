@@ -1053,6 +1053,7 @@
         (finally (return (1+ result))))))
 
 
+(-> scan-index-bound (fundamental-sparse-rrb-vector) fixnum)
 (defun scan-index-bound (structure)
   "Returns index-bound from the tree."
   (tree-index-bound (access-tree structure) (access-shift structure)))
@@ -1075,28 +1076,30 @@
   (declare (optimize (speed 3))
            (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
-             (eql (access-tree-index-bound structure)
+             (eql (the fixnum (access-tree-index-bound structure))
                   (* (ceiling position
                               cl-ds.common.rrb:+maximum-children-count+)
                      cl-ds.common.rrb:+maximum-children-count+)))
     (let* ((tail-mask (access-tail-mask structure))
            (tail-empty (zerop tail-mask)))
+      (declare (type fixnum tail-mask))
       (if tail-empty
           (let ((tree-index-bound (scan-index-bound structure)))
             (adjust-tree-to-new-size! structure
                                       tree-index-bound
                                       nil)
             (setf (access-index-bound structure)
-                  (+ tree-index-bound
-                     cl-ds.common.rrb:+maximum-children-count+)))
+                  (the fixnum (+ tree-index-bound
+                                 cl-ds.common.rrb:+maximum-children-count+))))
           (progn
             (adjust-tree-to-new-size! structure
                                       (access-index-bound structure)
                                       nil)
             (insert-tail! structure)
             (setf (access-index-bound structure)
-                  (+ cl-ds.common.rrb:+maximum-children-count+
-                     (access-tree-index-bound structure)))))))
+                  (the fixnum (+ cl-ds.common.rrb:+maximum-children-count+
+                                 (the fixnum (access-tree-index-bound
+                                              structure)))))))))
   (values structure final-status))
 
 
@@ -1106,29 +1109,31 @@
   (declare (optimize (speed 3))
            (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
-             (eql (access-tree-index-bound structure)
+             (eql (the fixnum (access-tree-index-bound structure))
                   (* (ceiling position
                               cl-ds.common.rrb:+maximum-children-count+)
                      cl-ds.common.rrb:+maximum-children-count+)))
     (let* ((tail-mask (access-tail-mask structure))
            (tail-empty (zerop tail-mask))
            (tag (cl-ds.common.abstract:read-ownership-tag structure)))
+      (declare (type fixnum tail-mask))
       (if tail-empty
           (let ((tree-index-bound (scan-index-bound structure)))
             (adjust-tree-to-new-size! structure
                                       tree-index-bound
                                       tag)
             (setf (access-index-bound structure)
-                  (+ tree-index-bound
-                     cl-ds.common.rrb:+maximum-children-count+)))
+                  (the fixnum (+ tree-index-bound
+                                 cl-ds.common.rrb:+maximum-children-count+))))
           (progn
             (adjust-tree-to-new-size! structure
                                       (access-index-bound structure)
                                       tag)
             (transactional-insert-tail! structure tag)
             (setf (access-index-bound structure)
-                  (+ cl-ds.common.rrb:+maximum-children-count+
-                     (access-tree-index-bound structure)))))))
+                  (the fixnum (+ cl-ds.common.rrb:+maximum-children-count+
+                                 (the fixnum (access-tree-index-bound
+                                              structure)))))))))
   (values structure final-status))
 
 
