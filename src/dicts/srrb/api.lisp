@@ -566,9 +566,10 @@
   (cl-ds:across function vector))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-sparse-rrb-vector))
-                                        traversable
-                                        &rest arguments)
+(defmethod cl-ds:make-from-traversable
+    ((class (eql 'mutable-sparse-rrb-vector))
+     traversable
+     &rest arguments)
   (lret ((i 0)
          (result (apply #'make-mutable-sparse-rrb-vector arguments)))
     (cl-ds:traverse (lambda (x)
@@ -577,17 +578,19 @@
                     traversable)))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'functional-sparse-rrb-vector))
-                                        traversable
-                                        &rest arguments)
+(defmethod cl-ds:make-from-traversable
+    ((class (eql 'functional-sparse-rrb-vector))
+     traversable
+     &rest arguments)
   (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
              traversable arguments)
       cl-ds:become-functional))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'transactional-sparse-rrb-vector))
-                                        traversable
-                                        &rest arguments)
+(defmethod cl-ds:make-from-traversable
+    ((class (eql 'transactional-sparse-rrb-vector))
+     traversable
+     &rest arguments)
   (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
              traversable arguments)
       cl-ds:become-transactional))
