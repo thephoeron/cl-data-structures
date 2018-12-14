@@ -238,8 +238,6 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
 
-(print "test3")
-
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list* (cl-ds:iota-range))
