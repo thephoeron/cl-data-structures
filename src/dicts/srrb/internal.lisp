@@ -1072,7 +1072,8 @@
 
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3))
+           (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
              (eql (access-tree-index-bound structure)
                   (* (ceiling position
@@ -1102,6 +1103,8 @@
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
+  (declare (optimize (speed 3))
+           (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
              (eql (access-tree-index-bound structure)
                   (* (ceiling position
