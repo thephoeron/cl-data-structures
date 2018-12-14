@@ -277,6 +277,7 @@
     (logcount (sparse-node-bitmask node))))
 
 
+(declaim (inline deep-copy-sparse-rrb-node))
 (-> deep-copy-sparse-rrb-node (sparse-rrb-node (integer -1 2) &optional t)
     (or null sparse-rrb-node))
 (defun deep-copy-sparse-rrb-node (node size-change &optional tag)
@@ -338,17 +339,20 @@
      new-node)))
 
 
+(declaim (inline rrb-node-content))
 (defun rrb-node-content (node)
   (if (listp node)
       (car node)
       node))
 
 
+(declaim (inline sparse-rrb-node-content))
 (defun sparse-rrb-node-content (node)
   (with-sparse-rrb-node node
     (sparse-node-content node)))
 
 
+(declaim (inline (setf sparse-rrb-node-content)))
 (defun (setf sparse-rrb-node-content) (new-val node)
   (with-sparse-rrb-node node
     (setf (sparse-node-content node) new-val)))

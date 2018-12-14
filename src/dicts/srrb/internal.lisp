@@ -64,6 +64,7 @@
   (~> node cl-ds.common.rrb:sparse-rrb-node-size (eql 1)))
 
 
+(declaim (inline insert-into-node!))
 (defun insert-into-node! (into new-element index)
   (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (assert (not (cl-ds.common.rrb:sparse-rrb-node-contains into index)))
@@ -98,9 +99,10 @@
 (-> insert-tail! (mutable-sparse-rrb-vector)
     mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
-  (declare (optimize (debug 0) (debug 0) (space 0)))
+  (declare (optimize (speed 3) (debug 0) (debug 0) (space 0)))
   (let ((tail-mask (access-tail-mask structure))
         (ownership-tag nil))
+    (declare (type fixnum tail-mask))
     (unless (zerop tail-mask)
       (bind ((new-node (make-node-from-tail structure ownership-tag))
              ((:accessors (tree access-tree)
@@ -132,21 +134,22 @@
                                      size))
                    (unless (> (decf shift) 0)
                      (finish))
-                   (for present = (cl-ds.common.rrb:sparse-rrb-node-contains
-                                   node index))
-                   (if present
-                       (shiftf p-node
-                               node
-                               (cl-ds.common.rrb:sparse-nref node index))
-                       (let* ((new-element
-                                (cl-ds.common.rrb:make-sparse-rrb-node
-                                 :ownership-tag ownership-tag
-                                 :content (make-array 1))))
-                         (insert-into-node! node new-element index)
-                         (assert (eq (cl-ds.common.rrb:sparse-nref node index)
-                                     new-element))
-                         (setf node new-element
-                               p-node node)))
+                   (cl-ds.utils:cases ((listp node))
+                     (let ((present (cl-ds.common.rrb:sparse-rrb-node-contains
+                                     node index)))
+                       (if present
+                           (shiftf p-node
+                                   node
+                                   (cl-ds.common.rrb:sparse-nref node index))
+                           (let* ((new-element
+                                    (cl-ds.common.rrb:make-sparse-rrb-node
+                                     :ownership-tag ownership-tag
+                                     :content (make-array 1))))
+                             (insert-into-node! node new-element index)
+                             (assert (eq (cl-ds.common.rrb:sparse-nref node index)
+                                         new-element))
+                             (setf node new-element
+                                   p-node node)))))
                    (decf position cl-ds.common.rrb:+bit-count+)
                    (finally
                     (insert-into-node! node new-node

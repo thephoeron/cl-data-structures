@@ -259,9 +259,7 @@
                  (values nil nil)
                  (iterate
                    (declare (type fixnum byte-position position i)
-                            (type cl-ds.common.rrb:shift shift)
-                            (type t node)
-                            (type boolean present))
+                            (type cl-ds.common.rrb:shift shift))
                    (with node = tree)
                    (with shift = (access-shift vect))
                    (for byte-position
@@ -272,15 +270,18 @@
                    (for i = (ldb (byte cl-ds.common.rrb:+bit-count+
                                        byte-position)
                                  position))
-                   (for present =
-                        (cl-ds.common.rrb:sparse-rrb-node-contains
-                         (the cl-ds.common.rrb:sparse-rrb-node node)
-                         i))
-                   (unless present
-                     (leave (values nil nil)))
-                   (setf node (cl-ds.common.rrb:sparse-nref
-                               (the cl-ds.common.rrb:sparse-rrb-node node)
-                               i))
+                   (let ((node node))
+                     (declare (type cl-ds.common.rrb:sparse-rrb-node node))
+                     (cl-ds.utils:cases ((listp node))
+                       (let* ((present (cl-ds.common.rrb:sparse-rrb-node-contains
+                                        node
+                                        i)))
+                         (unless present
+                           (return-from sparse-rrb-vector-at
+                             (values nil nil)))
+                         (setf node (cl-ds.common.rrb:sparse-nref
+                                     (the cl-ds.common.rrb:sparse-rrb-node node)
+                                     i)))))
                    (finally (return (values node t)))))))
           (t (let* ((offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
                     (present (ldb-test (byte 1 offset)
@@ -380,9 +381,10 @@
         (values nil nil)
         (if is-tail
             (let* ((index (iterate
-                           (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-                           (summing (ldb (byte 1 i) node-bitmask) into sum)
-                           (until (eql (1- sum) start))
+                            (for i from 0
+                                 below cl-ds.common.rrb:+maximum-children-count+)
+                            (summing (ldb (byte 1 i) node-bitmask) into sum)
+                            (until (eql (1- sum) start))
                             (finally (return i)))))
               (if (ldb-test (byte index 0) node-bitmask)
                   (values (list* (+ index (access-tree-index-bound container))
@@ -505,12 +507,29 @@
 
 
 (defmethod cl-ds:across (function (vector fundamental-sparse-rrb-vector))
-  (declare (optimize (speed 3) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (space 0) (safety 0) (debug 0)))
   (ensure-functionf function)
   (labels ((impl (node depth upper-bits)
              (declare (type fixnum depth upper-bits))
              (if (zerop depth)
                  (unless (cl-ds.meta:null-bucket-p node)
+                   (cl-ds.utils:cases ((listp node))
+                     (iterate
+                       (declare (type simple-vector content)
+                                (type fixnum j i))
+                       (with content =
+                             (cl-ds.common.rrb:sparse-rrb-node-content node))
+                       (with bitmask =
+                             (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
+                       (with j = 0)
+                       (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+                       (when (ldb-test (byte 1 i) bitmask)
+                         (funcall function
+                                  (list* (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
+                                              upper-bits)
+                                         (aref content j)))
+                         (incf j)))))
+                 (cl-ds.utils:cases ((listp node))
                    (iterate
                      (declare (type simple-vector content)
                               (type fixnum j i))
@@ -521,24 +540,10 @@
                      (with j = 0)
                      (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
                      (when (ldb-test (byte 1 i) bitmask)
-                       (funcall function (list* (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
-                                                     upper-bits)
-                                                (aref content j)))
-                       (incf j))))
-                 (iterate
-                   (declare (type simple-vector content)
-                            (type fixnum j i))
-                   (with content =
-                         (cl-ds.common.rrb:sparse-rrb-node-content node))
-                   (with bitmask =
-                         (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
-                   (with j = 0)
-                   (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-                   (when (ldb-test (byte 1 i) bitmask)
-                     (impl (aref content j) (1- depth)
-                           (logior (ash upper-bits cl-ds.common.rrb:+bit-count+)
-                                   i))
-                     (incf j))))))
+                       (impl (aref content j) (1- depth)
+                             (logior (ash upper-bits cl-ds.common.rrb:+bit-count+)
+                                     i))
+                       (incf j)))))))
     (impl (access-tree vector)
           (access-shift vector)
           0)
