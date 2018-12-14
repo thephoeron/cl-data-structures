@@ -1073,8 +1073,11 @@
 (defun shrink-handle-tail! (structure position final-status
                             last-node-size last-node-mask new-last-node)
   (declare (optimize (debug 3)))
-  (when (and (~> structure access-tree-index-bound 1- (eql position))
-             (zerop last-node-size))
+  (when (and (zerop last-node-size)
+             (eql (access-tree-index-bound structure)
+                  (* (ceiling position
+                              cl-ds.common.rrb:+maximum-children-count+)
+                     cl-ds.common.rrb:+maximum-children-count+)))
     (let* ((tail-mask (access-tail-mask structure))
            (tail-empty (zerop tail-mask)))
       (if tail-empty
@@ -1099,8 +1102,11 @@
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
-  (when (and (~> structure access-tree-index-bound 1- (eql position))
-             (zerop last-node-size))
+  (when (and (zerop last-node-size)
+             (eql (access-tree-index-bound structure)
+                  (* (ceiling position
+                              cl-ds.common.rrb:+maximum-children-count+)
+                     cl-ds.common.rrb:+maximum-children-count+)))
     (let* ((tail-mask (access-tail-mask structure))
            (tail-empty (zerop tail-mask))
            (tag (cl-ds.common.abstract:read-ownership-tag structure)))
