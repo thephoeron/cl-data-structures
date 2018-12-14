@@ -30,32 +30,28 @@
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
                (when changed
-                 (let* ((new-tree-bound (logand position
-                                                cl-ds.common.rrb:+tail-mask+))
-                        (ownership-tag (cl-ds.common.abstract:read-ownership-tag
-                                        structure)))
-                   (adjust-tree-to-new-size! structure
-                                             (max 0 (- position cl-ds.common.rrb:+maximum-children-count+))
-                                             ownership-tag)
+                 (let ((ownership-tag (cl-ds.common.abstract:read-ownership-tag
+                                       structure)))
                    (transactional-insert-tail! structure ownership-tag)
-                   (setf (access-index-bound structure)
-                         (~>> cl-ds.common.rrb:+maximum-children-count+
-                              (ceiling position)
-                              (* cl-ds.common.rrb:+maximum-children-count+)
-                              (+ cl-ds.common.rrb:+maximum-children-count+))))
-                 (assert (> (access-index-bound structure)
-                            (access-tree-index-bound structure)))
-                 (let* ((offset (logandc2 position
+                   (adjust-tree-to-new-size! structure
+                                             position
+                                             ownership-tag))
+                 (let* ((offset (logandc2 (the fixnum position)
                                           cl-ds.common.rrb:+tail-mask+))
                         (tail-mask (ash 1 offset))
-                        (tail (cl-ds.common.rrb:make-node-content
-                               (read-element-type structure))))
+                        (element-type (read-element-type structure))
+                        (tail (cl-ds.common.rrb:make-node-content element-type)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
                             (type fixnum tail-mask)
                             (type simple-vector tail))
                    (setf (aref tail offset) bucket
                          (access-tail structure) tail
-                         (access-tail-mask structure) tail-mask)))
+                         (access-tail-mask structure) tail-mask
+
+                         (access-index-bound structure)
+                         (* (ceiling (1+ position)
+                                     cl-ds.common.rrb:+maximum-children-count+)
+                            cl-ds.common.rrb:+maximum-children-count+))))
                (values structure status))))))
 
 
@@ -89,28 +85,25 @@
                (check-type position cl-ds.common.rrb:rrb-index)
                (when changed
                  (insert-tail! structure)
-                 (adjust-tree-to-new-size!
-                  structure
-                  (max 0 (- position cl-ds.common.rrb:+maximum-children-count+))
-                  nil)
-                 (setf (access-index-bound structure)
-                       (~>> cl-ds.common.rrb:+maximum-children-count+
-                            (ceiling position)
-                            (* cl-ds.common.rrb:+maximum-children-count+)
-                            (+ cl-ds.common.rrb:+maximum-children-count+)))
-                 (assert (> (access-index-bound structure)
-                            (access-tree-index-bound structure)))
+                 (adjust-tree-to-new-size! structure
+                                           position
+                                           nil)
                  (let* ((offset (logandc2 (the fixnum position)
                                           cl-ds.common.rrb:+tail-mask+))
                         (tail-mask (ash 1 offset))
-                        (tail (cl-ds.common.rrb:make-node-content
-                               (read-element-type structure))))
+                        (element-type (read-element-type structure))
+                        (tail (cl-ds.common.rrb:make-node-content element-type)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
                             (type fixnum tail-mask)
                             (type simple-vector tail))
                    (setf (aref tail offset) bucket
                          (access-tail structure) tail
-                         (access-tail-mask structure) tail-mask)))
+                         (access-tail-mask structure) tail-mask
+
+                         (access-index-bound structure)
+                         (* (ceiling (1+ position)
+                                     cl-ds.common.rrb:+maximum-children-count+)
+                            cl-ds.common.rrb:+maximum-children-count+))))
                (values structure status))))))
 
 
@@ -175,7 +168,7 @@
      (structure mutable-sparse-rrb-vector)
      container
      position &rest all)
-  (declare (optimize (speed 3) (space 0) (debug 0))
+  (declare (optimize (speed 0) (space 0) (debug 3))
            (type integer position))
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))

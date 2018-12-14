@@ -285,23 +285,20 @@
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                     1024 :value 5)
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
-                                    1022 :value 1)
-  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                     1023 :value 0)
-  (is (cl-ds:size container) 3)
+  (is (cl-ds:size container) 2)
   (is (cl-ds:at container 1024) 5)
   (is (cl-ds:at container 1023) 0)
-  (is (cl-ds:at container 1022) 1)
   (cl-ds.meta:position-modification
    #'cl-ds:erase! container :mock 1023)
   (is (cl-ds:at container 1023) nil)
-  (is (cl-ds:at container 1022) 1)
-  (is (cl-ds:size container) 2)
+  (is (cl-ds:size container) 1)
   (is (cl-ds:at container 1024) 5)
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                     1023 :value 5)
-  (is (cl-ds:size container) 3)
-  (is (cl-ds:at container 1023) 5))
+  (is (cl-ds:size container) 2)
+  (is (cl-ds:at container 1023) 5)
+  (is (cl-ds:at container 1024) 5))
 
 (print "test4")
 
