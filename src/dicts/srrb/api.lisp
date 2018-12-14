@@ -38,7 +38,8 @@
                                              position
                                              ownership-tag))
                  (let* ((offset (- (the fixnum position)
-                                   (access-tree-index-bound structure)))
+                                   (the fixnum
+                                        (access-tree-index-bound structure))))
                         (tail-mask (ash 1 offset))
                         (tail (cl-ds.common.rrb:make-node-content t)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
@@ -100,9 +101,9 @@
                          (access-tail-mask structure) tail-mask
 
                          (access-index-bound structure)
-                         (the fixnum (* (the fixnum (ceiling (the fixnum (1+ position))
-                                                             cl-ds.common.rrb:+maximum-children-count+))
-                                        cl-ds.common.rrb:+maximum-children-count+)))))
+                         (* (ceiling (1+ position)
+                                     cl-ds.common.rrb:+maximum-children-count+)
+                            cl-ds.common.rrb:+maximum-children-count+))))
                (values structure status))))))
 
 
