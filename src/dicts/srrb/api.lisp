@@ -524,10 +524,10 @@
                        (with j = 0)
                        (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
                        (when (ldb-test (byte 1 i) bitmask)
-                         (funcall function
-                                  (list* (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
-                                              upper-bits)
-                                         (aref content j)))
+                         (~> (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
+                                  upper-bits)
+                             (list* (aref content j))
+                             (funcall function _))
                          (incf j)))))
                  (cl-ds.utils:cases ((listp node))
                    (iterate
