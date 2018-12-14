@@ -269,8 +269,6 @@
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
 
-(print "test2")
-
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
@@ -278,6 +276,7 @@
                                                                  count))
                         cl-ds.alg:to-vector))
        (container (make-instance 'cl-ds.dicts.srrb::functional-sparse-rrb-vector)))
+  (declare (optimize (debug 3)))
   (iterate
     (for (position . point) in-vector input-data)
     (setf container (cl-ds.meta:position-modification #'cl-ds:insert
@@ -286,8 +285,6 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point)))
-
-(print "test1")
 
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)

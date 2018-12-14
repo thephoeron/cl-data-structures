@@ -187,33 +187,40 @@
                                   shift root new-node nil)))
                    (incf shift)
                    (setf root new-root)))
-                (t (bind ((size (access-tree-index-bound structure))
+                (t (bind ((size (~> structure
+                                    access-index-bound
+                                    (- cl-ds.common.rrb:+maximum-children-count+)))
                           ((:labels impl (node byte-position depth))
-                           (if (eql depth 0)
-                               new-node
-                               (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
-                                                        byte-position)
-                                                  size))
-                                      (present (and (not (cl-ds.meta:null-bucket-p node))
-                                                    (cl-ds.common.rrb:sparse-rrb-node-contains
-                                                     node index)))
-                                      (next-node (and present (cl-ds.common.rrb:sparse-nref
-                                                               node index)))
-                                      (current-node (if (cl-ds.meta:null-bucket-p node)
-                                                        (cl-ds.common.rrb:make-rrb-node
-                                                         :content (make-array 1))
-                                                        (cl-ds.common.rrb:deep-copy-sparse-rrb-node
-                                                         node (if present 0 1))))
-                                      (new-node (impl next-node
-                                                      (- byte-position
-                                                         cl-ds.common.rrb:+bit-count+)
-                                                      (1- depth))))
-                                 (setf (cl-ds.common.rrb:sparse-nref current-node index)
-                                       new-node)
-                                 current-node))))
+                           (let ((current-node (if (cl-ds.meta:null-bucket-p node)
+                                                    (cl-ds.common.rrb:make-rrb-node
+                                                     :content (make-array 1))
+                                                    (cl-ds.common.rrb:deep-copy-sparse-rrb-node
+                                                     node 1))))
+                             (if (zerop depth)
+                                 (insert-into-node! current-node new-node
+                                                    (ldb (byte cl-ds.common.rrb:+bit-count+
+                                                               cl-ds.common.rrb:+bit-count+)
+                                                         size))
+                                 (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
+                                                          byte-position)
+                                                    size))
+                                        (present (and (not (cl-ds.meta:null-bucket-p node))
+                                                      (cl-ds.common.rrb:sparse-rrb-node-contains
+                                                       node index)))
+                                        (next-node (if present
+                                                       (cl-ds.common.rrb:sparse-nref
+                                                        node index)
+                                                       cl-ds.meta:null-bucket))
+                                        (new-node (impl next-node
+                                                        (- byte-position
+                                                           cl-ds.common.rrb:+bit-count+)
+                                                        (1- depth))))
+                                   (setf (cl-ds.common.rrb:sparse-nref current-node index)
+                                         new-node)))
+                             current-node)))
                      (setf root (impl root
                                       (* cl-ds.common.rrb:+bit-count+ shift)
-                                      shift)))))
+                                      (max 0 (1- shift)))))))
           (make (type-of structure)
                 :tree root
                 :tail nil
@@ -1215,8 +1222,7 @@
                        node))))
                (result (make (type-of structure)
                              :tree root
-                             :tail (unless (null tail)
-                                     (copy-array tail))
+                             :tail tail
                              :tail-mask (access-tail-mask structure)
                              :shift (access-shift structure)
                              :tree-size (access-tree-size structure)
