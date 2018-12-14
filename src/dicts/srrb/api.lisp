@@ -90,7 +90,8 @@
                                            position
                                            nil)
                  (let* ((offset (- position
-                                   (the fixnum (access-tree-index-bound structure))))
+                                   (the fixnum
+                                        (access-tree-index-bound structure))))
                         (tail-mask (ash 1 offset))
                         (tail (cl-ds.common.rrb:make-node-content t)))
                    (declare (type cl-ds.common.rrb:rrb-node-position offset)
@@ -141,13 +142,15 @@
                                                position
                                                nil)
                      (let* ((offset (- (the fixnum position)
-                                       (access-tree-index-bound new-structure)))
+                                       (the fixnum (access-tree-index-bound
+                                                    new-structure))))
                             (tail-mask (ash 1 offset))
-                            (element-type (read-element-type structure))
                             (tail (cl-ds.common.rrb:make-node-content t))
-                            (index-bound (* (ceiling (1+ position)
-                                                     cl-ds.common.rrb:+maximum-children-count+)
-                                            cl-ds.common.rrb:+maximum-children-count+)))
+                            (index-bound
+                              (~>>
+                               cl-ds.common.rrb:+maximum-children-count+
+                               (ceiling (1+ position))
+                               (* cl-ds.common.rrb:+maximum-children-count+))))
                        (declare (type cl-ds.common.rrb:rrb-node-position offset)
                                 (type fixnum tail-mask)
                                 (type simple-vector tail))
@@ -522,7 +525,9 @@
                      (with bitmask =
                            (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
                      (with j = 0)
-                     (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+                     (for i
+                          from 0
+                          below cl-ds.common.rrb:+maximum-children-count+)
                      (when (ldb-test (byte 1 i) bitmask)
                        (~> (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
                                 upper-bits)
