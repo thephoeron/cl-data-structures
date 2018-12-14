@@ -136,31 +136,28 @@
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
                (if changed
-                   (let ((new-tree-bound (logand position
-                                                 cl-ds.common.rrb:+tail-mask+))
-                         (new-structure (insert-tail structure)))
-                   (adjust-tree-to-new-size! new-structure new-tree-bound nil)
-                   (setf (access-tree-index-bound new-structure) new-tree-bound
-                         (access-index-bound new-structure)
-                         (~>> cl-ds.common.rrb:+maximum-children-count+
-                              (ceiling position)
-                              (* cl-ds.common.rrb:+maximum-children-count+)
-                              (+ cl-ds.common.rrb:+maximum-children-count+)))
-                   (assert (> (access-index-bound new-structure)
-                              (access-tree-index-bound new-structure)))
+                 (let ((new-structure (insert-tail structure)))
+                   (adjust-tree-to-new-size! new-structure
+                                             position
+                                             nil)
                    (let* ((offset (logandc2 (the fixnum position)
                                             cl-ds.common.rrb:+tail-mask+))
                           (tail-mask (ash 1 offset))
-                          (tail (cl-ds.common.rrb:make-node-content
-                                 (read-element-type structure))))
+                          (element-type (read-element-type structure))
+                          (tail (cl-ds.common.rrb:make-node-content element-type))
+                          (index-bound (* (ceiling (1+ position)
+                                                   cl-ds.common.rrb:+maximum-children-count+)
+                                          cl-ds.common.rrb:+maximum-children-count+)))
                      (declare (type cl-ds.common.rrb:rrb-node-position offset)
                               (type fixnum tail-mask)
                               (type simple-vector tail))
-                     (setf (svref tail offset) bucket
+                     (setf (aref tail offset) bucket
                            (access-tail new-structure) tail
-                           (access-tail-mask new-structure) tail-mask)
-                     (values new-structure status)))
-                 (values structure status)))))))
+                           (access-tail-mask new-structure) tail-mask
+                           (access-index-bound new-structure) index-bound
+                           (access-tail new-structure) tail))
+                   (values new-structure status)))
+               (values structure status))))))
 
 
 (defmethod cl-ds.meta:position-modification

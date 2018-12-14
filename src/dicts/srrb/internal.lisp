@@ -481,7 +481,7 @@
                        container old-bucket value all)))
           (when changed
             (setf final-status status
-                  new-tail (copy-array tail)
+                  new-tail (tail-copy tail element-type)
                   (aref new-tail offset) bucket)))
         (bind (((:values bucket status changed)
                 (apply #'cl-ds.meta:make-bucket
@@ -988,7 +988,7 @@
               (let ((tail-mask (dpb (if (cl-ds.meta:null-bucket-p new-bucket)
                                         0 1)
                                     (byte 1 offset) tail-mask))
-                    (tail (copy-array tail)))
+                    (tail (tail-copy tail (read-element-type structure))))
                 (unless (cl-ds.meta:null-bucket-p new-bucket)
                   (setf (aref tail offset) new-bucket))
                 (values (make (type-of structure)
