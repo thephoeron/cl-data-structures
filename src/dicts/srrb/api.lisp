@@ -514,23 +514,6 @@
              (declare (type fixnum depth upper-bits))
              (if (zerop depth)
                  (unless (cl-ds.meta:null-bucket-p node)
-                   (cl-ds.utils:cases ((listp node))
-                     (iterate
-                       (declare (type simple-vector content)
-                                (type fixnum j i))
-                       (with content =
-                             (cl-ds.common.rrb:sparse-rrb-node-content node))
-                       (with bitmask =
-                             (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
-                       (with j = 0)
-                       (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-                       (when (ldb-test (byte 1 i) bitmask)
-                         (~> (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
-                                  upper-bits)
-                             (list* (aref content j))
-                             (funcall function _))
-                         (incf j)))))
-                 (cl-ds.utils:cases ((listp node))
                    (iterate
                      (declare (type simple-vector content)
                               (type fixnum j i))
@@ -541,10 +524,28 @@
                      (with j = 0)
                      (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
                      (when (ldb-test (byte 1 i) bitmask)
-                       (impl (aref content j) (1- depth)
-                             (logior (ash upper-bits cl-ds.common.rrb:+bit-count+)
-                                     i))
-                       (incf j)))))))
+                       (~> (dpb i (byte cl-ds.common.rrb:+bit-count+ 0)
+                                upper-bits)
+                           (list* (aref content j))
+                           (funcall function _))
+                       (incf j))))
+                 (iterate
+                   (declare (type simple-vector content)
+                            (type fixnum j i))
+                   (with content =
+                         (cl-ds.common.rrb:sparse-rrb-node-content node))
+                   (with bitmask =
+                         (cl-ds.common.rrb:sparse-rrb-node-bitmask node))
+                   (with j = 0)
+                   (for i
+                        from 0
+                        below cl-ds.common.rrb:+maximum-children-count+)
+                   (when (ldb-test (byte 1 i) bitmask)
+                     (impl (aref content j) (1- depth)
+                           (logior (ash upper-bits
+                                        cl-ds.common.rrb:+bit-count+)
+                                   i))
+                     (incf j))))))
     (impl (access-tree vector)
           (access-shift vector)
           0)
