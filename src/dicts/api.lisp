@@ -79,6 +79,20 @@
     (values new-value status)))
 
 
+(defmethod cl-ds:add! ((container mutable-sparse-vector) location new-value)
+  (cl-ds.meta:position-modification #'cl-ds:add! container container location :value new-value))
+
+
+(defmethod cl-ds:update! ((container mutable-sparse-vector) location new-value)
+  (cl-ds.meta:position-modification #'cl-ds:update! container container location :value new-value))
+
+
+(defmethod cl-ds:update-if! ((container mutable-sparse-vector) location new-value condition-fn)
+  (cl-ds.meta:position-modification #'cl-ds:update-if! container container location
+                                    :value new-value
+                                    :condition-fn condition-fn))
+
+
 (defmethod cl-ds:insert ((container functional-sparse-vector) location new-value)
   (cl-ds.meta:position-modification #'cl-ds:insert container container location :value new-value))
 
