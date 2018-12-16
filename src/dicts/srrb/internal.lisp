@@ -32,13 +32,13 @@
      t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-node-from-tail (rrb-container ownership-tag)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (bind (((:slots %tree-size %shift %tree %tail %tail-mask
                   %element-type %tree-index-bound)
           rrb-container)
          (tail-mask (the fixnum %tail-mask))
          (tail-size (logcount tail-mask))
-         (tail %tail)
+         (tail (the simple-vector %tail))
          (element-type (read-element-type rrb-container))
          (new-content
           (if (eql tail-size cl-ds.common.rrb:+maximum-children-count+)
@@ -167,8 +167,9 @@
 
 
 (defun insert-tail (structure)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (let ((tail-mask (access-tail-mask structure)))
+    (declare (type fixnum tail-mask))
     (if (zerop tail-mask)
         (make (type-of structure)
               :tree (access-tree structure)
@@ -255,7 +256,7 @@
 (-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
     transactional-sparse-rrb-vector)
 (defun transactional-insert-tail! (structure ownership-tag)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((tail-mask (access-tail-mask structure)))
     (declare (type fixnum tail-mask))
     (unless (zerop tail-mask)

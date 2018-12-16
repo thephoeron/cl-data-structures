@@ -292,14 +292,14 @@
                                        (access-tail-mask vect))))
                (declare (type cl-ds.common.rrb:rrb-node-position offset))
                (if present
-                   (values (aref (access-tail vect) offset) t)
+                   (values (aref (the simple-vector (access-tail vect)) offset) t)
                    (values nil nil)))))))
 
 
 (defmethod cl-ds:at ((vect fundamental-sparse-rrb-vector)
                      position
                      &rest more-positions)
-  (declare (optimize (speed 3) (space 0) (debug 0) (safety 1))
+  (declare (optimize (speed 1) (space 0) (debug 0) (safety 3))
            (type integer position))
   (cl-ds:assert-one-dimension more-positions)
   (sparse-rrb-vector-at vect position))
