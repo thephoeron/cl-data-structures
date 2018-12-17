@@ -288,8 +288,7 @@
                           (lret ((copy (cl-ds.common.rrb:deep-copy-sparse-rrb-node
                                        current-node 1
                                        ownership-tag)))
-                            (insert-into-node! copy new-node final-index)
-                            copy)))
+                            (insert-into-node! copy new-node final-index))))
                     (let* ((index (ldb (byte cl-ds.common.rrb:+bit-count+
                                              byte-position)
                                        size))
