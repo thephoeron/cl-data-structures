@@ -160,8 +160,6 @@
                                             size))))))))
     (setf (access-tail-mask structure) 0
           (access-tree-index-bound structure) (access-index-bound structure))
-    (when (zerop tail-mask)
-      (setf (access-tail structure) nil))
     (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 
@@ -343,8 +341,6 @@
                      (setf tree new-tree)))))))
     (setf (access-tail-mask structure) 0
           (access-tree-index-bound structure) (access-index-bound structure))
-    (when (zerop tail-mask)
-      (setf (access-tail structure) nil))
     (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 
