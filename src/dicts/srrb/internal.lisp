@@ -352,7 +352,7 @@
 (-> make-adjusted-tree (fundamental-sparse-rrb-vector fixnum fixnum t)
     cl-ds.common.rrb:sparse-rrb-node)
 (defun make-adjusted-tree (structure position new-shift ownership-tag)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (space 0) (debug 0) (safety 0)))
   (bind (((:accessors (root access-tree)
                       (tree-size access-tree-size)
                       (shift access-shift)
@@ -374,6 +374,7 @@
             (cl-ds.common.rrb:make-sparse-rrb-node
              :ownership-tag ownership-tag)
             (iterate
+              (declare (type fixnum i highest-current byte-position))
               (with highest-current = (1- old-tree-index-bound))
               (with new-root = (cl-ds.common.rrb:make-sparse-rrb-node
                                 :content (make-array 1)
