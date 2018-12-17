@@ -99,7 +99,8 @@
                  ,all-present t
                  ,length 1)
            (iterate
-             (declare (type fixnum i byte-position))
+             (declare (type fixnum i byte-position)
+                      (type cl-ds.common.rrb:sparse-rrb-node inner-node))
              (with inner-node = ,tree)
              (for byte-position
                   from (the fixnum (* cl-ds.common.rrb:+bit-count+
@@ -283,10 +284,13 @@
 (-> deep-copy-sparse-rrb-node (sparse-rrb-node (integer -1 2) &optional t)
     (or null sparse-rrb-node))
 (defun deep-copy-sparse-rrb-node (node size-change &optional tag)
+  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (current-size (sparse-rrb-node-size node))
-           (desired-size (clamp (+ size-change current-size) 0 +maximum-children-count+)))
+           (desired-size (clamp (the fixnum (+ size-change current-size))
+                                0 +maximum-children-count+)))
+      (declare (type fixnum current-size desired-size))
       (cond ((null tag)
              #1=(make-sparse-node
                  :content (cond ((eql 0 size-change)
@@ -680,8 +684,8 @@
   (declare (optimize (speed 3) (debug 0)
                      (safety 1) (space 0)))
   (bind (((:slots %size %shift %root) rrb-container)
-         (root-underflow (eql (ash (- %size +maximum-children-count+)
-                                   (- (* %shift +bit-count+)))
+         (root-underflow (eql (ash (the fixnum (- %size +maximum-children-count+))
+                                   (the fixnum (- (* %shift +bit-count+))))
                               1)))
     (if (zerop %shift)
         (values nil (rrb-node-content %root) nil)

@@ -854,7 +854,7 @@
                             t)
     (values mutable-sparse-rrb-vector t))
 (defun destructive-grow-tree! (operation structure container position all value)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (bind ((final-status nil)
          (operation-type (type-of operation))
          (update? (member operation-type
@@ -863,6 +863,7 @@
          ((:accessors (element-type read-element-type)) structure)
          (size-increased 0)
          ((:labels impl (node byte-position depth))
+          (declare (type fixnum depth byte-position))
           (let* ((i (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                          position))
                  (present (and (not (cl-ds.meta:null-bucket-p node))
@@ -899,7 +900,7 @@
                             (setf (cl-ds.common.rrb:sparse-nref node i) new-bucket
                                   size-increased 1
                                   final-status status)
-                            (incf (access-tree-size structure))
+                            (incf (the fixnum (access-tree-size structure)))
                             node)
                           (return-from destructive-grow-tree!
                             (values structure status)))))
@@ -921,10 +922,11 @@
                       (setf (cl-ds.common.rrb:sparse-nref current-node i) new-node)
                       current-node)))))
          (shift (access-shift structure)))
-    (incf (access-tree-size structure) size-increased)
+    (declare (type fixnum shift size-increased))
+    (incf (the fixnum (access-tree-size structure)) size-increased)
     (let* ((old-root (access-tree structure))
            (new-root (impl old-root
-                           (* cl-ds.common.rrb:+bit-count+ shift)
+                           (the fixnum (* cl-ds.common.rrb:+bit-count+ shift))
                            shift)))
       (unless (eq old-root new-root)
         (setf (access-tree structure) new-root)))
@@ -932,7 +934,7 @@
 
 
 (defun transactional-shrink-tree! (operation structure container position all)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 0) (space 0)))
   (bind ((shift (access-shift structure))
          (tag (cl-ds.common.abstract:read-ownership-tag structure))
          (tree (access-tree structure)))
@@ -946,16 +948,17 @@
              (last-node (svref path (- length 2)))
              (last-node-mask (cl-ds.common.rrb:sparse-rrb-node-bitmask
                               last-node))
-             (last-node-size (logcount last-node-mask))
              ((:values new-bucket status changed)
               (apply #'cl-ds.meta:shrink-bucket
-                     operation container current-bucket nil all)))
+                     operation container current-bucket nil all))
+             (last-node-size (logcount last-node-mask)))
+        (declare (type fixnum last-node-size last-node-mask))
         (unless changed
           (return-from transactional-shrink-tree!
             (values structure status)))
         (when (cl-ds.meta:null-bucket-p new-bucket)
           (decf last-node-size)
-          (decf (access-tree-size structure)))
+          (decf (the fixnum (access-tree-size structure))))
         (setf (svref path (1- length)) new-bucket)
         (block end
           (let ((result
@@ -973,7 +976,7 @@
                        (let ((current (cl-ds.common.rrb:sparse-nref node index)))
                          (assert (cl-ds.common.rrb:sparse-rrb-node-contains node index))
                          (cond
-                           ((eql current prev)
+                           ((eq current prev)
                             (return-from end))
                            ((cl-ds.common.abstract:acquire-ownership
                              node tag)
@@ -1126,11 +1129,11 @@
 (defun transactional-shrink-handle-tail! (structure position final-status
                                           last-node-size last-node-mask
                                           new-last-node)
-  (declare (optimize (debug 0))
+  (declare (optimize (speed 3))
            (type fixnum position last-node-size last-node-mask))
   (when (and (zerop last-node-size)
-             (eql (access-tree-index-bound structure)
-                  (1- position)))
+             (eql (the fixnum (access-tree-index-bound structure))
+                  (the fixnum (1- position))))
     (let* ((tail-mask (access-tail-mask structure))
            (tail-empty (zerop tail-mask))
            (tag (cl-ds.common.abstract:read-ownership-tag structure)))
