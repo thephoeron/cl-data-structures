@@ -1107,22 +1107,18 @@
            (tail-empty (zerop tail-mask)))
       (declare (type fixnum tail-mask))
       (if tail-empty
-          (let ((tree-index-bound (scan-index-bound structure)))
-            (adjust-tree-to-new-size! structure
-                                      tree-index-bound
-                                      nil)
-            (setf (access-index-bound structure)
-                  (the fixnum (+ (the fixnum (access-tree-index-bound structure))
-                                 cl-ds.common.rrb:+maximum-children-count+))))
+          (adjust-tree-to-new-size! structure
+                                    (scan-index-bound structure)
+                                    nil)
           (progn
             (adjust-tree-to-new-size! structure
                                       (access-index-bound structure)
                                       nil)
-            (insert-tail! structure)
-            (setf (access-index-bound structure)
-                  (the fixnum (+ cl-ds.common.rrb:+maximum-children-count+
-                                 (the fixnum (access-tree-index-bound
-                                              structure)))))))))
+            (insert-tail! structure)))
+      (setf (access-index-bound structure)
+            (the fixnum (+ cl-ds.common.rrb:+maximum-children-count+
+                           (the fixnum (access-tree-index-bound
+                                        structure)))))))
   (values structure final-status))
 
 
@@ -1139,22 +1135,17 @@
            (tag (cl-ds.common.abstract:read-ownership-tag structure)))
       (declare (type fixnum tail-mask))
       (if tail-empty
-          (let ((tree-index-bound (scan-index-bound structure)))
-            (adjust-tree-to-new-size! structure
-                                      tree-index-bound
-                                      tag)
-            (setf (access-index-bound structure)
-                  (the fixnum (+ (the fixnum (access-tree-index-bound structure))
-                                 cl-ds.common.rrb:+maximum-children-count+))))
+          (adjust-tree-to-new-size! structure
+                                    (scan-index-bound structure)
+                                    tag)
           (progn
             (adjust-tree-to-new-size! structure
                                       (access-index-bound structure)
                                       tag)
-            (transactional-insert-tail! structure tag)
-            (setf (access-index-bound structure)
-                  (the fixnum (+ cl-ds.common.rrb:+maximum-children-count+
-                                 (the fixnum (access-tree-index-bound
-                                              structure)))))))))
+            (transactional-insert-tail! structure tag)))
+      (setf (access-index-bound structure)
+            (the fixnum (+ (the fixnum (access-tree-index-bound structure))
+                           cl-ds.common.rrb:+maximum-children-count+)))))
   (values structure final-status))
 
 
