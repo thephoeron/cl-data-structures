@@ -108,15 +108,16 @@
                   by cl-ds.common.rrb:+bit-count+)
              (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                            ,index))
-             (for present =
-                  (cl-ds.common.rrb:sparse-rrb-node-contains inner-node
-                                                             i))
-             (unless present
-               (setf ,all-present nil)
-               (leave))
-             (setf inner-node (cl-ds.common.rrb:sparse-nref inner-node i)
-                   (aref ,path (the fixnum ,length)) inner-node
-                   (aref ,indexes (the fixnum (1- ,length))) i)
+             (cl-ds.utils:cases ((listp inner-node))
+               (let ((present (cl-ds.common.rrb:sparse-rrb-node-contains inner-node
+                                                                         i)))
+                 (declare (type boolean present))
+                 (unless present
+                   (setf ,all-present nil)
+                   (leave))
+                 (setf inner-node (cl-ds.common.rrb:sparse-nref inner-node i)
+                       (aref ,path (the fixnum ,length)) inner-node
+                       (aref ,indexes (the fixnum (1- ,length))) i)))
              (the fixnum (incf ,length))))
          (macrolet ((reduce-path ((prev-node index node)
                                   &body body)
@@ -210,6 +211,7 @@
                   (sparse-node-content node) new-content))))))
 
 
+(declaim (inline sparse-rrb-node-erase))
 (-> sparse-rrb-node-erase (sparse-rrb-node node-size &optional t) sparse-rrb-node)
 (defun sparse-rrb-node-erase (node i &optional ownership-tag)
   (with-sparse-rrb-node node
