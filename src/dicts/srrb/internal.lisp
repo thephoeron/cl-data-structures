@@ -1150,7 +1150,7 @@
 
 
 (defun shrink-tree! (operation structure container position all)
-  (declare (optimize (debug 0)))
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (let ((shift (access-shift structure))
         (tree (access-tree structure)))
     (declare (type fixnum shift))
@@ -1195,7 +1195,7 @@
 
 
 (defun shrink-tree (operation structure container position all)
-  (declare (optimize (debug 0) (space 0) (debug 0)))
+  (declare (optimize (speed 3) (debug 0) (space 0) (debug 0)))
   (bind ((shift (access-shift structure))
          (tree (access-tree structure)))
     (cl-ds.common.rrb:with-sparse-rrb-node-path
