@@ -244,7 +244,9 @@
                              (list ,@(apply #'append
                                             (mapcar (lambda (name binding) (list (make-keyword name) binding))
                                                     vars
-                                                    fake-vars))))))))
+                                                    fake-vars))))
+                           (lambda ()
+                             ,!finished)))))
               final-forms))
       `(flet ,final-forms
          ,@body))))

@@ -12,20 +12,24 @@
                :reader read-arguments)
    (%arguments-closure :accessor access-arguments-closure
                        :initarg :arguments-closure)
+   (%finished-closure :accessor access-finished-closure
+                      :initarg :finished-closure)
    (%closure :accessor access-closure
              :initarg :closure))
   (:metaclass c2mop:funcallable-standard-class))
 
 
 (defmethod clone ((obj expression))
-  (bind (((:slots %construct-function %arguments %closure %arguments-closure)
+  (bind (((:slots %construct-function %arguments
+                  %closure %arguments-closure)
           obj)
-         ((:values result-closure arguments-closure)
+         ((:values result-closure arguments-closure finished-closure)
           (apply %construct-function
                  (funcall %arguments-closure)))
          (result (make 'expression
                        :construct-function %construct-function
                        :arguments-closure arguments-closure
+                       :finished-closure finished-closure
                        :arguments %arguments
                        :closure result-closure)))
     result))
@@ -86,15 +90,22 @@
 
 
 (defmethod peek-front ((obj expression))
-  (bind (((:slots %closure %construct-function %arguments-closure) obj)
-         (fn (apply %construct-function (funcall %arguments-closure))))
-    (funcall fn)))
+  (bind (((:slots %closure %construct-function %arguments-closure %finished-closure)
+          obj))
+    (if (funcall %finished-closure)
+        (values nil nil)
+        (funcall (apply %construct-function (funcall %arguments-closure))))))
 
 
 (defmethod reset! ((obj expression))
-  (bind (((:slots %construct-function %arguments %closure %arguments-closure) obj)
-         ((:values function arguments-closure) (apply %construct-function %arguments)))
+  (declare (optimize (debug 3)))
+  (bind (((:slots %construct-function %arguments %closure
+                  %arguments-closure %finished-closure)
+          obj)
+         ((:values function arguments-closure finished-closure)
+          (apply %construct-function %arguments)))
     (setf %closure function
+          %finished-closure finished-closure
           %arguments-closure arguments-closure)
     (c2mop:set-funcallable-instance-function obj function))
   obj)
