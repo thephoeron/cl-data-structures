@@ -128,18 +128,15 @@
         (for av = (funcall first-key (first-order a)))
         (for bv = (funcall second-key (second-order b)))
         (cond ((funcall same av bv)
-               (progn
-                 (funcall function (first-order a) (second-order b))
-                 (incf a)
-                 (incf b)))
+               (funcall function (first-order a) (second-order b))
+               (incf a)
+               (incf b))
               ((funcall less av bv)
-               (progn
-                 (funcall on-first-missing (first-order a))
-                 (incf a)))
+               (funcall on-first-missing (first-order a))
+               (incf a))
               (t
-               (progn
-                 (funcall on-second-missing (second-order b))
-                 (incf b))))
+               (funcall on-second-missing (second-order b))
+               (incf b)))
         (finally
          (iterate
            (declare (type fixnum i))
