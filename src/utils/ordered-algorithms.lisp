@@ -144,11 +144,11 @@
          (iterate
            (declare (type fixnum i))
            (for i from a below (length first-order))
-           (funcall on-first-missing (first-order i)))
+           (funcall on-second-missing (first-order i)))
          (iterate
            (declare (type fixnum i))
            (for i from b below (length second-order))
-           (funcall on-second-missing (second-order i))))))))
+           (funcall on-first-missing (second-order i))))))))
 
 
 (defun ordered-intersection (compare-fn test-fn vector &rest more-vectors)
