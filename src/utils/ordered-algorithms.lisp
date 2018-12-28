@@ -132,10 +132,10 @@
                (incf a)
                (incf b))
               ((funcall less av bv)
-               (funcall on-first-missing (first-order a))
+               (funcall on-second-missing (first-order a))
                (incf a))
               (t
-               (funcall on-second-missing (second-order b))
+               (funcall on-first-missing (second-order b))
                (incf b)))
         (finally
          (iterate
