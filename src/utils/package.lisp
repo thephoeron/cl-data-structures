@@ -23,6 +23,7 @@
    #:copy-without
    #:cycle-over-address
    #:define-list-of-slots
+   #:copy-slots
    #:draw-random-vector
    #:draw-sample-vector
    #:each-in-matrix

@@ -347,3 +347,10 @@
 (defmacro lparallel-future (variables &body body)
   `(with-rebind ,variables
      (lparallel:future (rebind ,@body))))
+
+
+(defmacro copy-slots ((from to) &body slot-names)
+  `(progn ,@(mapcar (lambda (slot)
+                      `(setf (slot-value ,to ',slot)
+                             (slot-value ,from ',slot)))
+                    slot-names)))
