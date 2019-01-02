@@ -44,7 +44,7 @@
                           (remove-duplicates :test #'equal)))
          ((:values node path) (node-at-names index aposteriori))
          ((:values set-index-node apriori-path) (node-at-names index apriori)))
-    (if (null set-index-node)
+    (if (or (null node) (null set-index-node))
         (make 'empty-association-set :index index
                                      :type-count (length aposteriori))
         (make 'association-set
@@ -78,7 +78,8 @@
                   (make-instance 'set-in-index
                                  :index index
                                  :node node
-                                 :path (coerce (chain-cells x) 'vector))))
+                                 :path (~> x chain-cells
+                                           rest (coerce 'vector)))))
               maximal-size))
 
 
@@ -163,7 +164,6 @@
 
 
 (defmethod content ((set set-in-index))
-  (declare (optimize (debug 3)))
   (when-let ((node (read-node set)))
     (~>> set read-path
          (remove nil _ :key #'read-type)
@@ -226,14 +226,13 @@
 
 (defmethod make-association-set ((apriori set-in-index)
                                  (aposteriori set-in-index))
-  (declare (optimize (debug 3)))
   (bind ((effective-path (~> (concatenate 'vector
                                           (read-path apriori)
                                           (read-path aposteriori))
                              (remove-duplicates :key #'read-type)))
          ((:values union aposteriori-path)
           (~>> effective-path
-               (map 'list #'read-type)
+               (map 'vector #'read-type)
                (node-at-type (read-index apriori)))))
     (or (and union
              (make 'association-set

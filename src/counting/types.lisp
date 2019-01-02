@@ -25,8 +25,6 @@
                      :initform nil)
    (%mapping :accessor access-mapping
              :initform nil)
-   (%minimal-frequency :reader read-minimal-frequency
-                       :initarg :minimal-frequency)
    (%total-size :reader read-total-size
                 :initarg :total-size)))
 

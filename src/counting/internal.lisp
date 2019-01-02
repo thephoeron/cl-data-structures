@@ -148,7 +148,7 @@
 
 (defun add-to-stack (stack cell depth)
   (iterate
-    (with node = (first cell))
+    (with node = (car cell))
     (for elt in-vector (read-sets node))
     (push (list* elt depth cell) stack))
   stack)
@@ -161,24 +161,28 @@
                                    #'<
                                    :key #'read-type)))
     (when (and (< lower-bound (length content))
-               (eql (read-type (aref content lower-bound))
-                    type))
+               (= (read-type (aref content lower-bound))
+                  type))
       (aref content lower-bound))))
 
 
 (defun node-at-type (index types)
-  (declare (type list types))
+  (declare (type sequence types)
+           (optimize (speed 3)))
   (iterate
-    (with path = (sort types #'<))
-    (with node = (read-root index))
-    (with result-path = (make-array (length types)))
-    (while path)
-    (for i from 0)
-    (setf node (child-of-type node (first path))
-          path (rest path))
-    (while node)
+    (declare (type fixnum i))
+    (with path = (~> types
+                     (coerce '(vector fixnum))
+                     (sort #'<)))
+    (with root = (read-root index))
+    (with node = root)
+    (with result-path = (make-array (length path)))
+    (for i from 0 below (length path))
+    (setf node (child-of-type node (aref path i)))
+    (until (null node))
     (setf (aref result-path i) node)
-    (finally (return (values node result-path)))))
+    (finally (return (values (unless (eq root node) node)
+                             result-path)))))
 
 
 (defun node-at (index i &rest more-i)
@@ -212,19 +216,21 @@
 (defun data-range (index minimal-frequency
                    &optional (operation #'identity) maximal-size)
   (cl-ds:xpr (:stack (list (list* (read-root index) 0 nil)))
-    (bind ((cell (pop stack)))
-      (unless (null cell)
-        (bind (((node depth . parent) cell))
-          (if (and maximal-size (< maximal-size depth))
-              (cl-ds:recur :stack stack)
-              (if (null parent)
-                  (cl-ds:recur :stack (add-to-stack stack cell (1+ depth)))
-                  (if (< (/ (support node) (read-total-size index))
-                         minimal-frequency)
-                      (cl-ds:recur :stack (add-to-stack stack cell (1+ depth)))
-                      (cl-ds:send-recur (funcall operation cell)
-                                        :stack (add-to-stack stack cell
-                                                             (1+ depth)))))))))))
+    (when (endp stack)
+      (cl-ds:finish))
+    (bind ((cell (first stack))
+           ((node depth . parent) cell))
+      (when (and maximal-size (< maximal-size depth))
+          (cl-ds:recur :stack (rest stack)))
+      (when (null parent)
+        (cl-ds:recur :stack (add-to-stack (rest stack) cell (1+ depth))))
+      (if (< (/ (support node) (read-total-size index))
+             minimal-frequency)
+          (cl-ds:recur :stack (add-to-stack stack cell (1+ depth)))
+          (cl-ds:send-recur (funcall operation cell)
+                            :stack (add-to-stack (rest stack)
+                                                 cell
+                                                 (1+ depth)))))))
 
 
 (defun chain-cells (cell)
