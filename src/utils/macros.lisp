@@ -354,3 +354,18 @@
                       `(setf (slot-value ,to ',slot)
                              (slot-value ,from ',slot)))
                     slot-names)))
+
+
+(defmacro with-keys (forms &body body)
+  (let ((key-symbols (mapcar (lambda (x)
+                               (declare (ignore x))
+                               (gensym))
+                             forms)))
+    `(let ,(mapcar (lambda (key form) (list key (third form)))
+                   key-symbols forms)
+       (symbol-macrolet ,(mapcar (lambda (form key)
+                                   `(,(first form)
+                                     (funcall ,key ,(second form))))
+                          forms
+                          key-symbols)
+             ,@body))))

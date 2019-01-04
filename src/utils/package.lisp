@@ -85,4 +85,5 @@
    #:unfold-table
    #:with-rebind
    #:with-slots-for
+   #:with-keys
    #:with-vectors))
