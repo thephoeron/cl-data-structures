@@ -19,8 +19,9 @@
               (when (null (position ea b :test test :key key))
                 (next-iteration))
               (sum (iterate
+                     (with ee = eea)
                      (for eb in-vector b)
-                     (sum (funcall fn eea eeb)))
+                     (sum (funcall fn ee eeb)))
                    into result)
               (finally (return (* val result)))))
            (right
@@ -30,8 +31,9 @@
               (when (null (position eb a :test test :key key))
                 (next-iteration))
               (sum (iterate
+                     (with ee = eeb)
                      (for ea in-vector a)
-                     (sum (funcall fn eea eeb)))
+                     (sum (funcall fn eea ee)))
                    into result)
               (finally (return (* val result))))))
       (+ left right))))
