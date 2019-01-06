@@ -132,6 +132,18 @@
   array)
 
 
+(defun inverse-in-shuffle-array (array start end &aux (length (- end start)))
+  (declare (type vector array)
+           (type non-negative-fixnum start end length)
+           (optimize (speed 3)))
+  (when (<= length 2)
+    (return-from inverse-in-shuffle-array array))
+  (when (oddp length)
+    (error "Input vector must have even length"))
+
+  array)
+
+
 (defun unfold-table (table)
   (make-array (reduce #'* (array-dimensions table))
               :element-type (array-element-type table)
