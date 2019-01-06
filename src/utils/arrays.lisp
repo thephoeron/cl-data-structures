@@ -70,13 +70,22 @@
 
 
 (defun circular-shift-right (array start end shift)
+  (declare (type fixnum shift)
+           (type non-negative-fixnum start end)
+           (optimize (speed 3)))
   (let ((length (- end start)))
+    (declare (type non-negative-fixnum length))
     (circular-shift-left array start end
                          (- length (rem shift length)))))
 
 
 (defun circular-shift (array start end shift)
-  (cond ((zerop shift) array)
+  (declare (optimize (speed 3))
+           (type fixnum start end shift)
+           (type vector array))
+  (cond ((or (zerop shift)
+             (zerop (rem shift (- end start))))
+         array)
         ((> shift 0) (circular-shift-right
                       array start end shift))
         (t (circular-shift-left
