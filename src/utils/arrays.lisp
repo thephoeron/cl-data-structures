@@ -120,3 +120,9 @@
       (setf leader (the fixnum (* leader 3))))
     (incf i 2m))
   array)
+
+
+(defun unfold-table (table)
+  (make-array (reduce #'* (array-dimensions table))
+              :element-type (array-element-type table)
+              :displaced-to table))

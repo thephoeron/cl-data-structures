@@ -19,6 +19,14 @@
       (finally (return result)))))
 
 
+(defun if-else (predicate true false)
+  (ensure-functionf predicate true false)
+  (lambda (&rest all)
+    (if (apply predicate all)
+        (apply true all)
+        (apply false all))))
+
+
 (defun cycle-over-address (dimensions &rest pinned)
   (bind ((address (make-array (length dimensions)
                               :element-type 'fixnum
