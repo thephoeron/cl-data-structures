@@ -33,6 +33,7 @@
                              (:file "modification-algorithms")
                              (:file "distances")
                              (:file "lazy-shuffle")
+                             (:file "arrays")
                              (:file "trees")
                              (:file "bind")
                              (:file "parallel-tools")
