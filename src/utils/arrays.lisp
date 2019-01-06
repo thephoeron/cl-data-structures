@@ -35,9 +35,9 @@
     (declare (type fixnum i i-1 leader-1))
     (for i initially (next-index leader section-length)
          then (next-index i section-length))
+    (until (eql i leader))
     (for i-1 = (1- i))
     (for leader-1 = (1- leader))
-    (until (eql i leader))
     (rotatef (aref array (the fixnum (+ section-offset i-1)))
              (aref array (the fixnum (+ section-offset leader-1))))))
 
@@ -92,8 +92,9 @@
             array start end (- shift)))))
 
 
-(defun in-shuffle-array (array &aux (length (length array)))
+(defun in-shuffle-array (array start end &aux (length (- end start)))
   (declare (type vector array)
+           (type non-negative-fixnum start end length)
            (optimize (speed 3)))
   (when (<= length 2)
     (return-from in-shuffle-array array))
@@ -115,8 +116,8 @@
     (setf 2m (the fixnum (* 2 m)))
     (setf n (truncate section-length 2))
     (circular-shift-right array
-                          (the fixnum (+ i m))
-                          (the fixnum (+ i m n))
+                          (the fixnum (+ i m start))
+                          (the fixnum (+ i m n start))
                           m)
     (iterate
       (declare (type non-negative-fixnum leader))
@@ -124,7 +125,7 @@
       (while (< leader 2m))
       (cycle-rotate array
                     leader
-                    i
+                    (+ i start)
                     2m)
       (setf leader (the fixnum (* leader 3))))
     (incf i 2m))
