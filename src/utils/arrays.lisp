@@ -172,11 +172,12 @@
                          (+ start i m)
                          (truncate i 2))
     (incf i 2m))
+  #|
   (iterate
     (with l2 = (truncate length 2))
     (for i from 0 below l2)
-    (rotatef (aref array (+ i l2))
-             (aref array i)))
+    (rotatef (aref array (+ i l2)) (aref array i)))
+  |#
   array)
 
 
