@@ -1,6 +1,14 @@
 (in-package #:cl-data-structures.counting)
 
 
+(defclass tree-mixin ()
+  ((%sets :reader read-sets
+          :writer write-sets
+          :type vector
+          :initarg :sets
+          :initform (vect))))
+
+
 (defclass set-index-node ()
   ((%type :reader read-type
           :initarg :type
@@ -8,12 +16,11 @@
           :type (or null integer))
    (%count :reader read-count
            :initarg :count
-           :type integer)
-   (%sets :reader read-sets
-          :writer write-sets
-          :type vector
-          :initarg :sets
-          :initform (vect))))
+           :type integer)))
+
+
+(defclass tree-set-index-node (tree-mixin set-index-node)
+  ())
 
 
 (defclass set-index ()

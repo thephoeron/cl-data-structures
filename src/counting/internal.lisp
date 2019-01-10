@@ -27,7 +27,7 @@
                     (children (map 'vector #'cdr effective)))
                (map-into effective #'car effective)
                (return (values effective children))))))
-         (root (make-instance 'set-index-node
+         (root (make-instance 'tree-set-index-node
                               :sets root-content
                               :count total-size))
          (result (make 'set-index
@@ -129,6 +129,8 @@
 
 
 (defun push-child (parent child)
+  (unless (typep parent 'tree-set-index-node)
+    (setf parent (change-class parent 'tree-set-index-node)))
   (vector-push-extend child (read-sets parent)))
 
 
