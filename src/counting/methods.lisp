@@ -107,6 +107,10 @@
             maximal-size))
 
 
+(defmethod read-sets ((node set-index-node))
+  #())
+
+
 (defmethod all-super-sets ((set set-in-index) minimal-frequency
                            &optional maximal-size)
   (nest
