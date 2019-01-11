@@ -134,6 +134,8 @@
 
 (defgeneric make-of-size (class size &rest more))
 
+(defgeneric forward-call (object function arguments))
+
 #|
 
 Range releated functions.
@@ -347,3 +349,8 @@ Range releated functions.
           (values (whole-range result)
                   t))
         (values nil nil))))
+
+
+(defmethod forward-call ((object fundamental-forward-range)
+                         function arguments)
+  (apply function arguments))

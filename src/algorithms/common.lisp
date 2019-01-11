@@ -17,6 +17,10 @@
                    :reader read-chunked-range)))
 
 
+(defmethod cl-ds:forward-call ((range proxy-range) function arguments)
+  (apply function arguments))
+
+
 (defmethod cl-ds:reset! ((range proxy-range))
   (cl-ds:reset! (read-original-range range))
   range)

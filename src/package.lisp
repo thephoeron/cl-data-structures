@@ -40,6 +40,7 @@
    #:force
    #:chunking-mixin
    #:found
+   #:forward-call
    #:functional
    #:functionalp
    #:fundamental-assignable-forward-range
