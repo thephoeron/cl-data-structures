@@ -19,7 +19,7 @@
 
 (defgeneric close-inner-stream (range)
   (:method ((range cl-ds:fundamental-forward-range))
-    (cl-ds:forward-call range #'close-inner-stream nil))
+    (cl-ds:forward-call range #'close-inner-stream))
   (:method ((range file-range-mixin))
     (when-let ((stream (read-stream range)))
       (close-silence-errors stream)
