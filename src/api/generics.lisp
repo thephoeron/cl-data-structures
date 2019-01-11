@@ -195,93 +195,122 @@ Range releated functions.
 
 (defgeneric reset! (obj))
 
+
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:functional-function))
   operation)
+
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:erase!-function))
   #'erase)
 
+
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update-if!-function))
   #'update-if)
+
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:erase-if!-function))
   #'erase-if)
 
+
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:put!-function))
   #'put)
+
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:add!-function))
   #'add)
 
+
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:insert!-function))
   #'insert)
+
 
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:take-out!-function))
   #'take-out)
 
+
 (defmethod cl-ds.meta:functional-counterpart ((operation cl-ds.meta:update!-function))
   #'update)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:take-out-back!-function))
   #'take-out-back)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:take-out-front!-function))
   #'take-out-front)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:put-front!-function))
   #'put-front)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:put-back!-function))
   #'put-back)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:destructive-function))
   operation)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-erase-function))
   #'erase!)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-erase-if-function))
   #'erase-if!)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-if-function))
   #'update-if!)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-add-function))
   #'add!)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-function))
   #'put!)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-insert-function))
   #'(setf at))
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-function))
   #'take-out!)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-back-function))
   #'take-out-back!)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-take-out-front-function))
   #'take-out-front!)
+
 
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-front-function))
   #'put-front!)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-put-back-function))
   #'put-back!)
 
+
 (defmethod cl-ds.meta:destructive-counterpart ((operation cl-ds.meta:functional-update-function))
   #'update!)
+
 
 (defmethod clone ((range chunked-range))
   (make 'chunked-range
         :original-range (~> range read-original-range clone)
         :chunk-size (read-chunk-size range)))
 
+
 (defmethod chunked ((range chunking-mixin) &optional chunk-size-hint)
   (make 'chunked-range
         :original-range (cl-ds:clone range)
         :chunk-size (or chunk-size-hint 512)))
+
 
 (defmethod consume-front ((range chunked-range))
   (bind ((og-range (read-original-range range))
