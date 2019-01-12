@@ -222,7 +222,7 @@
             (incf curi))
           (setf block-start curi))
       (iterate
-        (while (and (<= nexti length)
+        (while (and (< nexti length)
                     (> (at curi) (at nexti))))
         (incf count)
         (setf nexti (+ nexti 2)))
