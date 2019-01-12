@@ -97,39 +97,44 @@
   (declare (type vector array)
            (type non-negative-fixnum start end length)
            (optimize (speed 3)))
-  (when (<= length 2)
-    (return-from in-shuffle-array array))
-  (when (oddp length)
-    (error "Input vector must have even length"))
-  (iterate
-    (declare (type fixnum i m 2m n section-length
-                   highest-leader))
-    (with i = 1)
-    (with m = 0)
-    (with 2m = 0)
-    (with n = 1)
-    (while (< m n))
-    (for section-length = (- length i))
-    (for highest-leader = (highest-leader section-length))
-    (setf m (if (> highest-leader 1)
-                (truncate highest-leader 2)
-                1))
-    (setf 2m (the fixnum (* 2 m)))
-    (setf n (truncate section-length 2))
-    (circular-shift-right array
-                          (the fixnum (+ i m start))
-                          (the fixnum (+ i m n start))
-                          m)
+  (cond ((<= length 1)
+         (return-from in-shuffle-array array))
+        ((eql length 2)
+         (rotatef (aref array 0) (aref array 1))
+         (return-from in-shuffle-array array)))
+  (let ((odd (oddp length)))
+    (when odd
+      (decf length)
+      (incf start))
     (iterate
-      (declare (type non-negative-fixnum leader))
-      (with leader = 1)
-      (while (< leader 2m))
-      (cycle-rotate array
-                    leader
-                    (+ i start)
-                    2m)
-      (setf leader (the fixnum (* leader 3))))
-    (incf i 2m))
+      (declare (type fixnum i m 2m n section-length
+                     highest-leader))
+      (with i = (if odd 0 1))
+      (with m = 0)
+      (with 2m = 0)
+      (with n = 1)
+      (while (< m n))
+      (for section-length = (- length i))
+      (for highest-leader = (highest-leader section-length))
+      (setf m (if (> highest-leader 1)
+                  (truncate highest-leader 2)
+                  1))
+      (setf 2m (the fixnum (* 2 m)))
+      (setf n (truncate section-length 2))
+      (circular-shift-right array
+                            (the fixnum (+ i m start))
+                            (the fixnum (+ i m n start))
+                            m)
+      (iterate
+        (declare (type non-negative-fixnum leader))
+        (with leader = 1)
+        (while (< leader 2m))
+        (cycle-rotate array
+                      leader
+                      (+ i start)
+                      2m)
+        (setf leader (the fixnum (* leader 3))))
+      (incf i 2m)))
   array)
 
 
