@@ -185,3 +185,18 @@
   (make-array (reduce #'* (array-dimensions table))
               :element-type (array-element-type table)
               :displaced-to table))
+
+
+(defun swap-blocks (vector from to size)
+  (declare (type vector vector)
+           (type non-negative-fixnum from to size))
+  (let ((length (length vector)))
+    (when (or (> (+ to size) length)
+              (> (+ from size) length))
+      (error "Block does not fit in the array!")))
+  (iterate
+    (for i from from)
+    (for j from to)
+    (repeat size)
+    (rotatef (aref vector i) (aref vector j))
+    (finally (return vector))))
