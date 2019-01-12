@@ -97,15 +97,10 @@
   (declare (type vector array)
            (type non-negative-fixnum start end length)
            (optimize (speed 3)))
-  (cond ((<= length 1)
-         (return-from in-shuffle-array array))
-        ((eql length 2)
-         (rotatef (aref array 0) (aref array 1))
-         (return-from in-shuffle-array array)))
+  (when (<= length 2)
+    (return-from in-shuffle-array array))
   (let ((odd (oddp length)))
-    (when odd
-      (decf length)
-      (incf start))
+    (when odd (decf length) (incf start))
     (iterate
       (declare (type fixnum i m 2m n section-length
                      highest-leader))
@@ -144,45 +139,45 @@
            (optimize (speed 3)))
   (when (<= length 2)
     (return-from inverse-in-shuffle-array array))
-  (when (oddp length)
-    (error "Input vector must have even length"))
-  (iterate
-    (with m = 0)
-    (with 2m = 0)
-    (with n = 0)
-    (with i = 0)
-    (for section-length = (- length i))
-    (until (zerop section-length))
-    (for highest-leader = (highest-leader section-length))
-    (setf m (if (> highest-leader 1)
-                (truncate highest-leader 2)
-                1))
-    (setf 2m (the fixnum (* 2 m)))
-    (setf n (truncate section-length 2))
-    (iterate
-      (with shift = i)
-      (with leader = 1)
-      (while (< leader 2m))
-      (for j = leader)
+  (let ((odd (oddp length)))
+    (cl-ds.utils:lolol (length)
+      (when odd (decf length))
       (iterate
-        (setf j (if (oddp j)
-                    (+ m (truncate j 2))
-                    (truncate j 2)))
-        (rotatef (aref array (+ j start shift))
-                 (aref array (+ leader start shift)))
-        (until (eql j leader)))
-      (setf leader (* leader 3)))
-    (circular-shift-left array
-                         (+ start (truncate i 2))
-                         (+ start i m)
-                         (truncate i 2))
-    (incf i 2m))
-  #|
-  (iterate
-    (with l2 = (truncate length 2))
-    (for i from 0 below l2)
-    (rotatef (aref array (+ i l2)) (aref array i)))
-  |#
+        (with m = 0)
+        (with 2m = 0)
+        (with n = 0)
+        (with i = 0)
+        (for section-length = (- length i))
+        (until (zerop section-length))
+        (for highest-leader = (highest-leader section-length))
+        (setf m (if (> highest-leader 1)
+                    (truncate highest-leader 2)
+                    1))
+        (setf 2m (the fixnum (* 2 m)))
+        (setf n (truncate section-length 2))
+        (iterate
+          (with shift = i)
+          (with leader = 1)
+          (while (< leader 2m))
+          (for j = leader)
+          (iterate
+            (setf j (if (oddp j)
+                        (+ m (truncate j 2))
+                        (truncate j 2)))
+            (rotatef (aref array (+ j start shift))
+                     (aref array (+ leader start shift)))
+            (until (eql j leader)))
+          (setf leader (* leader 3)))
+        (circular-shift-left array
+                             (+ start (truncate i 2))
+                             (+ start i m)
+                             (truncate i 2))
+        (incf i 2m)))
+    (when odd
+      (circular-shift-right array
+                            (+ start (truncate length 2))
+                            length
+                            1)))
   array)
 
 
