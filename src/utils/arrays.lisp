@@ -104,7 +104,7 @@
   (iterate
     (declare (type fixnum i m 2m n section-length
                    highest-leader))
-    (with i = 0)
+    (with i = 1)
     (with m = 0)
     (with 2m = 0)
     (with n = 1)
@@ -200,3 +200,55 @@
     (repeat size)
     (rotatef (aref vector i) (aref vector j))
     (finally (return vector))))
+
+
+(defun merge-in-place (array start end)
+  (declare (optimize (debug 3)))
+  (bind ((length (- end start))
+         (curi 0)
+         (nexti 1)
+         (count 0)
+         (block-size 0)
+         (block-start 0)
+         ((:flet at (index))
+          (aref array (+ start index))))
+    (in-shuffle-array array start end)
+    (iterate
+      (while (< curi length))
+      (for prev-nexti = nexti)
+      (if (> block-size 0)
+          (iterate
+            (while (and (< curi nexti) (< (at curi) (at nexti))))
+            (incf curi))
+          (setf block-start curi))
+      (iterate
+        (while (and (<= nexti length)
+                    (> (at curi) (at nexti))))
+        (incf count)
+        (setf nexti (+ nexti 2)))
+      (if (> count 0)
+          (progn
+            (if (zerop block-size)
+                (inverse-in-shuffle-array array
+                                          (+ start curi)
+                                          (+ start nexti -1))
+                (progn
+                  (unless (eql prev-nexti curi)
+                    (inverse-in-shuffle-array  array
+                                              (+ start prev-nexti -1)
+                                              (+ nexti start)))
+                  (swap-blocks array
+                               (+ start block-start)
+                               (+ -1 prev-nexti start)
+                               block-size))))
+          (cond ((and (> block-size 0)
+                      (not (eql prev-nexti curi)))
+                 (setf nexti (+ 2 curi)
+                       block-size 0))
+                ((> block-size 0)
+                 (setf nexti (1+ curi))
+                 (decf curi))
+                (t (incf nexti))))
+      (incf curi)
+      (setf block-size (- nexti curi 1)))
+    array))
