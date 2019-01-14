@@ -45,8 +45,9 @@
                 (let ,(mapcar #'list prime-vars extra-vars)
                   ,@body))
            (progn
-             ,@(mapcar (lambda (x) `(unless (null ,x)
-                                 (close-inner-stream ,x)))
+             ,@(mapcar (lambda (x)
+                         `(unless (null ,x)
+                            (close-inner-stream ,x)))
                        extra-vars)))))))
 
 
