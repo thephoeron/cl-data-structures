@@ -15,7 +15,7 @@
                             (cl-ds.alg:without #'evenp)
                             (cl-ds.alg:group-by :key (lambda (x) (mod x 3)))
                             (cl-ds.alg:accumulate (flip #'cons)
-                                                  _ :initial-value nil)))
+                                                  :initial-value nil)))
   (is (cl-ds:at result 0) '(9 3) :test #'equal)
   (is (cl-ds:at result 2) '(11 5) :test #'equal)
   (is (cl-ds:at result 1) '(7 1) :test #'equal))

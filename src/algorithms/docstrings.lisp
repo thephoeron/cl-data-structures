@@ -120,7 +120,7 @@
                  (key "Key function, used to extract value for TEST")
                  (test "Test for inner hashtable (either eq, eql or equal)."))
      :examples [(let* ((data #(1 2 3 4 5 6 7 8 9 10))
-                       (sums (cl-ds.alg:accumulate #'+ (cl-ds.alg:group-by data :key #'evenp))))
+                       (sums (cl-ds.alg:accumulate (cl-ds.alg:group-by data :key #'evenp) #'+)))
                   (prove:is (cl-ds:size sums) 2)
                   (prove:is (cl-ds:at sums t) 30)
                   (prove:is (cl-ds:at sums nil) 25))])))

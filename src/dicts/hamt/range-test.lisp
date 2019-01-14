@@ -34,22 +34,22 @@
                          :test #'equal))))
   (let ((sum (~> dict
                  cl-ds:whole-range
-                 (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
+                 (cl-ds.alg:accumulate #'+ :key #'cdr))))
     (is sum 10))
   (let ((sum (~> dict
                  cl-ds:whole-range
                  (cl-ds.alg:on-each (lambda (x) (* (cdr x) 2)))
-                 (cl-ds.alg:accumulate #'+ _))))
+                 (cl-ds.alg:accumulate #'+))))
     (is sum 20))
   (let ((sum (~> dict
                  cl-ds:whole-range
                  (cl-ds.alg:on-each (curry #'* 2) :key #'cdr)
-                 (cl-ds.alg:accumulate #'+ _))))
+                 (cl-ds.alg:accumulate #'+))))
     (is sum 20))
   (let ((divided-sum (~> dict
                          cl-ds:whole-range
                          (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
-                         (cl-ds.alg:accumulate #'+ _ :key #'cdr))))
+                         (cl-ds.alg:accumulate #'+ :key #'cdr))))
     (is (cl-ds:at divided-sum nil) 4)
     (is (cl-ds:at divided-sum t) 6))
   (let ((divided-variance (~> dict

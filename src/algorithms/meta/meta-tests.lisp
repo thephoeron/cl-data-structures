@@ -50,7 +50,7 @@
                   cl-ds:whole-range
                   (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'car)
                                       :test #'eq)
-                  (cl-ds.alg:accumulate #'max _ :key #'car))))
+                  (cl-ds.alg:accumulate #'max :key #'car))))
   (is (cl-ds:at proxy t) 2)
   (is (cl-ds:at proxy nil) 1))
 
@@ -74,9 +74,7 @@
                                       :test #'eq)
                   (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'cdr)
                                       :test #'eq)
-                  (cl-ds.alg:accumulate #'+
-                                        _
-                                        :key #'cdr))))
+                  (cl-ds.alg:accumulate #'+ :key #'cdr))))
   (is (~> proxy (cl-ds:at t) (cl-ds:at t)) 12 :test #'=)
   (is (~> proxy (cl-ds:at nil) (cl-ds:at t)) 6 :test #'=)
   (is (~> proxy (cl-ds:at nil) (cl-ds:at nil)) 9 :test #'=)
