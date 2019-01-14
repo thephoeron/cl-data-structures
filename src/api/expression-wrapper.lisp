@@ -58,7 +58,7 @@
                :arguments (list ,@arguments))))))
 
 
-(defmethod traverse (function (obj expression))
+(defmethod traverse ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((fn (access-closure obj))
         (function (ensure-function function)))
@@ -71,7 +71,7 @@
   obj)
 
 
-(defmethod across (function (obj expression))
+(defmethod across ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((function (ensure-function function)))
     (declare (type (-> (t) t) function))

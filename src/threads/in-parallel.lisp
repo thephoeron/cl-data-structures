@@ -40,17 +40,17 @@
           (lparallel.queue:push-queue element queue))
          ((:flet to-vector (x))
           (lret ((vector (make-array 128 :adjustable t :fill-pointer 0)))
-            (cl-ds:traverse (rcurry #'vector-push-extend vector) x)))
+            (cl-ds:traverse x (rcurry #'vector-push-extend vector))))
          ((:flet impl ())
           (handler-case
               (funcall context-function
                        (lambda ()
                          (cl-ds:traverse
+                          chunked-range
                           (lambda (x)
                             (push-queue
                              (lparallel:future
-                               (list (to-vector x) t))))
-                          chunked-range)))
+                               (list (to-vector x) t)))))))
             (error (e) (push-queue (list* e :error))))
           (push-queue (list* nil nil)))
          (thread (bt:make-thread
@@ -84,11 +84,11 @@
     range))
 
 
-(defmethod cl-ds:traverse (function (range in-parallel-range))
+(defmethod cl-ds:traverse ((range in-parallel-range) function)
   (traverse/accross-in-parallel-buffer-range #'cl-ds:traverse range function))
 
 
-(defmethod cl-ds:across (function (range in-parallel-range))
+(defmethod cl-ds:across ((range in-parallel-range) function)
   (traverse/accross-in-parallel-buffer-range #'cl-ds:across range function))
 
 

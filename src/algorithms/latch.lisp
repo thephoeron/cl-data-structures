@@ -18,7 +18,7 @@
         :latches (map 'vector #'cl-ds:clone (read-latches range))))
 
 
-(defmethod cl-ds:traverse (function (range latch-proxy))
+(defmethod cl-ds:traverse ((range latch-proxy) function)
   (let ((current (read-original-range range))
         (latches (read-latches range)))
     (iterate
@@ -35,10 +35,11 @@
       (finally (return range)))))
 
 
-(defmethod cl-ds:across (function (range latch-proxy))
+(defmethod cl-ds:across ((range latch-proxy) function)
   (let ((current (read-original-range range))
         (latches (map 'vector #'cl-ds:clone (read-latches range))))
-    (cl-ds:across (lambda (elt)
+    (cl-ds:across current
+                  (lambda (elt)
                     (let ((open (iterate
                                   (with result = t)
                                   (for latch in-vector latches)
@@ -49,8 +50,7 @@
                                   (setf result (and open result))
                                   (finally (return result)))))
                       (when open
-                        (funcall function elt))))
-                  current)
+                        (funcall function elt)))))
     range))
 
 

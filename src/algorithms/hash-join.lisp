@@ -30,13 +30,13 @@
       (for range in-vector ranges)
       (for key in-vector keys)
       (for i from 1)
-      (cl-ds:across (lambda (x)
-                        (nest
-                         (let ((maybe-vector (gethash (funcall key x) table))))
-                         (unless (null maybe-vector))
-                         (let ((effective-vector (aref maybe-vector i))))
-                         (vector-push-extend x effective-vector)))
-                    range))
+      (cl-ds:across range
+                    (lambda (x)
+                      (nest
+                       (let ((maybe-vector (gethash (funcall key x) table))))
+                       (unless (null maybe-vector))
+                       (let ((effective-vector (aref maybe-vector i))))
+                       (vector-push-extend x effective-vector)))))
     (bind ((result (let ((size 0))
                      (maphash (lambda (key value)
                                 (declare (ignore key))

@@ -516,7 +516,7 @@ Methods. Those will just call non generic functions.
         :container container))
 
 
-(defmethod cl-ds:across (function (container hamt-dictionary))
+(defmethod cl-ds:across ((container hamt-dictionary) function)
   (labels ((impl (node)
              (if (listp node)
                  (cl-ds.meta:map-bucket container node function)
@@ -543,9 +543,9 @@ Methods. Those will just call non generic functions.
   (let* ((hash-fn (getf arguments :hash-fn))
          (equal-fn (getf arguments :equal-fn))
          (result (make-mutable-hamt-dictionary hash-fn equal-fn)))
-    (cl-ds:across (lambda (x &aux (key (car x)) (value (cdr x)))
-                    (setf (cl-ds:at result key) value))
-                  traversable)
+    (cl-ds:across traversable
+                  (lambda (x &aux (key (car x)) (value (cdr x)))
+                    (setf (cl-ds:at result key) value)))
     result))
 
 

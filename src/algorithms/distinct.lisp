@@ -53,30 +53,30 @@
   range)
 
 
-(defmethod cl-ds:traverse (function (range distinct-proxy))
+(defmethod cl-ds:traverse ((range distinct-proxy) function)
   (bind (((:slots %seen %mutex %key) range)
          (original (read-original-range range)))
     (cl-ds:traverse
+     original
      (lambda (x &aux (key (funcall %key x)))
        (bt:with-lock-held (%mutex)
          (cl-ds:mod-bind (dict found) (cl-ds:add! %seen key t)
            (unless found
-             (funcall function x)))))
-     original))
+             (funcall function x)))))))
   range)
 
 
-(defmethod cl-ds:across (function (range distinct-proxy))
+(defmethod cl-ds:across ((range distinct-proxy) function)
   (bind (((:slots %seen %key %mutex) range)
          (original (read-original-range range))
          (seen (cl-ds:become-transactional %seen)))
     (cl-ds:across
+     original
      (lambda (x &aux (key (funcall %key x)))
        (bt:with-lock-held (%mutex)
          (cl-ds:mod-bind (dict found) (cl-ds:add! seen key t)
            (unless found
-             (funcall function x)))))
-     original))
+             (funcall function x)))))))
   range)
 
 

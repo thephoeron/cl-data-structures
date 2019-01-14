@@ -11,12 +11,12 @@
        (range (cl-ds.common:sequence-window vector 0 13))
        (collection nil)
        (window-range (cl-ds.common:sequence-window vector 4 10)))
-  (cl-ds:across (lambda (x) (push x collection))
-                range)
+  (cl-ds:across range
+                (lambda (x) (push x collection)))
   (is (sort collection #'<) (iota 13) :test #'equal)
   (setf collection nil)
-  (cl-ds:across (lambda (x) (push x collection))
-                window-range)
+  (cl-ds:across window-range
+                (lambda (x) (push x collection)))
   (is (sort collection #'<) (iota 6 :start 4) :test #'equal))
 
 (finalize)

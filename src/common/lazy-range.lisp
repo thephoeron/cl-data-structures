@@ -63,11 +63,11 @@
   (force-lazy-range range))
 
 
-(defmethod cl-ds:traverse :before (function (range lazy-range))
+(defmethod cl-ds:traverse :before ((range lazy-range) function)
   (force-lazy-range range))
 
 
-(defmethod cl-ds:across :before (function (range lazy-range))
+(defmethod cl-ds:across :before ((range lazy-range) function)
   (force-lazy-range range))
 
 
@@ -99,12 +99,12 @@
   (cl-ds:drop-back (slot-value range '%range) count))
 
 
-(defmethod cl-ds:traverse (function (range lazy-forward-range))
-  (cl-ds:traverse function (slot-value range '%range)))
+(defmethod cl-ds:traverse ((range lazy-forward-range) function)
+  (cl-ds:traverse (slot-value range '%range) function))
 
 
-(defmethod cl-ds:across (function (range lazy-forward-range))
-  (cl-ds:across function (slot-value range '%range)))
+(defmethod cl-ds:across ((range lazy-forward-range) function)
+  (cl-ds:across (slot-value range '%range) function))
 
 
 (defmethod cl-ds:size ((range lazy-random-access-range))

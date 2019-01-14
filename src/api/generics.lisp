@@ -113,22 +113,22 @@
 
 (defgeneric empty-clone (container))
 
-(defgeneric traverse (function object)
-  (:method (function (object sequence))
+(defgeneric traverse (object function)
+  (:method ((object sequence) function)
     (map nil function object))
-  (:method (function (object fundamental-range))
+  (:method ((object fundamental-range) function)
     (iterate
       (for (values val more) = (cl-ds:consume-front object))
       (while more)
       (funcall function val))))
 
-(defgeneric across (function object)
-  (:method (function (object sequence))
+(defgeneric across (object function)
+  (:method ((object sequence) function)
     (map nil function object))
-  (:method (function (object fundamental-container))
-    (traverse function object))
-  (:method (function (object fundamental-range))
-    (traverse function (clone object))))
+  (:method ((object fundamental-container) function)
+    (traverse object function))
+  (:method ((object fundamental-range) function)
+    (traverse (clone object) function)))
 
 (defgeneric make-from-traversable (class traversable &rest arguments))
 
@@ -331,31 +331,31 @@ Range releated functions.
         (values nil nil))))
 
 
-(defmethod cl-ds:across (function (range chunked-range))
+(defmethod cl-ds:across ((range chunked-range) function)
   (bind ((og-range (read-original-range range))
          (chunk-size (read-chunk-size range))
          (vector #1=(make-array chunk-size :fill-pointer 0)))
-    (cl-ds:across (lambda (x)
+    (cl-ds:across og-range
+                  (lambda (x)
                     (vector-push-extend x vector)
                     (unless (< (length vector) chunk-size)
                       (funcall function (cl-ds:whole-range vector))
-                      (setf vector #1#)))
-                  og-range)
+                      (setf vector #1#))))
     (unless (emptyp vector)
       (funcall function (cl-ds:whole-range vector)))
     range))
 
 
-(defmethod cl-ds:traverse (function (range chunked-range))
+(defmethod cl-ds:traverse ((range chunked-range) function)
   (bind ((og-range (read-original-range range))
          (chunk-size (read-chunk-size range))
          (vector #1=(make-array chunk-size :fill-pointer 0)))
-    (cl-ds:traverse (lambda (x)
+    (cl-ds:traverse og-range
+                    (lambda (x)
                       (vector-push-extend x vector)
                       (unless (< (length vector) chunk-size)
                         (funcall function (cl-ds:whole-range vector))
-                        (setf vector #1#)))
-                    og-range)
+                        (setf vector #1#))))
     (unless (emptyp vector)
       (funcall function (cl-ds:whole-range vector)))
     range))

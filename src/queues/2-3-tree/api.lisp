@@ -74,7 +74,7 @@
         :tail-end (access-tail-end container)))
 
 
-(defmethod cl-ds:across (function (container 2-3-queue))
+(defmethod cl-ds:across ((container 2-3-queue) function)
   (ensure-functionf function)
   (labels ((visit (node)
              (unless (cl-ds.meta:null-bucket-p node)
@@ -628,15 +628,15 @@
   range)
 
 
-(defmethod cl-ds:across (function (range 2-3-queue-range))
+(defmethod cl-ds:across ((range 2-3-queue-range) function)
   (ensure-functionf function)
-  (cl-ds:across function (access-container range)))
+  (cl-ds:across (access-container range) function))
 
 
 (defun mutable-from-traversable (traversable arguments)
   (lret ((result (apply #'make-mutable-2-3-queue arguments)))
-    (cl-ds:across (lambda (x) (cl-ds:put! result x))
-                  traversable)))
+    (cl-ds:across traversable
+                  (lambda (x) (cl-ds:put! result x)))))
 
 
 (defmethod cl-ds:make-from-traversable ((class (eql 'mutable-2-3-queue))
@@ -652,7 +652,7 @@
       cl-ds:become-functional))
 
 
-(defmethod cl-ds:traverse (function (container 2-3-queue))
+(defmethod cl-ds:traverse ((container 2-3-queue) function)
   (ensure-functionf function)
   (labels ((visit-node (node)
              (typecase node

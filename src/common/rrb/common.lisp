@@ -722,7 +722,7 @@
                (map nil
                     (lambda (x) (impl function x (1- depth)))
                     (rrb-node-content node)))))
-  (defmethod cl-ds:traverse (function (object rrb-container))
+  (defmethod cl-ds:traverse ((object rrb-container) function)
     (let ((root (access-root object))
           (shift (access-shift object))
           (size (access-size object)))
@@ -1015,7 +1015,7 @@
               (values t))))))
 
 
-(defmethod cl-ds:across (function (range rrb-range))
+(defmethod cl-ds:across ((range rrb-range) function)
   (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
          (index %start)
          (last-position (~> %content flexichain:nb-elements 1-)))
@@ -1030,7 +1030,7 @@
     range))
 
 
-(defmethod cl-ds:traverse (function (range rrb-range))
+(defmethod cl-ds:traverse ((range rrb-range) function)
   (bind (((:slots %start %lower-bound %upper-bound %content %last-size) range)
          (index %start)
          (last-position (~> %content flexichain:nb-elements 1-)))

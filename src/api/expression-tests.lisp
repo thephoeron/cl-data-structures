@@ -9,8 +9,8 @@
                     (when (< iteration 5)
                       (cl-ds:send-recur iteration :iteration (1+ iteration))))))
   (is (cl-ds:peek-front expression) 1)
-  (cl-ds:across (lambda (x) (push x data))
-                expression)
+  (cl-ds:across expression
+                (lambda (x) (push x data)))
   (is data '(4 3 2 1) :test #'equal)
   (setf data nil)
   (iterate
@@ -27,7 +27,7 @@
                                 (cl-ds:send-recur front :stack (rest stack)))
                                (t (cl-ds:recur :stack (append front (rest stack))))))))))
   (let ((result nil))
-    (cl-ds:traverse (lambda (x) (push x result)) expression)
+    (cl-ds:traverse expression (lambda (x) (push x result)))
     (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
 
 (let* ((data '(1 2 (3 4) (5 (6 7))))
@@ -42,7 +42,7 @@
                                             (push elt stack)
                                             (finally (return stack)))))))))))
   (let ((result nil))
-    (cl-ds:traverse (lambda (x) (push x result)) expression)
+    (cl-ds:traverse expression (lambda (x) (push x result)))
     (is (sort result #'<) '(1 2 3 4 5 6 7) :test #'equal)))
 
 (finalize)

@@ -68,10 +68,10 @@
 (defun chain-traversable (traversable)
   (check-type traversable cl-ds:traversable)
   (let ((ranges nil))
-    (cl-ds:across (lambda (x)
+    (cl-ds:across traversable
+                  (lambda (x)
                     (check-type x cl-ds:fundamental-forward-range)
-                    (push x ranges))
-                  traversable)
+                    (push x ranges)))
     (setf ranges (nreverse ranges))
     (let ((fundamental-type (common-fundamental-range-class ranges)))
       (assert fundamental-type)
@@ -162,16 +162,16 @@
         :original-content (read-original-content range)))
 
 
-(defmethod cl-ds:traverse (function (range forward-chain-of-ranges))
+(defmethod cl-ds:traverse ((range forward-chain-of-ranges) function)
   (bind (((:slots %content) range))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
-      (cl-ds:traverse function (flexichain:element* %content i)))
+      (cl-ds:traverse (flexichain:element* %content i) function))
     range))
 
 
-(defmethod cl-ds:across (function (range forward-chain-of-ranges))
+(defmethod cl-ds:across ((range forward-chain-of-ranges) function)
   (bind (((:slots %content range) range))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
-      (cl-ds:across function (flexichain:element* %content i)))))
+      (cl-ds:across (flexichain:element* %content i) function))))

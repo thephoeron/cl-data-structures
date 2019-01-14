@@ -62,11 +62,11 @@
     range))
 
 
-(defmethod cl-ds:traverse (function (range buffer-range))
+(defmethod cl-ds:traverse ((range buffer-range) function)
   (traverse/accross-thread-buffer-range #'cl-ds:traverse range function))
 
 
-(defmethod cl-ds:across (function (range buffer-range))
+(defmethod cl-ds:across ((range buffer-range) function)
   (traverse/accross-thread-buffer-range #'cl-ds:across range function))
 
 

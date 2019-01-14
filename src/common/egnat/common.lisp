@@ -37,7 +37,8 @@
 (defun make-partitions (container seeds-indexes data)
   (let ((result (make-array (cl-ds:size data) :element-type 'fixnum))
         (index 0))
-    (cl-ds:across (lambda (value)
+    (cl-ds:across data
+                  (lambda (value)
                     (setf (aref result (finc index))
                           (iterate
                             (for seed-index in-vector seeds-indexes)
@@ -49,8 +50,7 @@
                                  then (if (= distance min)
                                           seed-index
                                           result))
-                            (finally (return result)))))
-                  data)
+                            (finally (return result))))))
     result))
 
 

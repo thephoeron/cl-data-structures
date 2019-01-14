@@ -700,14 +700,14 @@
          (element-type (getf arguments :element-type t))
          ((:dflet index ())
           (rem size cl-ds.common.rrb:+maximum-children-count+)))
-    (cl-ds:across (lambda (x &aux (index (index)))
+    (cl-ds:across traversable
+                  (lambda (x &aux (index (index)))
                     (when (zerop index)
                       (vector-push-extend (cl-ds.common.rrb:make-node-content element-type)
                                           content))
                     (setf (aref (last-elt content) index)
                           x)
-                    (incf size))
-                  traversable)
+                    (incf size)))
     (map-into content
               (lambda (x)
                 (cl-ds.common.rrb:make-rrb-node :content x

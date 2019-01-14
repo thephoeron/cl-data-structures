@@ -60,14 +60,14 @@
 
 (cl-ds.common:defmethod-with-peek-stack
     (cl-ds:across
-     (function (range egnat-range))
+     ((range egnat-range) function)
      stack (access-stack range))
   (traverse-body range stack function))
 
 
 (cl-ds.common:defmethod-with-stack
     (cl-ds:traverse
-     (function (range egnat-range))
+     ((range egnat-range) function)
      stack (access-stack range))
   (traverse-body range stack function))
 
@@ -138,9 +138,9 @@
   (egnat-grow! structure container operation location all))
 
 
-(defmethod cl-ds:traverse (function (container fundamental-egnat-container))
+(defmethod cl-ds:traverse ((container fundamental-egnat-container) function)
   (traverse-impl container function))
 
 
-(defmethod cl-ds:across (function (container fundamental-egnat-container))
+(defmethod cl-ds:across ((container fundamental-egnat-container) function)
   (traverse-impl container function))

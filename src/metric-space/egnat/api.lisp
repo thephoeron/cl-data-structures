@@ -63,5 +63,5 @@
                                         (sequence cl-ds:fundamental-forward-range)
                                         &rest arguments)
   (let ((vector (vect)))
-    (cl-ds:across (rcurry #'vector-push-extend vector) sequence)
+    (cl-ds:across sequence (rcurry #'vector-push-extend vector))
     (apply #'cl-ds:make-from-traversable class vector arguments)))

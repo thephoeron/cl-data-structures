@@ -8,9 +8,8 @@
 
 (let ((vector #(0 1 2 3 4 5 6 7 8 9 10 11))
       (result nil))
-  (cl-ds:traverse (lambda (x)
-                    (push x result))
-                  (cl-ds.alg:without vector #'evenp))
+  (cl-ds:traverse (cl-ds.alg:without vector #'evenp)
+                  (lambda (x) (push x result)))
   (is (sort result #'<) '(1 3 5 7 9 11) :test #'equal)
   (setf result (serapeum:~> vector
                             (cl-ds.alg:without #'evenp)

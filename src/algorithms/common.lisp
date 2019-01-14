@@ -32,12 +32,12 @@
         :original-range (cl-ds:clone (read-original-range range))))
 
 
-(defmethod cl-ds:traverse (function (range proxy-range))
-  (cl-ds:traverse function (read-original-range range)))
+(defmethod cl-ds:traverse ((range proxy-range) function)
+  (cl-ds:traverse (read-original-range range) function))
 
 
-(defmethod cl-ds:across (function (range proxy-range))
-  (cl-ds:across function (read-original-range range)))
+(defmethod cl-ds:across ((range proxy-range) function)
+  (cl-ds:across (read-original-range range) function))
 
 
 (defgeneric proxy-range-aggregator-outer-fn (range key function
@@ -151,7 +151,7 @@
       obj)))
 
 
-(defmethod cl-ds:traverse (function (range hash-table-range))
+(defmethod cl-ds:traverse ((range hash-table-range) function)
   (let ((keys (read-keys range))
         (table (read-hash-table range)))
     (iterate

@@ -37,14 +37,14 @@
               t)))
 
 
-(defmethod cl-ds:traverse (function (obj list-range))
+(defmethod cl-ds:traverse ((obj list-range) function)
   (ensure-functionf function)
   (map nil function (access-content obj))
   (setf (access-content obj) nil)
   obj)
 
 
-(defmethod cl-ds:across (function (obj list-range))
+(defmethod cl-ds:across ((obj list-range) function)
   (ensure-functionf function)
   (map nil function (access-content obj))
   obj)

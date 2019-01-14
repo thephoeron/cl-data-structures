@@ -510,7 +510,7 @@
   (make (type-of vector) :element-type (read-element-type vector)))
 
 
-(defmethod cl-ds:across (function (vector fundamental-sparse-rrb-vector))
+(defmethod cl-ds:across ((vector fundamental-sparse-rrb-vector) function)
   (declare (optimize (speed 3) (space 0) (safety 0) (debug 0)))
   (ensure-functionf function)
   (labels ((impl (node depth upper-bits)
@@ -568,8 +568,8 @@
     vector))
 
 
-(defmethod cl-ds:traverse (function (vector fundamental-sparse-rrb-vector))
-  (cl-ds:across function vector))
+(defmethod cl-ds:traverse ((vector fundamental-sparse-rrb-vector) function)
+  (cl-ds:across vector function))
 
 
 (defmethod cl-ds:make-from-traversable
@@ -578,10 +578,10 @@
      &rest arguments)
   (lret ((i 0)
          (result (apply #'make-mutable-sparse-rrb-vector arguments)))
-    (cl-ds:traverse (lambda (x)
+    (cl-ds:traverse traversable
+                    (lambda (x)
                       (setf (cl-ds:at result i) x)
-                      (incf i))
-                    traversable)))
+                      (incf i)))))
 
 
 (defmethod cl-ds:make-from-traversable

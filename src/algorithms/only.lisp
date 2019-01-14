@@ -75,25 +75,25 @@
                  :key (read-key range)))
 
 
-(defmethod cl-ds:traverse (function (range only-proxy))
+(defmethod cl-ds:traverse ((range only-proxy) function)
   (let ((range (read-original-range range))
         (predicate (read-predicate range))
         (key (read-key range)))
-    (cl-ds:traverse (lambda (x)
+    (cl-ds:traverse range
+                    (lambda (x)
                       (when (funcall predicate (funcall key x))
-                        (funcall function x)))
-                    range)
+                        (funcall function x))))
     range))
 
 
-(defmethod cl-ds:across (function (range only-proxy))
+(defmethod cl-ds:across ((range only-proxy) function)
   (let ((range (read-original-range range))
         (predicate (read-predicate range))
         (key (read-key range)))
-    (cl-ds:across (lambda (x)
+    (cl-ds:across range
+                  (lambda (x)
                     (when (funcall predicate (funcall key x))
-                      (funcall function x)))
-                  range)
+                      (funcall function x))))
     range))
 
 

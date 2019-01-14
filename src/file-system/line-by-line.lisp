@@ -82,7 +82,7 @@
               (values line t))))))
 
 
-(defmethod cl-ds:traverse (function (range line-by-line-range))
+(defmethod cl-ds:traverse ((range line-by-line-range) function)
   (unless (~> range access-reached-end)
     (ensure-stream range)
     (unwind-protect
@@ -99,7 +99,7 @@
   range)
 
 
-(defmethod cl-ds:across (function (range line-by-line-range))
+(defmethod cl-ds:across ((range line-by-line-range) function)
   (unless (~> range access-reached-end)
     (let ((position (access-current-position range)))
       (with-open-file (stream (read-path range))

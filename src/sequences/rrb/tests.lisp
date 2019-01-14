@@ -21,16 +21,16 @@
     (repeat cl-data-structures.common.rrb:+maximum-children-count+)
     (is (cl-ds:at container (1- i)) i))
   (let ((content cl:nil))
-    (cl-ds:traverse (lambda (x) (push x content))
-                    container)
+    (cl-ds:traverse container
+                    (lambda (x) (push x content)))
     (is (reverse content) (alexandria:iota 34 :start 1)))
   (let ((range (cl-ds:whole-range container)))
     (iterate
       (for i from 0 below 34)
       (is (cl-ds:at range i) (1+ i)))
     (let ((i 1))
-      (cl-ds:traverse (lambda (x) (is x i) (incf i))
-                      range)))
+      (cl-ds:traverse range
+                      (lambda (x) (is x i) (incf i)))))
   (let ((range (cl-ds:whole-range container)))
     (iterate
       (for (values value not-end) = (cl-ds:consume-front range))
@@ -177,9 +177,9 @@
        (container (cl-ds:make-from-traversable 'functional-rrb-vector
                                                iota))
        (range (cl-ds:whole-range container)))
-  (cl-ds:across (lambda (x)
+  (cl-ds:across container
+                (lambda (x)
                   (is x (cl-ds:consume-front range))
-                  (is x (cl-ds:consume-front iota)))
-                container))
+                  (is x (cl-ds:consume-front iota)))))
 
 (finalize)

@@ -159,7 +159,7 @@
     (values result value)))
 
 
-(defmethod cl-ds:across (function (container sequence-window))
+(defmethod cl-ds:across ((container sequence-window) function)
   (bind (((:slots %current-index %to %content) container))
     (iterate
       (for i from %current-index below %to)
@@ -167,8 +167,8 @@
     container))
 
 
-(defmethod cl-ds:traverse (function (container sequence-window))
-  (cl-ds:across function container))
+(defmethod cl-ds:traverse ((container sequence-window) function)
+  (cl-ds:across container function))
 
 
 (defmethod cl-ds:clone ((container sequence-window))

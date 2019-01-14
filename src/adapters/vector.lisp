@@ -104,7 +104,7 @@
     (values value more)))
 
 
-(defmethod cl-ds:across (function (range vector-range))
+(defmethod cl-ds:across ((range vector-range) function)
   (bind (((:slots %lower-bound %upper-bound %vector) range))
     (iterate
       (for i from %lower-bound below %upper-bound)
@@ -112,7 +112,7 @@
     range))
 
 
-(defmethod cl-ds:traverse (function (range vector-range))
+(defmethod cl-ds:traverse ((range vector-range) function)
   (bind (((:slots %lower-bound %upper-bound %vector) range))
     (iterate
       (for i from %lower-bound below %upper-bound)
