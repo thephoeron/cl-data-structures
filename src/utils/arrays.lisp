@@ -73,7 +73,7 @@
 (defun circular-shift-right (array start end shift)
   (declare (type fixnum shift)
            (type non-negative-fixnum start end)
-           (optimize (speed 3)))
+           (optimize (debug 3)))
   (let ((length (- end start)))
     (declare (type non-negative-fixnum length))
     (circular-shift-left array start end
@@ -136,7 +136,7 @@
 (defun inverse-in-shuffle-array (array start end &aux (length (- end start)))
   (declare (type vector array)
            (type non-negative-fixnum start end length)
-           (optimize (speed 3)))
+           (optimize (debug 3)))
   (when (<= length 2)
     (return-from inverse-in-shuffle-array array))
   (let ((odd (oddp length)))
@@ -176,7 +176,7 @@
     (when odd
       (circular-shift-right array
                             (+ start (truncate length 2))
-                            length
+                            (+ start length)
                             1)))
   array)
 
@@ -189,6 +189,7 @@
 
 (defun swap-blocks (vector from to size)
   (declare (type vector vector)
+           (optimize (debug 3))
            (type non-negative-fixnum from to size))
   (let ((length (length vector)))
     (when (or (> (+ to size) length)
@@ -239,8 +240,9 @@
                                               (+ nexti start)))
                   (swap-blocks array
                                (+ start block-start)
-                               (+ -1 prev-nexti start)
-                               block-size))))
+                               (+ start block-start (truncate length 2))
+                               block-size)))
+            (incf curi count))
           (cond ((and (> block-size 0)
                       (not (eql prev-nexti curi)))
                  (setf nexti (+ 2 curi)
@@ -250,5 +252,17 @@
                  (decf curi))
                 (t (incf nexti))))
       (incf curi)
-      (setf block-size (- nexti curi 1)))
+      (setf block-size (- nexti curi 1))
+      ;; (assert (>= block-size 0))
+      )
     array))
+
+
+;; (defparameter *result* (merge-in-place (concatenate 'vector
+;;                                                     (~> (make-array 32)
+;;                                                         (map-into (curry #'random 1000))
+;;                                                         (sort #'<))
+;;                                                     (~> (make-array 32)
+;;                                                         (map-into (curry #'random 5000))
+;;                                                         (sort #'<)))
+;;                                        0 64))
