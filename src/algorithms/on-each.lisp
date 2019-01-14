@@ -6,9 +6,9 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric on-each (function range &key key)
+(defgeneric on-each (range function &key key)
   (:generic-function-class on-each-function)
-  (:method (function range &key (key #'identity))
+  (:method (range function &key (key #'identity))
     (apply-range-function range #'on-each :function function :key key)))
 
 

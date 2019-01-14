@@ -38,12 +38,12 @@
     (is sum 10))
   (let ((sum (~> dict
                  cl-ds:whole-range
-                 (cl-ds.alg:on-each (lambda (x) (* (cdr x) 2)) _)
+                 (cl-ds.alg:on-each (lambda (x) (* (cdr x) 2)))
                  (cl-ds.alg:accumulate #'+ _))))
     (is sum 20))
   (let ((sum (~> dict
                  cl-ds:whole-range
-                 (cl-ds.alg:on-each (curry #'* 2) _ :key #'cdr)
+                 (cl-ds.alg:on-each (curry #'* 2) :key #'cdr)
                  (cl-ds.alg:accumulate #'+ _))))
     (is sum 20))
   (let ((divided-sum (~> dict
