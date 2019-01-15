@@ -588,8 +588,8 @@
     ((class (eql 'functional-sparse-rrb-vector))
      traversable
      &rest arguments)
-  (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
-             traversable arguments)
+  (~> (apply #'cl-ds:make-from-traversable traversable
+             'mutable-sparse-rrb-vector arguments)
       cl-ds:become-functional))
 
 
@@ -597,6 +597,6 @@
     ((class (eql 'transactional-sparse-rrb-vector))
      traversable
      &rest arguments)
-  (~> (apply #'cl-ds:make-from-traversable 'mutable-sparse-rrb-vector
-             traversable arguments)
+  (~> (apply #'cl-ds:make-from-traversable traversable
+             'mutable-sparse-rrb-vector arguments)
       cl-ds:become-transactional))

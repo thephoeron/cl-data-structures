@@ -639,14 +639,14 @@
                   (lambda (x) (cl-ds:put! result x)))))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-2-3-queue))
-                                        traversable
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'mutable-2-3-queue))
                                         &rest arguments)
   (mutable-from-traversable traversable arguments))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'functional-2-3-queue))
-                                        traversable
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'functional-2-3-queue))
                                         &rest arguments)
   (~> (mutable-from-traversable traversable arguments)
       cl-ds:become-functional))

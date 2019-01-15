@@ -93,26 +93,26 @@
     (ok (cl-ds:found status))
     (is (cl-ds:value status) (+ 129 (1- i)))))
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
-                                              (cl-ds:xpr (:i 0)
+(let ((container (cl-ds:make-from-traversable (cl-ds:xpr (:i 0)
                                                 (when (< i 10)
-                                                  (cl-ds:send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i))))
+                                              'functional-rrb-vector)))
   (iterate
     (for i from 0 below 10)
     (is (cl-ds:at container i) i)))
 
-(let ((container (cl-ds:make-from-traversable 'functional-rrb-vector
-                                              (cl-ds:xpr (:i 0)
+(let ((container (cl-ds:make-from-traversable (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
-                                                  (cl-ds:send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i))))
+                                              'functional-rrb-vector)))
   (iterate
     (for i from 0 below 64)
     (is (cl-ds:at container i) i)))
 
-(let ((container (cl-ds:make-from-traversable 'transactional-rrb-vector
-                                              (cl-ds:xpr (:i 0)
+(let ((container (cl-ds:make-from-traversable (cl-ds:xpr (:i 0)
                                                 (when (< i 64)
-                                                  (cl-ds:send-recur i :i (1+ i)))))))
+                                                  (cl-ds:send-recur i :i (1+ i))))
+                                              'transactional-rrb-vector)))
   (iterate
     (for i from 0 below 64)
     (is (cl-ds:at container i) i))
@@ -135,8 +135,8 @@
 
 
 (let* ((container (cl-ds:make-from-traversable
-                   'functional-rrb-vector
-                   (cl-ds:iota-range :to 64)))
+                   (cl-ds:iota-range :to 64)
+                   'functional-rrb-vector))
        (range (cl-ds:whole-range container)))
   (cl-ds.common.rrb::init-rrb range container :from 5)
   (iterate
@@ -147,8 +147,8 @@
 
 
 (let* ((container (cl-ds:make-from-traversable
-                   'functional-rrb-vector
-                   (cl-ds:iota-range :to 32)))
+                   (cl-ds:iota-range :to 32)
+                   'functional-rrb-vector))
        (range (cl-ds:whole-range container)))
   (cl-ds.common.rrb::init-rrb range container :from 5)
   (iterate
@@ -174,8 +174,7 @@
 
 
 (let* ((iota (cl-ds:iota-range :to 10000))
-       (container (cl-ds:make-from-traversable 'functional-rrb-vector
-                                               iota))
+       (container (cl-ds:make-from-traversable iota 'functional-rrb-vector))
        (range (cl-ds:whole-range container)))
   (cl-ds:across container
                 (lambda (x)

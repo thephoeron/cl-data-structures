@@ -60,10 +60,10 @@
     (is (cl-ds:at divided-variance t) 1)))
 
 (let ((dict (cl-ds:make-from-traversable
-             'cl-ds.dicts.hamt:mutable-hamt-dictionary
              (cl-ds.alg:chain
               (cl-ds:whole-range #((1 . 1) (2 . 2) (3 . 3)))
               (cl-ds:whole-range #((4 . 4) (5 . 5) (6 . 6))))
+             'cl-ds.dicts.hamt:mutable-hamt-dictionary
              :hash-fn #'identity
              :equal-fn #'=)))
   (iterate

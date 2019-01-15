@@ -731,23 +731,23 @@
             :size tree-size))))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'mutable-rrb-vector))
-                                        traversable
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'mutable-rrb-vector))
                                         &rest arguments)
   (declare (optimize (speed 3)))
   (mutable-from-traversable traversable nil arguments))
 
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'functional-rrb-vector))
-                                        traversable
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'functional-rrb-vector))
                                         &rest arguments)
   (bind ((result (mutable-from-traversable traversable nil arguments)))
     (cl-ds:become-functional result)))
 
 
-(defmethod cl-ds:make-from-traversable ((class (eql 'transactional-rrb-vector))
-                                        traversable
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'transactional-rrb-vector))
                                         &rest arguments)
   (bind ((tag (cl-ds.common.abstract:make-ownership-tag))
          (result (mutable-from-traversable traversable tag arguments))
