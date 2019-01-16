@@ -112,7 +112,7 @@
         :tail-end (access-tail-end container)))
 
 
-(defmethod cl-ds:across ((container 2-3-queue) function)
+(defun across/traverse (container function)
   (ensure-functionf function)
   (labels ((visit (node)
              (unless (cl-ds.meta:null-bucket-p node)
@@ -139,6 +139,14 @@
         (for i from 0 below head-position)
         (funcall function (aref head i))))
     container))
+
+
+(defmethod cl-ds:across ((container 2-3-queue) function)
+  (across/traverse container function))
+
+
+(defmethod cl-ds:traverse ((container 2-3-queue) function)
+  (across/traverse container function))
 
 
 (defmethod cl-ds:empty-clone ((container 2-3-queue))
