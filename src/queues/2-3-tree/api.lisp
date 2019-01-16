@@ -12,6 +12,24 @@
   `(integer 0 ,+buffer-size+))
 
 
+(defclass synchronization-primitives-mixin ()
+  ((%lock :initform (bt:make-lock)
+          :reader read-lock)
+   (%notify-pop :initform (bt:make-condition-variable)
+                :reader read-notify-pop)))
+
+
+(defclass synchronization-mixin (synchronization-primitives-mixin)
+  ())
+
+
+(defclass fixed-capacity-synchronization-mixin (synchronization-primitives-mixin)
+  ((%capacity :initarg :capacity
+              :reader read-capacity)
+   (%notify-push :initform (bt:make-condition-variable)
+                 :reader read-notify-push)))
+
+
 (defclass 2-3-queue (cl-ds.common.2-3:tree)
   ((%element-type :initarg :element-type
                   :initform t
@@ -59,6 +77,26 @@
     (2-3-queue
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      cl-ds.queues:fundamental-transactional-queue)
+  ())
+
+
+(defclass synchronized-mutable-2-3-queue
+    (synchronization-mixin mutable-2-3-queue)
+  ())
+
+
+(defclass fixed-capacity-synchronized-mutable-2-3-queue
+    (fixed-capacity-synchronization-mixin mutable-2-3-queue)
+  ())
+
+
+(defclass synchronized-transactional-2-3-queue
+    (synchronization-mixin transactional-2-3-queue)
+  ())
+
+
+(defclass fixed-capacity-synchronized-transactional-2-3-queue
+    (fixed-capacity-synchronization-mixin transactional-2-3-queue)
   ())
 
 
@@ -119,6 +157,12 @@
         :empty-type (read-element-type container)))
 
 
+(defmethod cl-ds:empty-clone ((container fixed-capacity-synchronization-mixin))
+  (lret ((result (call-next-method)))
+    (setf (slot-value result '%capacity)
+          (read-capacity container))))
+
+
 (defmethod cl-ds:become-transactional ((container 2-3-queue))
   (make 'transactional-2-3-queue
         :root (cl-ds.common.2-3:access-root container)
@@ -167,6 +211,26 @@
 (defun make-transactional-2-3-queue (&key (element-type t))
   (make 'transactional-2-3-queue
         :element-type element-type))
+
+
+(defun make-synchronized-transactional-2-3-queue (&key (element-type t) capacity)
+  (check-type capacity (or null positive-integer))
+  (if (null capacity)
+      (make 'synchronized-transactional-2-3-queue
+            :element-type element-type)
+      (make 'fixed-capacity-synchronized-transactional-2-3-queue
+            :element-type element-type
+            :capacity capacity)))
+
+
+(defun make-synchronized-mutable-2-3-queue (&key (element-type t) capacity)
+  (check-type capacity (or null positive-integer))
+  (if (null capacity)
+      (make 'synchronized-mutable-2-3-queue
+            :element-type element-type)
+      (make 'fixed-capacity-synchronized-mutable-2-3-queue
+            :element-type element-type
+            :capacity capacity)))
 
 
 (defmethod cl-ds.meta:position-modification
@@ -684,3 +748,178 @@
           (cl-ds.meta:map-bucket container (aref head i) function))))
     (cl-ds.meta:map-bucket container (access-tail container) function)
     container))
+
+
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:take-out!-function)
+                                             (structure synchronization-mixin)
+                                             container
+                                             location
+                                             &rest all)
+  (let ((lock (read-lock structure)))
+    (bt:with-lock-held (lock)
+      (iterate
+        (while (zerop (slot-value structure 'cl-ds.queues::%size)))
+        (~> structure read-notify-pop (bt:condition-wait lock)))
+      (call-next-method))))
+
+
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:put!-function)
+                                             (structure synchronization-mixin)
+                                             container
+                                             location
+                                             &rest all)
+  (declare (ignore all))
+  (let ((lock (read-lock structure)))
+    (bt:with-lock-held (lock)
+      (bind ((empty #1=(zerop (slot-value structure 'cl-ds.queues::%size)))
+             ((:values v1 v2) (call-next-method)))
+        (when (and empty (not #1#))
+          (~> structure read-notify-pop bt:condition-notify))
+        (values v1 v2)))))
+
+
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:put!-function)
+                                             (structure fixed-capacity-synchronization-mixin)
+                                             container
+                                             location
+                                             &rest all)
+  (declare (ignore all))
+  (let ((lock (read-lock structure)))
+    (bt:with-lock-held ((read-lock structure))
+      (let ((size (slot-value structure 'cl-ds.queues::%size))
+            (capacity (read-capacity structure)))
+        (iterate
+          (while (>= size capacity))
+          (~> structure read-notify-push (bt:condition-wait lock)))
+        (bind ((empty #1=(zerop (slot-value structure 'cl-ds.queues::%size)))
+               ((:values v1 v2) (call-next-method)))
+          (when (and empty (not #1#))
+            (~> structure read-notify-pop bt:condition-notify))
+          (values v1 v2))))))
+
+
+(defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:take-out!-function)
+                                             (structure fixed-capacity-synchronization-mixin)
+                                             container
+                                             location
+                                             &rest all)
+  (declare (ignore all))
+  (let ((lock (read-lock structure)))
+    (bt:with-lock-held (lock)
+      (iterate
+        (while (zerop (slot-value structure 'cl-ds.queues::%size)))
+        (~> structure read-notify-pop (bt:condition-wait lock)))
+      (bind ((full #1=(>= (slot-value structure 'cl-ds.queues::%size)
+                          (read-capacity structure)))
+             ((:values v1 v2) (call-next-method)))
+        (when (and full (not #1#))
+          (~> structure read-notify-push bt:condition-notify))
+        (values v1 v2)))))
+
+
+(defmethod cl-ds:size ((container synchronization-primitives-mixin))
+  (bt:with-lock-held ((read-lock structure))
+    (call-next-method)))
+
+
+(defmethod cl-ds:across ((container synchronization-primitives-mixin) function)
+  (bt:with-lock-held ((read-lock container))
+    (call-next-method)))
+
+
+(defmethod cl-ds:traverse ((container synchronization-primitives-mixin) function)
+  (bt:with-lock-held ((read-lock container))
+    (call-next-method)))
+
+
+(defmethod cl-ds:reset! ((container synchronization-mixin))
+  (bt:with-lock-held ((read-lock container))
+    (call-next-method)))
+
+
+(defmethod cl-ds:reset! ((container fixed-capacity-synchronization-mixin))
+  (bt:with-lock-held ((read-lock container))
+    (let ((full #1=(>= (slot-value container 'cl-ds.queues::%size)
+                       (read-capacity container))))
+      (prog1 (call-next-method)
+        (when (and full (not #1#))
+          (~> container read-notify-push bt:condition-notify))))))
+
+
+(defmethod cl-ds:become-transactional ((container fixed-capacity-synchronized-transactional-2-3-queue))
+  (make 'fixed-capacity-synchronized-transactional-2-3-queue
+        :capacity (read-capacity container)
+        :root (cl-ds.common.2-3:access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+        :head (copy-array-if-not-nil (access-head container))
+        :element-type (read-element-type container)
+        :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (copy-array-if-not-nil (access-tail container))
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-transactional ((container synchronized-transactional-2-3-queue))
+  (make 'synchronized-transactional-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+        :head (copy-array-if-not-nil (access-head container))
+        :element-type (read-element-type container)
+        :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (copy-array-if-not-nil (access-tail container))
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-transactional ((container fixed-capacity-synchronized-mutable-2-3-queue))
+  (make 'fixed-capacity-synchronized-transactional-2-3-queue
+        :capacity (read-capacity container)
+        :root (cl-ds.common.2-3:access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+        :head (copy-array-if-not-nil (access-head container))
+        :element-type (read-element-type container)
+        :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (copy-array-if-not-nil (access-tail container))
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-transactional ((container synchronized-mutable-2-3-queue))
+  (make 'synchronized-transactional-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+        :head (copy-array-if-not-nil (access-head container))
+        :element-type (read-element-type container)
+        :size (cl-ds:size container)
+        :head-position (access-head-position container)
+        :tail (copy-array-if-not-nil (access-tail container))
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-mutable ((container synchronized-transactional-2-3-queue))
+  (make 'synchronized-mutable-2-3-queue
+        :root (cl-ds.common.2-3:access-root container)
+        :size (cl-ds:size container)
+        :head (access-head container)
+        :element-type (read-element-type container)
+        :head-position (access-head-position container)
+        :tail (access-tail container)
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:become-mutable ((container fixed-capacity-synchronized-transactional-2-3-queue))
+  (make 'fixed-capacity-synchronized-mutable-2-3-queue
+        :capacity (read-capacity container)
+        :root (cl-ds.common.2-3:access-root container)
+        :size (cl-ds:size container)
+        :head (access-head container)
+        :element-type (read-element-type container)
+        :head-position (access-head-position container)
+        :tail (access-tail container)
+        :tail-position (access-tail-position container)
+        :tail-end (access-tail-end container)))
