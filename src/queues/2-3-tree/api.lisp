@@ -721,7 +721,7 @@
                                         (class (eql 'synchronized-mutable-2-3-queue))
                                         &rest arguments)
   (let ((result (mutable-from-traversable traversable arguments)))
-    (setf result (change-class result 'synchronized-mutable-2-3-queue))))
+    (change-class result 'synchronized-mutable-2-3-queue)))
 
 
 (defmethod cl-ds:make-from-traversable (traversable
