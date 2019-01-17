@@ -8,5 +8,6 @@
   (:export
    #:line-by-line
    #:find
+   #:tokenize
    #:close-inner-stream
    #:with-file-ranges))

@@ -200,6 +200,7 @@
                 :components ((:file "package")
                              (:file "common")
                              (:file "line-by-line")
+                             (:file "tokenize")
                              (:file "find")
                              (:file "docstrings")))
                (:module "threads"
