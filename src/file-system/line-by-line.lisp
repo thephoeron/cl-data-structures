@@ -56,8 +56,7 @@
            (for line = (read-line stream nil nil))
            (until (null line))
            (funcall function line))
-      (setf (access-reached-end range) t
-            (access-current-position range) (~> range
+      (setf (access-current-position range) (~> range
                                                 read-stream
                                                 file-position))
       (close-stream range)))
