@@ -64,6 +64,12 @@
           (leave (values buffer t))))))
 
 
+(defmethod cl-ds:traverse ((range tokenizing-range) function)
+  (cl-ds.fs:with-file-ranges ((r range))
+    (declare (ignore r))
+    (call-next-method)))
+
+
 (defun tokenize (path regex &key case-insensitive-mode)
   (let ((scanner (cl-ppcre:create-scanner
                   regex :case-insensitive-mode case-insensitive-mode)))

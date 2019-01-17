@@ -96,3 +96,7 @@
   (unless (~> range read-stream null)
      (~> range read-stream close-silence-errors)
      (setf (car (slot-value range '%stream)) nil)))
+
+
+(defmethod cl-ds:across ((range file-range-mixin) function)
+  (~> range cl-ds:clone (cl-ds:traverse range)))
