@@ -718,6 +718,13 @@
 
 
 (defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'synchronized-mutable-2-3-queue))
+                                        &rest arguments)
+  (let ((result (mutable-from-traversable traversable arguments)))
+    (setf result (change-class result 'synchronized-mutable-2-3-queue))))
+
+
+(defmethod cl-ds:make-from-traversable (traversable
                                         (class (eql 'functional-2-3-queue))
                                         &rest arguments)
   (~> (mutable-from-traversable traversable arguments)
@@ -931,3 +938,10 @@
         :tail (access-tail container)
         :tail-position (access-tail-position container)
         :tail-end (access-tail-end container)))
+
+
+(defmethod cl-ds:whole-range ((container synchronization-mixin))
+  (bt:with-lock-held ((read-lock container))
+    (make '2-3-queue-range
+          :container (cl-ds:become-transactional container)
+          :og-container container)))
