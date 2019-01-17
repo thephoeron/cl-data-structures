@@ -70,7 +70,6 @@
                 ,@(mapcar (lambda (extra x)
                             `(setf ,extra
                                    (let ((,!tmp ,(second x)))
-                                     (check-type ,!tmp file-range-mixin)
                                      ,!tmp)))
                           extra-vars
                           bindings)
