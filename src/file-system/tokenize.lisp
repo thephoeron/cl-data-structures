@@ -46,24 +46,24 @@
       (values nil nil)
       (progn
         (ensure-stream range)
-        (let* ((stream (read-stream range))
-               (file-position (file-position stream))
-               (buffer (make-array 0
-                                   :element-type 'character
-                                   :adjustable t
-                                   :fill-pointer 0))
-               (regex (read-regex range)))
-          (iterate
-            (for character = (read-char stream :eof-value nil))
-            (when (null character)
-              (leave (values nil nil)))
-            (vector-push-extend character buffer)
-            (when (cl-ppcre:all-matches regex buffer)
-              (unless (file-position (read-stream range)
-                                     file-position)
-                (error 'cl-ds:textual-error
-                       :text "Can't change position in the stream."))
-              (leave (values buffer t))))))))
+        (iterate
+          (with stream = (read-stream range))
+          (with buffer = (make-array 0
+                                     :element-type 'character
+                                     :adjustable t
+                                     :fill-pointer 0))
+          (with regex = (read-regex range))
+          (with file-position = (file-position stream))
+          (for character = (read-char stream :eof-value nil))
+          (when (null character)
+            (leave (values nil nil)))
+          (vector-push-extend character buffer)
+          (when (cl-ppcre:all-matches regex buffer)
+            (unless (file-position (read-stream range)
+                                   file-position)
+              (error 'cl-ds:textual-error
+                     :text "Can't change position in the stream."))
+            (leave (values buffer t)))))))
 
 
 (defmethod cl-ds:consume-front ((range tokenizing-range))
@@ -71,20 +71,22 @@
       (values nil nil)
       (progn
         (ensure-stream range)
-        (let* ((stream (read-stream range))
-               (buffer (make-array 0
-                                   :element-type 'character
-                                   :adjustable t
-                                   :fill-pointer 0))
-               (regex (read-regex range)))
-          (iterate
-            (for character = (read-char stream :eof-value nil))
-            (setf (access-current-position range) (file-position stream))
-            (when (null character)
-              (leave (values nil nil)))
-            (vector-push-extend character buffer)
-            (when (cl-ppcre:all-matches regex buffer)
-              (leave (values buffer t))))))))
+        (iterate
+          (with stream = (read-stream range))
+          (with buffer = (make-array 0
+                                     :element-type 'character
+                                     :adjustable t
+                                     :fill-pointer 0))
+          (with regex = (read-regex range))
+          (for character = (read-char stream :eof-value nil))
+          (setf (access-current-position range) (file-position stream))
+          (when (null character)
+            (setf (access-reached-end range) t)
+            (close-stream range)
+            (leave (values nil nil)))
+          (vector-push-extend character buffer)
+          (when (cl-ppcre:all-matches regex buffer)
+            (leave (values buffer t)))))))
 
 
 (defun tokenize (path regex &key case-insensitive-mode)

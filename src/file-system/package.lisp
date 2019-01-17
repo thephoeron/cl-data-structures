@@ -6,8 +6,8 @@
   (:nicknames #:cl-ds.fs)
   (:shadow #:find)
   (:export
-   #:line-by-line
-   #:find
-   #:tokenize
    #:close-inner-stream
+   #:find
+   #:line-by-line
+   #:tokenize
    #:with-file-ranges))
