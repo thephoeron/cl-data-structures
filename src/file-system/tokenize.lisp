@@ -46,24 +46,22 @@
 (defmethod cl-ds:consume-front ((range tokenizing-range))
   (if (access-reached-end range)
       (values nil nil)
-      (progn
-        (ensure-stream range)
-        (iterate
-          (with stream = (ensure-stream range))
-          (with buffer = (make-array 0
-                                     :element-type 'character
-                                     :adjustable t
-                                     :fill-pointer 0))
-          (with regex = (read-regex range))
-          (for character = (read-char stream :eof-value nil))
-          (setf (access-current-position range) (file-position stream))
-          (when (null character)
-            (setf (access-reached-end range) t)
-            (close-stream range)
-            (leave (values nil nil)))
-          (vector-push-extend character buffer)
-          (when (cl-ppcre:all-matches regex buffer)
-            (leave (values buffer t)))))))
+      (iterate
+        (with stream = (ensure-stream range))
+        (with buffer = (make-array 0
+                                   :element-type 'character
+                                   :adjustable t
+                                   :fill-pointer 0))
+        (with regex = (read-regex range))
+        (for character = (read-char stream :eof-value nil))
+        (setf (access-current-position range) (file-position stream))
+        (when (null character)
+          (setf (access-reached-end range) t)
+          (close-stream range)
+          (leave (values nil nil)))
+        (vector-push-extend character buffer)
+        (when (cl-ppcre:all-matches regex buffer)
+          (leave (values buffer t))))))
 
 
 (defun tokenize (path regex &key case-insensitive-mode)
