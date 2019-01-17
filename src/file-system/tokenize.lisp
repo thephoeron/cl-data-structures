@@ -7,18 +7,8 @@
   ((%path :initarg :path
           :type (or string pathname)
           :reader read-path)
-   (%reached-end :initarg :reached-end
-                 :type boolean
-                 :accessor access-reached-end
-                 :initform nil)
    (%regex :initarg :regex
-           :reader read-regex)
-   (%current-position :initarg :initial-position
-                      :accessor access-current-position
-                      :type non-negative-integer)
-   (%initial-position :initarg :initial-position
-                      :type non-negative-integer
-                      :reader read-initial-position))
+           :reader read-regex))
   (:default-initargs :initial-position 0))
 
 
@@ -30,40 +20,27 @@
         :initial-position (access-current-position range)))
 
 
-(defmethod cl-ds:reset! ((range tokenizing-range))
-  (setf (access-current-position range) (read-initial-position range))
-  (ensure-stream range)
-  (unless (file-position (read-stream range)
-                         (read-initial-position range))
-    (error 'cl-ds:textual-error
-           :text "Can't change position in the stream."))
-  (setf (access-reached-end range) nil)
-  range)
-
-
 (defmethod cl-ds:peek-front ((range line-by-line-range))
   (if (access-reached-end range)
       (values nil nil)
-      (progn
-        (ensure-stream range)
-        (iterate
-          (with stream = (read-stream range))
-          (with buffer = (make-array 0
-                                     :element-type 'character
-                                     :adjustable t
-                                     :fill-pointer 0))
-          (with regex = (read-regex range))
-          (with file-position = (file-position stream))
-          (for character = (read-char stream :eof-value nil))
-          (when (null character)
-            (leave (values nil nil)))
-          (vector-push-extend character buffer)
-          (when (cl-ppcre:all-matches regex buffer)
-            (unless (file-position (read-stream range)
-                                   file-position)
-              (error 'cl-ds:textual-error
-                     :text "Can't change position in the stream."))
-            (leave (values buffer t)))))))
+      (iterate
+        (with stream = (ensure-stream range))
+        (with buffer = (make-array 0
+                                   :element-type 'character
+                                   :adjustable t
+                                   :fill-pointer 0))
+        (with regex = (read-regex range))
+        (with file-position = (file-position stream))
+        (for character = (read-char stream :eof-value nil))
+        (when (null character)
+          (leave (values nil nil)))
+        (vector-push-extend character buffer)
+        (when (cl-ppcre:all-matches regex buffer)
+          (unless (file-position (read-stream range)
+                                 file-position)
+            (error 'cl-ds:textual-error
+                   :text "Can't change position in the stream."))
+          (leave (values buffer t))))))
 
 
 (defmethod cl-ds:consume-front ((range tokenizing-range))
@@ -72,7 +49,7 @@
       (progn
         (ensure-stream range)
         (iterate
-          (with stream = (read-stream range))
+          (with stream = (ensure-stream range))
           (with buffer = (make-array 0
                                      :element-type 'character
                                      :adjustable t

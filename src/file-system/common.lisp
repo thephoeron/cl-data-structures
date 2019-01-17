@@ -2,14 +2,46 @@
 
 
 (defclass file-range-mixin ()
-  ((%stream :initarg :stream
+  ((%reached-end :initarg :reached-end
+                 :type boolean
+                 :accessor access-reached-end
+                 :initform nil)
+   (%current-position :initarg :initial-position
+                      :accessor access-current-position
+                      :type non-negative-integer)
+   (%initial-position :initarg :initial-position
+                      :type non-negative-integer
+                      :reader read-initial-position)
+   (%stream :initarg :stream
             :initform (list nil)
             :type list)))
+
+
+(defmethod cl-ds:reset! ((range file-range-mixin))
+  (setf (access-current-position range) (read-initial-position range))
+  (ensure-stream range)
+  (unless (file-position (read-stream range)
+                         (read-initial-position range))
+    (error 'cl-ds:textual-error
+           :text "Can't change position in the stream."))
+  (setf (access-reached-end range) nil)
+  range)
 
 
 (defun read-stream (object)
   (check-type object file-range-mixin)
   (car (slot-value object '%stream)))
+
+
+(defun ensure-stream (range)
+  (when (~> range read-stream null)
+    (let ((file (~> range read-path open)))
+      (unless (file-position file (access-current-position range))
+        (error 'cl-ds:textual-error
+               :text "Can't change position in the stream."))
+      (setf (car (slot-value range '%stream)) file
+            (access-reached-end range) nil)))
+  (read-stream range))
 
 
 (defun close-silence-errors (stream) ; in case if closing already close streams produces error
