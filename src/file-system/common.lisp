@@ -62,24 +62,21 @@
 (defmacro with-file-ranges (bindings &body body)
   (let ((extra-vars (mapcar (lambda (x) (gensym)) bindings))
         (prime-vars (mapcar #'first bindings)))
-    (with-gensyms (!tmp)
-      `(let (,@extra-vars)
-         (declare (ignorable ,@extra-vars))
-         (unwind-protect
-              (progn
-                ,@(mapcar (lambda (extra x)
-                            `(setf ,extra
-                                   (let ((,!tmp ,(second x)))
-                                     ,!tmp)))
-                          extra-vars
-                          bindings)
-                (let ,(mapcar #'list prime-vars extra-vars)
-                  ,@body))
-           (progn
-             ,@(mapcar (lambda (x)
-                         `(unless (null ,x)
-                            (close-inner-stream ,x)))
-                       extra-vars)))))))
+    `(let (,@extra-vars)
+       (declare (ignorable ,@extra-vars))
+       (unwind-protect
+            (progn
+              ,@(mapcar (lambda (extra x)
+                          `(setf ,extra ,(second x)))
+                        extra-vars
+                        bindings)
+              (let ,(mapcar #'list prime-vars extra-vars)
+                ,@body))
+         (progn
+           ,@(mapcar (lambda (x)
+                       `(unless (null ,x)
+                          (close-inner-stream ,x)))
+                     extra-vars))))))
 
 
 (defun enclose-finalizer (stream-cons)
