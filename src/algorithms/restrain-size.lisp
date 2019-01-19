@@ -75,7 +75,7 @@
     (for i from (access-position range) below (read-size range))
     (for (values data more) = (cl-ds:consume-front og-range))
     (while more)
-    (funcall function more))
+    (funcall function data))
   range)
 
 
@@ -86,5 +86,5 @@
     (for (values data more) = (cl-ds:consume-front og-range))
     (while more)
     (incf (access-position range))
-    (funcall function more))
+    (funcall function data))
   range)
