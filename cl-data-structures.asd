@@ -182,6 +182,7 @@
                              (:file "only")
                              (:file "cartesian")
                              (:file "restrain-size")
+                             (:file "repeat")
                              (:file "latch")
                              (:file "split-into-chunks")
                              (:file "hash-join")

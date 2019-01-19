@@ -77,6 +77,7 @@
    #:proxy-range-aggregator-outer-fn
    #:random-access-proxy-range
    #:read-original-range
+   #:repeat
    #:restrain-size
    #:shuffled-range
    #:split-into-chunks

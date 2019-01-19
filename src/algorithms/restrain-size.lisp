@@ -49,7 +49,7 @@
       (values nil nil)))
 
 
-(defmethod cl-ds:consume-front ((range restrain-size-proxy))
+(defmethod cl-ds:peek-front ((range restrain-size-proxy))
   (if (< (access-position range) (read-size range))
       (~> range read-original-range cl-ds:peek-front)
       (values nil nil)))
@@ -64,6 +64,7 @@
                                        (fn restrain-size-function)
                                        &rest all &key size)
   (declare (ignore all))
+  (check-type size non-negative-integer)
   (make 'forward-restrain-size-proxy
         :size size
         :original-range range))
@@ -81,7 +82,7 @@
 
 (defmethod cl-ds:traverse ((range restrain-size-proxy) function)
   (iterate
-    (with og-range = (~> range cl-ds:clone))
+    (with og-range = (~> range read-original-range))
     (for i from (access-position range) below (read-size range))
     (for (values data more) = (cl-ds:consume-front og-range))
     (while more)
