@@ -55,6 +55,7 @@
    #:bidirectional-proxy-range
    #:cartesian
    #:chain
+   #:chain-traversable
    #:count-elements
    #:count-elements-function
    #:count-elements-if
@@ -66,7 +67,6 @@
    #:group-by
    #:group-by-function
    #:hash-join
-   #:chain-traversable
    #:latch
    #:make-hash-table-range
    #:make-proxy
@@ -77,6 +77,7 @@
    #:proxy-range-aggregator-outer-fn
    #:random-access-proxy-range
    #:read-original-range
+   #:restrain-size
    #:shuffled-range
    #:split-into-chunks
    #:to-vector

@@ -181,6 +181,7 @@
                              (:file "without")
                              (:file "only")
                              (:file "cartesian")
+                             (:file "restrain-size")
                              (:file "latch")
                              (:file "split-into-chunks")
                              (:file "hash-join")

@@ -20,7 +20,7 @@
         :initial-position (access-current-position range)))
 
 
-(defmethod cl-ds:peek-front ((range line-by-line-range))
+(defmethod cl-ds:peek-front ((range tokenizing-range))
   (if (access-reached-end range)
       (values nil nil)
       (iterate
