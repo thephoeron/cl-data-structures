@@ -67,3 +67,24 @@
   (make 'forward-restrain-size-proxy
         :size size
         :original-range range))
+
+
+(defmethod cl-ds:across ((range restrain-size-proxy) function)
+  (iterate
+    (with og-range = (~> range read-original-range cl-ds:clone))
+    (for i from (access-position range) below (read-size range))
+    (for (values data more) = (cl-ds:consume-front og-range))
+    (while more)
+    (funcall function more))
+  range)
+
+
+(defmethod cl-ds:traverse ((range restrain-size-proxy) function)
+  (iterate
+    (with og-range = (~> range cl-ds:clone))
+    (for i from (access-position range) below (read-size range))
+    (for (values data more) = (cl-ds:consume-front og-range))
+    (while more)
+    (incf (access-position range))
+    (funcall function more))
+  range)
