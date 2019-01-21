@@ -29,7 +29,7 @@
     (:description "Collects all elements into CL:VECTOR."
      :returns "cl:vector with content of the range."
      :notes ("There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
-             "To avoid copying vectors, pass nil as :force-copy")
+             "To avoid copying in cases when RANGE is also a vector, pass nil as :force-copy.")
      :arguments-and-values ((range "Object to aggregate accross.")
                             (:key "Key function used to extract value for vector.")
                             (:element-type ":element-type for result vector.")
