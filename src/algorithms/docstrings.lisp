@@ -85,9 +85,9 @@
 
   (function without
     (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
-     :arguments ((predicate "Test used to check if element should be skipped.")
-                 (key "Key function used to extract value for predicate.")
-                 (range "Range argument."))
+     :arguments ((range "Range argument.")
+                 (predicate "Test used to check if element should be skipped.")
+                 (key "Key function used to extract value for predicate."))
      :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function flatten-lists
@@ -105,6 +105,20 @@
 
   (function zip
     (:description "Combines multiple ranges into single range by applying function length wise."))
+
+  (function repeat
+    (:description "Constructs new range from the RANGE. New range is cyclic, and will reset to initial position once end is reached when calling the CONSUME-FRONT function. This happens always by default, or can be limited to a number of times by suppling optional TIMES argument. This function can be therefore used to go over the same range multiple times in the aggregation function."
+     :arguments ((range "Input range used to construct the result.")
+                 (times "How many times range will be repeated? Unlimited by default."))
+     :exceptional-situations ("Will raise type-error when TIMES is not of the type (or null positive-integer)")
+     :returns "FORWARD-RANGE"))
+
+  (function restrain-size
+    (:description "Constructs new range from the RANGE. New range sets limit on how many times consume-front can be called on it before returning (values nil nil) effectivly reducing size of itself."
+     :arguments ((range "Input range used to construct the result.")
+                 (size "What should be limit on the new range?"))
+     :returns "FORWARD-RANGE"
+     :exceptional-situations "Will raise type-error when SIZE is not of the type non-negative-integer."))
 
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."

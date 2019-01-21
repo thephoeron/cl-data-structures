@@ -9,4 +9,7 @@
      :returns "Forward range."
      :exceptional-situations ("Signalling error from callback during traverse will close the inner stream."
                               "Signals errors just as CL:OPEN does.")
-     :notes "Traversing range will close inner stream.")))
+     :notes "Care has been taken to ensure that not to many sockets will be open at the same time."))
+
+  (function find
+    (:description "Function that is somewhat similar to posix find tool. Depending on the current filesystem and the DESCRIPTION list, it will return forward-range containing pathnames matching DESCRIPTION.")))

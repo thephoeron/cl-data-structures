@@ -69,6 +69,7 @@
                                        (fn repeat-function)
                                        &rest all &key times)
   (declare (ignore all))
+  (check-type times (or null positive-integer))
   (make 'forward-repeat-proxy
         :times times
         :original-range range))
