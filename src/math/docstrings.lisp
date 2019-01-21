@@ -35,7 +35,7 @@
                  (key "Key passed to SORT function.")
                  (compare "Function passed to SORT function.")
                  (parallel "Will use lparallel to evaluate samples if T. Defaults to T."))
-     :thread-safety "Will use lparallel to samples if PARALLEL is T."
+     :thread-safety "Will use lparallel for each sample if PARALLEL is T."
      :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in aggregation funciton."))
 
   (function simple-linear-regression
@@ -49,7 +49,7 @@
      :returns "Number representing variance."
      :arguments ((range "Data to aggregate.")
                  (key "Function used to extract values from elements.")
-                 (biased "Boolean. Should variance be biased."))
+                 (biased "Boolean. Should result be biased?"))
      :notes "Name conflict with alexandria:variance."))
 
   (function statistical-summary
