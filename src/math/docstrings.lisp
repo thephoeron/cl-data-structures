@@ -13,7 +13,7 @@
     (:description "Calculates MAD estimator for range."
      :arguments ((range "Object to aggregate")
                  (key "Function used to extract values from elements."))
-     :notes "Roboost estimator."))
+     :notes "Roboost scale estimator."))
 
   (function hodges-lehman-estimator
     (:description "Calculates Hodges-Lehman estimator for range."
@@ -21,6 +21,7 @@
                  (key "Function used to extract value from element.")
                  (parallel "Will use lparallel for calculations if T."))
      :notes ("This estimator has high breakdown point."
+             "Roboost expected value estimator."
              "Time complexity greater then cubic. Memory complexity quadratic."
              "Use bootstrapping for more scalable solution.")
      :see-also (bootstrap)
