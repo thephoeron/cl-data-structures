@@ -28,7 +28,8 @@
   (function to-vector
     (:description "Collects all elements into CL:VECTOR."
      :returns "cl:vector with content of the range."
-     :notes "There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
+     :notes ("There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
+             "To avoid copying vectors, pass nil as :force-copy")
      :arguments-and-values ((range "Object to aggregate accross.")
                             (:key "Key function used to extract value for vector.")
                             (:element-type ":element-type for result vector.")
@@ -107,14 +108,14 @@
     (:description "Combines multiple ranges into single range by applying function length wise."))
 
   (function repeat
-    (:description "Constructs new range from the RANGE. New range is cyclic, and will reset to initial position once end is reached when calling the CONSUME-FRONT function. This happens always by default, or can be limited to a number of times by suppling optional TIMES argument. This function can be therefore used to go over the same range multiple times in the aggregation function."
+    (:description "Layer function. Constructs new range from the RANGE. New range is cyclic, and will reset to initial position once end is reached when calling the CONSUME-FRONT function. This happens always by default, or can be limited to a number of times by suppling optional TIMES argument. This function can be therefore used to go over the same range multiple times in the aggregation function."
      :arguments ((range "Input range used to construct the result.")
                  (times "How many times range will be repeated? Unlimited by default."))
      :exceptional-situations ("Will raise type-error when TIMES is not of the type (or null positive-integer)")
      :returns "FORWARD-RANGE"))
 
   (function restrain-size
-    (:description "Constructs new range from the RANGE. New range sets limit on how many times consume-front can be called on it before returning (values nil nil) effectivly reducing size of itself."
+    (:description "Layer function. Constructs new range from the RANGE. New range contains limit on how many times consume-front can be called on it before returning (values nil nil) effectivly reducing size of itself."
      :arguments ((range "Input range used to construct the result.")
                  (size "What should be limit on the new range?"))
      :returns "FORWARD-RANGE"
