@@ -137,7 +137,7 @@
                                arguments)
                 :key key))
         (lambda ()
-          (make 'linear-split-into-chunks-aggregator
+          (make 'linear-partition-if-aggregator
                 :outer-fn outer-fn
                 :test (read-test range)
                 :key (read-key range))))))
