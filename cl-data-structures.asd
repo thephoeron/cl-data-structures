@@ -189,6 +189,7 @@
                              (:file "chain")
                              (:file "zip")
                              (:file "flatten-lists")
+                             (:file "partition-if")
                              (:file "distinct")
                              (:file "docstrings")
                              (:test-file "split-into-chunks-test")

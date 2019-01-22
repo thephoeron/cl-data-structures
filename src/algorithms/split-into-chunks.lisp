@@ -27,11 +27,6 @@
                  :count-in-chunk (read-count-in-chunk range)))
 
 
-(defclass split-into-chunks (layer-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
 (defclass split-into-chunks-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%chunks :initform (vect)
             :initarg :chunks

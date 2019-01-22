@@ -72,6 +72,7 @@
    #:make-proxy
    #:on-each
    #:only
+   #:partition-if
    #:proxy-box-range
    #:proxy-range
    #:proxy-range-aggregator-outer-fn
