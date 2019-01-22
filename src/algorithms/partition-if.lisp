@@ -5,9 +5,7 @@
   ((%chunks :initform (vect)
             :reader read-chunks)
    (%test :initarg :test
-          :reader read-test)
-   (%key :initarg :key
-         :reader read-key)))
+          :reader read-test)))
 
 
 (defclass forward-partition-if-proxy
@@ -95,7 +93,7 @@
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
                                                element)
-  (bind (((:slots %key %chunks %function %outer-fn) aggregator)
+  (bind (((:slots %chunks %function %outer-fn) aggregator)
          (length (length %chunks))
          (empty (zerop length)))
     (if empty
@@ -103,9 +101,7 @@
                             %chunks)
         (bind (((prev . chunk) (last-elt %chunks)))
           (declare (ignore chunk))
-          (unless (funcall %function
-                           (funcall %key prev)
-                           (funcall %key element))
+          (unless (funcall %function prev element)
             (vector-push-extend (list* element (funcall %outer-fn))
                                 %chunks))))
     (setf (car (last-elt %chunks)) element)
@@ -131,16 +127,15 @@
           (make 'multi-partition-if-aggregator
                 :outer-fn outer-fn
                 :test (read-test range)
-                :key (read-key range)
+                :key key
                 :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
                                function
-                               arguments)
-                :key key))
+                               arguments)))
         (lambda ()
           (make 'linear-partition-if-aggregator
                 :outer-fn outer-fn
                 :test (read-test range)
-                :key (read-key range))))))
+                :key key)))))
 
 
 (defclass partition-if-function (layer-function)
@@ -148,37 +143,33 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric partition-if (range test &key key)
+(defgeneric partition-if (range test)
   (:generic-function-class partition-if-function)
-  (:method (range test &key (key #'identity))
-    (ensure-functionf test key)
+  (:method (range test)
+    (ensure-functionf test)
     (apply-range-function range #'partition-if
-                          :test test
-                          :key key)))
+                          :test test)))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn partition-if-function)
-                        &rest all &key key function)
+                        &rest all &key function)
   (declare (ignore all))
   (make-proxy range 'forward-partition-if-proxy
-              :key key
               :function function))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn partition-if-function)
-                        &rest all &key key function)
+                        &rest all &key function)
   (declare (ignore all))
   (make-proxy range 'bidirectional-partition-if-proxy
-              :key key
               :function function))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn partition-if-function)
-                        &rest all &key key function)
+                        &rest all &key function)
   (declare (ignore all))
   (make-proxy range 'random-access-parition-if-proxy
-              :key key
               :function function))
