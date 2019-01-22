@@ -36,6 +36,8 @@
               :reader read-outer-fn)
    (%maximal-count-in-chunk :initarg :maximal-count-in-chunk
                             :reader read-maximal-count-in-chunk)
+   (%current-index :initform 0
+                   :accessor access-current-index)
    (%count-in-chunk :initarg :count-in-chunk
                     :initform 0
                     :accessor access-count-in-chunk)))
@@ -54,6 +56,8 @@
 
 
 (defmethod cl-ds.alg.meta:begin-aggregation ((aggregator split-into-chunks-aggregator))
+  (setf (access-current-index aggregator) 0
+        (access-count-in-chunk aggregator) 0)
   (iterate
     (for chunk in-vector (read-chunks aggregator))
     (begin-aggregation chunk)))
@@ -92,16 +96,18 @@
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator split-into-chunks-aggregator)
                                                element)
   (bind (((:slots %chunks %maximal-count-in-chunk
-                  %outer-fn %count-in-chunk)
-          aggregator)
-         (length (length %chunks))
-         (last (1- length)))
-    (when (zerop (rem %count-in-chunk %maximal-count-in-chunk))
-      (vector-push-extend (funcall %outer-fn) %chunks)
-      (begin-aggregation (aref %chunks length))
-      (incf last)
-      (setf %count-in-chunk 0))
-    (pass-to-aggregation (aref %chunks last) element)
+                  %outer-fn %current-index %count-in-chunk)
+          aggregator))
+    (if (emptyp %chunks)
+        (progn (vector-push-extend (funcall %outer-fn) %chunks)
+               (begin-aggregation (last-elt %chunks)))
+        (when (>= %count-in-chunk %maximal-count-in-chunk)
+          (incf %current-index)
+          (when (>= %current-index (length %chunks))
+            (vector-push-extend (funcall %outer-fn) %chunks)
+            (begin-aggregation (last-elt %chunks)))
+          (setf %count-in-chunk 0)))
+    (~> (aref %chunks %current-index) (pass-to-aggregation element))
     (incf %count-in-chunk)))
 
 
