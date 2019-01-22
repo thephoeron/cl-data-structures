@@ -34,6 +34,8 @@
             :initarg :chunks
             :type vector
             :reader read-chunks)
+   (%current-index :initform 0
+                   :accessor access-current-index)
    (%outer-fn :initarg :outer-fn
               :reader read-outer-fn)
    (%test :initarg :test
@@ -55,6 +57,7 @@
 
 
 (defmethod cl-ds.alg.meta:begin-aggregation ((aggregator partition-if-aggregator))
+  (setf (access-current-index aggregator) 0)
   (iterate
     (for (prev . chunk) in-vector (read-chunks aggregator))
     (begin-aggregation chunk)))
@@ -92,7 +95,7 @@
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
                                                element)
-  (bind (((:slots %chunks %test %outer-fn) aggregator)
+  (bind (((:slots %chunks %test %outer-fn %current-index) aggregator)
          (length (length %chunks))
          (empty (zerop length)))
     (if empty
@@ -100,15 +103,18 @@
           (begin-aggregation sub)
           (vector-push-extend (list* element sub)
                               %chunks))
-        (bind (((prev . chunk) (last-elt %chunks)))
-          (declare (ignore chunk))
-          (unless (funcall %test prev element)
+        (iterate
+          (for (prev . chunk) = (aref %chunks %current-index))
+          (until (funcall %test prev element))
+          (incf %current-index)
+          (when (>= %current-index (length %chunks))
             (let ((sub (funcall %outer-fn)))
               (begin-aggregation sub)
               (vector-push-extend (list* element sub)
-                                  %chunks)))))
-    (setf (car (last-elt %chunks)) element)
-    (~> %chunks last-elt cdr (pass-to-aggregation element))))
+                                  %chunks)
+              (leave)))))
+    (setf (car (aref %chunks %current-index)) element)
+    (~> %chunks (aref %current-index) cdr (pass-to-aggregation element))))
 
 
 (defmethod cl-ds.alg.meta:extract-result ((aggregator partition-if-aggregator))
