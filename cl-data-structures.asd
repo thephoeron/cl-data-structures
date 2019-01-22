@@ -193,6 +193,7 @@
                              (:file "distinct")
                              (:file "docstrings")
                              (:test-file "split-into-chunks-test")
+                             (:test-file "partition-if-test")
                              (:test-file "hash-join-tests")
                              (:test-file "without-test")
                              ;; (:test-file "summary-tests")

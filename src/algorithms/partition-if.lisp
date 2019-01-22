@@ -26,8 +26,7 @@
 (defmethod clone ((range partition-if-proxy))
   (make-instance (type-of range)
                  :original-range (~> range read-original-range clone)
-                 :test (read-test range)
-                 :key (read-key range)))
+                 :test (read-test range)))
 
 
 (defclass partition-if-aggregator (cl-ds.alg.meta:fundamental-aggregator)
@@ -73,7 +72,7 @@
   (setf (access-stages aggregator) (rest (access-stages aggregator))))
 
 
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-split-into-chunks-aggregator))
+(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-partition-if-aggregator))
   (setf (access-finished aggregator) t)
   (call-next-method))
 
@@ -82,7 +81,7 @@
   (~> aggregator access-stages endp))
 
 
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-split-into-chunks-aggregator))
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-partition-if-aggregator))
   t)
 
 
@@ -93,17 +92,21 @@
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
                                                element)
-  (bind (((:slots %chunks %function %outer-fn) aggregator)
+  (bind (((:slots %chunks %test %outer-fn) aggregator)
          (length (length %chunks))
          (empty (zerop length)))
     (if empty
-        (vector-push-extend (list* element (funcall %outer-fn))
-                            %chunks)
+        (let ((sub (funcall %outer-fn)))
+          (begin-aggregation sub)
+          (vector-push-extend (list* element sub)
+                              %chunks))
         (bind (((prev . chunk) (last-elt %chunks)))
           (declare (ignore chunk))
-          (unless (funcall %function prev element)
-            (vector-push-extend (list* element (funcall %outer-fn))
-                                %chunks))))
+          (unless (funcall %test prev element)
+            (let ((sub (funcall %outer-fn)))
+              (begin-aggregation sub)
+              (vector-push-extend (list* element sub)
+                                  %chunks)))))
     (setf (car (last-elt %chunks)) element)
     (~> %chunks last-elt cdr (pass-to-aggregation element))))
 
@@ -153,23 +156,23 @@
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn partition-if-function)
-                        &rest all &key function)
+                        &rest all &key test)
   (declare (ignore all))
   (make-proxy range 'forward-partition-if-proxy
-              :function function))
+              :test test))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn partition-if-function)
-                        &rest all &key function)
+                        &rest all &key test)
   (declare (ignore all))
   (make-proxy range 'bidirectional-partition-if-proxy
-              :function function))
+              :test test))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn partition-if-function)
-                        &rest all &key function)
+                        &rest all &key test)
   (declare (ignore all))
   (make-proxy range 'random-access-parition-if-proxy
-              :function function))
+              :test test))
