@@ -69,12 +69,11 @@ Macros
 
 
 (defmacro with-hamt-path (node hash root &key on-leaf on-nil operation)
-  (with-gensyms (!count !path !indexes !depth !root !index)
+  (with-gensyms (!count !path !indexes !root !index)
     `(let* ((,!path (make-array ,+depth+))
             (,!indexes (make-array ,+depth+ :element-type 'fixnum))
             (,!root ,root))
-       (declare (type fixnum ,!depth)
-                (type index-path ,!indexes)
+       (declare (type index-path ,!indexes)
                 (type node-path ,!path)
                 (dynamic-extent ,!path ,!indexes))
        (hash-do
@@ -320,7 +319,7 @@ Copy nodes and stuff.
 (defun copy-node (node &key node-mask ownership-tag content)
   (declare (optimize (speed 3) (debug 0) (safety 1) (space 0)))
   (make-hash-node
-   :ownership-tag (or ownership-tag (hash-node-ownership-tag node))
+   :ownership-tag (or ownership-tag (read-ownership-tag node))
    :node-mask (or node-mask (hash-node-node-mask node))
    :content (or content (hash-node-content node))))
 
