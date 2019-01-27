@@ -55,7 +55,7 @@
 
 
 (defmethod cl-ds:reset! ((range latch-proxy))
-  (map nil #'cl-ds:reset! (access-latches range))
+  (map nil #'cl-ds:reset! (read-latches range))
   (call-next-method)
   range)
 
