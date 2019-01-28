@@ -53,15 +53,15 @@
             (state data &rest all)
           (declare (ignore all))
           (bind (((_ position . table) state))
-            (cl-ds:across (lambda (k)
+            (cl-ds:across (funcall key data)
+                          (lambda (k)
                             (ensure (gethash k table)
                               (list* (incf (car state))
                                      (make-array 4 :element-type 'fixnum
                                                    :adjustable t
                                                    :fill-pointer 0)))
                             (vector-push-extend position
-                                                (cdr (gethash k table))))
-                          (funcall key data)))
+                                                (cdr (gethash k table))))))
           (incf (second state))
           state)
         #'set-index-algorithm))
