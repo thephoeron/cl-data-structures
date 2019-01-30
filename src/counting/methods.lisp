@@ -119,7 +119,7 @@
           (chain (coerce (read-path set) 'list))))
    (cl-ds:xpr (:stack (list (list chain
                                   (read-root index)
-                                  (type-count set)
+                                  0
                                   nil))))
    (when-let ((cell (pop stack))))
    (bind (((chain parent depth prev) cell)
