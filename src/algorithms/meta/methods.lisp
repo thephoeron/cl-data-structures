@@ -305,7 +305,7 @@ Range function invokaction protocol.
 (defmethod apply-aggregation-function (range
                                        (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
-  (let* ((aggregator (construct-aggregator range key function nil all)))
+  (let ((aggregator (construct-aggregator range key function nil all)))
     (apply #'apply-aggregation-function-with-aggregator
            aggregator range function all)))
 
