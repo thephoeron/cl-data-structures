@@ -1,71 +1,28 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass without-proxy (proxy-range)
-  ((%key :initarg :key
-         :reader read-key)
-   (%predicate :initarg :predicate
+(defclass without-proxy (filtering-proxy)
+  ((%predicate :initarg :predicate
                :reader read-predicate)))
 
 
 (defclass forward-without-proxy (without-proxy
-                                 fundamental-forward-range)
+                                 forward-filtering-proxy)
   ())
 
 
 (defclass bidirectional-without-proxy (forward-without-proxy
-                                       fundamental-bidirectional-range)
+                                       bidirectional-filtering-proxy)
   ())
 
 
-(defmethod cl-ds:peek-front ((range forward-without-proxy))
-  (fbind ((key (read-key range))
-          (predicate (read-predicate range)))
-    (iterate
-      (with outer = (read-original-range range))
-      (for (values value more) = (cl-ds:peek-front outer))
-      (when (null more)
-        (return (values nil nil)))
-      (if (predicate (key value))
-          (cl-ds:consume-front outer)
-          (leave (values value more))))))
+(defmethod should-skip ((range without-proxy) element)
+  (funcall (read-predicate range) element))
 
 
-(defmethod cl-ds:consume-front ((aggregator forward-without-proxy))
-  (fbind ((key (read-key aggregator))
-          (predicate (read-predicate aggregator)))
-    (iterate
-      (with outer = (read-original-range aggregator))
-      (for (values value more) = (cl-ds:consume-front outer))
-      (when (null more)
-        (return (values nil nil)))
-      (unless (predicate (key value))
-        (leave (values value more))))))
-
-
-(defmethod cl-ds:peek-back ((aggregator forward-without-proxy))
-  (fbind ((key (read-key aggregator))
-          (predicate (read-predicate aggregator)))
-    (iterate
-      (with outer = (read-original-range aggregator))
-      (for (values value more) = (cl-ds:peek-back outer))
-      (when (null more)
-        (return (values nil nil)))
-      (if (predicate (key value))
-          (cl-ds:consume-back outer)
-          (leave (values value more))))))
-
-
-(defmethod cl-ds:consume-back ((aggregator bidirectional-without-proxy))
-  (fbind ((key (read-key aggregator))
-          (predicate (read-predicate aggregator)))
-    (iterate
-      (with outer = (read-original-range aggregator))
-      (for (values value more) = (cl-ds:consume-back outer))
-      (when (null more)
-        (return (values nil nil)))
-      (unless (predicate (key value))
-        (leave (values value more))))))
+(defclass without-function (layer-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
 
 
 (defmethod clone ((range without-proxy))
@@ -73,31 +30,6 @@
                  :original-range (clone (read-original-range range))
                  :predicate (read-predicate range)
                  :key (read-key range)))
-
-
-(defmethod cl-ds:traverse ((range without-proxy) function)
-  (let ((range (read-original-range range))
-        (predicate (read-predicate range))
-        (key (read-key range)))
-    (cl-ds:traverse range
-                    (lambda (x) (unless (funcall predicate (funcall key x))
-                                  (funcall function x))))
-    range))
-
-
-(defmethod cl-ds:across ((range without-proxy) function)
-  (let ((range (read-original-range range))
-        (predicate (read-predicate range))
-        (key (read-key range)))
-    (cl-ds:across range
-                  (lambda (x) (unless (funcall predicate (funcall key x))
-                                (funcall function x))))
-    range))
-
-
-(defclass without-function (layer-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
 
 
 (defgeneric without (range predicate &key key)

@@ -61,6 +61,7 @@
    #:count-elements-if
    #:count-elements-if-function
    #:distinct
+   #:filtering-proxy
    #:flatten-lists
    #:forward-proxy-range
    #:gather-prior-states
@@ -80,6 +81,7 @@
    #:read-original-range
    #:repeat
    #:restrain-size
+   #:should-skip
    #:shuffled-range
    #:split-into-chunks
    #:to-vector
