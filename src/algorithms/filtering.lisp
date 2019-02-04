@@ -16,7 +16,7 @@
   ())
 
 
-(defgeneric should-skip (range element))
+(defgeneric should-skip (range element can-mutate))
 
 
 (defmethod cl-ds:peek-front ((range forward-filtering-proxy))
@@ -26,7 +26,7 @@
     (for (values value more) = (cl-ds:peek-front outer))
     (when (null more)
       (return (values nil nil)))
-    (if (should-skip range (funcall key value))
+    (if (should-skip range (funcall key value) nil)
         (cl-ds:consume-front outer)
         (leave (values value more)))))
 
@@ -38,7 +38,7 @@
     (for (values value more) = (cl-ds:consume-front outer))
     (when (null more)
       (return (values nil nil)))
-    (unless (should-skip range (funcall key value))
+    (unless (should-skip range (funcall key value) t)
       (leave (values value more)))))
 
 
@@ -49,7 +49,7 @@
     (for (values value more) = (cl-ds:peek-back outer))
     (when (null more)
       (return (values nil nil)))
-    (if (should-skip range (funcall key value))
+    (if (should-skip range (funcall key value) nil)
         (cl-ds:consume-back outer)
         (leave (values value more)))))
 
@@ -61,7 +61,7 @@
     (for (values value more) = (cl-ds:consume-back outer))
     (when (null more)
       (return (values nil nil)))
-    (unless (should-skip range (funcall key value))
+    (unless (should-skip range (funcall key value) t)
       (leave (values value more)))))
 
 
@@ -74,14 +74,12 @@
 (defmethod cl-ds:traverse ((range filtering-proxy) function)
   (let ((key (read-key range)))
     (cl-ds:traverse (read-original-range range)
-                    (lambda (x) (unless (should-skip range (funcall key x))
+                    (lambda (x) (unless (should-skip range
+                                                     (funcall key x)
+                                                     t)
                                   (funcall function x))))
     range))
 
 
 (defmethod cl-ds:across ((range filtering-proxy) function)
-  (let ((key (read-key range)))
-    (cl-ds:across (read-original-range range)
-                  (lambda (x) (unless (should-skip range (funcall key x))
-                                (funcall function x))))
-    range))
+  (~> range cl-ds:clone (cl-ds:traverse function)))

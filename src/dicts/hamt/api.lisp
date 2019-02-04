@@ -74,6 +74,14 @@
                                         :hash-fn (ensure-function hash-fn)
                                         :root nil)))
 
+(-> make-transactional-hamt-dictionary
+    ((or function symbol) (or function symbol))
+    transactional-hamt-dictionary)
+(defun make-transactional-hamt-dictionary (hash-fn equal-fn)
+  (declare (optimize (safety 3)))
+  (~> (make-mutable-hamt-dictionary hash-fn equal-fn)
+      cl-ds:become-transactional))
+
 
 (-> hamt-dictionary-at (hamt-dictionary t) (values t boolean))
 (defun hamt-dictionary-at (container location)

@@ -42,6 +42,7 @@
    #:hamt-dictionary-at
    #:hamt-dictionary-size
    #:make-functional-hamt-dictionary
+   #:make-transactional-hamt-dictionary
    #:make-mutable-hamt-dictionary
    #:mutable-hamt-dictionary
    #:read-max-depth

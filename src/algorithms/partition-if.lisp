@@ -53,7 +53,7 @@
 (defclass multi-partition-if-aggregator (partition-if-aggregator
                                          multi-aggregator)
   ((%stages :initarg :stages
-            :accessor acess-stages)))
+            :accessor access-stages)))
 
 
 (defmethod cl-ds.alg.meta:begin-aggregation ((aggregator partition-if-aggregator))

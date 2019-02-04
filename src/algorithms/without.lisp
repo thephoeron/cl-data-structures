@@ -16,7 +16,8 @@
   ())
 
 
-(defmethod should-skip ((range without-proxy) element)
+(defmethod should-skip ((range without-proxy) element can-mutate)
+  (declare (ignore can-mutate))
   (funcall (read-predicate range) element))
 
 

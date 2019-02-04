@@ -86,6 +86,7 @@
    #:split-into-chunks
    #:to-vector
    #:transparent-to-chunking-mixin
+   #:unique
    #:without
    #:wrap-chunk
    #:zip))

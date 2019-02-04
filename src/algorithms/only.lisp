@@ -23,7 +23,8 @@
                  :key (read-key range)))
 
 
-(defmethod should-skip ((range only-proxy) element)
+(defmethod should-skip ((range only-proxy) element can-mutate)
+  (declare (ignore can-mutate))
   (~>> element (funcall (read-predicate range)) not))
 
 
