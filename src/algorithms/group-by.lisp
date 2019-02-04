@@ -96,8 +96,8 @@
 
 
 (defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-group-by-aggregator))
-  (cl-ds.alg.meta:expects-content-with-stage-p (~> aggregator access-stages first)
-                                               aggregator))
+  (~> aggregator access-stages first
+      (cl-ds.alg.meta:expects-content-with-stage-p aggregator)))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)
