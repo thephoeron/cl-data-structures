@@ -25,16 +25,21 @@
                   (prove:is (cl-ds:at data 1) #(3 4) :test 'equalp)
                   (prove:is (cl-ds:at data 2) #(5 6) :test 'equalp))]))
 
+  (function partition-if
+    (:description "Groups consecutive elements in the range into partition if TEST called on previous value in the range and the current value in the range returns non-NIL, creates new partition otherwise. This does not change content of the RANGE, but it will force aggregation to be performed on every group independently."
+     :arguments ((range "Input range.")
+                 (test "Function of two arguments used to check if elements belong the same partition."))))
+
   (function to-vector
     (:description "Collects all elements into CL:VECTOR."
      :returns "cl:vector with content of the range."
      :notes ("There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
              "To avoid copying in cases when RANGE is also a vector, pass nil as :force-copy.")
-     :arguments-and-values ((range "Object to aggregate accross.")
-                            (:key "Key function used to extract value for vector.")
-                            (:element-type ":element-type for result vector.")
-                            (:size "Initial size of internal vector. Supplied to optimize memory allocations.")
-                            (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
+     :arguments ((range "Object to aggregate accross.")
+                 (:key "Key function used to extract value for vector.")
+                 (:element-type ":element-type for result vector.")
+                 (:size "Initial size of internal vector. Supplied to optimize memory allocations.")
+                 (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE."
@@ -136,7 +141,7 @@
      :returns "FORWARD-RANGE"))
 
   (function group-by
-    (:description "Groups RANGE into partitions according to the TEST. This does not change content of RANGE, but it will force aggregation to be performed on every group independently."
+    (:description "Groups RANGE into partitions according to the TEST. This does not change content of the RANGE, but it will force aggregation to be performed on every group independently."
      :arguments ((range "Range that is supposed to be groupped.")
                  (key "Key function, used to extract value for TEST")
                  (test "Test for inner hashtable (either eq, eql or equal)."))
