@@ -46,6 +46,11 @@
                           :test test)))
 
 
+(defmethod cl-ds:reset! ((range unique-proxy))
+  (~> range access-seen-elements clrhash)
+  (call-next-method))
+
+
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (function unique-function)
                         &rest all &key key test)
