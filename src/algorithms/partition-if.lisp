@@ -24,9 +24,9 @@
 
 
 (defmethod clone ((range partition-if-proxy))
-  (make-instance (type-of range)
-                 :original-range (~> range read-original-range clone)
-                 :test (read-test range)))
+  (make (type-of range)
+        :original-range (~> range read-original-range clone)
+        :test (read-test range)))
 
 
 (defclass partition-if-aggregator (cl-ds.alg.meta:fundamental-aggregator)
