@@ -116,7 +116,8 @@
   (bind (((:slots %key %groups %outer-fn) aggregator)
          (groups (copy-hash-table %groups)))
     (maphash (lambda (key aggregator)
-               (setf (gethash key groups) (cl-ds.alg.meta:extract-result aggregator)))
+               (setf (gethash key groups)
+                     (cl-ds.alg.meta:extract-result aggregator)))
              %groups)
     (make-hash-table-range groups)))
 
