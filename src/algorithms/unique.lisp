@@ -24,11 +24,12 @@
 
 
 (defmethod cl-ds:clone ((range unique-proxy))
-  (make (type-of range)
-        :key (read-key range)
-        :seen-elements (~> range
-                           access-seen-elements
-                           copy-hash-table)))
+  (~>> range
+       access-seen-elements
+       copy-hash-table
+       (make (type-of range)
+             :key (read-key range)
+             :seen-elements _)))
 
 
 (defclass unique-function (layer-function)
