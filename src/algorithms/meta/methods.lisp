@@ -320,12 +320,11 @@ Range function invokaction protocol.
     (until (aggregator-finished-p aggregator))
     (begin-aggregation aggregator)
     (until (aggregator-finished-p aggregator))
-    (block outer
-      (when (cl-ds.alg.meta:expects-content-p aggregator)
-        (cl-ds:across range
-                      (lambda (x)
-                        (pass-to-aggregation aggregator
-                                             x)))))
+    (when (cl-ds.alg.meta:expects-content-p aggregator)
+      (cl-ds:across range
+                    (lambda (x)
+                      (pass-to-aggregation aggregator
+                                           x))))
     (end-aggregation aggregator))
   (extract-result aggregator))
 
