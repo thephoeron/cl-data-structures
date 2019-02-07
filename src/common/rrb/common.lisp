@@ -429,6 +429,7 @@
           :accessor access-size)
    (%element-type :initarg :element-type
                   :initform t
+                  :reader cl-ds:type-specialization
                   :reader read-element-type)
    (%tail-size :initform 0
                :initarg :tail-size

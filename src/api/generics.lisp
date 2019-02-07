@@ -136,6 +136,10 @@
 
 (defgeneric forward-call (object function))
 
+(defgeneric type-specialization (container)
+  (:method ((container fundamental-container))
+    t))
+
 #|
 
 Range releated functions.

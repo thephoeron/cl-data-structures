@@ -25,6 +25,7 @@
                  :initform cl-ds.common.rrb:+maximum-children-count+)
    (%element-type :initarg :element-type
                   :reader read-element-type
+                  :reader cl-ds:type-specialization
                   :initform t)))
 
 

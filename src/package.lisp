@@ -106,6 +106,7 @@
    #:traversable
    #:traverse
    #:traverse-multiple
+   #:type-specialization
    #:unexpected-argument
    #:update
    #:update!

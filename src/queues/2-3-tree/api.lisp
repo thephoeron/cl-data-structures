@@ -33,6 +33,7 @@
 (defclass 2-3-queue (cl-ds.common.2-3:tree)
   ((%element-type :initarg :element-type
                   :initform t
+                  :reader cl-ds:type-specialization
                   :reader read-element-type)
    (%head :accessor access-head
           :initform nil
