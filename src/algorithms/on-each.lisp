@@ -51,18 +51,20 @@
 
 
 (defmethod cl-ds:traverse ((range forward-proxy-box-range) function)
-  (cl-ds:traverse (read-original-range range)
-                  (compose function
-                           (read-function range)
-                           (or (read-key range) #'identity)))
+  (let* ((fn (read-function range))
+         (key (or (read-key range) #'identity))
+         (function-fn-key (compose function fn key)))
+    (cl-ds:traverse (read-original-range range)
+                    function-fn-key))
   range)
 
 
 (defmethod cl-ds:across ((range forward-proxy-box-range) function)
-  (cl-ds:across (read-original-range range)
-                (compose function
-                         (read-function range)
-                         (or (read-key range) #'identity)))
+  (let* ((fn (read-function range))
+         (key (or (read-key range) #'identity))
+         (function-fn-key (compose function fn key)))
+    (cl-ds:across (read-original-range range)
+                  function-fn-key))
   range)
 
 

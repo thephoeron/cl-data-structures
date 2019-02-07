@@ -40,8 +40,8 @@
                      (funcall context-function
                               (lambda ()
                                 (funcall traverse/accross
-                                         (compose #'enque (rcurry #'list* t))
-                                         og-range)))
+                                         og-range
+                                         (compose #'enque (rcurry #'list* t)))))
                    (condition (e)
                      (enque (list* e :error))
                      (return nil))))
