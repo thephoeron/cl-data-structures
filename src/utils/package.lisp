@@ -24,6 +24,7 @@
    #:cycle-over-address
    #:define-list-of-slots
    #:copy-slots
+   #:scan
    #:draw-random-vector
    #:draw-sample-vector
    #:each-in-matrix

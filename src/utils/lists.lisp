@@ -245,3 +245,20 @@
        (setf (aref result i) (aref vector 0))
        (extract-min))
      result)))
+
+
+(defun scan (function sequence
+             &rest args
+             &key key from-end (start 0) initial-value)
+  (declare (ignore key from-end start initial-value))
+  (let ((result nil))
+    (apply #'reduce
+           (lambda (a b)
+             (lret ((r (funcall function a b)))
+               (push r result)))
+           sequence
+           args)
+    (nreverse result)))
+
+
+(print (scan #'+ '((1) (2) (3) (4) (5) (6)) :initial-value 0 :key #'car))
