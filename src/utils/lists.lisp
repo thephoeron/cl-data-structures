@@ -251,11 +251,12 @@
              &rest args
              &key key from-end (start 0) initial-value)
   (declare (ignore key start initial-value from-end))
-  (let* ((result '()))
-    (apply #'reduce
-           (lambda (a b)
-             (lret ((r (funcall function a b)))
-               (push r result)))
-           sequence
-           args)
-    (nreverse result)))
+  (let* ((result '())
+         (final (apply #'reduce
+                       (lambda (a b)
+                         (lret ((r (funcall function a b)))
+                           (push r result)))
+                       sequence
+                       args)))
+    (values (nreverse result)
+            final)))
