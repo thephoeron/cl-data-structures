@@ -259,6 +259,3 @@
            sequence
            args)
     (nreverse result)))
-
-
-(print (scan #'+ '((1) (2) (3) (4) (5) (6)) :initial-value 0 :key #'car))
