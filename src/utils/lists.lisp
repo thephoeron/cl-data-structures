@@ -250,8 +250,8 @@
 (defun scan (function sequence
              &rest args
              &key key from-end (start 0) initial-value)
-  (declare (ignore key from-end start initial-value))
-  (let ((result nil))
+  (declare (ignore key start initial-value from-end))
+  (let* ((result '()))
     (apply #'reduce
            (lambda (a b)
              (lret ((r (funcall function a b)))
