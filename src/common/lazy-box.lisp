@@ -144,4 +144,7 @@
     (cl-ds:found (force-status status)))
 
   (defmethod cl-ds:value ((status lazy-modification-operation-status))
+    (cl-ds:value (force-status status)))
+
+  (defmethod cl-ds:changed ((status lazy-modification-operation-status))
     (cl-ds:value (force-status status))))

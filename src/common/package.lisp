@@ -16,6 +16,7 @@
    #:dict-content-value
    #:eager-modification-operation-status
    #:empty-eager-modification-operation-status
+   #:empty-changed-eager-modification-operation-status
    #:sequence-window
    #:force-version
    #:forward-lazy-range

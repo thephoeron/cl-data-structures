@@ -38,7 +38,8 @@
   (declare (ignore location all))
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 
@@ -50,7 +51,8 @@
   (declare (ignore location all))
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:shrink-function)
@@ -61,7 +63,8 @@
   (declare (ignore location all))
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 

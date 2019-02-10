@@ -68,7 +68,8 @@
          (or list 'cl-ds.meta:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
-          (cl-ds.common:hash-dict-content-value value))
+          (cl-ds.common:hash-dict-content-value value)
+          t)
          t)
         (values
          bucket
@@ -106,7 +107,8 @@
          (or list 'cl-ds.meta:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
-          (cl-ds.common:hash-dict-content-value value))
+          (cl-ds.common:hash-dict-content-value value)
+          t)
          t)
         (values
          bucket
@@ -142,7 +144,8 @@
       (if ^replaced bucket ^next-list)
       (cl-ds.common:make-eager-modification-operation-status
        ^replaced
-       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value)))
+       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value))
+       (not ^replaced))
       (not ^replaced)))
 
 
@@ -187,7 +190,8 @@
                     r)
               (cl-ds.common:make-eager-modification-operation-status
                t
-               (cl-ds.common:hash-dict-content-value node))
+               (cl-ds.common:hash-dict-content-value node)
+               t)
               t)))))))
 
 
@@ -219,7 +223,8 @@
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   (cl-ds.common:hash-dict-content-value node))
+                   (cl-ds.common:hash-dict-content-value node)
+                   t)
                   t)))))
 
 
@@ -235,7 +240,9 @@
       (if ^replaced ^next-list bucket)
       (if ^replaced
           (cl-ds.common:make-eager-modification-operation-status
-           ^replaced (cl-ds.common:hash-dict-content-value ^old-value))
+           ^replaced
+           (cl-ds.common:hash-dict-content-value ^old-value)
+           ^replaced)
           cl-ds.common:empty-eager-modification-operation-status)
       ^replaced))
 
@@ -261,7 +268,7 @@
                  :location location
                  :value (cl-ds:force value)
                  :hash hash))
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -274,7 +281,7 @@
                  :location location
                  :value (cl-ds:force value)
                  :hash hash))
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -286,7 +293,7 @@
                                     &key)
   (declare (ignore all))
   (values location
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -322,7 +329,7 @@
                                    &key)
   (declare (ignore all))
   (values location
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -358,7 +365,7 @@
   (declare (ignore all)
            (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values (cl-ds:force location)
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -380,7 +387,7 @@
                                    &key)
   (declare (ignore all))
   (values (cl-ds:force location)
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -418,7 +425,7 @@
               (if (null tuple)
                   cl-ds.common:empty-eager-modification-operation-status
                   (cl-ds.common:make-eager-modification-operation-status
-                   t old-value))
+                   t old-value t))
               t)))
 
 
@@ -439,7 +446,7 @@
                   (cl-ds.common:hash-dict-content-value tuple) (cl-ds:force value))
             (values bucket
                     (cl-ds.common:make-eager-modification-operation-status
-                     t old-value)
+                     t old-value t)
                     t)))))
 
 
@@ -459,12 +466,13 @@
                         :hash hash)
                   bucket)
             (values bucket
-                    cl-ds.common:empty-eager-modification-operation-status
+                    cl-ds.common:empty-changed-eager-modification-operation-status
                     t))
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   old-value)
+                   old-value
+                   nil)
                   nil)))))
 
 

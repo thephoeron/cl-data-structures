@@ -34,7 +34,8 @@
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   old-value)
+                   old-value
+                   t)
                   t)))))
 
 
@@ -57,7 +58,8 @@
         (values bucket
                 (cl-ds.common:make-eager-modification-operation-status
                  t
-                 (aref bucket position))
+                 (aref bucket position)
+                 nil)
                 nil))))
 
 

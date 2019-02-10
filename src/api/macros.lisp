@@ -1,13 +1,14 @@
 (in-package #:cl-data-structures)
 
 
-(defmacro mod-bind ((first &optional found value) form &body body)
+(defmacro mod-bind ((first &optional found value changed) form &body body)
   (alexandria:with-gensyms (!status)
     `(multiple-value-bind (,first ,!status) ,form
        (declare (ignorable ,first ,!status))
        (symbol-macrolet (,@(remove-if (lambda (x) (null (car x)))
                                       `((,found (found ,!status))
-                                        (,value (value ,!status)))))
+                                        (,value (value ,!status))
+                                        (,changed (changed ,!status)))))
          ,@body))))
 
 

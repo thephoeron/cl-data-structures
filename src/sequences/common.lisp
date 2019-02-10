@@ -22,7 +22,7 @@
                                    location
                                    &key value &allow-other-keys)
   (values (cl-ds:force value)
-          cl-ds.common:empty-eager-modification-operation-status
+          cl-ds.common:empty-changed-eager-modification-operation-status
           t))
 
 
@@ -34,7 +34,8 @@
   (declare (ignore rest))
   (values 'cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 
@@ -46,7 +47,8 @@
   (declare (ignore rest))
   (values 'cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 
@@ -59,7 +61,8 @@
   (declare (ignore rest))
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
@@ -71,7 +74,8 @@
   (declare (ignore rest))
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
@@ -83,7 +87,8 @@
   (declare (ignore rest))
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
-                                                                 bucket)
+                                                                 bucket
+                                                                 t)
           t))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
@@ -96,7 +101,8 @@
   (if (funcall condition-fn bucket)
       (values (cl-ds:force value)
               (cl-ds.common:make-eager-modification-operation-status t
-                                                                     bucket)
+                                                                     bucket
+                                                                     t)
               t)
       (values bucket
               cl-ds.common:empty-eager-modification-operation-status

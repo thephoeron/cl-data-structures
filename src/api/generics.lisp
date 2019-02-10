@@ -109,6 +109,8 @@
 
 (defgeneric value (status))
 
+(defgeneric changed (status))
+
 (defgeneric found (status))
 
 (defgeneric empty-clone (container))

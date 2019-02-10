@@ -18,6 +18,7 @@
    #:become-mutable
    #:become-transactional
    #:chunked
+   #:changed
    #:clone
    #:consume-back
    #:consume-front
