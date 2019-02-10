@@ -388,7 +388,7 @@
     (if (< tail-position tail-end)
         (bind ((bucket (aref tail tail-position))
                (tail-position (access-tail-position structure))
-               ((:values new-buffer status changed)
+               ((:values new-buffer status)
                 (apply #'cl-ds.meta:shrink-bucket
                        operation container
                        bucket location all)))
@@ -441,7 +441,7 @@
             (bind (((:values root buffer)
                     (cl-ds.common.2-3:delete-back-from-tree
                      (cl-ds.common.2-3:access-root structure)))
-                   ((:values new-bucket status changed)
+                   ((:values new-bucket status)
                     (apply #'cl-ds.meta:shrink-bucket
                            operation container
                            (aref buffer 0) location
@@ -482,7 +482,7 @@
              (type (or null queue-buffer) tail))
     (if (< tail-position tail-end)
         (bind ((bucket (aref tail tail-position))
-               ((:values new-buffer status changed)
+               ((:values new-buffer status)
                 (apply #'cl-ds.meta:shrink-bucket
                        operation container
                        bucket location all)))
@@ -520,7 +520,7 @@
             (bind (((:values _ buffer)
                     (cl-ds.common.2-3:transactional-delete-back-from-tree!
                      structure))
-                   ((:values new-bucket status changed)
+                   ((:values new-bucket status)
                     (apply #'cl-ds.meta:shrink-bucket
                            operation
                            container
@@ -552,7 +552,7 @@
              (type (or null queue-buffer) tail))
     (if (< tail-position tail-end)
         (bind ((bucket (aref tail tail-position))
-               ((:values new-buffer status changed)
+               ((:values new-buffer status)
                 (apply #'cl-ds.meta:shrink-bucket!
                        operation container
                        bucket location all)))
@@ -589,7 +589,7 @@
                   (values structure status)))
             (bind (((:values _ buffer)
                     (cl-ds.common.2-3:delete-back-from-tree! structure))
-                   ((:values new-bucket status changed)
+                   ((:values new-bucket status)
                     (apply #'cl-ds.meta:shrink-bucket!
                            operation
                            container

@@ -461,16 +461,16 @@
                        additional-arguments)
   (bind ((content (read-content last-node))
          (old-head (aref content 0))
-         ((:values new-bucket status changed) (apply #'cl-ds.meta:grow-bucket!
-                                                     operation
-                                                     container
-                                                     content
-                                                     item
-                                                     additional-arguments))
+         ((:values new-bucket status) (apply #'cl-ds.meta:grow-bucket!
+                                             operation
+                                             container
+                                             content
+                                             item
+                                             additional-arguments))
          (new-head (aref new-bucket 0))
          (head-changed (not (same container old-head new-head)))
          (parent.index (gethash last-node paths)))
-    (when changed
+    (when (cl-ds:changed status)
       (setf (slot-value last-node '%content) new-bucket)
       (unless (null parent.index)
         (bind (((parent . index) parent.index))
@@ -697,17 +697,17 @@ following cases need to be considered:
                           additional-arguments)
   (bind ((content (read-content node))
          (old-head (aref content 0))
-         ((:values new-bucket status changed) (apply #'cl-ds.meta:shrink-bucket!
-                                                     operation
-                                                     container
-                                                     content
-                                                     item
-                                                     additional-arguments))
+         ((:values new-bucket status) (apply #'cl-ds.meta:shrink-bucket!
+                                             operation
+                                             container
+                                             content
+                                             item
+                                             additional-arguments))
          (new-head (or (cl-ds.meta:null-bucket-p new-bucket) (aref new-bucket 0)))
          (head-was-changed (or (cl-ds.meta:null-bucket-p new-bucket)
                                (not (same structure new-head old-head)))))
     (setf (slot-value node '%content) new-bucket)
-    (when changed
+    (when (cl-ds:changed status)
       ;; remove from node, update paths, sometimes reinitialize paths...
       (merging-shrink! container node paths head-was-changed new-bucket))
     (values structure status)))
