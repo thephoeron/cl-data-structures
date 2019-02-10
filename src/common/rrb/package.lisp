@@ -28,23 +28,27 @@
    #:descend-into-tree
    #:destructive-write
    #:destructive-write-without-tail
+   #:fill-sparse-rrb-node-with-new
    #:insert-tail
    #:make-node-content
    #:make-rrb-node
    #:make-sparse-rrb-node
    #:node-content
+   #:node-size
    #:nref
    #:read-element-type
-   #:node-size
+   #:reduce-path
    #:remove-tail
    #:rrb-at
    #:rrb-container
+   #:rrb-index
    #:rrb-node
    #:rrb-node-content
    #:rrb-node-position
    #:rrb-node-push!
    #:rrb-node-push-into-copy
    #:rrb-range
+   #:shift
    #:sparse-node
    #:sparse-nref
    #:sparse-rrb-mask
@@ -58,8 +62,5 @@
    #:sparse-rrb-node-size
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail
-   #:reduce-path
-   #:rrb-index
-   #:shift
-   #:with-sparse-rrb-node-path
-   #:with-sparse-rrb-node))
+   #:with-sparse-rrb-node
+   #:with-sparse-rrb-node-path))

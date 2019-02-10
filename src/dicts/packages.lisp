@@ -59,5 +59,10 @@
    #:make-mutable-sparse-rrb-vector
    #:make-transactional-sparse-rrb-vector
    #:mutable-sparse-rrb-vector
+   #:scan-index-bound
+   #:access-shift
+   #:access-index-bound
+   #:access-tree-index-bound
+   #:access-tree
    #:sparse-rrb-vector-at
    #:transactional-sparse-rrb-vector))
