@@ -172,6 +172,11 @@
           (read-capacity container))))
 
 
+(defmethod cl-ds:replica ((container transactional-2-3-queue)
+                          &optional isolate)
+  (cl-ds.common.abstract:replica container isolate))
+
+
 (defmethod cl-ds:become-transactional ((container 2-3-queue))
   (make 'transactional-2-3-queue
         :root (cl-ds.common.2-3:access-root container)

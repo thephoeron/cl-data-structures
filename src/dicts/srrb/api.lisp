@@ -10,6 +10,11 @@
    operation structure container position all value))
 
 
+(defmethod cl-ds:replica ((container transactional-sparse-rrb-vector)
+                          &optional isolate)
+  (cl-ds.common.abstract:replica container isolate))
+
+
 (defmethod cl-ds.meta:position-modification
     ((operation cl-ds.meta:grow-function)
      (structure mutable-sparse-rrb-vector)

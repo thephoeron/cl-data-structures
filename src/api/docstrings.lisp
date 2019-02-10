@@ -345,10 +345,10 @@
      "become-mutable container => mutable-container"
 
      :returns
-     "A instance implementing mutable API. Content of the returned instance is identical to the content of the input CONTAINER."
+     "An instance implementing mutable API. The content of the returned instance is identical to the content of the input CONTAINER."
 
      :arguments
-     (("container" "Container that we want to transform into mutable container."))
+     ((container "Container that we want to transform into mutable container."))
 
      :notes
      ("Side effects from destructive operations on CONTAINER may leak into returned instance."
@@ -356,6 +356,23 @@
 
      :side-effects
      "May vary, depending on type of the CONTAINER. Also, some (or all) parts of a internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into the returned instance."))
+
+  (function replica
+    (:description
+     "Creates new instance of transactional container from existing transactional CONTAINER. By behaves like BECOME-TRANSACTIONAL, but \
+is implemented only fro transactional containers. Furthermore, optional ISOLATE argument will prevent side effects from the original CONTAINER to leak into the new container."
+
+     :syntax
+     "replica transactioanl-container-container boolean => transactional-container"
+
+     :returns
+     "instance implementing mutable API. Content of returned instance is identical to the content of the input CONTAINER."
+
+     :arguments
+     ((container "Container that will be replicated.")
+      (isolate "Should changes in the CONTAINER be prevented from leaking into result instances"))
+
+     :see-also (become-transactional)))
 
   (function become-transactional
     (:description
@@ -365,10 +382,10 @@
      "become-transactional container => transactional-container"
 
      :returns
-     "instance implementing mutable API. Content of returned instance is identical to the content of input CONTAINER."
+     "instance implementing mutable API. Content of returned instance is identical to the content of the input CONTAINER."
 
      :arguments
-     (("container" "Container that we want to transform into transactional container."))
+     ((container "Container that we want to transform into the transactional container."))
 
      :notes
      ("Side effects from destructive operations on CONTAINER may leak into returned instance."
@@ -388,7 +405,7 @@
      "instance implementing functional, lazy API. Content of returned instance is identical to the content of input CONTAINER."
 
      :arguments
-     (("container" "Container that we want to transform into lazy container."))
+     ((container "Container that we want to transform into an lazy container."))
 
      :notes
      ("Side effects from destructive operations on CONTAINER may leak into returned instance."
@@ -400,7 +417,7 @@
   (function mutablep
     (:syntax  ("mutablep mutable-container => t"
                "mutablep functional-container => nil")
-     :arguments (("container" "Any subclass of fundamental-container"))
+     :arguments ((container "Any subclass of fundamental-container"))
 
      :examples
      [(progn (prove:diag "Running example for mutablep.")
@@ -416,10 +433,10 @@
   (function functionalp
     (:syntax  ("(functionalp mutable-container) -> nil"
                "(functionalp functional-container) -> t")
-     :arguments (("container" "Any subclass of fundamental-container"))
+     :arguments (("container" "A subclass of the fundamental-container"))
      :examples
      [(progn
-        (prove:diag "Running example for functionalp.")
+        (prove:diag "Running example for the functionalp function.")
         (let ((mutable (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq)))
           (prove:ok (cl-ds:mutablep mutable))
           (prove:ok (not (cl-ds:functionalp mutable))))
@@ -430,23 +447,23 @@
 
   (function transactionalp
     (:syntax "transactionalp container => boolean"
-     :arguments (("container" "Any subclass of fundamental-container"))
+     :arguments (("container" "An subclass of the fundamental-container."))
      :examples
      [(progn
-        (prove:diag "Running example for transactionalp.")
+        (prove:diag "Running example for the transactionalp.")
         (let ((container (cl-ds:become-transactional (cl-ds.dicts.hamt:make-mutable-hamt-dictionary #'sxhash #'eq))))
           (prove:ok (cl-ds:mutablep container))
           (prove:ok (cl-ds:transactionalp container))))]
-     :returns "T if CONTAINER is transactional and NIL if it is not."))
+     :returns "T if the CONTAINER is transactional and NIL if it is not."))
 
   (function value
     (:syntax "value status => value"
      :arguments ((status "instance of modification status class."))
-     :returns "Value that was present in the container at location before operation took place. Returns NIL if location was free."))
+     :returns "Value that was present in the container at the location before operation took place. Returns NIL if location was free."))
 
   (function changed
     (:syntax "changed status => boolean"
-     :arguments ((status "instance of modification status class"))
+     :arguments ((status "instance of the modification status class"))
      :returns "T if operation changed the container."))
 
   (function found
@@ -467,8 +484,8 @@
      "Utility macro. &body is executed in the lexical scope of transactional instance. After last operation, new instance is returned."))
 
   (function (setf at)
-    (:description "Destructively insert/replace element in the CONTAINER at LOCATION with NEW-VALUE."
-     :arguments ((new-value "Value that shall be put in the container.")
+    (:description "Destructively insert/replace a element in the CONTAINER at LOCATION with the NEW-VALUE."
+     :arguments ((new-value "Value that shall be inserted into the container.")
                  (container "Container that shall be modified.")
                  (location "Location where container shall be modified."))
      :returns ("NEW-VALUE"
@@ -481,17 +498,18 @@
 
      :arguments
      ((first "Symbol, will be bound to the first value returned by values-form.")
-      (found "Symbol, this macro will construct symbol-macrolet that will expand to call (found status)")
-      (value "Symbol, this macro will construct symbol-macrolet that will expand to call (value status)"))
+      (found "Symbol, this macro will construct symbol-macrolet that will expand to the call (found status)")
+      (value "Symbol, this macro will construct symbol-macrolet that will expand to the call (value status)")
+      (changed "Symbol, this macro will construct symbol-macrolet that will expand to the call (changed status)"))
 
      :description
-     "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on containers. All of those operations will return secondary object representing operation status that shall be bound in lexical environment and. Next, symbol-macrolets will be established, that inline found and value function calls on operation status (like with-accessors)."))
+     "This macro attempts to mimic multiple-value-bind syntax for modification operations performed on the containers. All of those operations will return a secondary object representing operation status that shall be bound in the lexical environment. Next, symbol-macrolets will be established, inlining found, value and changed function calls on the operation status (like with-accessors)."))
 
   (type fundamental-container
-    (:description "Root class of containers."))
+    (:description "The root class of the containers."))
 
   (type fundamental-modification-operation-status
-    (:description "Base class of all fundamental modification status classes."))
+    (:description "The base class of all fundamental modification status classes."))
 
   (type functional
     (:description "Object implements functional api."))
@@ -500,31 +518,31 @@
     (:description "Object implements mutable api."))
 
   (type transactional
-    (:description "Object implements mutable api in transactional way."))
+    (:description "Object implements mutable api in a transactional way."))
 
   (type lazy
     (:description "Functional object, with lazy implementation."))
 
   (type textual-error
-    (:description "Error with human readable text description."))
+    (:description "Error with a human readable text description."))
 
   (type invalid-argument
-    (:description "Error signaled if for some reason passed argument is invalid."))
+    (:description "Error signaled if (for whatever reason) passed argument is invalid."))
 
   (type initialization-error
-    (:description "Error signaled when container can't be initialized."))
+    (:description "Error signaled when the container can't be initialized."))
 
   (type argument-out-of-bounds
-    (:description "Error signaled when passed argument exceeds allowed bounds"))
+    (:description "Error signaled when passed the argument exceeds allowed bounds"))
 
   (type initialization-out-of-bounds
-    (:description "Error signaled when container can't be initialized with value because value exceeds bounds."))
+    (:description "Error signaled when the container can't be initialized with a value because it exceeds bounds."))
 
   (type not-implemented
-    (:description "Error signaled when not implemented functionality is accessed."))
+    (:description "Error signaled when unimlemented functionality is accessed."))
 
   (type unexpected-argument
-    (:description "Error signaled when passed argument was not expected."))
+    (:description "Error signaled when passed argument was unexpected."))
 
   (type out-of-bounds
-    (:description "Error signaled when some value is out of expected bounds.")))
+    (:description "Error signaled when a some value is out of the expected bounds.")))

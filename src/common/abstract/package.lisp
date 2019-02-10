@@ -12,4 +12,5 @@
    #:make-tagged-node
    #:read-ownership-tag
    #:tagged-node
+   #:replica
    #:write-ownership-tag))

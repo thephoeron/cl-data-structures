@@ -641,6 +641,11 @@
                    (copy-array #1#))))
 
 
+(defmethod cl-ds:replica ((container transactional-rrb-vector)
+                          &optional isolate)
+  (cl-ds.common.abstract:replica container isolate))
+
+
 (defmethod cl-ds:become-transactional ((container rrb-vector))
   (make 'transactional-rrb-vector
         :root (cl-ds.common.rrb:access-root container)

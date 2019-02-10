@@ -91,6 +91,8 @@
         (call-next-method)
         container)))
 
+(defgeneric replica (container &optional isolate))
+
 (defgeneric become-transactional (container))
 
 (defgeneric become-lazy (container))

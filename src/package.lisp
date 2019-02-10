@@ -13,12 +13,13 @@
    #:assert-one-dimension
    #:at
    #:become-functional
-   #:chunked-range
    #:become-lazy
    #:become-mutable
    #:become-transactional
-   #:chunked
    #:changed
+   #:chunked
+   #:chunked-range
+   #:chunking-mixin
    #:clone
    #:consume-back
    #:consume-front
@@ -39,9 +40,8 @@
    #:field
    #:finish
    #:force
-   #:chunking-mixin
-   #:found
    #:forward-call
+   #:found
    #:functional
    #:functionalp
    #:fundamental-assignable-forward-range
@@ -90,6 +90,7 @@
    #:read-class
    #:read-value
    #:recur
+   #:replica
    #:reset!
    #:send-finish
    #:send-recur

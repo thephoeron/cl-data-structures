@@ -33,4 +33,11 @@
 
 
 (defun reset-ownership-tag (object)
-  cl-ds.utils:todo)
+  (write-ownership-tag (make-ownership-tag) object))
+
+
+(defun replica (object isolate)
+  (check-type object fundamental-ownership-tagged-object)
+  (lret ((cl-ds:become-transactional object))
+    (when isolate
+      (reset-ownership-tag object))))
