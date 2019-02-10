@@ -30,7 +30,7 @@
          (result-status nil)
          (tail-change 0)
          ((:dflet shrink-bucket (bucket))
-          (multiple-value-bind (bucket status changed)
+          (multiple-value-bind (bucket status)
               (apply #'cl-ds.meta:shrink-bucket
                      operation
                      container
@@ -38,7 +38,7 @@
                      location
                      rest)
             (setf result-status status)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification (values structure status)))
             (when (cl-ds.meta:null-bucket-p bucket)
               (decf tail-change))
@@ -97,7 +97,7 @@
          (result-status nil)
          (tail-change 0)
          ((:dflet shrink-bucket (bucket))
-          (multiple-value-bind (bucket status changed)
+          (multiple-value-bind (bucket status)
               (apply #'cl-ds.meta:shrink-bucket!
                      operation
                      container
@@ -105,7 +105,7 @@
                      location
                      rest)
             (setf result-status status)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification (values structure status)))
             (when (cl-ds.meta:null-bucket-p bucket)
               (decf tail-change))
@@ -163,14 +163,14 @@
          (result-status nil)
          (last-index (ldb (byte cl-ds.common.rrb:+bit-count+ 0) index))
          ((:dflet change-bucket (bucket))
-          (multiple-value-bind (node status changed)
+          (multiple-value-bind (node status)
               (apply #'cl-ds.meta:grow-bucket!
                      operation
                      container
                      bucket
                      index
                      rest)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification
                 (values structure status)))
             (setf result-status status)
@@ -212,12 +212,12 @@
                      (debug 0) (space 0)))
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size structure))
          (tail (cl-ds.common.rrb:access-tail structure))
-         ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
-                                                     operation
-                                                     container
-                                                     location
-                                                     rest)))
-    (unless changed
+         ((:values new-bucket status) (apply #'cl-ds.meta:make-bucket
+                                             operation
+                                             container
+                                             location
+                                             rest)))
+    (unless (cl-ds:changed status)
       (return-from cl-ds.meta:position-modification (values structure status)))
     (if (eql tail-size +maximum-children-count+)
         (bind ((new-tail (~> structure
@@ -253,12 +253,12 @@
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size structure))
          (tag nil)
          (tail-change 1)
-         ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
-                                                     operation
-                                                     container
-                                                     location
-                                                     rest)))
-    (unless changed
+         ((:values new-bucket status) (apply #'cl-ds.meta:make-bucket
+                                             operation
+                                             container
+                                             location
+                                             rest)))
+    (unless (cl-ds:changed status)
       (return-from cl-ds.meta:position-modification (values structure status)))
     (if (eql tail-size +maximum-children-count+)
         (bind ((new-tail (~> structure
@@ -309,12 +309,12 @@
   (bind ((tail-size (cl-ds.common.rrb:access-tail-size structure))
          (tag (cl-ds.common.abstract:read-ownership-tag structure))
          (tail-change 1)
-         ((:values new-bucket status changed) (apply #'cl-ds.meta:make-bucket
-                                                     operation
-                                                     container
-                                                     location
-                                                     rest)))
-    (unless changed
+         ((:values new-bucket status) (apply #'cl-ds.meta:make-bucket
+                                             operation
+                                             container
+                                             location
+                                             rest)))
+    (unless (cl-ds:changed status)
       (return-from cl-ds.meta:position-modification (values structure status)))
     (if (eql tail-size +maximum-children-count+)
         (bind ((new-tail (~> structure
@@ -358,7 +358,7 @@
          (result-status nil)
          (tail-change 0)
          ((:dflet shrink-bucket (bucket))
-          (multiple-value-bind (bucket status changed)
+          (multiple-value-bind (bucket status)
               (apply #'cl-ds.meta:shrink-bucket
                      operation
                      container
@@ -366,7 +366,7 @@
                      location
                      rest)
             (setf result-status status)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification (values structure status)))
             (when (cl-ds.meta:null-bucket-p bucket)
               (decf tail-change))
@@ -439,14 +439,14 @@
          (root (cl-ds.common.rrb:access-root structure))
          (result-status nil)
          ((:dflet change-bucket (bucket))
-          (multiple-value-bind (node status changed)
+          (multiple-value-bind (node status)
               (apply #'cl-ds.meta:grow-bucket
                      operation
                      container
                      bucket
                      index
                      rest)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification
                 (values structure status)))
             (setf result-status status)
@@ -518,16 +518,15 @@
          (size (cl-ds.common.rrb:access-size structure))
          (root (cl-ds.common.rrb:access-root structure))
          (result-status nil)
-         (tail-change 0)
          ((:dflet change-bucket (bucket))
-          (multiple-value-bind (node status changed)
+          (multiple-value-bind (node status)
               (apply #'cl-ds.meta:grow-bucket
                      operation
                      container
                      bucket
                      index
                      rest)
-            (unless changed
+            (unless (cl-ds:changed status)
               (return-from cl-ds.meta:position-modification
                 (values structure status)))
             (setf result-status status)

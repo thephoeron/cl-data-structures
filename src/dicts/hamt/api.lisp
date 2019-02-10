@@ -356,7 +356,7 @@ Methods. Those will just call non generic functions.
            (new-root
              (with-destructive-erase-hamt node structure hash
                :on-leaf
-               (multiple-value-bind (bucket status changed)
+               (multiple-value-bind (bucket status)
                    (apply #'cl-ds.meta:shrink-bucket!
                           operation
                           container
@@ -364,7 +364,7 @@ Methods. Those will just call non generic functions.
                           location
                           :hash hash
                           all)
-                 (unless changed
+                 (unless (cl-ds:changed status)
                    (return-from cl-ds.meta:position-modification
                      (values structure status)))
                  (setf modification-status status)

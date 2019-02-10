@@ -24,11 +24,11 @@
                          (logandc2 (the fixnum position)
                                    cl-ds.common.rrb:+tail-mask+)
                          value all))
-          (t (bind (((:values bucket status changed)
+          (t (bind (((:values bucket status)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
-               (when changed
+               (when (cl-ds:changed status)
                  (let ((ownership-tag (cl-ds.common.abstract:read-ownership-tag
                                        structure)))
                    (transactional-insert-tail! structure ownership-tag)
@@ -77,11 +77,11 @@
                          (logandc2 (the fixnum position)
                                    cl-ds.common.rrb:+tail-mask+)
                          value all))
-          (t (bind (((:values bucket status changed)
+          (t (bind (((:values bucket status)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
-               (when changed
+               (when (cl-ds:changed status)
                  (insert-tail! structure)
                  (adjust-tree-to-new-size! structure
                                            position
@@ -128,11 +128,11 @@
                         (logandc2 (the fixnum position)
                                   cl-ds.common.rrb:+tail-mask+)
                         value all))
-          (t (bind (((:values bucket status changed)
+          (t (bind (((:values bucket status)
                      (apply #'cl-ds.meta:make-bucket
                             operation container value all)))
                (check-type position cl-ds.common.rrb:rrb-index)
-               (if changed
+               (if (cl-ds:changed status)
                    (let ((new-structure (insert-tail structure)))
                      (adjust-tree-to-new-size! new-structure
                                                position
