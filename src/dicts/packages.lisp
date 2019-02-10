@@ -54,15 +54,18 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.dicts.srrb)
   (:export
-   #:functional-sparse-rrb-vector
+     #:access-index-bound
+   #:access-shift
+   #:access-tree
+   #:access-tree-index-bound
+   #:insert-tail
+   #:insert-tail!
    #:make-functional-sparse-rrb-vector
    #:make-mutable-sparse-rrb-vector
    #:make-transactional-sparse-rrb-vector
    #:mutable-sparse-rrb-vector
    #:scan-index-bound
-   #:access-shift
-   #:access-index-bound
-   #:access-tree-index-bound
-   #:access-tree
    #:sparse-rrb-vector-at
-   #:transactional-sparse-rrb-vector))
+   #:transactional-insert-tail!
+   #:transactional-sparse-rrb-vector
+   #:functional-sparse-rrb-vector))
