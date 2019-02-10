@@ -1241,3 +1241,160 @@
                              :element-type (read-element-type structure))))
         (shrink-handle-tail! result position status
                              last-node-size last-node-mask last-node))))))
+
+
+(defun transactional-sparse-rrb-vector-grow (operation structure
+                                             container position
+                                             all value)
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
+  (check-type position integer)
+  (let ((tree-bound (access-tree-index-bound structure)))
+    (declare (type fixnum tree-bound))
+    (cond ((negative-integer-p position)
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative"
+                  :text "Sparse vector index can not be negative."))
+          ((< position tree-bound)
+           (transactional-grow-tree! operation structure
+                                     container position
+                                     all value))
+          ((< position (access-index-bound structure))
+           (set-in-tail! structure operation container
+                         (logandc2 (the fixnum position)
+                                   cl-ds.common.rrb:+tail-mask+)
+                         value all))
+          (t (bind (((:values bucket status)
+                     (apply #'cl-ds.meta:make-bucket
+                            operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
+               (when (cl-ds:changed status)
+                 (let ((ownership-tag (cl-ds.common.abstract:read-ownership-tag
+                                       structure)))
+                   (transactional-insert-tail! structure ownership-tag)
+                   (adjust-tree-to-new-size! structure
+                                             position
+                                             ownership-tag))
+                 (let* ((offset (- (the fixnum position)
+                                   (the fixnum
+                                        (access-tree-index-bound structure))))
+                        (tail-mask (ash 1 offset))
+                        (tail (cl-ds.common.rrb:make-node-content t)))
+                   (declare (type cl-ds.common.rrb:rrb-node-position offset)
+                            (type fixnum tail-mask)
+                            (type simple-vector tail))
+                   (setf (aref tail offset) bucket
+                         (access-tail structure) tail
+                         (access-tail-mask structure) tail-mask
+
+                         (access-index-bound structure)
+                         (* (ceiling (1+ position)
+                                     cl-ds.common.rrb:+maximum-children-count+)
+                            cl-ds.common.rrb:+maximum-children-count+))))
+               (values structure status))))))
+
+
+(defun mutable-sparse-rrb-vector-grow (operation structure
+                                       container position
+                                       all value)
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
+  (check-type position integer)
+  (let ((tree-bound (access-tree-index-bound structure)))
+    (declare (type fixnum tree-bound))
+    (cond ((negative-integer-p position)
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative"
+                  :text "Sparse vector index can not be negative."))
+          ((< position tree-bound)
+           (destructive-grow-tree! operation structure
+                                   container position
+                                   all value))
+          ((< position (the fixnum (access-index-bound structure)))
+           (set-in-tail! structure operation container
+                         (logandc2 (the fixnum position)
+                                   cl-ds.common.rrb:+tail-mask+)
+                         value all))
+          (t (bind (((:values bucket status)
+                     (apply #'cl-ds.meta:make-bucket
+                            operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
+               (when (cl-ds:changed status)
+                 (insert-tail! structure)
+                 (adjust-tree-to-new-size! structure
+                                           position
+                                           nil)
+                 (let* ((offset (- position
+                                   (the fixnum
+                                        (access-tree-index-bound structure))))
+                        (tail-mask (ash 1 offset))
+                        (tail (cl-ds.common.rrb:make-node-content t)))
+                   (declare (type cl-ds.common.rrb:rrb-node-position offset)
+                            (type fixnum tail-mask)
+                            (type simple-vector tail))
+                   (setf (aref tail offset) bucket
+                         (access-tail structure) tail
+                         (access-tail-mask structure) tail-mask
+
+                         (access-index-bound structure)
+                         (* (ceiling (1+ position)
+                                     cl-ds.common.rrb:+maximum-children-count+)
+                            cl-ds.common.rrb:+maximum-children-count+))))
+               (values structure status))))))
+
+
+(defun functional-sparse-rrb-vector-grow (operation structure
+                                          container position
+                                          all value)
+  (declare (optimize (speed 3) (space 0) (debug 0))
+           (type integer position))
+  (check-type position integer)
+  (let ((tree-bound (access-tree-index-bound structure)))
+    (declare (type fixnum tree-bound))
+    (cond ((negative-integer-p position)
+           (error 'cl-ds:argument-out-of-bounds
+                  :argument 'position
+                  :value position
+                  :bounds "Must be non-negative"
+                  :text "Sparse vector index can not be negative."))
+          ((< position tree-bound)
+           (grow-tree operation structure
+                      container position
+                      all value))
+          ((< position (access-index-bound structure))
+           (set-in-tail structure operation container
+                        (logandc2 (the fixnum position)
+                                  cl-ds.common.rrb:+tail-mask+)
+                        value all))
+          (t (bind (((:values bucket status)
+                     (apply #'cl-ds.meta:make-bucket
+                            operation container value all)))
+               (check-type position cl-ds.common.rrb:rrb-index)
+               (if (cl-ds:changed status)
+                   (let ((new-structure (insert-tail structure)))
+                     (adjust-tree-to-new-size! new-structure
+                                               position
+                                               nil)
+                     (let* ((offset (- (the fixnum position)
+                                       (the fixnum (access-tree-index-bound
+                                                    new-structure))))
+                            (tail-mask (ash 1 offset))
+                            (tail (cl-ds.common.rrb:make-node-content t))
+                            (index-bound
+                              (~>>
+                               cl-ds.common.rrb:+maximum-children-count+
+                               (ceiling (1+ position))
+                               (* cl-ds.common.rrb:+maximum-children-count+))))
+                       (declare (type cl-ds.common.rrb:rrb-node-position offset)
+                                (type fixnum tail-mask)
+                                (type simple-vector tail))
+                       (setf (aref tail offset) bucket
+                             (access-tail new-structure) tail
+                             (access-tail-mask new-structure) tail-mask
+                             (access-index-bound new-structure) index-bound))
+                     (values new-structure status))
+                   (values structure status)))))))
