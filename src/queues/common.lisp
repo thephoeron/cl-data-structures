@@ -26,8 +26,7 @@
                                    &rest all)
   (declare (ignore all))
   (values (cl-ds:force location)
-          cl-ds.common:empty-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:shrink-function)
@@ -39,8 +38,7 @@
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:shrink-function)
@@ -52,8 +50,7 @@
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:shrink-function)
                                       (container fundamental-mutable-queue)
@@ -64,8 +61,7 @@
   (values cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 
 (defmethod cl-ds:put! ((container fundamental-mutable-queue)

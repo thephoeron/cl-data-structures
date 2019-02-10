@@ -22,8 +22,7 @@
                                    location
                                    &key value &allow-other-keys)
   (values (cl-ds:force value)
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:shrink-function)
@@ -35,8 +34,7 @@
   (values 'cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:shrink-function)
@@ -48,8 +46,7 @@
   (values 'cl-ds.meta:null-bucket
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
@@ -62,8 +59,7 @@
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
                                    (container functional-sequence)
@@ -75,8 +71,7 @@
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
                                    (container transactional-sequence)
@@ -88,8 +83,7 @@
   (values (cl-ds:force value)
           (cl-ds.common:make-eager-modification-operation-status t
                                                                  bucket
-                                                                 t)
-          t))
+                                                                 t)))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
                                    (container fundamental-sequence)
@@ -102,11 +96,9 @@
       (values (cl-ds:force value)
               (cl-ds.common:make-eager-modification-operation-status t
                                                                      bucket
-                                                                     t)
-              t)
+                                                                     t))
       (values bucket
-              cl-ds.common:empty-eager-modification-operation-status
-              nil)))
+              cl-ds.common:empty-eager-modification-operation-status)))
 
 
 (defmethod cl-ds.meta:position-modification ((function cl-ds.meta:put-back!-function)

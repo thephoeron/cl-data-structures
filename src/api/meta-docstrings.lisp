@@ -34,22 +34,19 @@
   (function grow-bucket
     (:description "Generic, low level function used to grow all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
      :returns ("Bucket."
-               "Instance of modification-operation-status."
-               "Boolean. T if element was added into container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
+               "Instance of modification-operation-status.")
      :notes "This function is not allowed to perform any side effects. See grow-bucket! for function that is allowed to do so."))
 
   (function shrink-bucket
     (:description "Generic, low level function used to shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
      :returns ("Bucket. May also return nil to indicate empty bucket."
-               "Instance of modification-operation-status."
-               "Boolean. T if element was removed from container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")
+               "Instance of modification-operation-status.")
      :notes "This function is not allowed to perform any side effects. See shrink-bucket! for function that is allowed to do so."))
 
   (function shrink-bucket!
     (:description "Generic, low level function used to shrink all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function. This is destructive function."
      :returns ("Bucket. May also return nil to indicate empty bucket."
-               "Instance of modification-operation-status."
-               "Boolean. T if element was removed from container, NIL otherwise. If NIL was returned, POSITION-MODIFICATION may assume that container was not changed, and therefore ignore returned bucket.")))
+               "Instance of modification-operation-status.")))
 
   (function make-bucket
     (:description "Generic, low level function used to create all sorts of buckets (like those in dictionaries). Buckets are modified by grow-bucket and shrink-bucket functions."
@@ -59,14 +56,12 @@
   (function grow-bucket!
     (:description "Generic, low level function used to destructivly grow all sorts of buckets (like those in dictionaries). Buckets are created by make-bucket function."
      :returns ("New or passed bucket."
-               "Instance of position modification status."
-               "Boolean. T if returned bucket contains new elements, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
+               "Instance of position modification status.")
      :side-effects "Can modify bucket."))
 
   (function make-bucket
     (:returns ("New or passed bucket. May return nil as empty bucket."
-               "Instance of position modification status."
-               "Boolean. T if elements were removed from BUCKET, NIL otherwise. If NIL was returned, position-modification is free to ignore first value.")
+               "Instance of position modification status.")
      :side-effects "Can modify bucket."
      :description "Constructs abstract bucket."))
 

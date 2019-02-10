@@ -27,16 +27,14 @@
                                           container))))
     (if (null position)
         (values bucket
-                cl-ds.common:empty-eager-modification-operation-status
-                nil)
+                cl-ds.common:empty-eager-modification-operation-status)
         (let ((old-value (aref bucket position)))
           (cl-ds.utils:swapop bucket position)
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    old-value
-                   t)
-                  t)))))
+                   t))))))
 
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:put!-function)
@@ -53,14 +51,12 @@
         (progn
           (vector-push-extend location bucket)
           (values bucket
-                  cl-ds.common:empty-eager-modification-operation-status
-                  t))
+                  cl-ds.common:empty-changed-eager-modification-operation-status))
         (values bucket
                 (cl-ds.common:make-eager-modification-operation-status
                  t
                  (aref bucket position)
-                 nil)
-                nil))))
+                 t)))))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation t)
@@ -68,7 +64,8 @@
                                    location
                                    &rest all)
   (declare (ignore all))
-  (vect (cl-ds:force location)))
+  (values (vect (cl-ds:force location))
+          (cl-ds.common:make-eager-modification-operation-status nil nil t)))
 
 
 (defmethod cl-ds.meta:make-bucket-from-multiple ((operation t)
@@ -77,7 +74,9 @@
                                                  &rest all)
   (declare (ignore all))
   (setf data (cl-ds:force data))
-  (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
-      data
-      (lret ((result (vect)))
-        (cl-ds:traverse data (rcurry #'vector-push-extend result)))))
+  (values
+   (if (and (eq (type-of data) 'vector) (array-has-fill-pointer-p data))
+       data
+       (lret ((result (vect)))
+         (cl-ds:traverse data (rcurry #'vector-push-extend result))))
+   (cl-ds.common:make-eager-modification-operation-status nil nil t)))

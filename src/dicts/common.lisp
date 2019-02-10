@@ -255,8 +255,7 @@
   (declare (ignore hash value location)
            (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values nil
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
@@ -268,8 +267,7 @@
                  :location location
                  :value (cl-ds:force value)
                  :hash hash))
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
@@ -281,8 +279,7 @@
                  :location location
                  :value (cl-ds:force value)
                  :hash hash))
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert!-function)
@@ -293,8 +290,7 @@
                                     &key)
   (declare (ignore all))
   (values location
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update!-function)
@@ -305,8 +301,7 @@
                                     &key)
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add!-function)
@@ -317,8 +312,7 @@
                                     &key)
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
@@ -329,8 +323,7 @@
                                    &key)
   (declare (ignore all))
   (values location
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
@@ -341,8 +334,7 @@
                                    &key)
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
@@ -353,8 +345,7 @@
                                    &key)
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
@@ -365,8 +356,7 @@
   (declare (ignore all)
            (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values (cl-ds:force location)
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:update-function)
@@ -376,8 +366,7 @@
                                    &key)
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
-          cl-ds.common:empty-eager-modification-operation-status
-          nil))
+          cl-ds.common:empty-eager-modification-operation-status))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
@@ -387,8 +376,7 @@
                                    &key)
   (declare (ignore all))
   (values (cl-ds:force location)
-          cl-ds.common:empty-changed-eager-modification-operation-status
-          t))
+          cl-ds.common:empty-changed-eager-modification-operation-status))
 
 
 (flet ((locate-tuple (container bucket hash location)
@@ -425,8 +413,7 @@
               (if (null tuple)
                   cl-ds.common:empty-eager-modification-operation-status
                   (cl-ds.common:make-eager-modification-operation-status
-                   t old-value t))
-              t)))
+                   t old-value t)))))
 
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update-function)
@@ -439,15 +426,13 @@
            (old-value (and tuple (cl-ds.common:hash-dict-content-value tuple))))
       (if (null tuple)
           (values bucket
-                  cl-ds.common:empty-eager-modification-operation-status
-                  nil)
+                  cl-ds.common:empty-eager-modification-operation-status)
           (progn
             (setf (cl-ds.common:hash-dict-content-value tuple) hash
                   (cl-ds.common:hash-dict-content-value tuple) (cl-ds:force value))
             (values bucket
                     (cl-ds.common:make-eager-modification-operation-status
-                     t old-value t)
-                    t)))))
+                     t old-value t))))))
 
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add-function)
@@ -466,14 +451,12 @@
                         :hash hash)
                   bucket)
             (values bucket
-                    cl-ds.common:empty-changed-eager-modification-operation-status
-                    t))
+                    cl-ds.common:empty-changed-eager-modification-operation-status))
           (values bucket
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    old-value
-                   nil)
-                  nil)))))
+                   nil))))))
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-function)
@@ -502,12 +485,10 @@
           (values (or bucket 'cl-ds.meta:null-bucket)
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   (cl-ds.common:hash-dict-content-value tuple))
-                  t)))
+                   (cl-ds.common:hash-dict-content-value tuple)))))
       (finally
        (return (values (or bucket 'cl-ds.meta:null-bucket)
-                       cl-ds.common:empty-eager-modification-operation-status
-                       nil))))))
+                       cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if-function)
@@ -522,8 +503,7 @@
                      (space 0))
            (type fixnum hash)
            (ignore all))
-  (fbind ((comp (read-equal-fn container))
-          (condition condition-fn))
+  (fbind ((comp (read-equal-fn container)))
     (iterate
       (with result = nil)
       (for cell on bucket)
@@ -544,13 +524,12 @@
                  (values (or bucket 'cl-ds.meta:null-bucket)
                          (cl-ds.common:make-eager-modification-operation-status
                           t
-                          (cl-ds.common:hash-dict-content-value tuple))
-                         t)))
+                          (cl-ds.common:hash-dict-content-value tuple)
+                          t))))
              (finish)))
       (finally
        (return (values bucket
-                       cl-ds.common:empty-eager-modification-operation-status
-                       nil))))))
+                       cl-ds.common:empty-eager-modification-operation-status))))))
 
 
 (defclass lazy-box-dictionary (cl-ds.common:lazy-box-container lazy-dictionary)

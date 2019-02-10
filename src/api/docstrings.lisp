@@ -444,6 +444,11 @@
      :arguments ((status "instance of modification status class."))
      :returns "Value that was present in the container at location before operation took place. Returns NIL if location was free."))
 
+  (function changed
+    (:syntax "changed status => boolean"
+     :arguments ((status "instance of modification status class"))
+     :returns "T if operation changed the container."))
+
   (function found
     (:syntax "found status => boolean"
      :arguments ((status "instance of modification status class."))
