@@ -274,18 +274,16 @@
                    (for i = (ldb (byte cl-ds.common.rrb:+bit-count+
                                        byte-position)
                                  position))
-                   (let ((node node))
-                     (declare (type cl-ds.common.rrb:sparse-rrb-node node))
-                     (cl-ds.utils:cases ((listp node))
-                       (let* ((present (cl-ds.common.rrb:sparse-rrb-node-contains
-                                        node
-                                        i)))
-                         (unless present
-                           (return-from sparse-rrb-vector-at
-                             (values nil nil)))
-                         (setf node (cl-ds.common.rrb:sparse-nref
-                                     (the cl-ds.common.rrb:sparse-rrb-node node)
-                                     i)))))
+                   (cl-ds.utils:cases ((listp node))
+                     (let* ((present (cl-ds.common.rrb:sparse-rrb-node-contains
+                                      node
+                                      i)))
+                       (unless present
+                         (return-from sparse-rrb-vector-at
+                           (values nil nil)))
+                       (setf node (cl-ds.common.rrb:sparse-nref
+                                   (the cl-ds.common.rrb:sparse-rrb-node node)
+                                   i))))
                    (finally (return (values node t)))))))
           (t (let* ((offset (logandc2 position cl-ds.common.rrb:+tail-mask+))
                     (present (ldb-test (byte 1 offset)

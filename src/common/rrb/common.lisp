@@ -99,8 +99,7 @@
                  ,all-present t
                  ,length 1)
            (iterate
-             (declare (type fixnum i byte-position)
-                      (type cl-ds.common.rrb:sparse-rrb-node inner-node))
+             (declare (type fixnum i byte-position))
              (with inner-node = ,tree)
              (for byte-position
                   from (the fixnum (* cl-ds.common.rrb:+bit-count+
