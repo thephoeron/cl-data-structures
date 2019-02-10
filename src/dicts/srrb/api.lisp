@@ -1,11 +1,9 @@
 (in-package #:cl-data-structures.dicts.srrb)
 
 
-(defmethod cl-ds.meta:position-modification
-    ((operation cl-ds.meta:grow-function)
-     (structure transactional-sparse-rrb-vector)
-     container
-     position &rest all &key value)
+(defun transactional-sparse-rrb-vector-grow (operation structure
+                                             container position
+                                             all value)
   (declare (optimize (speed 3) (space 0) (debug 0))
            (type integer position))
   (check-type position integer)
@@ -56,13 +54,12 @@
                (values structure status))))))
 
 
-(defmethod cl-ds.meta:position-modification
-    ((operation cl-ds.meta:grow-function)
-     (structure mutable-sparse-rrb-vector)
-     container
-     position &rest all &key value)
+(defun mutable-sparse-rrb-vector-grow (operation structure
+                                       container position
+                                       all value)
   (declare (optimize (speed 3) (space 0) (debug 0))
            (type integer position))
+  (check-type position integer)
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -108,13 +105,12 @@
                (values structure status))))))
 
 
-(defmethod cl-ds.meta:position-modification
-    ((operation cl-ds.meta:grow-function)
-     (structure functional-sparse-rrb-vector)
-     container
-     position &rest all &key value)
+(defun functional-sparse-rrb-vector-grow (operation structure
+                                          container position
+                                          all value)
   (declare (optimize (speed 3) (space 0) (debug 0))
            (type integer position))
+  (check-type position integer)
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
@@ -160,6 +156,33 @@
                              (access-index-bound new-structure) index-bound))
                      (values new-structure status))
                    (values structure status)))))))
+
+
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure transactional-sparse-rrb-vector)
+     container
+     position &rest all &key value)
+  (transactional-sparse-rrb-vector-grow
+   operation structure container position all value))
+
+
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure mutable-sparse-rrb-vector)
+     container
+     position &rest all &key value)
+  (mutable-sparse-rrb-vector-grow
+   operation structure container position all value))
+
+
+(defmethod cl-ds.meta:position-modification
+    ((operation cl-ds.meta:grow-function)
+     (structure functional-sparse-rrb-vector)
+     container
+     position &rest all &key value)
+  (functional-sparse-rrb-vector-grow
+   operation structure container position all value))
 
 
 (defmethod cl-ds.meta:position-modification
