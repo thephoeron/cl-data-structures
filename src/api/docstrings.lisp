@@ -38,7 +38,7 @@
     (:description "Simple lazy evaluated value. Used to eleminate costly creation of elements in the container by update-if."))
 
   (function make-from-traversable
-    (:description "Creates container of CLASS with content from traversable."
+    (:description "Creates the container of CLASS with the content from the TRAVERSABLE. Additional arguments needed for construction of the new instance are passed as ARGUMENTS list."
      :returns "Instance of CLASS."
      :exceptional-situations "Varies, depending on the CLASS argument."
      :arguments ((class "Class of resulting container.")
@@ -46,7 +46,7 @@
                  (traversable "Data that should be put in the result container."))))
 
   (function near
-    (:description "Searches CONTAINER for elements that are at most MAXIMAL-DISTANCE away from item. Returns range of elements."
+    (:description "Searches the CONTAINER for elements that are at most a MAXIMAL-DISTANCE away from the ITEM. Returns a range of elements."
      :arguments ((container "Container searched for element.")
                  (item "Item to search around.")
                  (maximal-distance "Don't yield elements longer "))
@@ -103,10 +103,10 @@
   (function erase
     (:syntax "erase container location => new-instance status"
      :description
-     "Functional API: non-destructively remove a element at the LOCATION from the CONTAINER."
+     "Functional API: non-destructively remove an element at the LOCATION from the CONTAINER."
 
      :returns
-     ("Instance of the same type as CONTAINER, without value at LOCATION"
+     ("Instance of the same type as CONTAINER, without value at the LOCATION."
       "Modification status object.")
 
      :notes "This is the functional counterpart to the ERASE! function."
@@ -130,7 +130,7 @@
   (function erase-if
     (:syntax "erase-if container location condition => new-instance status"
      :description
-     "Functional API: non-destructively remove element at LOCATION from the CONTAINER, only when CONDITION function returns true. CONDITION will be called with location that matches according to comparsion function used to construct container, and with a value."
+     "Functional API: non-destructively removes an element at LOCATION from the CONTAINER, but only when the CONDITION function returns true. The CONDITION will be called with location that matches according to comparsion function used to construct container, and with a value."
 
      :returns
      ("Instance of the same type as CONTAINER, without value at LOCATION"
@@ -263,14 +263,14 @@
 
   (function update-if
     (:description
-     "Functional API: if there is value at LOCATION in the CONTAINER and supplied CONDITION-FN passes when called with present value return new instance with NEW-VALUE at LOCATION."
+     "Functional API: if there is a value at the LOCATION in the CONTAINER and the supplied CONDITION-FN returns true when called with the value, return new instance with NEW-VALUE at the LOCATION. Otherwise returns the same CONTAINER."
 
      :syntax
      "update-if container location new-value CONDITION-FN => new-instance status"
 
      :returns
-     ("New container, with updated value at LOCATION if UPDATE took place"
-      "Modification status object")
+     ("A new container, with the updated value at the LOCATION if UPDATE took place."
+      "The modification status object")
 
      :arguments
      ((container "The instance that shall be transformed.")
@@ -281,7 +281,7 @@
 
   (function update-if!
     (:description
-     "Mutable API: if there is value at LOCATION in the CONTAINER and supplied CONDITION-FN passes when called with present value sets LOCATION and returns container."
+     "Mutable API: if there is a value at the LOCATION in the CONTAINER and the supplied CONDITION-FN returns true when called with the present value, set the LOCATION to the new value."
 
      :syntax
      "update-if! container location new-value CONDITION-FN => container status"
