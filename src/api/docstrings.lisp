@@ -321,6 +321,9 @@
      :syntax
      "become-functional container => functional-container"
 
+     :see-also
+     (become-transactional become-mutable)
+
      :returns
      "A instance implementing functional API. Content of returned instance is identical to the content of input CONTAINER."
 
@@ -328,7 +331,7 @@
      (("container" "Container that we want to transform into functional container."))
 
      :notes
-     ("Side effects from destructive operations on CONTAINER may leak into returned instance."
+     ("Side effects from the destructive operations on the CONTAINER may leak into returned instance."
       "Not all containers implement this function.")
 
      :side-effects
@@ -354,19 +357,29 @@
      ("Side effects from destructive operations on CONTAINER may leak into returned instance."
       "Not all containers implement this function.")
 
+     :see-also
+     (become-transactional become-functional)
+
      :side-effects
      "May vary, depending on type of the CONTAINER. Also, some (or all) parts of a internal representation can be shared between both the CONTAINER and a returned instance. Side effects from the mutable CONTAINER may leak into the returned instance."))
 
   (function replica
     (:description
-     "Creates new instance of transactional container from existing transactional CONTAINER. By behaves like BECOME-TRANSACTIONAL, but \
-is implemented only fro transactional containers. Furthermore, optional ISOLATE argument will prevent side effects from the original CONTAINER to leak into the new container."
+     "Creates a new instance of transactional container from the existing transactional CONTAINER. Therefore: behaves like BECOME-TRANSACTIONAL, but is implemented only for the transactional containers. Furthermore: when ISOLATE is true, prevents side effects from the original CONTAINER to leak into the new container."
 
      :syntax
      "replica transactioanl-container-container boolean => transactional-container"
 
      :returns
      "instance implementing mutable API. Content of returned instance is identical to the content of the input CONTAINER."
+
+     :side-effects
+     "May very, depending on the type of the CONTAINER."
+
+     :notes
+     ("(replica container t) can be understood as a creation of two new transactional instances and discarding the original CONTAINER."
+      "Because of the above, total cost of creating isolated replica and mutating both the original and the replica can eventually outgrow cost of simply creating the clone."
+      "It is adviced to use replica for the sake explicitly when working with transactional instances.")
 
      :arguments
      ((container "Container that will be replicated.")
@@ -386,6 +399,9 @@ is implemented only fro transactional containers. Furthermore, optional ISOLATE 
 
      :arguments
      ((container "Container that we want to transform into the transactional container."))
+
+     :see-also
+     (become-functional become-mutable replica)
 
      :notes
      ("Side effects from destructive operations on CONTAINER may leak into returned instance."
@@ -417,6 +433,7 @@ is implemented only fro transactional containers. Furthermore, optional ISOLATE 
   (function mutablep
     (:syntax  ("mutablep mutable-container => t"
                "mutablep functional-container => nil")
+
      :arguments ((container "Any subclass of fundamental-container"))
 
      :examples
