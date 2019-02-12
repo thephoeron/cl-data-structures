@@ -85,9 +85,10 @@
 (-> binary-search (t vector (-> (t t) t) (-> (t t) t) &key (:key function)) t)
 (defun binary-search (element vector lower test &key (key #'identity))
   (let ((lower-bound (lower-bound vector element lower :key key)))
-    (when (and (not (eql lower-bound (length vector)))
-               (funcall test element (funcall key (aref vector lower-bound))))
-      (aref vector lower-bound))))
+    (if (and (not (eql lower-bound (length vector)))
+             (funcall test element (funcall key (aref vector lower-bound))))
+        (values (aref vector lower-bound) t)
+        (values nil nil))))
 
 
 (defun on-ordered-intersection (function first-order second-order
