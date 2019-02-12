@@ -82,10 +82,16 @@
 
 
 (declaim (inline binary-search))
-(-> binary-search (t vector (-> (t t) t) (-> (t t) t) &key (:key function)) t)
-(defun binary-search (element vector lower test &key (key #'identity))
-  (let ((lower-bound (lower-bound vector element lower :key key)))
-    (if (and (not (eql lower-bound (length vector)))
+(-> binary-search (t vector (-> (t t) t) (-> (t t) t)
+                     &key (:key function) (:start fixnum) (:end integer))
+    (values t boolean))
+(defun binary-search (element vector lower test
+                      &key (key #'identity) (start 0) (end (length vector)))
+  (let ((lower-bound (lower-bound vector element lower
+                                  :key key
+                                  :start start
+                                  :end end)))
+    (if (and (not (eql lower-bound end))
              (funcall test element (funcall key (aref vector lower-bound))))
         (values (aref vector lower-bound) t)
         (values nil nil))))
