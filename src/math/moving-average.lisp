@@ -33,30 +33,39 @@
 
 
 (defmethod cl-ds:peek-front ((range moving-average-range))
-  (let* ((count (~> range access-count 1+))
-         (key (~> range read-key))
-         (sum (+ (access-sum range)
-                 (funcall key (call-next-method)))))
-    (/ sum count)))
+  (bind (((:values v more) (call-next-method)))
+    (if (no more)
+        (values v nil)
+        (let* ((count (~> range access-count 1+))
+               (key (~> range read-key))
+               (sum (+ (access-sum range)
+                       (funcall key v))))
+          (values (/ sum count)
+                  t)))))
 
 
 (defmethod cl-ds:consume-front ((range moving-average-range))
-  (let* ((count (~> range access-count 1+))
-         (key (~> range read-key))
-         (value (funcall key (call-next-method)))
-         (sum (+ (access-sum range)
-                 value)))
-    (setf (access-sum range) sum)
-    (incf (access-count range))
-    (/ sum count)))
+  (bind (((:values v more) (call-next-method)))
+    (if (no more)
+        (values v nil)
+        (let* ((count (~> range access-count 1+))
+               (key (~> range read-key))
+               (value (funcall key v))
+               (sum (+ (access-sum range)
+                       value)))
+          (setf (access-sum range) sum)
+          (incf (access-count range))
+          (values (/ sum count)
+                  t)))))
 
 
 (defmethod cl-ds:traverse ((range moving-average-range) function)
   (let* ((key (read-key range)))
     (call-next-method range
                       (lambda (elt &aux (value (funcall key elt)))
-                        (/ (incf (access-sum range) value)
-                           (incf (access-count range)))))))
+                        (funcall function
+                                 (/ (incf (access-sum range) value)
+                                    (incf (access-count range))))))))
 
 
 (defmethod cl-ds:across ((range moving-average-range) function)
@@ -65,8 +74,9 @@
          (count (access-count range)))
     (call-next-method range
                       (lambda (elt &aux (value (funcall key elt)))
-                        (/ (incf sum value)
-                           (incf count range))))))
+                        (funcall function
+                                 (/ (incf sum value)
+                                    (incf count range)))))))
 
 
 (defclass moving-average-function (cl-ds.alg.meta:layer-function)
