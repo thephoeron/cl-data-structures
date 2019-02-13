@@ -235,6 +235,7 @@
                              (:file "statistical-summary")
                              (:file "chi-squared")
                              (:file "bootstrap")
+                             (:file "moving-average")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "chi-squared-tests")

@@ -10,10 +10,15 @@
                  (key "Function used to extract value from element that shall be passed to average function."))))
 
   (function median-absolute-deviation
-    (:description "Calculates MAD estimator for range."
+    (:description "Calculates MAD estimator for element in the RANGE."
      :arguments ((range "Object to aggregate")
                  (key "Function used to extract values from elements."))
      :notes "Roboost scale estimator."))
+
+  (function moving-average
+    (:description "Calculates moving-average for elements in the RANGE."
+     :arguments ((range "Object to process.")
+                 (key "Function used to extract values from the RANGE."))))
 
   (function hodges-lehman-estimator
     (:description "Calculates Hodges-Lehman estimator for range."

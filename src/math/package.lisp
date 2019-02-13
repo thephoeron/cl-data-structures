@@ -15,6 +15,7 @@
    #:hodges-lehmann-estimator
    #:median-absolute-deviation
    #:moments
+   #:moving-average
    #:mutual-information
    #:mutual-information-matrix
    #:optimal-split-point
