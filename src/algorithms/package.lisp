@@ -66,6 +66,8 @@
    #:forward-proxy-range
    #:gather-prior-states
    #:group-by
+   #:cumulative-accumulate
+   #:cumulative-accumulate-range
    #:group-by-function
    #:hash-join
    #:latch

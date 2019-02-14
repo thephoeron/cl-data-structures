@@ -236,6 +236,7 @@
                              (:file "chi-squared")
                              (:file "bootstrap")
                              (:file "moving-average")
+                             (:file "cumulative-accumulate")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "chi-squared-tests")
