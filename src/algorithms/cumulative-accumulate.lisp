@@ -67,7 +67,9 @@
                        (funcall function state))))
            (setf (access-state range) next-state)
            (funcall result next-state))
-         v)
+         (let ((r (funcall key v)))
+           (setf (slot-value range '%state) r)
+           r))
      t)))
 
 
@@ -87,7 +89,6 @@
 
 (defmethod cl-ds:across ((range cumulative-accumulate-range) function)
   (let* ((state (apply #'make 'cumulative-state
-                       :original-range (read-original-range range)
                        :result (read-result range)
                        :function (read-function range)
                        :key (read-key range)
