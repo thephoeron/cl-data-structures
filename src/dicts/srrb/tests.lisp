@@ -6,13 +6,21 @@
 
 (plan 382789)
 
+
+(def ok-status (cl-ds.common:make-eager-modification-operation-status
+                t
+                :ok
+                t))
+
+
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
                                     bucket
                                     location
                                     &rest all)
   (declare (ignore all))
-  (values location :ok t))
+  (values location
+          ok-status))
 
 (defmethod cl-ds.meta:shrink-bucket! ((opreation cl-ds.meta:shrink-function)
                                       (container (eql :mock))
@@ -20,7 +28,7 @@
                                       location
                                       &rest all)
   (declare (ignore all))
-  (values cl-ds.meta:null-bucket :ok t))
+  (values cl-ds.meta:null-bucket ok-status))
 
 (defmethod cl-ds.meta:shrink-bucket ((opreation cl-ds.meta:shrink-function)
                                      (container (eql :mock))
@@ -28,7 +36,7 @@
                                      location
                                      &rest all)
   (declare (ignore all))
-  (values cl-ds.meta:null-bucket :ok t))
+  (values cl-ds.meta:null-bucket ok-status))
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:grow-function)
                                    (container (eql :mock))
@@ -36,14 +44,14 @@
                                    location
                                    &rest all)
   (declare (ignore all))
-  (values location :ok t))
+  (values location ok-status))
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:grow-function)
                                    (container (eql :mock))
                                    location
                                    &rest all)
   (declare (ignore all))
-  (values location :ok t))
+  (values location ok-status))
 
 (bind ((vector (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector
                               :tail nil))
@@ -52,7 +60,7 @@
        (tail (cl-ds.dicts.srrb::access-tail vector))
        (tail-mask (cl-ds.dicts.srrb::access-tail-mask vector)))
   (is structure vector)
-  (is status :ok)
+  (is status ok-status)
   (is (aref tail 5) 5)
   (is tail-mask (ash 1 5)))
 
@@ -136,7 +144,7 @@
     (for (values structure status) = (cl-ds.meta:position-modification
                                       #'cl-ds:erase! container :mock position))
     (is structure container)
-    (is status :ok)
+    (is status ok-status)
     (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
@@ -306,7 +314,7 @@
     (for (values structure status) = (cl-ds.meta:position-modification
                                       #'cl-ds:erase container :mock position))
     (setf container structure)
-    (is status :ok)
+    (is status ok-status)
     (is (nth-value 1 (cl-ds:at container position)) nil)
     (cl-ds.utils:swapop input-data 0)
     (iterate
