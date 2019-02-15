@@ -93,6 +93,10 @@
                                     :condition-fn condition-fn))
 
 
+(defmethod cl-ds:erase! ((container mutable-sparse-vector) location)
+  (cl-ds.meta:position-modification #'cl-ds:erase! container container location))
+
+
 (defmethod cl-ds:insert ((container functional-sparse-vector) location new-value)
   (cl-ds.meta:position-modification #'cl-ds:insert container container location :value new-value))
 
@@ -109,6 +113,10 @@
   (cl-ds.meta:position-modification #'cl-ds:update-if container container location
                                     :value new-value
                                     :condition-fn condition-fn))
+
+
+(defmethod cl-ds:erase ((container functional-sparse-vector) location)
+  (cl-ds.meta:position-modification #'cl-ds:erase container container location))
 
 
 (defmethod cl-ds:add! ((container mutable-dictionary) location new-value)

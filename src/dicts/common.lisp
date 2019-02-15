@@ -315,6 +315,32 @@
           cl-ds.common:empty-eager-modification-operation-status))
 
 
+(defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
+                                     (container fundamental-sparse-vector)
+                                     bucket
+                                     location
+                                     &rest all
+                                     &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket
+                                                                 t)))
+
+
+(defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase!-function)
+                                      (container fundamental-sparse-vector)
+                                      bucket
+                                      location
+                                      &rest all
+                                      &key)
+  (declare (ignore all))
+  (values cl-ds.meta:null-bucket
+          (cl-ds.common:make-eager-modification-operation-status t
+                                                                 bucket
+                                                                 t)))
+
+
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
                                    (container fundamental-sparse-vector)
                                    bucket
