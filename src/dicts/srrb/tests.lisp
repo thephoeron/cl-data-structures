@@ -4,7 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (in-package :sparse-rrb-vector-tests)
 
-(plan 382789)
+(plan 382792)
 
 
 (def ok-status (cl-ds.common:make-eager-modification-operation-status
@@ -19,8 +19,8 @@
                                     location
                                     &rest all)
   (declare (ignore all))
-  (values location
-          ok-status))
+  (assert location)
+  (values location ok-status))
 
 (defmethod cl-ds.meta:shrink-bucket! ((opreation cl-ds.meta:shrink-function)
                                       (container (eql :mock))
@@ -122,6 +122,18 @@
     (iterate
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))
+
+
+(let* ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (declare (optimize (debug 3)))
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    0 :value 1)
+  (is (cl-ds:at container 0) 1)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    456 :value 2)
+  (is (cl-ds:at container 0) 1)
+  (is (cl-ds:at container 456) 2))
+
 
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)

@@ -377,7 +377,7 @@
               (with node = new-root)
               (with byte-position = (* cl-ds.common.rrb:+bit-count+
                                        new-shift))
-              (repeat shift-difference)
+              (repeat (1- shift-difference))
               (for i = (ldb (byte cl-ds.common.rrb:+bit-count+ byte-position)
                             highest-current))
               (setf node (insert-new-node! node i ownership-tag))
@@ -409,10 +409,8 @@
 (-> shift-for-position (fixnum) shift)
 (defun shift-for-position (position)
   (~> position
-      1-
       integer-length
-      (/ cl-ds.common.rrb:+bit-count+)
-      ceiling
+      (ceiling cl-ds.common.rrb:+bit-count+)
       1-
       (max 0)))
 
@@ -420,7 +418,7 @@
 (-> adjust-tree-to-new-size! (fundamental-sparse-rrb-vector fixnum t)
     fundamental-sparse-rrb-vector)
 (defun adjust-tree-to-new-size! (structure position ownership-tag)
-  (let ((new-shift (shift-for-position position)))
+  (let ((new-shift (shift-for-position (1- position))))
     (unless (eql new-shift (access-shift structure))
       (let ((new-root (make-adjusted-tree structure position new-shift
                                           ownership-tag)))
