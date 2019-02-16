@@ -24,4 +24,5 @@
    #:chi-squared
    #:standard-deviation
    #:statistical-summary
+   #:hidden-markov-model-generator
    #:variance))
