@@ -278,15 +278,13 @@
   (declare (type (simple-array single-float (* *)) a b result)
            (optimize (speed 3)))
   (ensure-functionf fn)
-  (let ((dims-a (array-dimensions a))
-        (dims-b (array-dimensions b)))
-    (assert (equal dims-a dims-b))
-    (loop for i from 0 below (array-total-size a) do
-      (setf (row-major-aref result i)
-            (funcall fn
-                     (row-major-aref a i)
-                     (row-major-aref b i))))
-    result))
+  (assert (equal (array-dimensions a) (array-dimensions b)))
+  (loop for i from 0 below (array-total-size a) do
+    (setf (row-major-aref result i)
+          (funcall fn
+                   (row-major-aref a i)
+                   (row-major-aref b i))))
+  result)
 
 
 (defmacro define-element-wise-operations (&body operations)
