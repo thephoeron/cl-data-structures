@@ -20,11 +20,10 @@
    #:cases
    #:cond+
    #:cond-compare
+   #:copy-slots
    #:copy-without
    #:cycle-over-address
    #:define-list-of-slots
-   #:copy-slots
-   #:scan
    #:draw-random-vector
    #:draw-sample-vector
    #:each-in-matrix
@@ -48,6 +47,13 @@
    #:lolol
    #:lower-bound
    #:lparallel-future
+   #:m*
+   #:m+
+   #:m-
+   #:m-dot
+   #:m-transpose
+   #:m/
+   #:m^
    #:make-distance-matrix-from-vector
    #:make-future-carousel
    #:make-half-matrix
@@ -73,6 +79,7 @@
    #:read-size
    #:rebind
    #:remove-fill-pointer
+   #:scan
    #:select-top
    #:skip-vector-without
    #:sref
@@ -84,12 +91,8 @@
    #:try-find-cell
    #:try-remove
    #:unfold-table
+   #:with-keys
    #:with-rebind
    #:with-slots-for
-   #:with-keys
    #:with-vectors
-   #:m+
-   #:m-
-   #:m*
-   #:m/
-   #:m^))
+   ))

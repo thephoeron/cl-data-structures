@@ -274,30 +274,69 @@
 (declaim (inline m*))
 (declaim (inline m/))
 (declaim (inline m^))
-(defun element-wise-matrix (fn a b)
-  (declare (type (simple-array single-float (* *)) a b)
+(defun element-wise-matrix (fn a b &optional (result (copy-array a)))
+  (declare (type (simple-array single-float (* *)) a b result)
            (optimize (speed 3)))
   (ensure-functionf fn)
   (let ((dims-a (array-dimensions a))
         (dims-b (array-dimensions b)))
     (assert (equal dims-a dims-b))
-    (let* ((len (array-total-size a))
-           (c (make-array dims-a
-                          :initial-element 0.0
-                          :element-type 'single-float)))
-      (declare (type (simple-array single-float (* *)) c))
-      (loop for i from 0 below len do
-        (setf (row-major-aref c i)
-              (funcall fn
-                       (row-major-aref a i)
-                       (row-major-aref b i))))
-      c)))
+    (loop for i from 0 below (array-total-size a) do
+      (setf (row-major-aref result i)
+            (funcall fn
+                     (row-major-aref a i)
+                     (row-major-aref b i))))
+    result))
 
-(defun m+ (a b) (element-wise-matrix #'+    a b))
-(defun m- (a b) (element-wise-matrix #'-    a b))
-(defun m* (a b) (element-wise-matrix #'*    a b))
-(defun m/ (a b) (element-wise-matrix #'/    a b))
-(defun m^ (a b) (element-wise-matrix #'expt a b))
+
+(defmacro define-element-wise-operations (&body operations)
+  `(progn
+     ,@(iterate
+         (for (operand function) in operations)
+         (collecting `(defun ,operand (a b &optional (result (copy-array a)))
+                        (declare (type (simple-array single-float (* *)) a b result)
+                                 (optimize (speed 3)))
+                        (element-wise-matrix ,function a b result))))))
+
+
+(define-element-wise-operations
+  (m+ #'+)
+  (m- #'-)
+  (m* #'-)
+  (m/ #'-)
+  (m^ #'-))
+
+
+(declaim (inline m-transpose))
+(defun m-transpose (a &optional (result (copy-array a)))
+  (declare (type (simple-array * (* *)) a result)
+           (optimize (speed 3)))
+  (let* ((m (array-dimension a 0))
+         (n (array-dimension a 1)))
+    (loop for i from 0 below m do
+      (loop for j from 0 below n do
+        (setf (aref result j i)
+              (aref a i j))))
+    result))
+
+
+(declaim (inline m-dot))
+(defun m-dot (a b &optional (result (make-array `(,(array-dimension a 0)
+                                                  ,(array-dimension b 1))
+                                                :element-type 'single-float
+                                                :initial-element 0.0)))
+  (declare (type (simple-array single-float (* *)) a b result)
+           (optimize (speed 3)))
+  (let* ((m (array-dimension a 0))
+         (n (array-dimension a 1))
+         (l (array-dimension b 1)))
+    (loop for i from 0 below m do
+      (loop for k from 0 below l do
+        (setf (aref result i k)
+              (loop for j from 0 below n
+                    sum (* (aref a i j)
+                           (aref b j k))))))
+    result))
 
 
 (defun remove-fill-pointer (vector)
