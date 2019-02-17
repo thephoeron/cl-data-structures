@@ -268,6 +268,12 @@
 ;;                                        0 64))
 
 
+(declaim (inline element-wise-matrix))
+(declaim (inline m+))
+(declaim (inline m-))
+(declaim (inline m*))
+(declaim (inline m/))
+(declaim (inline m^))
 (defun element-wise-matrix (fn a b)
   (declare (type (array single-float (* *)) a b))
   (let ((dims-a (array-dimensions a))
