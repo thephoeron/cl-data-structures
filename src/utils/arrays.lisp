@@ -266,3 +266,106 @@
 ;;                                                         (map-into (curry #'random 5000))
 ;;                                                         (sort #'<)))
 ;;                                        0 64))
+
+
+(defun element-wise-matrix (fn a b)
+  (declare (type (array single-float (* *)) a b))
+  (let ((dims-a (array-dimensions a))
+        (dims-b (array-dimensions b)))
+    (assert (equal dims-a dims-b))
+    (let* ((len (array-total-size a))
+           (c (make-array dims-a
+                          :initial-element 0.0
+                          :element-type 'single-float)))
+      (loop for i from 0 to (1- len) do
+        (setf (row-major-aref C i)
+              (funcall fn
+                       (row-major-aref a i)
+                       (row-major-aref b i))))
+      c)))
+
+(defun m+ (a b) (element-wise-matrix #'+    a b))
+(defun m- (a b) (element-wise-matrix #'-    a b))
+(defun m* (a b) (element-wise-matrix #'*    a b))
+(defun m/ (a b) (element-wise-matrix #'/    a b))
+(defun m^ (a b) (element-wise-matrix #'expt a b))
+
+
+(defun remove-fill-pointer (vector)
+  (check-type vector vector)
+  (if (array-has-fill-pointer-p vector)
+      (map `(vector ,(array-element-type vector)) #'identity vector)
+      vector))
+
+
+(defun select-top (vector count predicate &key (key #'identity))
+  (declare (type non-negative-fixnum count)
+           (optimize (speed 3) (safety 1)
+                     (space 0) (debug 0)))
+  (check-type vector vector)
+  (ensure-functionf predicate key)
+  (nest
+   (cases ((eq key #'identity)
+           (simple-vector-p vector)
+           (:variant
+            (typep vector '(vector fixnum))
+            (typep vector '(vector non-negative-fixnum))
+            (typep vector '(vector single-float))
+            (typep vector '(vector double-float)))
+           (:variant
+            (eq predicate #'>)
+            (eq predicate #'<))))
+   (let* ((length (length vector))
+          (count (min length count))
+          (result (make-array count
+                              :element-type (array-element-type vector)))
+          (heap-size length))
+     (declare (type fixnum heap-size count length)))
+   (labels ((compare (a b)
+              (declare (type fixnum a b))
+              (funcall predicate
+                       (funcall key (aref vector a))
+                       (funcall key (aref vector b))))
+            (left (i)
+              (declare (type fixnum i))
+              (the fixnum (1+ (the fixnum (* 2 i)))))
+            (right (i)
+              (declare (type fixnum i))
+              (the fixnum (+ 2 (the fixnum (* 2 i)))))
+            (heapify (i)
+              (declare (type fixnum i))
+              (iterate
+                (declare (type fixnum l r smallest))
+                (for l = (left i))
+                (for r = (right i))
+                (for smallest = i)
+                (when (and (< l heap-size)
+                           (compare l i))
+                  (setf smallest l))
+                (when (and (< r heap-size)
+                           (compare r smallest))
+                  (setf smallest r))
+                (if (eql smallest i)
+                    (leave)
+                    (psetf i smallest
+                           (aref vector smallest) (aref vector i)
+                           (aref vector i) (aref vector smallest)))))
+            (extract-min ()
+              (when (> heap-size 1)
+                (setf (aref vector 0)
+                      (aref vector (1- heap-size)))
+                (heapify 0))
+              (decf heap-size)))
+     (declare (inline extract-min heapify
+                      right left compare))
+     (iterate
+       (declare (type fixnum i start))
+       (with start = (truncate (1- heap-size) 2))
+       (for i from start downto 0)
+       (heapify i))
+     (iterate
+       (declare (type fixnum i))
+       (for i from 0 below count)
+       (setf (aref result i) (aref vector 0))
+       (extract-min))
+     result)))

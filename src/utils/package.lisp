@@ -87,4 +87,9 @@
    #:with-rebind
    #:with-slots-for
    #:with-keys
-   #:with-vectors))
+   #:with-vectors
+   #:m+
+   #:m-
+   #:m*
+   #:m/
+   #:m^))
