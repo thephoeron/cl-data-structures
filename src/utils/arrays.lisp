@@ -311,8 +311,8 @@
 (defun m-transpose (a &optional (result (copy-array a)))
   (declare (type (simple-array * (* *)) a result)
            (optimize (speed 3)))
-  (let* ((m (array-dimension a 0))
-         (n (array-dimension a 1)))
+  (let ((m (array-dimension a 0))
+        (n (array-dimension a 1)))
     (loop for i from 0 below m do
       (loop for j from 0 below n do
         (setf (aref result j i)
@@ -327,9 +327,9 @@
                                                 :initial-element 0.0)))
   (declare (type (simple-array single-float (* *)) a b result)
            (optimize (speed 3)))
-  (let* ((m (array-dimension a 0))
-         (n (array-dimension a 1))
-         (l (array-dimension b 1)))
+  (let ((m (array-dimension a 0))
+        (n (array-dimension a 1))
+        (l (array-dimension b 1)))
     (loop for i from 0 below m do
       (loop for k from 0 below l do
         (setf (aref result i k)
