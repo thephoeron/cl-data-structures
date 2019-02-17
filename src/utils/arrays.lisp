@@ -286,7 +286,7 @@
                           :initial-element 0.0
                           :element-type 'single-float)))
       (declare (type (simple-array single-float (* *)) c))
-      (loop for i from 0 to (1- len) do
+      (loop for i from 0 below len do
         (setf (row-major-aref C i)
               (funcall fn
                        (row-major-aref a i)
