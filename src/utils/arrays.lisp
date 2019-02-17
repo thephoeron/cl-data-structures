@@ -275,7 +275,9 @@
 (declaim (inline m/))
 (declaim (inline m^))
 (defun element-wise-matrix (fn a b)
-  (declare (type (array single-float (* *)) a b))
+  (declare (type (simple-array single-float (* *)) a b)
+           (optimize (speed 3)))
+  (ensure-functionf fn)
   (let ((dims-a (array-dimensions a))
         (dims-b (array-dimensions b)))
     (assert (equal dims-a dims-b))
@@ -283,6 +285,7 @@
            (c (make-array dims-a
                           :initial-element 0.0
                           :element-type 'single-float)))
+      (declare (type (simple-array single-float (* *)) c))
       (loop for i from 0 to (1- len) do
         (setf (row-major-aref C i)
               (funcall fn
