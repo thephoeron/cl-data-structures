@@ -94,7 +94,7 @@
   (hash-table (make-hash-table) :type hash-table))
 
 
-(defun insert (table element)
+(defun insert (element table)
   (declare (type table table))
   (let* ((vector (funcall (table-key table) element))
          (bucket (~> table table-args (projection-bucket vector)))
