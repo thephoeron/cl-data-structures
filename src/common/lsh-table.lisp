@@ -10,34 +10,38 @@
 (in-package #:cl-data-structures.common.lsh)
 
 
-(defun generate-projection (row-count column-count gauss-min gauss-max)
-  (lret ((result (make-array `(,row-count ,column-count)
-                             :initial-element 0.0
-                             :element-type 'single-float)))
-    (iterate
-      (for i from 0 below (array-total-size result))
-      (setf (row-major-aref result i) (alexandria:gaussian-random
-                                       gauss-min
-                                       gauss-max)))))
+(defun vector-dot-product (a b)
+  (declare (type (vector single-float) a b))
+  (iterate
+    (declare (type single-float ea eb))
+    (for ea in-vector a)
+    (for eb in-vector b)
+    (sum (* ea eb))))
 
 
-(defun get-random-projection-lsh (vector projection)
-  (declare (type (vector single-float) vector)
-           (type (simple-array single-float (* *)) projection))
-  (let* ((projection-size (array-dimension projection 0))
-         (column-count (array-dimension projection 1))
-         (hashes-size (floor projection-size 32))
-         (hashes (make-array hashes-size :element-type 'fixnum
-                             :initial-element 0)))
-    (iterate
-      (for row from 0 below projection-size)
-      (for dot-value = (iterate
-                         (for column from 0 below column-count)
-                         (sum (* (aref vector column)
-                                 (aref projection row column)))))
-      (when (>= dot-value 0)
-        (bind (((:values index bit) (floor row 32)))
-          (setf (ldb (byte 1 bit) (aref hashes index)) 1))))
-    (reduce (lambda (prev next)
-              (logior (ash prev 32) next))
-            hashes)))
+(defun project-point (a b p)
+  (bind ((ap (map '(vector single-float) #'- p a))
+         (ab (map '(vector single-float) #'- b a))
+         (dot-ap-ab (vector-dot-product ap ab))
+         (dot-ab-ab (vector-dot-product ab ab))
+         (ratio (/ dot-ap-ab dot-ab-ab))
+         (result (map '(vector single-float)
+                      (lambda (a ab)
+                        (+ a (* ab ratio)))
+                      a
+                      ab)))
+    result))
+
+
+(defun distance (point1 point2)
+  (declare (type (vector single-float) point1 point2)
+           (optimize (speed 3)))
+  (let ((sum 0.0))
+    (declare (type (single-float 0.0) sum))
+    (map nil
+         (lambda (a b &aux (diff (- a b)))
+           (declare (type single-float diff a b))
+           (incf sum (expt diff 2)))
+         point1
+         point2)
+    (sqrt sum)))
