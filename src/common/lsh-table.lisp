@@ -95,6 +95,7 @@
 
 
 (defun insert (table element)
+  (declare (type table table))
   (let* ((vector (funcall (table-key table) element))
          (bucket (~> table table-args (projection-bucket vector)))
          (hash-table (table-hash-table table))
