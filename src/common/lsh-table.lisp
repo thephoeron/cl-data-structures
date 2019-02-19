@@ -90,14 +90,12 @@
 
 (defstruct table
   (args (make-hash-function-args) :type hash-function-args)
-  (key #'identity :type function)
   (hash-table (make-hash-table) :type hash-table))
 
 
-(defun insert (element table)
+(defun insert (vector element table)
   (declare (type table table))
-  (let* ((vector (funcall (table-key table) element))
-         (bucket (~> table table-args (projection-bucket vector)))
+  (let* ((bucket (~> table table-args (projection-bucket vector)))
          (hash-table (table-hash-table table))
          (content #1=(gethash bucket hash-table)))
     (if (null content)
@@ -118,3 +116,16 @@
    (%vector-length :initarg :vector-length
                    :type fixnum
                    :reader read-vector-length)))
+
+
+(defun insert-into-euclid-distance-lsh-table (table element)
+  (let* ((key (read-key table))
+         (vector (funcall key element))
+         (vector-length (read-vector-length table)))
+    (check-type vector (vector single-float))
+    (unless (= (length vector) vector-length)
+      (error 'cl-ds:dimensionality-error
+             :bounds vector-length
+             :text "Vector has invalid length."
+             :value (length vector)))
+    (map nil (curry #'insert vector element) (read-tables table))))
