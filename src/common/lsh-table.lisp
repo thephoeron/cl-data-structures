@@ -146,6 +146,7 @@
              :bounds vector-length
              :text "Vector has invalid length."
              :value (length vector)))
-    (~>> (read-tables table)
+    (~>> table
+         read-tables
          (map 'vector (curry #'find-bucket vector))
          (delete-if #'null))))
