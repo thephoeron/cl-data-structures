@@ -10,6 +10,17 @@
 (in-package #:cl-data-structures.common.lsh)
 
 
+(defun generate-projection (row-count column-count gauss-min gauss-max)
+  (lret ((result (make-array `(,row-count ,column-count)
+                             :initial-element 0.0
+                             :element-type 'single-float)))
+    (iterate
+      (for i from 0 below (array-total-size result))
+      (setf (row-major-aref result i) (alexandria:gaussian-random
+                                       gauss-min
+                                       gauss-max)))))
+
+
 (defun get-random-projection-lsh (vector projection)
   (declare (type (vector single-float) vector)
            (type (simple-array single-float (* *)) projection))
