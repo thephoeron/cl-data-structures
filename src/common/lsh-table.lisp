@@ -67,3 +67,22 @@
   (declare (type single-float distance span)
            (optimize (speed 3)))
   (floor distance span))
+
+
+(defstruct hash-function-args
+  (point-1 (make-array 0 :element-type 'single-float)
+   :type (simple-array single-float (*)))
+  (point-2 (make-array 0 :element-type 'single-float)
+   :type (simple-array single-float (*)))
+  (span 0.0 :type single-float))
+
+
+(defun projection-bucket (args vector)
+  (declare (type (vector single-float) vector)
+           (type hash-function-args args))
+  (let ((point-1 (hash-function-args-point-1 args))
+        (point-2 (hash-function-args-point-2 args))
+        (span (hash-function-args-span args)))
+    (~> (project-point point-1 point-2 vector)
+        (distance point-1)
+        (bucket span))))
