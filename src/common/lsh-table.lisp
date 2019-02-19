@@ -104,3 +104,17 @@
         (setf #1# (vect element))
         (vector-push-extend element content))
     element))
+
+
+(defclass euclid-distance-lsh-table ()
+  ((%tables :initarg :tables
+            :type vector
+            :reader read-tables
+            :initform (vect))
+   (%key :initarg :key
+         :type function
+         :reader read-key
+         :initform #'identity)
+   (%vector-length :initarg :vector-length
+                   :type fixnum
+                   :reader read-vector-length)))
