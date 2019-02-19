@@ -45,3 +45,9 @@
          point1
          point2)
     (sqrt sum)))
+
+
+(defun bucket (distance span)
+  (declare (type single-float distance span)
+           (optimize (speed 3)))
+  (floor distance span))
