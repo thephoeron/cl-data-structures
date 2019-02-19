@@ -118,6 +118,10 @@
          :type function
          :reader read-key
          :initform #'identity)
+   (%size :initarg :size
+          :initform 0
+          :reader cl-ds:size
+          :accessor access-size)
    (%vector-length :initarg :vector-length
                    :type fixnum
                    :reader read-vector-length)))
@@ -134,6 +138,7 @@
              :bounds vector-length
              :text "Vector has invalid length."
              :value (length vector)))
+    (incf (access-size table))
     (map nil (curry #'insert vector element) (read-tables table))))
 
 
