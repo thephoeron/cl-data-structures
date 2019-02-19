@@ -26,7 +26,7 @@
            (type (simple-array single-float (* *)) projection))
   (let* ((projection-size (array-dimension projection 0))
          (column-count (array-dimension projection 1))
-         (hashes-size (ceiling projection-size 32))
+         (hashes-size (floor projection-size 32))
          (hashes (make-array hashes-size :element-type 'fixnum
                              :initial-element 0)))
     (iterate
