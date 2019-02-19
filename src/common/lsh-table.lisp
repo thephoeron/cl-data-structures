@@ -86,3 +86,20 @@
     (~> (project-point point-1 point-2 vector)
         (distance point-1)
         (bucket span))))
+
+
+(defstruct table
+  (args (make-hash-function-args) :type hash-function-args)
+  (key #'identity :type function)
+  (hash-table (make-hash-table) :type hash-table))
+
+
+(defun insert (table element)
+  (let* ((vector (funcall (table-key table) element))
+         (bucket (~> table table-args (projection-bucket vector)))
+         (hash-table (table-hash-table table))
+         (vector #1=(gethash bucket hash-table)))
+    (if (null vector)
+        (setf #1# (vect element))
+        (vector-push-extend element vector))
+    element))
