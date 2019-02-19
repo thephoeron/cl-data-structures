@@ -4,7 +4,11 @@
 (defpackage :cl-data-structures.common.lsh
   (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.common.lsh)
-  (:export))
+  (:export
+   #:insert-into-euclid-distance-lsh-table
+   #:euclid-distance-lsh-table-find-close
+   #:euclid-distance-lsh-table-find-buckets
+   #:read-tables))
 
 
 (in-package #:cl-data-structures.common.lsh)
