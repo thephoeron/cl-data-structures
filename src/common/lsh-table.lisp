@@ -104,6 +104,11 @@
     element))
 
 
+(defun find-bucket (vector table)
+  (~> table table-args (projection-bucket vector)
+      (gethash (table-hash-table table))))
+
+
 (defclass euclid-distance-lsh-table ()
   ((%tables :initarg :tables
             :type vector
@@ -129,3 +134,18 @@
              :text "Vector has invalid length."
              :value (length vector)))
     (map nil (curry #'insert vector element) (read-tables table))))
+
+
+(defun euclid-distance-lsh-table-find-buckets (table element)
+  (let* ((key (read-key table))
+         (vector (funcall key element))
+         (vector-length (read-vector-length table)))
+    (check-type vector (vector single-float))
+    (unless (= (length vector) vector-length)
+      (error 'cl-ds:dimensionality-error
+             :bounds vector-length
+             :text "Vector has invalid length."
+             :value (length vector)))
+    (~>> (read-tables table)
+         (map 'vector (curry #'find-bucket vector))
+         (delete-if #'null))))
