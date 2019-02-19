@@ -124,6 +124,7 @@
 
 
 (defun insert-into-euclid-distance-lsh-table (table element)
+  (check-type table euclid-distance-lsh-table)
   (let* ((key (read-key table))
          (vector (funcall key element))
          (vector-length (read-vector-length table)))
@@ -137,6 +138,7 @@
 
 
 (defun euclid-distance-lsh-table-find-buckets (table element)
+  (check-type table euclid-distance-lsh-table)
   (let* ((key (read-key table))
          (vector (funcall key element))
          (vector-length (read-vector-length table)))
@@ -150,3 +152,21 @@
          read-tables
          (map 'vector (curry #'find-bucket vector))
          (delete-if #'null))))
+
+
+(defun euclid-distance-lsh-table-find-close (table element bucket-count)
+  (check-type table euclid-distance-lsh-table)
+  (check-type bucket-count positive-integer)
+  (let ((buckets (euclid-distance-lsh-table-find-buckets table element))
+        (counts (make-hash-table))
+        (result (vect)))
+    (iterate
+      (for bucket in-vector buckets)
+      (iterate
+        (for content in-vector bucket)
+        (incf (gethash content counts 0))))
+    (iterate
+      (for (element count) in-hashtable counts)
+      (when (> count bucket-count)
+        (vector-push-extend element result)))
+    result))
