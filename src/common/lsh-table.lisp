@@ -167,6 +167,6 @@
         (incf (gethash content counts 0))))
     (iterate
       (for (element count) in-hashtable counts)
-      (when (> count bucket-count)
+      (when (>= count bucket-count)
         (vector-push-extend element result)))
     result))
