@@ -179,3 +179,11 @@
       (when (>= count bucket-count)
         (vector-push-extend element result)))
     result))
+
+
+(defun euclid-distance-lsh-table-find-close-with-distance (table element distance)
+  (check-type table euclid-distance-lsh-table)
+  (check-type distance non-negative-integer)
+  (let* ((subtables-count (~> table read-tables length))
+         (bucket-count (max 1 (- subtables-count distance))))
+    (euclid-distance-lsh-table-find-close table element bucket-count)))
