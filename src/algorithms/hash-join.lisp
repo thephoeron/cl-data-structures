@@ -81,15 +81,15 @@
                       element)
   (bind (((:struct hash-join-function-state- table ranges primary-key) state)
          (key (funcall primary-key element)))
-   (vector-push-extend
-    element
-    (aref (ensure (gethash key table)
-            (cl-ds.utils:with-vectors ((result (~> ranges length 1+ make-array)))
-              (iterate
-                (for i from 0 below (length result))
-                (setf (result i) (vect)))
-              result))
-          0))))
+    (let ((vector (gethash key table)))
+      (when (null vector)
+        (setf vector (cl-ds.utils:with-vectors ((result (~> ranges length 1+ make-array)))
+                       (iterate
+                         (for i from 0 below (length result))
+                         (setf (result i) (vect)))
+                       result)
+              (gethash key table) vector))
+      (vector-push-extend element (aref vector 0)))))
 
 
 (cl-ds:define-validation-for-fields (hash-join-function
