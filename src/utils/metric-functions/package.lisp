@@ -7,4 +7,5 @@
    #:euclid-metric
    #:hausdorff-metric
    #:hellinger-metric
-   #:levenshtein-metric))
+   #:levenshtein-metric
+   #:svr-metric))

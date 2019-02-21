@@ -89,6 +89,7 @@
                          (setf (result i) (vect)))
                        result)
               (gethash key table) vector))
+      (print element)
       (vector-push-extend element (aref vector 0)))))
 
 

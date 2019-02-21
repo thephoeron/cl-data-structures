@@ -38,6 +38,7 @@
   alexandria:rcurry
   alexandria:alist-plist
   alexandria:appendf
+  alexandria:xor
   alexandria:nconcf
   alexandria:reversef
   alexandria:nreversef

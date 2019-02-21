@@ -56,6 +56,7 @@
                                            (:file "hausdorff")
                                            (:file "euclid")
                                            (:file "earth-mover")
+                                           (:file "svr")
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
