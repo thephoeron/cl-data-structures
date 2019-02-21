@@ -15,7 +15,8 @@
      :returns "Single-float (between 0.0 and 1.0) representing distance."
      :arguments ((a "Vector.")
                  (b "Vector."))
-     :notes "Content of a and b vectors must be comparable using EQUAL."))
+     :notes ("Content of a and b vectors must be comparable using EQUAL."
+             "Will return 1.0 if one of the vectors is empty and the second is not empty.")))
 
   (function hellinger-metric
     (:description "Calculates hellinger distance between two distributions, both represented as histograms."
