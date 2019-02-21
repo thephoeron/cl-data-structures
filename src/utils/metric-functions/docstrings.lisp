@@ -25,7 +25,7 @@
      :returns "Hellinger distance."))
 
   (function earth-mover-metric
-            (:description "Calculates earth mover distance between two distributions, both represented as histograms."
-             :arguments ((a "Frequency vector.")
-                         (b "Frequency vector."))
-             :returns "Earth mover distance between two histograms.")))
+    (:description "Calculates earth mover distance between two distributions, both represented as histograms."
+     :arguments ((a "Frequency vector.")
+                 (b "Frequency vector."))
+     :returns "Earth mover distance between two histograms.")))
