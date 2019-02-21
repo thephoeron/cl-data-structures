@@ -6,13 +6,13 @@
 
   (function levenshtein-metric
     (:description "Calculates the Levenshtein distance."
-     :returns "Non-negative fixnum representing distance."
+     :returns "Non-negative fixnum representing the distance."
      :arguments ((str1 "String.")
                  (str2 "String."))))
 
   (function svr-metric
     (:description "Calculates the subvector representation based metric."
-     :returns "Single-float (between 0.0 and 1.0) representing distance."
+     :returns "Single-float (between 0.0 and 1.0) representing the distance."
      :arguments ((a "Vector.")
                  (b "Vector."))
      :notes ("Content of a and b vectors must be comparable using EQUAL."
