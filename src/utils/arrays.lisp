@@ -418,20 +418,26 @@
 
 
 (defun broadcast-array (function first-array second-array &key (element-type t))
+  (declare (optimize (speed 3)))
   (bind ((first-dims (array-dimensions first-array))
          (second-dims (array-dimensions second-array))
          (first-l (length first-dims))
          (second-l (length second-dims))
          (max (max first-l second-l))
          ((:dflet stride-list (dims l))
+          (declare (type fixnum l)
+                   (type list dims))
           (unless (eql l max)
             (iterate
+              (declare (type fixnum i))
               (for i from l below max)
               (push 1 dims)))
           dims)
          (first-stride-list (stride-list first-dims first-l))
          (second-stride-list (stride-list second-dims second-l))
-         (result-stride-list (mapcar #'max
+         (result-stride-list (mapcar (lambda (a b)
+                                       (declare (type fixnum a b))
+                                       (max a b))
                                      first-stride-list
                                      second-stride-list))
          (first-total-size (array-total-size first-array))
@@ -439,15 +445,20 @@
          (result (make-array result-stride-list
                              :element-type element-type))
          ((:dflet broadcast-index (stride-list index))
+          (declare (type list stride-list)
+                   (type fixnum index))
           (iterate
+            (declare (type fixnum a b))
             (for a in stride-list)
             (for b in result-stride-list)
             (until (eql a b))
             (assert (eql 1 a))
             (setf index (truncate index b))
             (finally (return index)))))
+    (declare (inline broadcast-index))
     (assert
      (iterate
+       (declare (type fixnum a b))
        (with equal = nil)
        (for a in first-stride-list)
        (for b in first-stride-list)
@@ -462,6 +473,7 @@
                    (or (eql a 1)
                        (eql b 1))))))
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below (array-total-size result))
       (setf (row-major-aref result i)
             (funcall function
