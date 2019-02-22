@@ -15,6 +15,7 @@
    #:as-cons-tree
    #:binary-search
    #:bind-lambda
+   #:broadcast
    #:cartesian
    #:cartesian-table
    #:cases

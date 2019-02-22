@@ -417,7 +417,7 @@
      result)))
 
 
-(defun broadcast-array (function first-array second-array &key (element-type t))
+(defun broadcast (function first-array second-array &key (element-type t))
   (declare (optimize (speed 3)))
   (bind ((first-dims (array-dimensions first-array))
          (second-dims (array-dimensions second-array))
