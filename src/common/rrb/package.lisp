@@ -60,6 +60,7 @@
    #:sparse-rrb-node-erase
    #:sparse-rrb-node-erase!
    #:sparse-rrb-node-size
+   #:sparse-rrb-node-tree-size
    #:transactional-copy-on-write
    #:transactional-copy-on-write-without-tail
    #:with-sparse-rrb-node

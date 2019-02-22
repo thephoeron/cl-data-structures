@@ -1111,3 +1111,13 @@
                       (flexichain:element* which-array))
                   array-index)
             new-value))))
+
+
+(defun sparse-rrb-tree-size (tree depth)
+  (if (zerop depth)
+      (sparse-rrb-node-size tree)
+      (iterate
+        (for i from 0 below +maximum-children-count+)
+        (when (sparse-rrb-node-contains tree i)
+          (sum (sparse-rrb-tree-size (sparse-nref tree i)
+                                     (1- depth)))))))
