@@ -418,42 +418,59 @@
 
 
 (defun broadcast-array (function first-array second-array &key (element-type t))
-  (let ((first-dims (array-dimensions first-array))
-        (second-dims (array-dimensions second-array)))
-    (assert (= (length first-dims) (length second-dims)))
-    (assert (every (lambda (a b) (or (eql a b) (eql 1 a) (eql 1 b)))
-                   first-dims second-dims))
-    (assert (or (~> first-dims last (eql 1))
-                (~> second-dims last (eql 1))))
-    (bind (((:values first-stride second-stride)
+  (bind ((first-dims (array-dimensions first-array))
+         (second-dims (array-dimensions second-array))
+         (first-l (length first-dims))
+         (second-l (length second-dims))
+         (max (max first-l second-l))
+         ((:dflet stride-list (dims l))
+          (unless (eql l max)
             (iterate
-              (for d1 on first-dims)
-              (for d2 on second-dims)
-              (when (or (endp (rest d2))
-                        (endp (rest d1)))
-                (finish))
-              (for a1 = (first d1))
-              (for a2 = (first d2))
-              (unless (eql a1 a2)
-                (multiply a1 into s1)
-                (multiply a2 into s2))
-              (finally (return (values s1 s2)))))
-           (result-dims (mapcar #'max first-dims second-dims))
-           (first-total-size (array-total-size first-array))
-           (second-total-size (array-total-size second-array))
-           (result-total-size (reduce #'* result-dims))
-           (result (make-array result-dims
-                               :element-type element-type)))
-      (iterate
-        (for i from 0 below result-total-size)
-        (for first from 0 by first-stride)
-        (for second from 0 by second-stride)
-        (setf (row-major-aref result i)
-              (funcall function
-                       (~>> (floor i first-stride)
-                            (rem _ first-total-size)
-                            (row-major-aref first-array))
-                       (~>> (floor i second-stride)
-                            (rem _ second-total-size)
-                            (row-major-aref second-array)))))
-      result)))
+              (for i from l below max)
+              (push 1 dims)))
+          dims)
+         (first-stride-list (stride-list first-dims first-l))
+         (second-stride-list (stride-list second-dims second-l))
+         (result-stride-list (mapcar #'max
+                                     first-stride-list
+                                     second-stride-list))
+         (first-total-size (array-total-size first-array))
+         (second-total-size (array-total-size second-array))
+         (result (make-array result-stride-list
+                             :element-type element-type))
+         ((:dflet broadcast-index (stride-list index))
+          (iterate
+            (for a in stride-list)
+            (for b in result-stride-list)
+            (until (eql a b))
+            (assert (eql 1 a))
+            (setf index (truncate index b))
+            (finally (return index)))))
+    (assert
+     (iterate
+       (with equal = nil)
+       (for a in first-stride-list)
+       (for b in first-stride-list)
+       (for e = (eql a b))
+       (for prev-e previous e :initially :start)
+       (always (if e
+                   (if equal
+                       (eq prev-e e)
+                       (progn
+                         (setf equal t)
+                         t))
+                   (or (eql a 1)
+                       (eql b 1))))))
+    (iterate
+      (for i from 0 below (array-total-size result))
+      (setf (row-major-aref result i)
+            (funcall function
+                     (~>> i
+                          (broadcast-index first-stride-list)
+                          (rem _ first-total-size)
+                          (row-major-aref first-array))
+                     (~>> i
+                          (broadcast-index second-stride-list)
+                          (rem _ second-total-size)
+                          (row-major-aref second-array)))))
+    result))
