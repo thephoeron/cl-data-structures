@@ -56,6 +56,7 @@
   (:export
    #:access-shift
    #:access-tree
+   #:access-tree-size
    #:access-tree-index-bound
    #:functional-sparse-rrb-vector
    #:functional-sparse-rrb-vector-grow
