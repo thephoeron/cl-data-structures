@@ -82,4 +82,5 @@
 
 
 (defmethod cl-ds:across ((range filtering-proxy) function)
-  (~> range cl-ds:clone (cl-ds:traverse function)))
+  (~> range cl-ds:clone (cl-ds:traverse function))
+  range)
