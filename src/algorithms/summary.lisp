@@ -17,11 +17,10 @@
                                       &rest all
                                       &key data)
   (declare (ignore all))
-  (list*
-   data
-   (map 'vector (curry #'apply #'cl-ds.alg.meta:make-state)
-        (summary-aggregation-function-value-function-objects data)
-        (summary-aggregation-function-value-arguments data))))
+  (list* data
+         (map 'vector (curry #'apply #'cl-ds.alg.meta:make-state)
+              (summary-aggregation-function-value-function-objects data)
+              (summary-aggregation-function-value-arguments data))))
 
 
 (defmethod cl-ds.alg.meta:aggregate ((fn summary-aggregation-function)
