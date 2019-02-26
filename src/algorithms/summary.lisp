@@ -104,9 +104,3 @@
                 (collect `(list ,id ',function #',function
                                 (lambda (,!argument)
                                   (,function ,!argument ,@body)))))))))
-
-
-(print
- (summary #(1 2 3 4)
-   :average (cl-ds.math:average)
-   :sum (cl-ds.alg:accumulate #'+ :initial-value 0)))
