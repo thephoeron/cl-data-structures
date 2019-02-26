@@ -439,7 +439,7 @@
 
 
 (defmethod cl-ds:peek-front ((range find-range))
-  (cl-ds:peek-front (cl-ds:clone range)))
+  (cl-ds:consume-front (cl-ds:clone range)))
 
 
 (defmethod cl-ds:clone ((range find-range))
