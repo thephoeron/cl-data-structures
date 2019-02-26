@@ -138,15 +138,17 @@
 
 (defmethod print-object ((obj hash-table-range) stream)
   (print-unreadable-object (obj stream :type t)
-    (let ((count 10))
+    (let ((count 5)
+          (current 0)
+          (total-size (hash-table-count (read-hash-table obj))))
       (block map-block
         (maphash (lambda (key value) (declare (ignore value))
-                   (format stream "{~a} " key)
-                   (decf count)
-                   (when (zerop count)
+                   (format stream "{~a}" key)
+                   (incf current)
+                   (when (eql current count)
                      (return-from map-block)))
                  (read-hash-table obj)))
-      (when (> (hash-table-count (read-hash-table obj)) 3)
+      (when (> total-size count)
         (format stream "..."))
       obj)))
 

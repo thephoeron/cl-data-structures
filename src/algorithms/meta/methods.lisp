@@ -122,7 +122,7 @@ Top level aggregator protocol.
 
 (defmethod construct-aggregator ((range cl:sequence)
                                  key
-                                 function
+                                 (function aggregation-function)
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-linear-aggregator function arguments key))
@@ -139,7 +139,7 @@ Top level aggregator protocol.
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
                                  key
-                                 aggregation-function
+                                 (function aggregation-function)
                                  outer-fn
                                  (arguments list))
   (lret ((result (funcall outer-fn)))
@@ -148,7 +148,7 @@ Top level aggregator protocol.
 
 (defmethod construct-aggregator ((range cl:sequence)
                                  key
-                                 aggregation-function
+                                 (function aggregation-function)
                                  outer-fn
                                  (arguments list))
   (lret ((result (funcall outer-fn)))
@@ -278,6 +278,13 @@ Stage level aggregator protocol.
 Range function invokaction protocol.
 |#
 
+
+(defmethod apply-range-function (range
+                                 (function aggregation-function)
+                                 &rest all)
+  (apply #'apply-aggregation-function range function all))
+
+
 (defmethod apply-range-function ((range cl-ds:fundamental-range)
                                  (function layer-function)
                                  &rest all &key &allow-other-keys)
@@ -303,7 +310,7 @@ Range function invokaction protocol.
 
 
 (defmethod apply-aggregation-function (range
-                                       function
+                                       (function aggregation-function)
                                        &rest all &key key &allow-other-keys)
   (let ((aggregator (construct-aggregator range key function nil all)))
     (apply #'apply-aggregation-function-with-aggregator
@@ -313,7 +320,7 @@ Range function invokaction protocol.
 (defmethod apply-aggregation-function-with-aggregator
     ((aggregator fundamental-aggregator)
      range
-     function
+     (function aggregation-function)
      &rest all &key &allow-other-keys)
   (declare (ignore all))
   (iterate
