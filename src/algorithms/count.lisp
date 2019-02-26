@@ -9,7 +9,7 @@
 (defgeneric count-elements (range)
   (:generic-function-class count-elements-function)
   (:method (range)
-    (apply-aggregation-function range #'count-elements :key #'identity)))
+    (apply-range-function range #'count-elements :key #'identity)))
 
 
 (defmethod cl-ds.alg.meta:make-state ((function count-elements-function) &rest all)
@@ -33,8 +33,8 @@
 (defgeneric count-elements-if (range predicate &key key)
   (:generic-function-class count-elements-if-function)
   (:method (range predicate &key (key #'identity))
-    (apply-aggregation-function range #'count-elements-if
-                                :key key :predicate predicate)))
+    (apply-range-function range #'count-elements-if
+                          :key key :predicate predicate)))
 
 
 (defmethod cl-ds.alg.meta:make-state ((function count-elements-if-function) &key predicate

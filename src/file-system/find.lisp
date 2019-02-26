@@ -448,7 +448,7 @@
                  (clone-cell stack))))
 
 
-(defmethod cl-ds:clone ((range find-range))
+(defmethod cl-ds:reset! ((range find-range))
   (when-let ((stack (access-stack range)))
     (reset-cell stack))
   range)

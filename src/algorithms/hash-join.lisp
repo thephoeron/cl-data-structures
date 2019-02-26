@@ -12,12 +12,12 @@
   (:method (primary-range primary-key secondary-range-forms
             &key (test 'eql) (join-function #'list) (key #'identity))
     (cl-ds:validate-fields #'hash-join secondary-range-forms)
-    (apply-aggregation-function primary-range #'hash-join
-                                :key key
-                                :test test
-                                :primary-key primary-key
-                                :join-function join-function
-                                :secondary-range-forms secondary-range-forms)))
+    (apply-range-function primary-range #'hash-join
+                          :key key
+                          :test test
+                          :primary-key primary-key
+                          :join-function join-function
+                          :secondary-range-forms secondary-range-forms)))
 
 
 (defstruct hash-join-function-state table ranges keys join-function primary-key)
