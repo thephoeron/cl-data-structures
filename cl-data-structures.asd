@@ -176,7 +176,7 @@
                              (:file "shuffled-range")
                              (:file "filtering")
                              (:file "common-range-category")
-                             ;; (:file "summary")
+                             (:file "summary")
                              (:file "change-each!")
                              (:file "accumulate")
                              (:file "group-by")

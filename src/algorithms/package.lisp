@@ -87,6 +87,8 @@
    #:shuffled-range
    #:split-into-chunks
    #:to-vector
+   #:summary
+   #:%summary
    #:transparent-to-chunking-mixin
    #:unique
    #:without
