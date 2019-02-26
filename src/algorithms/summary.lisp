@@ -17,21 +17,24 @@
                                       &rest all
                                       &key data)
   (declare (ignore all))
-  (list* data
-         (map 'vector (curry #'apply #'cl-ds.alg.meta:make-state)
-              (summary-aggregation-function-value-function-objects data)
-              (summary-aggregation-function-value-arguments data))))
+  (let ((arguments (summary-aggregation-function-value-arguments data)))
+    (list data
+          (map 'vector (curry #'apply #'cl-ds.alg.meta:make-state)
+               (summary-aggregation-function-value-function-objects data)
+               arguments)
+          (mapcar (lambda (x) (getf x :key)) arguments))))
 
 
 (defmethod cl-ds.alg.meta:aggregate ((fn summary-aggregation-function)
                                      state
                                      element)
   (iterate
-    (for sub in-vector (cdr state))
+    (for sub in-vector (second state))
+    (for key in (third state))
     (for function in
-         (~> state car
+         (~> state first
              summary-aggregation-function-value-function-objects))
-    (cl-ds.alg.meta:aggregate function sub element))
+    (cl-ds.alg.meta:aggregate function sub (funcall key element)))
   state)
 
 
@@ -39,12 +42,12 @@
                                         state)
   (let ((table (make-hash-table)))
     (iterate
-      (for sub in-vector (cdr state))
+      (for sub in-vector (second state))
       (for function in
-           (~> state car
+           (~> state first
                summary-aggregation-function-value-function-objects))
       (for id in
-           (~> state car
+           (~> state first
                summary-aggregation-function-value-ids))
       (setf (gethash id table)
             (cl-ds.alg.meta:state-result function sub)))
