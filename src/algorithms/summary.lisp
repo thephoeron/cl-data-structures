@@ -13,10 +13,7 @@
    (%function-objects :type list
                       :initarg :function-objects
                       :reader read-function-objects
-                      :initform '()))
-  )
-
-;; (setf (find-class 'summary-aggregation-function) nil)
+                      :initform '())))
 
 
 (defmethod cl-ds.alg.meta:make-state ((fn summary-aggregation-function)

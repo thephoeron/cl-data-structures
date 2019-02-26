@@ -114,7 +114,7 @@ Top level aggregator protocol.
 
 (defmethod construct-aggregator ((range fundamental-forward-range)
                                  key
-                                 (function aggregation-function)
+                                 function
                                  (outer-fn (eql nil))
                                  (arguments list))
   (make-linear-aggregator function arguments key))
