@@ -78,7 +78,8 @@
     (when (typep function 'cl-ds.alg.meta:multi-aggregation-function)
       (error 'cl-ds:invalid-argument
              :argument symbol
-             :text (format nil "~a is a multi-aggregation-function. Only single stage aggregation functions are supposted by summary." symbol)))) ; TODO actually there is no reason why this must be this way. It just needs extra work.
+             :text (format nil "~a is a multi-aggregation-function. Only single stage aggregation functions are supposted by summary."
+                           symbol)))) ; TODO actually there is no reason why this must be this way. It just needs extra work.
   (make-summary-aggregation-function-value
    :function-objects (mapcar #'third lambdas)
    :ids (mapcar #'first lambdas)
