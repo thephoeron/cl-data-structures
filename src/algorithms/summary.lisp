@@ -104,5 +104,12 @@
       (list ,@(iterate
                 (for (id (function . body)) in (batches functions 2))
                 (collect `(list ,id ',function #',function
-                                (lambda (,!argument)
-                                  (,function ,!argument ,@body)))))))))
+                                ,(let ((_-p (find "_" body
+                                                  :key (cl-ds.utils:and* #'symbolp
+                                                                         #'symbol-name)
+                                                  :test 'equal)))
+                                   (if _-p
+                                       `(lambda (,_-p)
+                                          (,function ,@body))
+                                       `(lambda (,!argument)
+                                          (,function ,!argument ,@body)))))))))))
