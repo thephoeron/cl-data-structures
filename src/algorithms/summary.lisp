@@ -98,18 +98,17 @@
 
 
 (defmacro summary (range &body functions)
-  (with-gensyms (!argument)
-    `(%summary
-      ,range
-      (list ,@(iterate
-                (for (id (function . body)) in (batches functions 2))
-                (collect `(list ,id ',function #',function
-                                ,(let ((_-p (find "_" body
-                                                  :key (cl-ds.utils:and* #'symbolp
-                                                                         #'symbol-name)
-                                                  :test 'equal)))
-                                   (if _-p
-                                       `(lambda (,_-p)
-                                          (,function ,@body))
-                                       `(lambda (,!argument)
-                                          (,function ,!argument ,@body)))))))))))
+  (iterate
+    (with !argument = (gensym))
+    (for (id (function . body)) in (batches functions 2))
+    (for _-p = (find "_" body
+                     :key (cl-ds.utils:and* #'symbolp #'symbol-name)
+                     :test 'equal))
+    (for lambda-form = (if _-p
+                           `(lambda (,_-p)
+                              (,function ,@body))
+                           `(lambda (,!argument)
+                              (,function ,!argument ,@body))))
+    (collect `(list ,id ',function #',function ,lambda-form)
+      into form)
+    (finally (return `(%summary ,range (list ,@form))))))
