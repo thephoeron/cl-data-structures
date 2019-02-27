@@ -103,6 +103,8 @@
   (iterate
     (with !argument = (gensym))
     (for (id (function . body)) in (batches functions 2))
+    (check-type id symbol)
+    (check-type function symbol)
     (for _-p = (find "_" body
                      :key (cl-ds.utils:and* #'symbolp #'symbol-name)
                      :test 'equal))
