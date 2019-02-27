@@ -19,10 +19,11 @@
   (declare (ignore all))
   (let ((arguments (summary-aggregation-function-value-arguments data)))
     (vector data
-            (map 'vector (curry #'apply #'cl-ds.alg.meta:make-state)
+            (map 'vector
+                 (curry #'apply #'cl-ds.alg.meta:make-state)
                  (summary-aggregation-function-value-function-objects data)
                  arguments)
-            (mapcar (rcurry #'getf :key) arguments))))
+            (map 'vector (rcurry #'getf :key) arguments))))
 
 
 (defmethod cl-ds.alg.meta:aggregate ((fn summary-aggregation-function)
@@ -30,8 +31,8 @@
                                      element)
   (iterate
     (for sub in-vector (aref state 1))
-    (for key in (aref state 2))
-    (for function in
+    (for key in-vector (aref state 2))
+    (for function in-vector
          (~> state (aref 0)
              summary-aggregation-function-value-function-objects))
     (cl-ds.alg.meta:aggregate function sub (funcall key element)))
@@ -43,10 +44,10 @@
   (let ((table (make-hash-table)))
     (iterate
       (for sub in-vector (aref state 1))
-      (for function in
+      (for function in-vector
            (~> state (aref 0)
                summary-aggregation-function-value-function-objects))
-      (for id in
+      (for id in-vector
            (~> state (aref 0)
                summary-aggregation-function-value-ids))
       (setf (gethash id table)
@@ -83,11 +84,12 @@
              :text (format nil "~a is a multi-aggregation-function. Only single stage aggregation functions are supposted by summary."
                            symbol)))) ; TODO actually there is no reason why this must be this way. It just needs extra work.
   (make-summary-aggregation-function-value
-   :function-objects (mapcar #'third lambdas)
-   :ids (mapcar #'first lambdas)
-   :arguments (mapcar (compose (rcurry #'funcall <interceptor>)
-                               #'fourth)
-                      lambdas)))
+   :function-objects (map 'vector #'third lambdas)
+   :ids (map 'vector #'first lambdas)
+   :arguments (map 'vector
+                   (compose (rcurry #'funcall <interceptor>)
+                            #'fourth)
+                   lambdas)))
 
 
 (defun %summary (range lambdas)
