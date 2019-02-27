@@ -104,11 +104,11 @@
     (for _-p = (find "_" body
                      :key (cl-ds.utils:and* #'symbolp #'symbol-name)
                      :test 'equal))
-    (for lambda-form = (if _-p
-                           `(lambda (,_-p)
-                              (,function ,@body))
+    (for lambda-form = (if (null _-p)
                            `(lambda (,!argument)
-                              (,function ,!argument ,@body))))
+                              (,function ,!argument ,@body))
+                           `(lambda (,_-p)
+                              (,function ,@body))))
     (collect `(list ,id ',function #',function ,lambda-form)
       into form)
     (finally (return `(%summary ,range (list ,@form))))))
