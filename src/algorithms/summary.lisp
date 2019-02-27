@@ -86,8 +86,8 @@
    :function-objects (mapcar #'third lambdas)
    :ids (mapcar #'first lambdas)
    :arguments (mapcar (compose (rcurry #'funcall <interceptor>)
-                                    #'fourth)
-                           lambdas)))
+                               #'fourth)
+                      lambdas)))
 
 
 (defun %summary (range lambdas)
