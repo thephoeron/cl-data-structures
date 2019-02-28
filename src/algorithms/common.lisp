@@ -261,8 +261,7 @@
 
 
 (defun make-hash-table-range (hash-table)
-  (let ((keys (~> hash-table hash-table-keys
-                  (coerce 'vector))))
+  (let ((keys (~> hash-table hash-table-keys (coerce 'vector))))
     (make-instance 'hash-table-range
                    :hash-table hash-table
                    :keys keys
