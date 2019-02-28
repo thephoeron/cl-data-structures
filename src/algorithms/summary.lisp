@@ -6,9 +6,6 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(def <summary-aggregation> (make 'summary-aggregation-function))
-
-
 (defstruct summary-aggregation-function-value
   arguments ids function-objects)
 
@@ -92,11 +89,13 @@
                    lambdas)))
 
 
-(defun %summary (range lambdas)
-  (cl-ds.alg.meta:apply-range-function
-   range <summary-aggregation>
-   :key #'identity
-   :data (make-summary-aggregation-data lambdas)))
+(defgeneric %summary (range lambdas)
+  (:generic-function-class summary-aggregation-function)
+  (:method (range lambdas)
+    (cl-ds.alg.meta:apply-range-function
+     range #'%summary
+     :key #'identity
+     :data (make-summary-aggregation-data lambdas))))
 
 
 (defmacro summary (range &body functions)
