@@ -131,9 +131,15 @@
    (%begin :initarg :begin
            :type fixnum
            :accessor access-begin)
+   (%initial-begin :initarg :begin
+                   :type fixnum
+                   :reader read-initial-begin)
    (%end :initarg :end
          :type fixnum
-         :accessor access-end)))
+         :accessor access-end)
+   (%initial-end :initarg :end
+                 :type fixnum
+                 :reader read-initial-end)))
 
 
 (defmethod print-object ((obj hash-table-range) stream)
@@ -160,6 +166,12 @@
       (for i from (access-begin range) below (access-end range))
       (for key = (aref keys i))
       (funcall function (list* key (gethash key table))))))
+
+
+(defmethod cl-ds:reset! ((range hash-table-range))
+  (setf (access-begin range) (read-initial-begin range)
+        (access-end range) (read-initial-end range))
+  range)
 
 
 (defmethod clone ((range hash-table-range))
