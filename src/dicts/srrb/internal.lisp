@@ -357,8 +357,7 @@
          (old-tree-index-bound tree-index-bound)
          (shift-difference (- new-shift old-shift))
          (larger? (> shift-difference 0)))
-    (declare (type non-negative-fixnum new-shift
-                   new-tree-index-bound
+    (declare (type non-negative-fixnum
                    old-tree-index-bound
                    old-shift)
              (type boolean larger?)
