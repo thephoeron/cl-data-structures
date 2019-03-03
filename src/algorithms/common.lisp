@@ -28,7 +28,6 @@
 
 (defmethod cl-ds:clone ((range proxy-range))
   (make (type-of range)
-        :chunked-range (cl-ds:clone (read-chunked-range range))
         :original-range (cl-ds:clone (read-original-range range))))
 
 
