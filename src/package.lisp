@@ -40,6 +40,7 @@
    #:field
    #:finish
    #:force
+   #:read-text
    #:forward-call
    #:found
    #:functional
