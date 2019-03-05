@@ -68,6 +68,9 @@
    #:group-by
    #:cumulative-accumulate
    #:cumulative-accumulate-range
+   #:forward-chain-of-ranges
+   #:bidirectional-chain-of-ranges
+   #:random-access-chain-of-ranges
    #:group-by-function
    #:hash-join
    #:latch

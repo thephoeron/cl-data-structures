@@ -20,6 +20,12 @@
   ())
 
 
+(defmethod cl-ds:forward-call ((range forward-chain-of-ranges)
+                               function)
+  (map nil function (read-content range))
+  (map nil function (read-original-content range)))
+
+
 (defmethod cl-ds:clone ((range forward-chain-of-ranges))
   (make (type-of range)
         :content (iterate

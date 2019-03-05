@@ -202,7 +202,8 @@
 
 
 (defmethod consume-front ((range hash-table-range))
-  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys))
+          range)
          ((:lazy key result)
           (prog1 (aref keys begin) (incf begin))
           (list* key (gethash key ht))))
@@ -212,7 +213,8 @@
 
 
 (defmethod consume-back ((range hash-table-range))
-  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys))
+          range)
          ((:lazy key result)
           (aref keys (decf end))
           (list* key (gethash key ht))))
@@ -222,7 +224,8 @@
 
 
 (defmethod peek-front ((range hash-table-range))
-  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys))
+          range)
          ((:lazy key result) (aref keys begin) (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
@@ -230,7 +233,8 @@
 
 
 (defmethod peek-back ((range hash-table-range))
-  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys)) range)
+  (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys))
+          range)
          ((:lazy key result) (aref keys end) (list* key (gethash key ht))))
     (if (eql begin end)
         (values nil nil)
