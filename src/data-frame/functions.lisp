@@ -18,13 +18,13 @@
                    more-data)
       (error 'cl-ds:initialization-error
              :class 'data-frame
-             :text "Can't create data-frame because data provided is of unequal dimensionality."))
+             :format-control "Can't create data-frame because data provided is of unequal dimensionality."))
     (unless (every (compose (curry #'= data-size)
                             #'cl-ds:size)
                    more-data)
       (error 'cl-ds:initialization-error
              :class 'data-frame
-             :text "Can't create data-frame because data provided is of unequal sizes."))))
+             :format-control "Can't create data-frame because data provided is of unequal sizes."))))
 
 
 (defun initialize-dimensions (sizes)
@@ -76,7 +76,7 @@
   (check-type dimension integer)
   (when (> 0 dimension)
     (error 'cl-ds:argument-out-of-bounds
-           :text "Dimension can't be negative."
+           :format-control "Dimension can't be negative."
            :bounds '(>= 0)
            :value dimension
            :argument 'dimension))
@@ -95,7 +95,7 @@
                              :dimensionality frame-dimensionality)))
     (unless (< dimension frame-dimensionality)
       (error 'cl-ds:argument-out-of-bounds
-             :text "Dimension to stack along is larger then frame dimensionality!."
+             :format-control "Dimension to stack along is larger then frame dimensionality!."
              :bounds `(< ,frame-dimensionality)
              :value dimension
              :argument 'dimension))

@@ -45,7 +45,7 @@
             bucket)))
     (if (zerop tail-size)
         (if (zerop (cl-ds.common.rrb:access-size structure))
-            (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
+            (error 'cl-ds:empty-container :format-control "Can't take-out from empty container.")
             (bind (((:values new-root tail shift-decreased)
                     (cl-ds.common.rrb:remove-tail structure))
                    (new-shift (if shift-decreased
@@ -112,7 +112,7 @@
             bucket)))
     (if (zerop tail-size)
         (if (zerop (cl-ds.common.rrb:access-size structure))
-            (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
+            (error 'cl-ds:empty-container :format-control "Can't take-out from empty container.")
             (bind (((:values new-root tail shift-decreased)
                     (cl-ds.common.rrb:remove-tail structure))
                    (new-shift (if shift-decreased
@@ -180,7 +180,7 @@
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index
-             :text "Index out of range."))
+             :format-control "Index out of range."))
     (if (< index size)
         (let* ((node (iterate
                        (with shift = (cl-ds.common.rrb:access-shift structure))
@@ -374,7 +374,7 @@
     (values
      (if (zerop tail-size)
          (if (zerop (cl-ds.common.rrb:access-size structure))
-             (error 'cl-ds:empty-container :text "Can't take-out from empty container.")
+             (error 'cl-ds:empty-container :format-control "Can't take-out from empty container.")
              (bind (((:values new-root tail shift-decreased)
                      (cl-ds.common.rrb:remove-tail structure))
                     (new-shift (if shift-decreased
@@ -456,7 +456,7 @@
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index
-             :text "Index out of range."))
+             :format-control "Index out of range."))
     (if (< index size)
         (bind (((:dflet cont (path indexes shift &aux (shift (1- shift))))
                 (iterate
@@ -536,7 +536,7 @@
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index
-             :text "Index out of range."))
+             :format-control "Index out of range."))
     (values
      (if (< index size)
          (bind (((:dflet cont (path indexes shift &aux (shift (1- shift))))

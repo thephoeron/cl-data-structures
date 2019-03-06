@@ -140,7 +140,7 @@
     (unless (= (length vector) vector-length)
       (error 'cl-ds:dimensionality-error
              :bounds vector-length
-             :text "Vector has invalid length."
+             :format-control "Vector has invalid length."
              :value (length vector)))
     (incf (access-size table))
     (map nil (curry #'insert vector element) (read-tables table))))
@@ -155,7 +155,7 @@
     (unless (= (length vector) vector-length)
       (error 'cl-ds:dimensionality-error
              :bounds vector-length
-             :text "Vector has invalid length."
+             :format-control "Vector has invalid length."
              :value (length vector)))
     (~>> table
          read-tables

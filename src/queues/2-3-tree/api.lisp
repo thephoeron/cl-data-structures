@@ -416,7 +416,7 @@
         (if (cl-ds.meta:null-bucket-p root)
             (if (~> structure cl-ds:size zerop)
                 (error 'cl-ds:operation-not-allowed
-                       :text "Can't reduce size of the empty queue!")
+                       :format-control "Can't reduce size of the empty queue!")
                 (bind ((head (access-head structure))
                        (bucket (aref head 0))
                        (head-position (access-head-position structure))
@@ -500,7 +500,7 @@
         (if (cl-ds.meta:null-bucket-p root)
             (if (~> structure cl-ds:size zerop)
                 (error 'cl-ds:operation-not-allowed
-                       :text "Can't reduce size of the empty queue!")
+                       :format-control "Can't reduce size of the empty queue!")
                 (bind ((head (access-head structure))
                        (bucket (aref head 0))
                        (head-position (access-head-position structure))
@@ -570,7 +570,7 @@
         (if (cl-ds.meta:null-bucket-p root)
             (if (~> structure cl-ds:size zerop)
                 (error 'cl-ds:operation-not-allowed
-                       :text "Can't reduce size of the empty queue!")
+                       :format-control "Can't reduce size of the empty queue!")
                 (bind ((head (access-head structure))
                        (bucket (aref head 0))
                        (head-position (access-head-position structure))

@@ -38,8 +38,9 @@
         (when (cl-ppcre:all-matches regex buffer)
           (unless (file-position (read-stream range)
                                  file-position)
-            (error 'cl-ds:textual-error
-                   :text "Can't change position in the stream."))
+            (error 'cl-ds:file-releated-error
+                   :path (read-path range)
+                   :format-control "Can't change position in the stream."))
           (leave (values buffer t))))))
 
 

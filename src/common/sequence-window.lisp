@@ -58,13 +58,13 @@
            :argument 'from
            :bounds (list 0 to)
            :value from
-           :text "FROM argument is out of bounds."))
+           :format-control "FROM argument is out of bounds."))
   (unless (<= to (cl-ds:size sequence))
     (error 'cl-ds:argument-out-of-bounds
            :argument 'to
            :bounds (list from (cl-ds:size sequence))
            :value to
-           :text "TO argument is out of bounds."))
+           :format-control "TO argument is out of bounds."))
   (make 'random-access-sequence-window
         :from from :to to
         :content sequence))
@@ -77,13 +77,13 @@
            :argument 'from
            :bounds (list 0 to)
            :value from
-           :text "FROM argument is out of bounds."))
+           :format-control "FROM argument is out of bounds."))
   (unless (<= to (length sequence))
     (error 'cl-ds:argument-out-of-bounds
            :argument 'to
            :bounds (list from (length sequence))
            :value to
-           :text "TO argument is out of bounds.")))
+           :format-control "TO argument is out of bounds.")))
 
 
 (defmethod sequence-window ((sequence sequence-window)

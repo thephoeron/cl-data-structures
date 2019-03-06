@@ -12,13 +12,13 @@
              (error 'cl-ds:out-of-bounds
                     :bounds '(0.0 1.0)
                     :value value
-                    :text "Probability cannot be negative."))
+                    :format-control "Probability cannot be negative."))
            (sum value)))
     (when (> (abs (- sum 1.0)) single-float-epsilon)
       (error 'cl-ds:out-of-bounds
              :value sum
              :bounds '(<= 0 1.0)
-             :text "Probability in the row does not sum to 1.0"))))
+             :format-control "Probability in the row does not sum to 1.0"))))
 
 
 (defun random-float ()
@@ -54,14 +54,14 @@
          (observations-count (length observations)))
     (unless (= (first dim1) (first dim2) (second dim1))
       (error 'cl-ds:incompatible-arguments
-             :text "Inconsistent number of model observations in the input arrays."
+             :format-control "Inconsistent number of model observations in the input arrays."
              :parameters '(trans-table observation-table)
              :values (list trans-table observation-table)))
     (unless (= (second dim2) observations-count)
       (error
        'cl-ds:incompatible-arguments
        :parameters '(observations observation-table)
-       :text "Inconsistent number of model observations in the input arrays."
+       :format-control "Inconsistent number of model observations in the input arrays."
        :values (list observations observation-table)))
     (check-probability-in-rows 'trans-table trans-table)
     (check-probability-in-rows 'observation-table observation-table)
@@ -70,7 +70,7 @@
              :argument 'initial-state
              :value initial-state
              :bounds `(0 ,(first dim1))
-             :text "Initial state does not exist in the states table."))
+             :format-control "Initial state does not exist in the states table."))
     (cl-ds:xpr (:state initial-state)
       (cl-ds:send-recur (~>> (sample-position observation-table state)
                              (aref observations))

@@ -204,7 +204,7 @@
             (always (null #1=(gethash name table)))
             (setf #1# t))
     (error 'cl-ds:operation-not-allowed
-           :text "Duplicated values in the content of sets."))
+           :format-control "Duplicated values in the content of sets."))
   names)
 
 

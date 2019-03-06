@@ -106,13 +106,13 @@
   (check-type position fixnum)
   (unless (<= 0 dimension (1- (cl-ds:dimensionality container)))
     (error 'cl-ds:dimensionality-error
-           :text (format nil "No dimension ~a in data frame."
+           :format-control (format nil "No dimension ~a in data frame."
                          dimension)))
   (unless (<= #1=(~> container read-lower-bounds (aref dimension))
               position
               #2=(~> container read-upper-bounds (aref dimension) 1-))
     (error 'cl-ds:argument-out-of-bounds
-           :text (format nil "No position ~a in dimension ~a"
+           :format-control (format nil "No position ~a in dimension ~a"
                          position
                          dimension)
            :argument 'position
@@ -131,13 +131,13 @@
   (check-type position fixnum)
   (unless (<= 0 dimension (1- (cl-ds:dimensionality container)))
     (error 'cl-ds:dimensionality-error
-           :text (format nil "No dimension ~a in data frame."
+           :format-control (format nil "No dimension ~a in data frame."
                          dimension)))
   (unless (<= #1=(~> container read-lower-bounds (aref dimension))
               position
               #2=(~> container read-upper-bounds (aref dimension) 1-))
     (error 'cl-ds:argument-out-of-bounds
-           :text (format nil "No position ~a in dimension ~a"
+           :format-control (format nil "No position ~a in dimension ~a"
                          position
                          dimension)
            :argument 'position
@@ -150,11 +150,11 @@
   (let ((length (length more)))
     (when (oddp length)
       (error 'cl-ds:invalid-argument
-             :text "&rest arguments should come in even number!"
+             :format-control "&rest arguments should come in even number!"
              :argument 'more))
     (when (>= (/ length 2) (cl-ds:dimensionality data))
       (error 'cl-ds:dimensionality-error
-             :text "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
+             :format-control "Can't slice plane because number of axis passed must be lower then dimensionality of frame."))
     (iterate
       (with aliases = (read-aliases data))
       (for m on more)

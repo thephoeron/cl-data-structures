@@ -94,7 +94,7 @@
               (parallel t) (context-function #'identity))
     (unless (< 0.0 confidence 1.0)
       (error 'cl-ds:argument-out-of-bounds
-             :text "Confidence should be between 0 and 1"
+             :format-control "Confidence should be between 0 and 1"
              :argument 'confidence
              :value confidence
              :bounds `(< 0.0 confidence 1.0)))
@@ -102,13 +102,13 @@
       (error 'cl-ds:argument-out-of-bounds
              :argument 'samples-count
              :value samples-count
-             :text "At least 8 samples required."
+             :format-control "At least 8 samples required."
              :bounds `(< 8 samples-count)))
     (unless (< 8 samples-size)
       (error 'cl-ds:argument-out-of-bounds
              :argument 'samples-size
              :value samples-size
-             :text "Samples should be at least of size 8."
+             :format-control "Samples should be at least of size 8."
              :bounds `(< 8 samples-size)))
     (cl-ds.alg.meta:apply-range-function range #'bootstrap
                                          :confidence confidence

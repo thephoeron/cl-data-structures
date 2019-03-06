@@ -27,7 +27,7 @@
   (unless (endp more-locations)
     (error 'cl-ds:dimensionality-error :bounds '(1)
                                        :value (1+ (length more-locations))
-                                       :text "Approximated-counts does not accept more-locations"))
+                                       :format-control "Approximated-counts does not accept more-locations"))
   (iterate
     (with hash = (ldb (byte 32 0)
                       (funcall (read-hash-fn container)
@@ -64,7 +64,7 @@
    (unless (eql count (array-dimension %hashes 0))
      (error 'cl-ds:invalid-argument
             :argument 'hashes
-            :text "Invalid first dimension of %hashes")))
+            :format-control "Invalid first dimension of %hashes")))
 
   ((element)
    (incf %total)

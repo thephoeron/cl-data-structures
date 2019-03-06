@@ -47,7 +47,7 @@
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."
-                  :text "Sparse vector index can not be negative."))
+                  :format-control "Sparse vector index can not be negative."))
           ((< position tree-bound)
            (shrink-tree! operation structure
                          container position all))
@@ -74,7 +74,7 @@
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."
-                  :text "Sparse vector index can not be negative."))
+                  :format-control "Sparse vector index can not be negative."))
           ((< position tree-bound)
            (transactional-shrink-tree! operation structure
                                        container position all))
@@ -101,7 +101,7 @@
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."
-                  :text "Sparse vector index can not be negative."))
+                  :format-control "Sparse vector index can not be negative."))
           ((< position tree-bound)
            (shrink-tree operation structure
                         container position all))

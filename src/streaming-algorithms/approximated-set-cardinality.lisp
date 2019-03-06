@@ -45,7 +45,7 @@
             :argument 'bits
             :bounds (list 4 21)
             :value bits
-            :text "Bits out of range."))
+            :format-control "Bits out of range."))
    (setf %bits bits
          %hash-fn hash-fn
          %registers (make-array (ash 1 bits)

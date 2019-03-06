@@ -19,7 +19,7 @@
   (check-type to integer)
   (unless (< from to)
     (error 'cl-ds:incompatible-arguments
-           :text "FROM must be smaller then TO."
+           :format-control "FROM must be smaller then TO."
            :parameters '(from to)
            :values (list from to)))
   (make 'shuffled-range

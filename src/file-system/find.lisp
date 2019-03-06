@@ -76,7 +76,7 @@
     :before ((new-val all-files-file-range-stack-cell)
              (cell regex-directory-file-range-stack-cell))
   (error 'cl-ds:initialization-error
-         :text "Directory can't be stacked on top of file in the path description."
+         :format-control "Directory can't be stacked on top of file in the path description."
          :class 'find-range))
 
 
@@ -84,7 +84,7 @@
     :before ((new-val file-file-range-stack-cell)
              (cell directory-file-range-stack-cell))
   (error 'cl-ds:initialization-error
-         :text "Directory can't be stacked on top of file in the path description."
+         :format-control "Directory can't be stacked on top of file in the path description."
          :class 'find-range))
 
 
@@ -92,7 +92,7 @@
     :before ((new-val (eql nil))
              (cell regex-directory-file-range-stack-cell))
   (error 'cl-ds:initialization-error
-         :text "Regex form can't occur as first in the path description."
+         :format-control "Regex form can't occur as first in the path description."
          :class 'find-range))
 
 
@@ -100,7 +100,7 @@
     :before ((new-val (eql nil))
              (cell file-file-range-stack-cell))
   (error 'cl-ds:initialization-error
-         :text "Files form can't occur as first in the path description."
+         :format-control "Files form can't occur as first in the path description."
          :class 'find-range))
 
 
@@ -118,17 +118,17 @@
         (unless (eql (length times) 2)
           (error 'cl-ds:invalid-argument
                  :argument :times
-                 :text "Times list should contain lower bound and upper bound."))
+                 :format-control "Times list should contain lower bound and upper bound."))
         (if (symbolp (second times))
             (unless (eql :recursive (second times))
               (error 'cl-ds:not-in-allowed-set
                      :value (second times)
                      :bounds '(:recursive)
-                     :text "Upper bound is supposed to be either integer or :recursive symbol."))
+                     :format-control "Upper bound is supposed to be either integer or :recursive symbol."))
             (unless (apply #'<= times)
               (error 'cl-ds:invalid-argument
                      :argument :times
-                     :text "Lower bound of times should be less then upper bound."))))
+                     :format-control "Lower bound of times should be less then upper bound."))))
       (check-type times positive-integer)))
 
 

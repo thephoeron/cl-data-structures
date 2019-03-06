@@ -23,7 +23,7 @@
   (unless (file-position (read-stream range)
                          (read-initial-position range))
     (error 'cl-ds:file-releated-error
-           :text "Can't change position in the stream."))
+           :format-control "Can't change position in the stream."))
   (setf (access-reached-end range) nil)
   range)
 
@@ -38,7 +38,8 @@
     (let ((file (~> range read-path open)))
       (unless (file-position file (access-current-position range))
         (error 'cl-ds:file-releated-error
-               :text "Can't change position in the stream."))
+               :path (read-path range)
+               :format-control "Can't change position in the stream."))
       (setf (car (slot-value range '%stream)) file
             (access-reached-end range) nil)))
   (read-stream range))

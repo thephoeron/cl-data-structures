@@ -23,7 +23,7 @@
       (progn
         (unless (positive-integer-p by)
           (error 'argument-out-of-bounds
-                 :text "BY must be positive because TO is larger then FROM."
+                 :format-control "BY must be positive because TO is larger then FROM."
                  :argument 'by
                  :bounds '(> 0)
                  :value by))
@@ -34,7 +34,7 @@
       (progn
         (unless (negative-integer-p by)
           (error 'argument-out-of-bounds
-                 :text "BY must be negative because TO is smaller then FROM."
+                 :format-control "BY must be negative because TO is smaller then FROM."
                  :argument 'by
                  :bounds '(< 0)
                  :value by))

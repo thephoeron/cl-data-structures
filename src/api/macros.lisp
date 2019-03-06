@@ -41,6 +41,6 @@
   (once-only (more)
     `(unless (endp ,more)
        (error 'cl-ds:too-many-dimensions
-              :text "Can't pass more then one dimension into one dimensional data structures."
+              :format-control "Can't pass more then one dimension into one dimensional data structures."
               :value (1+ (length ,more))
               :bounds 1))))

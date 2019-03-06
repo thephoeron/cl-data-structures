@@ -23,7 +23,7 @@
    (unless (= #1=(cl-ds:dimensionality object) #2=(length more)))
    (error
     'cl-ds:dimensionality-error
-    :text (format nil
+    :format-control (format nil
                   "Passed ~a arguments but data-frame dimensionality is ~a."
                   #2# #1#)
     :value #2#
@@ -41,13 +41,13 @@
            :bounds "Must be non negative."
            :argument 'location
            :value more
-           :text "Part of location is negative."))
+           :format-control "Part of location is negative."))
   (unless (every #'< more #1=(read-upper-bounds object))
     (error 'cl-ds:argument-out-of-bounds
            :bounds #1#
            :value more
            :argument 'location
-           :text "No such position in the data frame.")))
+           :format-control "No such position in the data frame.")))
 
 
 (defun at-data (data location)
@@ -94,7 +94,7 @@
       (lret ((result (gethash (cons dimension position) aliases)))
         (when (null result)
           (error 'cl-ds:invalid-argument
-                 :text "Unkown alias."
+                 :format-control "Unkown alias."
                  :argument position)))
       position))
 
@@ -132,14 +132,14 @@
       (error 'cl-ds:dimensionality-error
              :value axis
              :bounds `(0 ,(cl-ds:dimensionality data))
-             :text "No such axis in the frame."))
+             :format-control "No such axis in the frame."))
     (unless (<= #1=(aref (read-lower-bounds data) axis)
                 position
                 #2=(1- (aref (read-upper-bounds data) axis)))
       (error 'cl-ds:argument-out-of-bounds
              :value position
              :bounds (list #1# #2#)
-             :text "No such position on axis.")))
+             :format-control "No such position on axis.")))
   (let ((old-aliases (read-reverse-aliases data))
         (old-dimensionality (cl-ds:dimensionality data))
         (revert-aliases (make-hash-table :test 'equal))

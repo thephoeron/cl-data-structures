@@ -34,12 +34,12 @@
     (error 'cl-ds:invalid-argument
            :argument 'apriori
            :references '((:apriori find-association))
-           :text "Empty apriori list."))
+           :format-control "Empty apriori list."))
   (when (emptyp aposteriori)
     (error 'cl-ds:invalid-argument
            :references '((:aposteriori find-association))
            :argument 'aposteriori
-           :text "Empty aposteriori list."))
+           :format-control "Empty aposteriori list."))
   (bind ((aposteriori (~> (add-to-list apriori aposteriori)
                           (remove-duplicates :test #'equal)))
          ((:values node path) (node-at-names index aposteriori))
@@ -64,13 +64,13 @@
            :argument 'minimal-frequency
            :bounds '(<= 0 1)
            :value minimal-frequency
-           :text "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
+           :format-control "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
   (when (and maximal-size (<= maximal-size 0))
     (error 'cl-ds:argument-out-of-bounds
            :argument 'maximal-size
            :bounds '(> 0)
            :value maximal-size
-           :text "MAXIMAL-SIZE is supposed to be above 0."))
+           :format-control "MAXIMAL-SIZE is supposed to be above 0."))
   (data-range index
               minimal-frequency
               (lambda (x)
@@ -92,13 +92,13 @@
            :argument 'minimal-frequency
            :bounds '(<= 0 1)
            :value minimal-frequency
-           :text "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
+           :format-control "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
   (when (and maximal-size (<= maximal-size 0))
     (error 'cl-ds:argument-out-of-bounds
            :argument 'maximal-size
            :bounds '(> 0)
            :value maximal-size
-           :text "MAXIMAL-SIZE is supposed to be above 0.")))
+           :format-control "MAXIMAL-SIZE is supposed to be above 0.")))
 
 
 (defmethod all-super-sets ((set empty-mixin) minimal-frequency
@@ -212,7 +212,7 @@
   (unless (eq (read-index apriori)
               (read-index aposteriori))
     (error 'cl-ds:operation-not-allowed
-           :text "APRIORI and APOSTERIORI are not nested in the same index.")))
+           :format-control "APRIORI and APOSTERIORI are not nested in the same index.")))
 
 
 (defmethod apriori-set ((set empty-association-set))

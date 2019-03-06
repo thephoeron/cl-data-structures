@@ -2,4 +2,4 @@
 
 
 (define-symbol-macro todo
-    (error 'cl-ds:not-implemented :text "Not implemented"))
+    (error 'cl-ds:not-implemented :format-control "Not implemented"))

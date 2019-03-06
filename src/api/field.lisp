@@ -21,7 +21,7 @@
       (when found
         (error 'invalid-argument
                :argument label
-               :text "Can't set value in field twice!"))
+               :format-control "Can't set value in field twice!"))
       (setf (gethash label table) value))))
 
 
@@ -41,7 +41,7 @@
 (defmethod validate-field :around (function field)
   (unless (call-next-method)
     (error 'invalid-argument
-           :text "Validation of field failed."
+           :format-control "Validation of field failed."
            :argument (hash-table-alist (read-arguments field)))))
 
 
@@ -113,7 +113,7 @@
              (unless (member ,!key '(,@accepted-field-arguments))
                (error 'cl-ds:unexpected-argument
                       :argument ,!key
-                      :text ,error-text)))
+                      :format-control ,error-text)))
            ,@(mapcar (lambda (x)
                        (bind (((name . parameters-list) x))
                          (~> (plist-alist parameters-list)

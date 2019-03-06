@@ -5,17 +5,23 @@
 
 
 (define-condition textual-error (program-error
+                                 simple-condition
                                  more-conditions:chainable-condition)
-  ((%text :initarg :text
-          :type (or null string)
-          :initform nil
-          :reader read-text))
+  ()
   (:report print-condition))
 
 
+(defmethod initialize-instance ((condition textual-error)
+                                &rest initiargs
+                                &key text)
+  (apply #'call-next-method :format-control text initiargs))
+
+
 (defmethod print-condition ((condition textual-error) stream)
-  (unless (null (read-text condition))
-    (format stream "~a~%~%" (read-text condition))))
+  (when-let ((control (simple-condition-format-control condition)))
+    (apply #'format stream control
+           (simple-condition-format-arguments condition)))
+  (more-conditions:maybe-print-cause stream condition t t))
 
 
 (define-condition initialization-error (more-conditions:reference-condition

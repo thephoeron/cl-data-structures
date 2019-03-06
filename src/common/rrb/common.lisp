@@ -586,7 +586,7 @@
            :argument 'index
            :bounds (list 0 (cl-ds:size container))
            :value index
-           :text "Index out of bounds."))
+           :format-control "Index out of bounds."))
   (check-type index rrb-index)
   (rrb-at container index))
 
@@ -959,7 +959,7 @@
              :argument 'index
              :bounds (list %lower-bound %upper-bound)
              :value index
-             :text "Index out of bounds."))
+             :format-control "Index out of bounds."))
     (let* ((index (- index %lower-bound))
            (which-array (ash index (- +bit-count+)))
            (array-index (logand index (lognot +tail-mask+))))
@@ -1075,7 +1075,7 @@
   (bind (((:slots %tail-size %content) range))
     (if (null %content)
         (error 'cl-ds:operation-not-allowed
-               :text "Can't assign into empty range!")
+               :format-control "Can't assign into empty range!")
         (setf (aref (~> %content
                         (flexichain:element* (~> %content
                                                  flexichain:nb-elements
@@ -1088,7 +1088,7 @@
   (bind (((:slots %start %content) range))
     (if (null %content)
         (error 'cl-ds:operation-not-allowed
-               :text "Can't assign into empty range!")
+               :format-control "Can't assign into empty range!")
         (setf (aref (flexichain:element* %content 0)
                     %start)
               new-value))))
@@ -1103,7 +1103,7 @@
              :argument 'index
              :bounds (list %lower-bound %upper-bound)
              :value index
-             :text "Index out of bounds."))
+             :format-control "Index out of bounds."))
     (let* ((index (- index %lower-bound))
            (which-array (ash index (- +bit-count+)))
            (array-index (logand index (lognot +tail-mask+))))

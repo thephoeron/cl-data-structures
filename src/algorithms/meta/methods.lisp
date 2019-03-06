@@ -17,7 +17,7 @@ Top level aggregator protocol.
 (defmethod extract-result :before ((aggregator fundamental-aggregator))
   (unless (aggregator-finished-p aggregator)
     (error 'cl-ds:operation-not-allowed
-           :text "Can't extract result from unfinished aggregator")))
+           :format-control "Can't extract result from unfinished aggregator")))
 
 
 (defmethod extract-result ((stage aggregation-stage))
@@ -27,7 +27,7 @@ Top level aggregator protocol.
 (defmethod begin-aggregation :before ((aggregator fundamental-aggregator))
   (when (aggregator-finished-p aggregator)
     (error 'cl-ds:operation-not-allowed
-           :text "Can't begin-aggregation on finished aggregator!")))
+           :format-control "Can't begin-aggregation on finished aggregator!")))
 
 
 (defmethod begin-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -44,7 +44,7 @@ Top level aggregator protocol.
 (defmethod end-aggregation :before ((aggregator fundamental-aggregator))
   (when (aggregator-finished-p aggregator)
     (error 'cl-ds:operation-not-allowed
-           :text "Can't end-aggregation on finished aggregator")))
+           :format-control "Can't end-aggregation on finished aggregator")))
 
 
 (defmethod end-aggregation ((aggregator multi-stage-linear-aggregator))
@@ -76,7 +76,7 @@ Top level aggregator protocol.
                                         element)
   (when (aggregator-finished-p aggregator)
     (error 'cl-ds:operation-not-allowed
-           :text "Can't pass element to aggregator that is already finished.")))
+           :format-control "Can't pass element to aggregator that is already finished.")))
 
 
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)

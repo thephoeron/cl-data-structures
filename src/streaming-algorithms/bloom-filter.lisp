@@ -26,7 +26,7 @@
   (unless (endp more-locations)
     (error 'cl-ds:dimensionality-error :bounds '(1)
                                        :value (1+ (length more-locations))
-                                       :text "Approximated-counts does not accept more-locations"))
+                                       :format-control "Approximated-counts does not accept more-locations"))
   (iterate
     (with hash = (ldb (byte 32 0)
                       (funcall (read-hash-fn container)
