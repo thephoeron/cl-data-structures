@@ -15,8 +15,9 @@
                     :text "Probability cannot be negative."))
            (sum value)))
     (when (> (abs (- sum 1.0)) single-float-epsilon)
-      (error 'cl-ds:incompatible-argument
-             :argument argument
+      (error 'cl-ds:out-of-bounds
+             :value sum
+             :bounds '(<= 0 1.0)
              :text "Probability in the row does not sum to 1.0"))))
 
 
@@ -52,13 +53,16 @@
          (dim2 (array-dimensions observation-table))
          (observations-count (length observations)))
     (unless (= (first dim1) (first dim2) (second dim1))
-      (error 'cl-ds:incompatible-argument
-             :argument '(trans-table observation-table)
-             :text "Inconsistent number of model states in the input arrays."))
+      (error 'cl-ds:incompatible-arguments
+             :text "Inconsistent number of model observations in the input arrays."
+             :parameters '(trans-table observation-table)
+             :values (list trans-table observation-table)))
     (unless (= (second dim2) observations-count)
-      (error 'cl-ds:incompatible-argument
-             :argument '(observations observation-table)
-             :text "Inconsistent number of model observations in the input arrays."))
+      (error
+       'cl-ds:incompatible-arguments
+       :parameters '(observations observation-table)
+       :text "Inconsistent number of model observations in the input arrays."
+       :values (list observations observation-table)))
     (check-probability-in-rows 'trans-table trans-table)
     (check-probability-in-rows 'observation-table observation-table)
     (when (> initial-state (first dim1))

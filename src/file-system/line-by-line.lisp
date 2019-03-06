@@ -28,8 +28,9 @@
             (progn
               (unless (file-position (read-stream range)
                                      file-position)
-                (error 'cl-ds:textual-error
-                       :text "Can't change position in the stream."))
+                (error 'cl-ds:file-releated-error
+                       :text "Can't set position in the stream."
+                       :path (read-path range)))
               (values line t))))))
 
 
@@ -68,8 +69,9 @@
     (let ((position (access-current-position range)))
       (with-open-file (stream (read-path range))
         (unless (file-position stream position)
-          (error 'cl-ds:textual-error
-                 :text "Can't change position in the stream."))
+          (error 'cl-ds:file-releated-error
+                 :text "Can't set position in the stream."
+                 :path (read-path range)))
         (iterate
           (for line = (read-line stream nil nil))
           (until (null line))

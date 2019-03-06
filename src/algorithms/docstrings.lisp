@@ -73,7 +73,7 @@
   (function shuffled-range
     (:description "Creates range of shuffled integers from FROM, to TO."
      :exceptional-situations ("Raises type-error if from or to is not integer."
-                              "TO must be greater then FROM, otherwise incompatible-argument error is signaled.")
+                              "TO must be greater then FROM, otherwise incompatible-arguments error is signaled.")
      :returns "FORWARD-RANGE"))
 
   ;; (function summary

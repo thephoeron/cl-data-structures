@@ -18,9 +18,10 @@
   (check-type from integer)
   (check-type to integer)
   (unless (< from to)
-    (error 'cl-ds:incompatible-argument
-           :argument '(from to)
-           :text "FROM must be smaller then TO."))
+    (error 'cl-ds:incompatible-arguments
+           :text "FROM must be smaller then TO."
+           :parameters '(from to)
+           :values (list from to)))
   (make 'shuffled-range
         :index from
         :from from

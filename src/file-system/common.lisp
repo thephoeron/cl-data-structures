@@ -22,7 +22,7 @@
   (ensure-stream range)
   (unless (file-position (read-stream range)
                          (read-initial-position range))
-    (error 'cl-ds:textual-error
+    (error 'cl-ds:file-releated-error
            :text "Can't change position in the stream."))
   (setf (access-reached-end range) nil)
   range)
@@ -37,7 +37,7 @@
   (when (~> range read-stream null)
     (let ((file (~> range read-path open)))
       (unless (file-position file (access-current-position range))
-        (error 'cl-ds:textual-error
+        (error 'cl-ds:file-releated-error
                :text "Can't change position in the stream."))
       (setf (car (slot-value range '%stream)) file
             (access-reached-end range) nil)))
@@ -46,7 +46,12 @@
 
 (defun close-silence-errors (stream) ; in case if closing already close streams produces error
   (handler-case (close stream)
-    (error (e) (declare (ignore e)))))
+    (stream-error (e) (declare (ignore e)))))
+
+
+(more-conditions:define-condition-translating-method close-inner-stream
+    ((error cl-ds:file-releated-error)))
+
 
 
 (defgeneric close-inner-stream (range)

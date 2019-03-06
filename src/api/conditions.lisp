@@ -4,7 +4,8 @@
 (defgeneric print-condition (object stream))
 
 
-(define-condition textual-error (program-error)
+(define-condition textual-error (program-error
+                                 more-conditions:chainable-condition)
   ((%text :initarg :text
           :type (or null string)
           :initform nil
@@ -28,10 +29,6 @@
   ())
 
 
-(define-condition ice-error (operation-not-allowed)
-  ())
-
-
 (defmethod print-condition ((condition initialization-error) stream)
   (format stream "During initialization of ~a:~%"
           (read-class condition))
@@ -49,7 +46,8 @@
   ())
 
 
-(define-condition incompatible-argument (invalid-argument)
+(define-condition incompatible-arguments
+    (textual-error more-conditions:incompatible-arguments)
   ())
 
 
@@ -84,6 +82,18 @@
 
 (define-condition too-many-dimensions (dimensionality-error)
   ())
+
+
+(define-condition file-releated-error (textual-error)
+  ((%path :initarg :path
+          :initform nil
+          :reader path)))
+
+
+(defmethod print-condition ((condition file-releated-error) stream)
+  (unless (null (path condition))
+    (format stream "Error when processing file ~a:" (path condition)))
+  (call-next-method))
 
 
 (defmethod print-condition ((condition dimensionality-error) stream)

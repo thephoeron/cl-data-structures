@@ -41,6 +41,7 @@
    #:finish
    #:force
    #:read-text
+   #:file-releated-error
    #:forward-call
    #:found
    #:functional
@@ -57,7 +58,7 @@
    #:hash-content
    #:hash-content-hash
    #:hash-content-location
-   #:incompatible-argument
+   #:incompatible-arguments
    #:initialization-error
    #:initialization-out-of-bounds
    #:insert
