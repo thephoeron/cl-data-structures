@@ -41,11 +41,21 @@
   (call-next-method))
 
 
-(define-condition invalid-argument (more-conditions:reference-condition
-                                    textual-error)
+(define-condition invalid-value (more-conditions:reference-condition
+                                 textual-error)
+  ((%value :initarg :value
+           :reader read-value)))
+
+
+(define-condition argument-error (textual-error)
   ((%argument :type symbol
               :initarg :argument
               :reader read-argument)))
+
+
+(define-condition invalid-argument (more-conditions:reference-condition
+                                    argument-error)
+  ())
 
 
 (define-condition unexpected-argument (invalid-argument)
@@ -57,14 +67,12 @@
   ())
 
 
-(define-condition out-of-bounds (textual-error)
-  ((%value :initarg :value
-           :reader read-value)
-   (%bounds :initarg :bounds
+(define-condition out-of-bounds (invalid-value)
+  ((%bounds :initarg :bounds
             :reader read-bounds)))
 
 
-(define-condition argument-out-of-bounds (invalid-argument
+(define-condition argument-out-of-bounds (argument-error
                                           out-of-bounds)
   ())
 
@@ -74,7 +82,7 @@
 
 
 (define-condition argument-not-in-allowed-set (not-in-allowed-set
-                                               invalid-argument)
+                                               argument-error)
   ())
 
 
@@ -137,8 +145,8 @@
   (call-next-method))
 
 
-(defmethod print-condition ((condition invalid-argument) stream)
-  (format stream "Invalid argument: ~a.~%"
+(defmethod print-condition ((condition argument-error) stream)
+  (format stream "Problem with the argument: ~a.~%"
           (read-argument condition))
   (call-next-method))
 
@@ -156,3 +164,8 @@
 
 (define-condition not-implemented (program-error)
   ())
+
+
+(defmethod invalid-value ((condition invalid-value) stream)
+  (format stream "Invalid value: ~a.~%" (read-value condition))
+  (call-next-method))

@@ -126,8 +126,8 @@
                      :bounds '(:recursive)
                      :format-control "Upper bound is supposed to be either integer or :recursive symbol."))
             (unless (apply #'<= times)
-              (error 'cl-ds:invalid-argument
-                     :argument :times
+              (error 'cl-ds:invalid-value
+                     :value times
                      :format-control "Lower bound of times should be less then upper bound."))))
       (check-type times positive-integer)))
 

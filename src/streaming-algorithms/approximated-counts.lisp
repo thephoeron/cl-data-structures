@@ -62,8 +62,8 @@
                                       :element-type 'non-negative-fixnum)
          %hashes (or hashes (make-hash-array count)))
    (unless (eql count (array-dimension %hashes 0))
-     (error 'cl-ds:invalid-argument
-            :argument 'hashes
+     (error 'cl-ds:invalid-value
+            :value count
             :format-control "Invalid first dimension of %hashes")))
 
   ((element)

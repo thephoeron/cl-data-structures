@@ -31,14 +31,14 @@
                              (apriori list)
                              (aposteriori list))
   (when (emptyp apriori)
-    (error 'cl-ds:invalid-argument
-           :argument 'apriori
+    (error 'cl-ds:invalid-value
+           :value '()
            :references '((:apriori find-association))
            :format-control "Empty apriori list."))
   (when (emptyp aposteriori)
-    (error 'cl-ds:invalid-argument
+    (error 'cl-ds:invalid-value
            :references '((:aposteriori find-association))
-           :argument 'aposteriori
+           :value '()
            :format-control "Empty aposteriori list."))
   (bind ((aposteriori (~> (add-to-list apriori aposteriori)
                           (remove-duplicates :test #'equal)))

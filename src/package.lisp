@@ -104,6 +104,8 @@
    #:take-out-front
    #:take-out-front!
    #:textual-error
+   #:argument-error
+   #:invalid-value
    #:too-many-dimensions
    #:transactional
    #:transactionalp
