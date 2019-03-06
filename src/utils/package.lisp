@@ -90,6 +90,7 @@
    #:todo
    #:try-find
    #:try-find-cell
+   #:ignore-errors*
    #:try-remove
    #:unfold-table
    #:with-keys

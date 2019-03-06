@@ -309,8 +309,8 @@
            (iterate
              (until (endp (access-state cell)))
              (for next-path = (pop (access-state cell)))
-             (when (and (~> cell read-predicate (funcall next-path))
-                        (regex-matches path next-path))
+             (when (and (regex-matches path next-path)
+                        (~> cell read-predicate (funcall next-path)))
                (return-from eat-cell
                  (values next-path t)))
              (finally (go :start)))))))

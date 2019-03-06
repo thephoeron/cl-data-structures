@@ -76,3 +76,8 @@
             (leave)))
         (decf total-count)
         (shiftf result (coerce address 'list))))))
+
+
+(defun ignore-errors* (function)
+  (lambda (&rest all)
+    (ignore-errors (apply function all))))
