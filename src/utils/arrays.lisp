@@ -417,11 +417,13 @@
      result)))
 
 
+(declaim (inline broadcast))
 (defun broadcast (function first-array second-array
                   &key
                     (element-type t)
                     (first-dimensions (array-dimensions first-array))
-                    (second-dimensions (array-dimensions second-array)))
+                    (second-dimensions (array-dimensions second-array))
+                    (result nil))
   (declare (optimize (speed 3))
            (type list first-dimensions second-dimensions)
            (type array first-array second-array))
@@ -446,8 +448,9 @@
                                      second-stride-list))
          (first-total-size (array-total-size first-array))
          (second-total-size (array-total-size second-array))
-         (result (make-array result-stride-list
-                             :element-type element-type))
+         (result (or result
+                     (make-array result-stride-list
+                                 :element-type element-type)))
          ((:dflet broadcast-index (stride-list index))
           (declare (type list stride-list)
                    (type fixnum index))

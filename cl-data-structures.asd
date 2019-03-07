@@ -60,6 +60,7 @@
                                            (:file "docstrings")))
                              (:module "distance-functions"
                               :components ((:file "package")
+                                           (:file "sinkhorn")
                                            (:file "bhattacharyya")
                                            (:file "docstrings")))
                              (:test-file "distances-tests")

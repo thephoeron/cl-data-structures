@@ -2,4 +2,6 @@
   (:use #:cl #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils.distance)
   (:export
-   #:bhattacharyya-distance))
+   #:bhattacharyya-distance
+   #:sinkhorn-distance
+   #:sinkhorn-optimal-transport-matrix))
