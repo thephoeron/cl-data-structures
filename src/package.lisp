@@ -39,6 +39,7 @@
    #:expression
    #:field
    #:finish
+   #:path
    #:force
    #:read-text
    #:file-releated-error
