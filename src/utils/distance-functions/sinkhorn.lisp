@@ -13,7 +13,7 @@
   (declare (type (simple-array double-float (* *)) cost-matrix)
            (type (simple-array double-float (*)) vector-1 vector-2)
            (type double-float regularization-strength epsilon)
-           (optimize (speed 3)))
+           (optimize (speed 3) (space 0) (debug 0) (compilation-speed 0)))
   (bind ((dims (array-dimensions cost-matrix))
          ((n m) dims)
          (transport-matrix (make-array dims
