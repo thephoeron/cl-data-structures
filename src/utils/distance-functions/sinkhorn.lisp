@@ -28,8 +28,8 @@
              (type (simple-array double-float (*)) u sum-column sum-row)
              (type (simple-array double-float (* *))
                    transport-matrix))
-    (assert (and (arrayp cost) (eql n (array-dimension cost 0))))
-    (assert (and (arrayp cost) (eql m (array-dimension cost 1))))
+    (assert (or (not (arrayp cost)) (eql n (array-dimension cost 0))))
+    (assert (or (not (arrayp cost)) (eql m (array-dimension cost 1))))
     (cl-ds.utils:cases ((floatp cost))
       (iterate
         (declare (type double-float sum m value)
