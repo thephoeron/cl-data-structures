@@ -116,15 +116,15 @@
                           &optional (epsilon (coerce single-float-epsilon
                                                      'double-float)))
   (declare (optimize (speed 3)))
-  (let ((total 0.0d0))
-    (declare (type double-float total))
-    (iterate
-      (declare (type fixnum i))
-      (with transport = (sinkhorn-optimal-transport-matrix
-                         cost-matrix first-vector
-                         second-vector regularization-strength
-                         epsilon))
-      (for i from 0 below (array-total-size transport))
-      (incf total (* (row-major-aref transport i)
-                     (row-major-aref cost-matrix i))))
-    total))
+  (iterate
+    (declare (type fixnum i)
+             (type double-float total))
+    (with total = 0.0d0)
+    (with transport = (sinkhorn-optimal-transport-matrix
+                       cost-matrix first-vector
+                       second-vector regularization-strength
+                       epsilon))
+    (for i from 0 below (array-total-size transport))
+    (incf total (* (row-major-aref transport i)
+                   (row-major-aref cost-matrix i)))
+    (finally (return total))))
