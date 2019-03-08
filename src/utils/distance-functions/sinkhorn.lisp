@@ -2,21 +2,21 @@
 
 
 (-> sinkhorn-optimal-transport-matrix
-    ((simple-array double-float (* *))
+    ((or double-float (simple-array double-float (* *)))
      (simple-array double-float (*))
      (simple-array double-float (*))
      double-float
      double-float)
     (simple-array double-float (* *)))
-(defun sinkhorn-optimal-transport-matrix (cost-matrix vector-1 vector-2
+(defun sinkhorn-optimal-transport-matrix (cost vector-1 vector-2
                                           regularization-strength epsilon)
-  (declare (type (simple-array double-float (* *)) cost-matrix)
+  (declare (type (or double-float (simple-array double-float (* *))) cost)
            (type (simple-array double-float (*)) vector-1 vector-2)
            (type double-float regularization-strength epsilon)
            (optimize (speed 3) (space 0) (debug 0) (compilation-speed 0)))
-  (bind ((dims (array-dimensions cost-matrix))
-         ((n m) dims)
-         (transport-matrix (make-array dims
+  (bind ((n (length vector-1))
+         (m (length vector-2))
+         (transport-matrix (make-array `(,n ,m)
                                        :element-type 'double-float))
          (u (make-array n :element-type 'double-float
                           :initial-element 0.0d0))
@@ -28,22 +28,25 @@
              (type (simple-array double-float (*)) u sum-column sum-row)
              (type (simple-array double-float (* *))
                    transport-matrix))
-    (assert (eql n (length vector-1)))
-    (assert (eql m (length vector-2)))
-    (iterate
-      (declare (type double-float sum m value)
-               (type fixnum i total-size))
-      (with total-size = (array-total-size transport-matrix))
-      (for i from 0 below total-size)
-      (for m = (row-major-aref cost-matrix i))
-      (for value = (exp (- (* regularization-strength m))))
-      (setf #1=(row-major-aref transport-matrix i) value)
-      (sum value into sum)
-      (finally
-       (iterate
-         (declare (type fixnum i))
-         (for i from 0 below total-size)
-         (setf #1# (/ #1# sum)))))
+    (assert (and (arrayp cost) (eql n (array-dimension cost 0))))
+    (assert (and (arrayp cost) (eql m (array-dimension cost 1))))
+    (cl-ds.utils:cases ((floatp cost))
+      (iterate
+        (declare (type double-float sum m value)
+                 (type fixnum i total-size))
+        (with total-size = (array-total-size transport-matrix))
+        (for i from 0 below total-size)
+        (for m = (if (floatp cost)
+                     cost
+                     (row-major-aref cost i)))
+        (for value = (exp (- (* regularization-strength m))))
+        (setf #1=(row-major-aref transport-matrix i) value)
+        (sum value into sum)
+        (finally
+         (iterate
+           (declare (type fixnum i))
+           (for i from 0 below total-size)
+           (setf #1# (/ #1# sum))))))
     (iterate outer
       (declare (type double-float maximum))
       (iterate
@@ -105,26 +108,29 @@
 
 
 (-> sinkhorn-distance
-    ((simple-array double-float (* *))
+    ((or double-float (simple-array double-float (* *)))
      (simple-array double-float (*))
      (simple-array double-float (*))
      double-float
      &optional double-float)
     double-float)
-(defun sinkhorn-distance (cost-matrix first-vector second-vector
+(defun sinkhorn-distance (cost first-vector second-vector
                           regularization-strength
                           &optional (epsilon (coerce single-float-epsilon
                                                      'double-float)))
   (declare (optimize (speed 3)))
-  (iterate
-    (declare (type fixnum i)
-             (type double-float total))
-    (with total = 0.0d0)
-    (with transport = (sinkhorn-optimal-transport-matrix
-                       cost-matrix first-vector
-                       second-vector regularization-strength
-                       epsilon))
-    (for i from 0 below (array-total-size transport))
-    (incf total (* (row-major-aref transport i)
-                   (row-major-aref cost-matrix i)))
-    (finally (return total))))
+  (cl-ds.utils:cases ((floatp cost))
+    (iterate
+      (declare (type fixnum i)
+               (type double-float total))
+      (with total = 0.0d0)
+      (with transport = (sinkhorn-optimal-transport-matrix
+                         cost first-vector
+                         second-vector regularization-strength
+                         epsilon))
+      (for i from 0 below (array-total-size transport))
+      (incf total (* (row-major-aref transport i)
+                     (if (floatp cost)
+                         cost
+                         (row-major-aref cost i))))
+      (finally (return total)))))
