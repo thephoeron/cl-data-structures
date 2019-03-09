@@ -19,10 +19,11 @@
          :reader read-key)))
 
 
-(defmethod cl-ds:clone ((range moving-average-range))
-  (make (type-of range)
-        :count (access-count range)
-        :sum (access-sum range)))
+(defmethod cl-ds.utils:cloning-information append
+    ((range moving-average-range))
+  '((:count access-count)
+    (:sum access-sum)
+    (:key read-key)))
 
 
 (defmethod cl-ds:reset! ((range moving-average-range))
