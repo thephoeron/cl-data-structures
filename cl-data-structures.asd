@@ -184,7 +184,6 @@
                              (:file "group-by")
                              (:file "without")
                              (:file "only")
-                             (:file "unique")
                              (:file "cartesian")
                              (:file "restrain-size")
                              (:file "repeat")
