@@ -11,6 +11,12 @@
                       :reader read-context-function)))
 
 
+(defmethod cl-ds.utils:cloning-information append ((range in-parallel-range))
+  '((:limit read-limit)
+    (:chunk-size-hint read-chunk-size-hint)
+    (:context-function read-context-function)))
+
+
 (defclass forward-in-parallel-range (in-parallel-range
                                      cl-ds.alg:forward-proxy-range)
   ())
@@ -24,14 +30,6 @@
 (defclass random-in-parallel-range (in-parallel-range
                                     cl-ds.alg:random-access-proxy-range)
   ())
-
-
-(defmethod cl-ds:clone ((range in-parallel-range))
-  (make (type-of range)
-        :limit (read-limit range)
-        :chunk-size-hint (read-chunk-size-hint range)
-        :context-function (read-context-function range)
-        :original-range (cl-ds.alg:read-original-range range)))
 
 
 (defun make-in-parallel-read-thread (chunked-range limit context-function)

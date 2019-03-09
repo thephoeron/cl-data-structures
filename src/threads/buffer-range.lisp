@@ -9,6 +9,11 @@
                       :reader read-context-function)))
 
 
+(defmethod buffer-range append ((range buffer-range))
+  '((:limit read-limit)
+    (:context-function read-context-function)))
+
+
 (defclass forward-buffer-range (buffer-range cl-ds.alg:forward-proxy-range)
   ())
 
@@ -19,13 +24,6 @@
 
 (defclass random-access-buffer-range (buffer-range cl-ds.alg:random-access-proxy-range)
   ())
-
-
-(defmethod cl-ds:clone ((range buffer-range))
-  (make (type-of range)
-        :limit (read-limit range)
-        :context-function (read-context-function range)
-        :original-range (cl-ds.alg:read-original-range range)))
 
 
 (defun traverse/accross-thread-buffer-range (traverse/accross range function)
