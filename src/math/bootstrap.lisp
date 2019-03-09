@@ -18,6 +18,17 @@
                    :reader read-samples-count)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range bootstrap-proxy))
+  '((:sample-size read-sample-size)
+    (:key read-key)
+    (:confidence read-confidence)
+    (:compare read-compare)
+    (:parallel read-parallel)
+    (:context-function read-context-function)
+    (:samples-count read-samples-count)))
+
+
 (defclass forward-bootstrap-proxy (bootstrap-proxy
                                    cl-ds:fundamental-forward-range)
   ())
