@@ -9,6 +9,12 @@
          :reader read-key)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range group-by-proxy))
+  '((:groups read-groups)
+    (:key read-key)))
+
+
 (defclass forward-group-by-proxy (group-by-proxy
                                   fundamental-forward-range)
   ())
@@ -22,13 +28,6 @@
 (defclass random-access-group-by-proxy (bidirectional-group-by-proxy
                                         random-access-proxy-range)
   ())
-
-
-(defmethod clone ((range group-by-proxy))
-  (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
-                 :test (~> range read-groups hash-table-test)
-                 :key (read-key range)))
 
 
 (defmethod initialize-instance :before ((instance group-by-proxy)
