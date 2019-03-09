@@ -31,7 +31,7 @@
           :key (read-key range)
           :seen new-seen
           :original-seen original-seen
-          :original-range (read-original-range range))))
+          :original-range (cl-ds:clone (read-original-range range)))))
 
 
 (defmethod cl-ds:drop-front ((range distinct-proxy) count)

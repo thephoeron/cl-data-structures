@@ -11,15 +11,21 @@
               :reader read-function)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range forward-cartesian-range))
+  '((:content read-content)
+    (:function read-function)))
+
+
 (defmethod cl-ds:reset! ((range forward-cartesian-range))
   (map nil #'cl-ds:reset! (read-content range))
   range)
 
 
 (defmethod cl-ds:clone ((range forward-cartesian-range))
-  (make (type-of range)
-        :function (read-function range)
-        :content (map 'vector #'cl-ds:clone (read-content range))))
+  (cl-ds.utils:quasi-clone range
+                           :content (map 'vector #'cl-ds:clone
+                                         (read-content range))))
 
 
 (defmethod cl-ds:consume-front ((range forward-cartesian-range))
