@@ -43,7 +43,9 @@
                                                 :test (function ,!compare-fn))
                (when ,changed
                  (setf (cl-ds.common:hash-dict-content-value ,!bucket)
-                       (cl-ds:force (cl-ds.common:hash-dict-content-value ,!bucket))))
+                       (~> ,!bucket
+                           cl-ds.common:hash-dict-content-value
+                           cl-ds:force)))
                (values ,result
                        ,status))))))))
 

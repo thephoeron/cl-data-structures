@@ -6,12 +6,21 @@
                    :reader read-initial-state)
    (%state :initarg :state
            :accessor access-state)
+   (%state-bound :initarg :state-bound)
    (%result :initarg :result
             :reader read-result)
    (%function :initarg :function
               :reader read-function)
    (%key :initarg :key
          :reader read-key)))
+
+
+(defmethod cl-ds.utils:cloning-information append
+    ((object cumulative-state))
+  '((:state read-initial-state)
+    (:result read-result)
+    (:function read-function)
+    (:key read-key)))
 
 
 (defclass cumulative-accumulate-range (cl-ds.alg:proxy-range

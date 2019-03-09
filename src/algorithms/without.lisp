@@ -6,6 +6,11 @@
                :reader read-predicate)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((proxy filtering-proxy))
+  '((:predicate read-predicate)))
+
+
 (defclass forward-without-proxy (without-proxy
                                  forward-filtering-proxy)
   ())
@@ -24,13 +29,6 @@
 (defclass without-function (layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defmethod clone ((range without-proxy))
-  (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
-                 :predicate (read-predicate range)
-                 :key (read-key range)))
 
 
 (defgeneric without (range predicate &key key)

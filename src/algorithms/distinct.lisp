@@ -6,11 +6,15 @@
          :reader read-key)
    (%seen :initarg :seen
           :reader read-seen)
-   (%mutex :initarg :mutex
-           :reader read-mutex)
    (%original-seen :initarg :original-seen
-                   :reader read-original-seen))
-  (:default-initargs :mutex (bt:make-lock)))
+                   :reader read-original-seen)))
+
+
+(defmethod cl-ds.utils:cloning-information append
+    ((range distinct-proxy))
+  '((key read-key)
+    (seen read-seen)
+    (original-seen read-original-seen)))
 
 
 (defclass forward-distinct-proxy (cl-ds:chunking-mixin
@@ -20,79 +24,68 @@
 
 
 (defmethod cl-ds:clone ((range distinct-proxy))
-  (bt:with-lock-held ((read-mutex range))
-    (let* ((seen (read-seen range))
-           (original-seen (read-seen range))
-           (new-seen1 (cl-ds:become-transactional seen))
-           (new-seen2 (cl-ds:become-transactional seen)))
-      ;; below is required to prevent spilling out side effects on seen dict between clones.
-      (setf (slot-value range '%seen) new-seen1)
-      (make (type-of range)
-            :key (read-key range)
-            :seen new-seen2
-            :original-seen original-seen
-            :original-range (read-original-range range)))))
+  (let* ((seen (read-seen range))
+         (new-seen (cl-ds:replica seen t))
+         (original-seen (cl-ds:replica seen t)))
+    (make (type-of range)
+          :key (read-key range)
+          :seen new-seen
+          :original-seen original-seen
+          :original-range (read-original-range range))))
 
 
 (defmethod cl-ds:drop-front ((range distinct-proxy) count)
   (iterate
     (repeat count)
     (iterate
-      (with mutex = (read-mutex range))
       (with range = (read-original-range range))
       (with key = (read-key range))
       (for (values data more) = (cl-ds:consume-front range))
       (unless more
         (return-from drop-front (values nil nil)))
       (for key-value = (funcall key data))
-      (bt:with-lock-held (mutex)
-        (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
-                                                 key-value t)
-          (unless found
-            (leave (values data t)))))))
+      (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
+                                               key-value t)
+        (unless found
+          (leave (values data t))))))
   range)
 
 
 (defmethod cl-ds:traverse ((range distinct-proxy) function)
-  (bind (((:slots %seen %mutex %key) range)
+  (bind (((:slots %seen %key) range)
          (original (read-original-range range)))
     (cl-ds:traverse
      original
      (lambda (x &aux (key (funcall %key x)))
-       (bt:with-lock-held (%mutex)
-         (cl-ds:mod-bind (dict found) (cl-ds:add! %seen key t)
-           (unless found
-             (funcall function x)))))))
+       (cl-ds:mod-bind (dict found) (cl-ds:add! %seen key t)
+         (unless found
+           (funcall function x))))))
   range)
 
 
 (defmethod cl-ds:across ((range distinct-proxy) function)
-  (bind (((:slots %seen %key %mutex) range)
+  (bind (((:slots %seen %key) range)
          (original (read-original-range range))
          (seen (cl-ds:become-transactional %seen)))
     (cl-ds:across
      original
      (lambda (x &aux (key (funcall %key x)))
-       (bt:with-lock-held (%mutex)
-         (cl-ds:mod-bind (dict found) (cl-ds:add! seen key t)
-           (unless found
-             (funcall function x)))))))
+       (cl-ds:mod-bind (dict found) (cl-ds:add! seen key t)
+         (unless found
+           (funcall function x))))))
   range)
 
 
 (defmethod cl-ds:reset! ((range distinct-proxy))
-  (bt:with-lock-held ((read-mutex range))
-    (setf (slot-value range '%seen) (~> range
-                                        read-seen
-                                        cl-ds:become-transactional)))
+  (setf (slot-value range '%seen) (~> range
+                                      read-seen
+                                      cl-ds:become-transactional))
   (call-next-method))
 
 
 (defmethod cl-ds:peek-front ((range forward-distinct-proxy))
   (iterate
-    (with mutex = (read-mutex range))
-    (with seen = (bt:with-lock-held (mutex)
-                   (cl-ds:become-transactional (read-seen range))))
+    (with seen = (cl-ds:become-transactional (read-seen range)))
     (with range = (cl-ds:clone (read-original-range range)))
     (with key = (read-key range))
     (for (values data more) = (cl-ds:consume-front seen))
@@ -106,18 +99,16 @@
 
 (defmethod cl-ds:consume-front ((range forward-distinct-proxy))
   (iterate
-    (with mutex = (read-mutex range))
     (with range = (read-original-range range))
     (with key = (read-key range))
     (for (values data more) = (cl-ds:consume-front range))
     (unless more
       (leave (values nil nil)))
     (for key-value = (funcall key data))
-    (bt:with-lock-held (mutex)
-      (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
-                                               key-value t)
-        (unless found
-          (leave (values data t)))))))
+    (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
+                                             key-value t)
+      (unless found
+        (leave (values data t))))))
 
 
 (defclass distinct-function (layer-function)

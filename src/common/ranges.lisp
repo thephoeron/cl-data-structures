@@ -21,6 +21,15 @@
                :reader read-container)))
 
 
+(defmethod cl-ds.utils:cloning-information
+    append ((object forward-tree-range))
+  '((:obtain-value read-obtain-value)
+    (:initial-stack access-forward-stack)
+    (:forward-stack access-forward-stack)
+    (:key read-key)
+    (:container read-container)))
+
+
 (defclass assignable-forward-tree-range
     (cl-ds:fundamental-assignable-forward-range forward-tree-range)
   ((%store-value :type (-> (t t) t)
@@ -127,12 +136,7 @@
 
 
 (defmethod cl-ds:clone ((range forward-tree-range))
-  (make (type-of range)
-        :container (read-container range)
-        :forward-stack (access-forward-stack range)
-        :initial-stack (access-forward-stack range)
-        :obtain-value (read-obtain-value range)
-        :key (read-key range)))
+  (cl-ds.utils:clone range))
 
 
 (defmethod cl-ds:reset! ((range forward-tree-range))

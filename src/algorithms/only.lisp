@@ -6,6 +6,11 @@
                :reader read-predicate)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((proxy only-proxy))
+  '((:predicate read-predicate)))
+
+
 (defclass forward-only-proxy (only-proxy
                               forward-filtering-proxy)
   ())

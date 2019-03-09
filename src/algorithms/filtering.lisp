@@ -6,6 +6,11 @@
          :reader read-key)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range filtering-proxy))
+  '((:key read-key)))
+
+
 (defclass forward-filtering-proxy (filtering-proxy
                                    fundamental-forward-range)
   ())

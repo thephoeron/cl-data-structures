@@ -9,6 +9,12 @@
               :reader read-function)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range forward-zipped-ranges))
+  '((:ranges read-ranges)
+    (:function :read-function)))
+
+
 (defclass bidirectional-zipped-ranges (forward-zipped-ranges
                                        cl-ds:fundamental-bidirectional-range)
   ())
@@ -20,9 +26,9 @@
 
 
 (defmethod cl-ds:clone ((range forward-zipped-ranges))
-  (make (type-of range)
-        :ranges (mapcar #'cl-ds:clone (read-ranges range))
-        :function (read-function range)))
+  (cl-ds.utils:quasi-clone
+   range
+   :ranges (mapcar #'cl-ds:clone (read-ranges range))))
 
 
 (defun init-zipped-ranges (obj)
@@ -137,4 +143,3 @@
     (iterate
       (for range in %ranges)
       (minimize (cl-ds:size range)))))
-

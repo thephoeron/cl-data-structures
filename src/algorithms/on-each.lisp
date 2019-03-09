@@ -19,6 +19,12 @@
          :reader read-key)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range proxy-range))
+  '((:function read-function)
+    (:key read-key)))
+
+
 (defclass forward-proxy-box-range (chunked-proxy-range
                                    proxy-box-range
                                    forward-proxy-range)
@@ -41,13 +47,6 @@
         :function (read-function range)
         :key (read-key range)
         :original-range chunk))
-
-
-(defmethod cl-ds:clone ((range forward-proxy-box-range))
-  (make-instance (type-of range)
-                 :original-range (cl-ds:clone (read-original-range range))
-                 :function (read-function range)
-                 :key (read-key range)))
 
 
 (defmethod cl-ds:traverse ((range forward-proxy-box-range) function)

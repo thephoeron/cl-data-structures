@@ -25,17 +25,16 @@
                       :reader read-initial-position)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range restrain-size-proxy))
+  '((:size read-size)
+    (:position access-position)))
+
+
 (defclass forward-restrain-size-proxy (cl-ds:chunking-mixin
                                        restrain-size-proxy
                                        forward-proxy-range)
   ())
-
-
-(defmethod cl-ds:clone ((range restrain-size-proxy))
-  (make (type-of range)
-        :original-range (~> range read-original-range cl-ds:clone)
-        :position (access-position range)
-        :size (read-size range)))
 
 
 (defmethod cl-ds:consume-front ((range restrain-size-proxy))

@@ -527,7 +527,7 @@ Methods. Those will just call non generic functions.
         :key (get-range-key-function container)
         :forward-stack (if (null (access-root container))
                            nil
-                           (list (new-cell (access-root container))))
+                           (~> container access-root new-cell list))
         :container container))
 
 

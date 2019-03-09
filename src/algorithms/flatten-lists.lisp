@@ -10,16 +10,15 @@
              :accessor access-current)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range flatten-proxy))
+  '((:key read-key)
+    (:current access-current)))
+
+
 (defclass forward-flatten-proxy (flatten-proxy
                                  fundamental-forward-range)
   ())
-
-
-(defmethod cl-ds:clone ((range flatten-proxy))
-  (make (type-of range)
-        :key (read-key range)
-        :current (access-current range)
-        :original-range (read-original-range range)))
 
 
 (labels ((impl (function x)
