@@ -92,7 +92,6 @@
    #:summary
    #:%summary
    #:transparent-to-chunking-mixin
-   #:unique
    #:without
    #:wrap-chunk
    #:zip))
