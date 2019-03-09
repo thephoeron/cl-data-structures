@@ -16,7 +16,10 @@
    #:binary-search
    #:bind-lambda
    #:broadcast
+   #:cloning-information
+   #:quasi-clone
    #:cartesian
+   #:clone
    #:cartesian-table
    #:cases
    #:cond+

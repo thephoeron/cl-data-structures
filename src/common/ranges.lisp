@@ -74,11 +74,10 @@
 (defmethod cl-ds:peek-front ((range forward-tree-range))
   (bind (((:accessors (stack access-forward-stack)
                       (obtain-value read-obtain-value)
-                      (mutex read-mutex)
                       (key read-key))
           range)
          ((:values _ result found)
-          (read-implementation (bt:with-lock-held (mutex) stack)
+          (read-implementation stack
                                obtain-value)))
     (values (when found (funcall key result)) found)))
 
@@ -130,8 +129,8 @@
 (defmethod cl-ds:clone ((range forward-tree-range))
   (make (type-of range)
         :container (read-container range)
-        :forward-stack (mapcar #'cl-ds:clone (access-forward-stack range))
-        :initial-stack (mapcar #'cl-ds:clone (access-forward-stack range))
+        :forward-stack (access-forward-stack range)
+        :initial-stack (access-forward-stack range)
         :obtain-value (read-obtain-value range)
         :key (read-key range)))
 

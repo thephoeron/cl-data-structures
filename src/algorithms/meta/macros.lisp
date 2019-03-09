@@ -33,7 +33,7 @@
     `(defgeneric ,function-name ,generic-lambda-list
        (:generic-function-class ,function-class)
        (:method ,method-lambda-list
-         ,(cond+ ((null all) optional-arguments)
+         ,(cl-ds.utils:cond+ ((null all) optional-arguments)
             ((t nil) `(apply-aggregation-function range
                                                   (function ,function-name)
                                                   ,@required-arguments))

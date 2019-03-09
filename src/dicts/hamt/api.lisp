@@ -136,7 +136,7 @@ Methods. Those will just call non generic functions.
            (tag nil)
            (hash (hash-fn location))
            ((:dflet grow-bucket (bucket))
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:grow-bucket
                        operation
                        container
@@ -145,8 +145,8 @@ Methods. Those will just call non generic functions.
                        :hash hash
                        :value value
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:dflet copy-on-write (indexes path depth conflict))
             (copy-on-write structure
                            tag
@@ -155,7 +155,7 @@ Methods. Those will just call non generic functions.
                            depth
                            conflict))
            ((:dflet make-bucket ())
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:make-bucket
                        operation
                        container
@@ -163,8 +163,8 @@ Methods. Those will just call non generic functions.
                        :hash hash
                        :value value
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:values new-root status)
             (go-down-on-path structure
                              hash
@@ -197,7 +197,7 @@ Methods. Those will just call non generic functions.
     (bind ((hash (hash-fn location))
            (changed nil)
            ((:dflet grow-bucket (bucket))
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:grow-bucket
                        operation
                        container
@@ -206,10 +206,10 @@ Methods. Those will just call non generic functions.
                        :hash hash
                        :value value
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:dflet make-bucket ())
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:make-bucket
                        operation
                        container
@@ -217,8 +217,8 @@ Methods. Those will just call non generic functions.
                        :hash hash
                        :value value
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:dflet copy-on-write (indexes path depth conflict))
             (transactional-copy-on-write structure
                                          (read-ownership-tag structure)
@@ -255,7 +255,7 @@ Methods. Those will just call non generic functions.
            (tag nil)
            (changed nil)
            ((:dflet shrink-bucket (bucket))
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:shrink-bucket
                        operation
                        container
@@ -263,8 +263,8 @@ Methods. Those will just call non generic functions.
                        location
                        :hash hash
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:dflet copy-on-write (indexes path depth conflict))
             (copy-on-write structure
                            tag
@@ -307,15 +307,15 @@ Methods. Those will just call non generic functions.
     (bind ((hash (hash-fn location))
            (changed nil)
            ((:dflet shrink-bucket (bucket))
-            (multiple-value-bind (a b c)
+            (multiple-value-bind (a b)
                 (apply #'cl-ds.meta:shrink-bucket
                        operation
                        container
                        bucket
                        location :hash hash
                        all)
-              (setf changed c)
-              (values a b c)))
+              (setf changed (cl-ds:changed b))
+              (values a b changed)))
            ((:dflet just-return ())
             (return-from cl-ds.meta:position-modification
               (values structure
@@ -394,9 +394,9 @@ Methods. Those will just call non generic functions.
         (hash (funcall (the (-> (t) fixnum)
                             (cl-ds.dicts:read-hash-fn structure)) location)))
     (macrolet ((handle-bucket (&body body)
-                 `(multiple-value-bind (bucket s changed)
+                 `(multiple-value-bind (bucket s)
                       ,@body
-                    (unless changed
+                    (unless (cl-ds:changed s)
                       (return-from cl-ds.meta:position-modification
                         (values structure
                                 s)))
@@ -525,7 +525,9 @@ Methods. Those will just call non generic functions.
   (make 'cl-ds.common:forward-tree-range
         :obtain-value #'obtain-value
         :key (get-range-key-function container)
-        :forward-stack (list (new-cell (access-root container)))
+        :forward-stack (if (null (access-root container))
+                           nil
+                           (list (new-cell (access-root container))))
         :container container))
 
 

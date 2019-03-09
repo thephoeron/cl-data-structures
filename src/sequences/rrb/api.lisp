@@ -722,7 +722,9 @@
                             32
                             s)))
            (tree-size (- size tail-size))
-           (tail (if (zerop tail-size) nil (~> content pop-last rrb-node-content)))
+           (tail (if (zerop tail-size) nil (~> content
+                                               cl-ds.utils:pop-last
+                                               rrb-node-content)))
            ((:values root shift) (fold-rrb-content content tag)))
       (make 'mutable-rrb-vector
             :root root

@@ -3,8 +3,7 @@
 
 (defpackage :cl-data-structures.dicts
   (:use #:common-lisp
-        #:cl-data-structures.aux-package
-        #:cl-data-structures.utils)
+        #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.dicts)
   (:export
    #:fundamental-dictionary
@@ -32,7 +31,6 @@
 (defpackage :cl-data-structures.dicts.hamt
   (:use #:common-lisp
         #:cl-data-structures.aux-package
-        #:cl-data-structures.utils
         #:cl-data-structures.common.hamt
         #:cl-data-structures.common.abstract)
   (:nicknames #:cl-ds.dicts.hamt)

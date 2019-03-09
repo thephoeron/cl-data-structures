@@ -2,8 +2,7 @@
 
 
 (defpackage :cl-data-structures.sequences
-  (:use #:cl-ds.utils
-        #:common-lisp
+  (:use #:common-lisp
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.seqs)
   (:export
@@ -15,7 +14,6 @@
 
 (defpackage :cl-data-structures.sequences.rrb-vector
   (:use #:common-lisp
-        #:cl-ds.utils
         #:cl-data-structures.common.rrb
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.seqs.rrb)

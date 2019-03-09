@@ -15,7 +15,8 @@
                (funcall equal-fn
                         (cl-ds.common:hash-content-location a)
                         b)))
-         ((:values r f) (try-find location bucket :test #'compare-fn)))
+         ((:values r f) (cl-ds.utils:try-find
+                         location bucket :test #'compare-fn)))
     (values (and f (cl-ds.common:hash-dict-content-value r))
             f)))
 
@@ -37,15 +38,14 @@
                             :location ,location
                             :value ,value)))
              (multiple-value-bind (^next-list ^replaced ^old-value)
-                 (insert-or-replace ,bucket
-                                    ,!bucket
-                                    :test (function ,!compare-fn))
+                 (cl-ds.utils:insert-or-replace ,bucket
+                                                ,!bucket
+                                                :test (function ,!compare-fn))
                (when ,changed
                  (setf (cl-ds.common:hash-dict-content-value ,!bucket)
                        (cl-ds:force (cl-ds.common:hash-dict-content-value ,!bucket))))
                (values ,result
-                       ,status
-                       ,changed))))))))
+                       ,status))))))))
 
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
@@ -60,9 +60,9 @@
                (funcall equal-fn location
                         (cl-ds.common:hash-content-location node))))
          ((:values list removed value)
-          (try-remove location
-                      bucket
-                      :test #'location-test)))
+          (cl-ds.utils:try-remove location
+                                  bucket
+                                  :test #'location-test)))
     (if removed
         (values
          (or list 'cl-ds.meta:null-bucket)
@@ -95,25 +95,22 @@
                 (return-from cl-ds.meta:shrink-bucket
                   (values
                    bucket
-                   cl-ds.common:empty-eager-modification-operation-status
-                   nil)))
+                   cl-ds.common:empty-eager-modification-operation-status)))
               t)))
          ((:values list removed value)
-          (try-remove location
-                      bucket
-                      :test #'location-test)))
+          (cl-ds.utils:try-remove location
+                                  bucket
+                                  :test #'location-test)))
     (if removed
         (values
          (or list 'cl-ds.meta:null-bucket)
          (cl-ds.common:make-eager-modification-operation-status
           t
           (cl-ds.common:hash-dict-content-value value)
-          t)
-         t)
+          t))
         (values
          bucket
-         cl-ds.common:empty-eager-modification-operation-status
-         nil))))
+         cl-ds.common:empty-eager-modification-operation-status))))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
@@ -128,7 +125,8 @@
       ^next-list
       (cl-ds.common:make-eager-modification-operation-status
        ^replaced
-       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value)))
+       (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value))
+       t)
       t))
 
 
@@ -191,8 +189,7 @@
               (cl-ds.common:make-eager-modification-operation-status
                t
                (cl-ds.common:hash-dict-content-value node)
-               t)
-              t)))))))
+               t))))))))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if!-function)
@@ -216,7 +213,7 @@
             (not (funcall condition-fn
                           (cl-ds.common:hash-content-location node)
                           (cl-ds.common:hash-dict-content-value node))))
-        (values bucket cl-ds.common:empty-eager-modification-operation-status nil)
+        (values bucket cl-ds.common:empty-eager-modification-operation-status)
         (progn
           (setf (cl-ds.common:hash-content-location node) location
                 (cl-ds.common:hash-dict-content-value node) (cl-ds:force value))
@@ -224,8 +221,7 @@
                   (cl-ds.common:make-eager-modification-operation-status
                    t
                    (cl-ds.common:hash-dict-content-value node)
-                   t)
-                  t)))))
+                   t))))))
 
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
@@ -437,7 +433,8 @@
                 (cl-ds.common:hash-dict-content-value tuple) (cl-ds:force value)))
       (values bucket
               (if (null tuple)
-                  cl-ds.common:empty-eager-modification-operation-status
+                  (cl-ds.common:make-eager-modification-operation-status
+                   nil nil t)
                   (cl-ds.common:make-eager-modification-operation-status
                    t old-value t)))))
 

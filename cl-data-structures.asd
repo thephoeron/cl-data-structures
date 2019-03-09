@@ -40,6 +40,7 @@
                              (:file "lambda-lists")
                              (:file "skip-vector")
                              (:file "embedding")
+                             (:file "cloning")
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
