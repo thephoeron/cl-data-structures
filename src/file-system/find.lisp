@@ -8,6 +8,15 @@
            :accessor access-stack)))
 
 
+(defun clone-of-stack (range)
+  (when-let ((stack (access-stack range)))
+    (clone-cell stack)))
+
+
+(defmethod cl-ds.utils:cloning-information ((object find-range))
+  '((:stack clone-of-stack)))
+
+
 (defclass fundamental-file-range-stack-cell ()
   ((%prev-cell :initarg :prev-cell
                :initform nil
@@ -443,9 +452,7 @@
 
 
 (defmethod cl-ds:clone ((range find-range))
-  (make 'find-range
-        :stack (when-let ((stack (access-stack range)))
-                 (clone-cell stack))))
+  (cl-ds.utils:clone range))
 
 
 (defmethod cl-ds:reset! ((range find-range))
