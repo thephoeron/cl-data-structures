@@ -182,12 +182,16 @@
   range)
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((range hash-table-range))
+  '((:keys read-keys)
+    (:begin access-begin)
+    (:end access-end)
+    (:hash-table read-hash-table)))
+
+
 (defmethod clone ((range hash-table-range))
-  (make 'hash-table-range
-        :keys (read-keys range)
-        :begin (access-begin range)
-        :end (access-end range)
-        :hash-table (read-hash-table range)))
+  (cl-ds.utils:clone range))
 
 
 (defmethod consume-front ((range forward-proxy-range))

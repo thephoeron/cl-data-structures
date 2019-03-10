@@ -9,7 +9,8 @@
                       :reader read-context-function)))
 
 
-(defmethod buffer-range append ((range buffer-range))
+(defmethod cl-ds.utils:cloning-information append
+    ((range buffer-range))
   '((:limit read-limit)
     (:context-function read-context-function)))
 
