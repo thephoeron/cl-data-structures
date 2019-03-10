@@ -10,9 +10,13 @@
                     :reader read-original-range)))
 
 
+(defalias clone-of-original-range (compose #'read-original-range
+                                           #'cl-ds:clone))
+
+
 (defmethod cl-ds.utils:cloning-information append
     ((range proxy-range))
-  '((:original-range read-original-range)))
+  '((:original-range clone-of-original-range)))
 
 
 (defclass chunked-proxy-range (cl-ds:chunking-mixin
@@ -32,9 +36,7 @@
 
 
 (defmethod cl-ds:clone ((range proxy-range))
-  (cl-ds.utils:quasi-clone
-   range
-   :original-range (~> range read-original-range cl-ds:clone)))
+  (cl-ds.utils:clone range))
 
 
 (defmethod cl-ds:traverse ((range proxy-range) function)
