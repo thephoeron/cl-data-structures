@@ -20,7 +20,7 @@
 
 
 (defmethod cl-ds.utils:cloning-information append
-    ((range proxy-range))
+    ((range proxy-box-range))
   '((:function read-function)
     (:key read-key)))
 

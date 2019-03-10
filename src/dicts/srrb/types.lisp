@@ -29,6 +29,18 @@
                   :initform t)))
 
 
+(defmethod cl-ds.utils:cloning-information append
+    ((vector fundamental-sparse-rrb-vector))
+  '((:tree access-tree)
+    (:tail access-tail)
+    (:tail-mask access-tail-mask)
+    (:shift access-shift)
+    (:tree-size access-tree-size)
+    (:tree-index-bound access-tree-index-bound)
+    (:index-bound access-tree-index-bound)
+    (:element-type read-element-type)))
+
+
 (defclass mutable-sparse-rrb-vector (cl-ds:mutable
                                      cl-ds.dicts:mutable-sparse-vector
                                      fundamental-sparse-rrb-vector)

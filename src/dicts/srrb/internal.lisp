@@ -481,6 +481,10 @@
       (copy-array tail)))
 
 
+(defun deep-copy-of-tail (vector)
+  (tail-copy (access-tail vector) (read-element-type vector)))
+
+
 (defun set-in-tail (structure operation container offset value all)
   (bind (((:accessors (element-type read-element-type)
                       (%tail-mask access-tail-mask)

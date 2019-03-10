@@ -175,40 +175,23 @@
 
 
 (defmethod cl-ds:become-functional ((container fundamental-sparse-rrb-vector))
-  (make 'functional-sparse-rrb-vector
-        :tree (access-tree container)
-        :tail (access-tail container)
-        :tail-mask (access-tail-mask container)
-        :shift (access-shift container)
-        :tree-size (access-tree-size container)
-        :tree-index-bound (access-tree-index-bound container)
-        :index-bound (access-index-bound container)
-        :element-type (read-element-type container)))
+  (apply #'make 'functional-sparse-rrb-vector
+         (cl-ds.utils:cloning-information container)))
 
 
 (defmethod cl-ds:become-mutable ((container fundamental-sparse-rrb-vector))
-  (make 'mutable-sparse-rrb-vector
-        :tree (access-tree container)
-        :tail (access-tail container)
-        :tail-mask (access-tail-mask container)
-        :shift (access-shift container)
-        :tree-size (access-tree-size container)
-        :tree-index-bound (access-tree-index-bound container)
-        :index-bound (access-index-bound container)
-        :element-type (read-element-type container)))
+  (apply #'make 'mutable-sparse-rrb-vector
+         (cl-ds.utils:cloning-information container)))
+
+
+(defmethod cl-ds:become-transactional ((container transactional-sparse-rrb-vector))
+  (cl-ds.utils:quasi-clone container :tail (deep-copy-of-tail container)))
 
 
 (defmethod cl-ds:become-transactional ((container fundamental-sparse-rrb-vector))
-  (make 'transactional-sparse-rrb-vector
-        :tree (access-tree container)
-        :tail (copy-array (access-tail container))
-        :tail-mask (access-tail-mask container)
-        :shift (access-shift container)
-        :tree-size (access-tree-size container)
-        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
-        :tree-index-bound (access-tree-index-bound container)
-        :index-bound (access-index-bound container)
-        :element-type (read-element-type container)))
+  (apply #'make 'transactional-sparse-rrb-vector
+         :tail (deep-copy-of-tail container)
+         (cl-ds.utils:cloning-information container)))
 
 
 (defun make-transactional-sparse-rrb-vector (&key (element-type t))

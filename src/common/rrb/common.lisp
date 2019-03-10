@@ -1114,6 +1114,7 @@
 
 
 (defun sparse-rrb-tree-size (tree depth)
+  (declare (optimize (debug 3)))
   (if (zerop depth)
       (sparse-rrb-node-size tree)
       (iterate
