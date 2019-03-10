@@ -10,8 +10,9 @@
                     :reader read-original-range)))
 
 
-(defalias clone-of-original-range (compose #'read-original-range
-                                           #'cl-ds:clone))
+(defalias clone-of-original-range (compose
+                                   #'cl-ds:clone
+                                   #'read-original-range))
 
 
 (defmethod cl-ds.utils:cloning-information append

@@ -10,15 +10,16 @@
                    :reader read-original-seen)))
 
 
-(defalias seen-replica (compose #'read-seen
-                                (rcurry #'cl-ds:replica t)))
+(defalias replica-of-seen (compose
+                           (rcurry #'cl-ds:replica t)
+                           #'read-seen))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range distinct-proxy))
   '((:key read-key)
-    (:seen seen-replica)
-    (:original-seen seen-replica)))
+    (:seen replica-of-seen)
+    (:original-seen replica-of-seen)))
 
 
 (defclass forward-distinct-proxy (cl-ds:chunking-mixin
