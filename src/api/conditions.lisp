@@ -11,12 +11,6 @@
   (:report print-condition))
 
 
-(defmethod initialize-instance ((condition textual-error)
-                                &rest initiargs
-                                &key text)
-  (apply #'call-next-method :format-control text initiargs))
-
-
 (defmethod print-condition ((condition textual-error) stream)
   (when-let ((control (simple-condition-format-control condition)))
     (apply #'format stream control
