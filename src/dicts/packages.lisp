@@ -61,6 +61,7 @@
    #:functional-sparse-rrb-vector-grow
    #:insert-tail
    #:insert-tail!
+   #:shift-for-position
    #:make-functional-sparse-rrb-vector
    #:make-mutable-sparse-rrb-vector
    #:make-transactional-sparse-rrb-vector
