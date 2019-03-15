@@ -71,7 +71,8 @@
 (defun lower-bound (vector element comparsion &key (key #'identity) (start 0) (end (length vector)))
   (declare (optimize (speed 3)))
   (iterate
-    (for current = (truncate (/ (+ end start) 2)))
+    (declare (type fixnum current))
+    (for current = (+ start (truncate (- end start) 2)))
     (until (eql end start))
     (if (funcall comparsion
                  (funcall key (aref vector current))
