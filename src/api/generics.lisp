@@ -128,11 +128,14 @@
 
 (defgeneric across (object function)
   (:method ((object sequence) function)
-    (map nil function object))
+    (map nil function object)
+    object)
   (:method ((object fundamental-container) function)
-    (traverse object function))
+    (traverse object function)
+    object)
   (:method ((object fundamental-range) function)
-    (traverse (clone object) function)))
+    (traverse (clone object) function)
+    object))
 
 (defgeneric make-from-traversable (traversable class &rest arguments))
 
