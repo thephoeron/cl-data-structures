@@ -8,6 +8,7 @@
    #:across
    #:add
    #:add!
+   #:argument-error
    #:argument-not-in-allowed-set
    #:argument-out-of-bounds
    #:assert-one-dimension
@@ -32,17 +33,16 @@
    #:drop-front
    #:empty-clone
    #:empty-container
+   #:empty-range
    #:erase
    #:erase!
    #:erase-if
    #:erase-if!
    #:expression
    #:field
-   #:finish
-   #:path
-   #:force
-   #:read-text
    #:file-releated-error
+   #:finish
+   #:force
    #:forward-call
    #:found
    #:functional
@@ -64,6 +64,7 @@
    #:initialization-out-of-bounds
    #:insert
    #:invalid-argument
+   #:invalid-value
    #:iota-range
    #:key-value-range
    #:lazy
@@ -79,6 +80,7 @@
    #:not-in-allowed-set
    #:operation-not-allowed
    #:out-of-bounds
+   #:path
    #:peek-back
    #:peek-front
    #:put
@@ -91,6 +93,7 @@
    #:read-arguments
    #:read-bounds
    #:read-class
+   #:read-text
    #:read-value
    #:recur
    #:replica
@@ -105,8 +108,6 @@
    #:take-out-front
    #:take-out-front!
    #:textual-error
-   #:argument-error
-   #:invalid-value
    #:too-many-dimensions
    #:transactional
    #:transactionalp
@@ -124,7 +125,6 @@
    #:value
    #:whole-range
    #:xpr))
-
 
 (defpackage :cl-data-structures.meta
   (:use #:common-lisp

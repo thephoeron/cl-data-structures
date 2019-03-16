@@ -70,7 +70,6 @@
                (:module "api"
                 :components ((:file "meta")
                              (:file "meta-docstrings")
-                             (:file "variables")
                              (:file "fundamental-classes")
                              (:file "trait-classes")
                              (:file "generics")
@@ -80,6 +79,7 @@
                              (:file "macros")
                              (:file "functions")
                              (:file "field")
+                             (:file "aux")
                              (:file "docstrings")
                              (:test-file "expression-tests")))
                (:module "adapters"
