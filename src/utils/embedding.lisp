@@ -12,33 +12,27 @@
   (nest
    (cases ((simple-vector-p vector-of-elements)
            (array-has-fill-pointer-p vector-of-elements)
-           parallel
-           (:variant
-            (eq embedding-type 'fixnum)
-            (eq embedding-type 'single-float)
-            (eq embedding-type 'double-float))))
+           parallel))
    (let* ((length (length vector-of-elements))
           (embeddings (make-array length))
-          (m1 (ceiling (log length 2)))
-          (m2 (ceiling (* c (log length))))
+          (m2 (ceiling (log length)))
+          (m1 (ceiling (1- (/ m2 (log 2)))))
           (element-type (array-element-type vector-of-elements)))
      (declare (type fixnum length m1 m2)
               (type simple-vector embeddings)))
-   (bind (((:dflet sample-size (j))
-           (the fixnum (ceiling (the fixnum (* length (expt 2 (- j)))))))
-          (sample (make-array (sample-size 1)
+   (bind ((sample (make-array (expt 2 m1)
                               :fill-pointer 0
                               :element-type element-type)))
      (map-into embeddings (curry #'make-array (the fixnum (* m1 m2))
                                  :element-type embedding-type
                                  :fill-pointer 0))
      (iterate
-       (declare (type fixnum j))
-       (for j from 1 to m1)
+       (declare (type fixnum i))
+       (for i from 0 to m1)
        (iterate
-         (declare (type fixnum i))
-         (for i from 1 to m2)
-         (draw-sample-vector vector-of-elements (sample-size j) sample)
+         (declare (type fixnum j))
+         (for j from 0 to m2)
+         (draw-sample-vector vector-of-elements (expt 2 i) sample)
          (funcall (if parallel #'lparallel:pmap #'map) nil
                   (lambda (embedding x)
                     (iterate
