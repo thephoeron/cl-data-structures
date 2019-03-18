@@ -2,8 +2,11 @@
 
 
 (defun bourgain-embedding (vector-of-elements c distance-fn
-                           &key (embedding-type 'single-float) (parallel t))
+                           &key
+                             (embedding-type 'single-float) (parallel t)
+                             (m2 (ceiling (log (length vector-of-elements)))))
   (declare (type vector vector-of-elements)
+           (type fixnum m2)
            (optimize (speed 3))
            (type positive-fixnum c)
            (type boolean parallel))
@@ -15,7 +18,6 @@
            parallel))
    (let* ((length (length vector-of-elements))
           (embeddings (make-array length))
-          (m2 (ceiling (log length)))
           (m1 (ceiling (1- (/ m2 (log 2)))))
           (element-type (array-element-type vector-of-elements)))
      (declare (type fixnum length m1 m2)
@@ -28,10 +30,10 @@
                                  :fill-pointer 0))
      (iterate
        (declare (type fixnum i))
-       (for i from 0 to m1)
+       (for i from 1 to m1)
        (iterate
          (declare (type fixnum j))
-         (for j from 0 to m2)
+         (for j from 1 to m2)
          (draw-sample-vector vector-of-elements (expt 2 i) sample)
          (funcall (if parallel #'lparallel:pmap #'map) nil
                   (lambda (embedding x)
