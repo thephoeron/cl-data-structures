@@ -99,15 +99,11 @@
      function
      outer-fn
      (arguments list))
-  (cl-ds.alg.meta:construct-aggregator (read-original-range range)
-                                       key
-                                       function
-                                       (proxy-range-aggregator-outer-fn range
-                                                                        key
-                                                                        function
-                                                                        outer-fn
-                                                                        arguments)
-                                       arguments))
+  (cl-ds.alg.meta:construct-aggregator
+   (read-original-range range) key function
+   (proxy-range-aggregator-outer-fn range key function
+                                    outer-fn arguments)
+   arguments))
 
 
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
