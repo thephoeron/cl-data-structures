@@ -280,15 +280,18 @@
 
 
 (declaim (inline deep-copy-sparse-rrb-node))
-(-> deep-copy-sparse-rrb-node (sparse-rrb-node (integer -1 2) &optional t)
+(-> deep-copy-sparse-rrb-node (sparse-rrb-node &optional (or null fixnum) t)
     (or null sparse-rrb-node))
-(defun deep-copy-sparse-rrb-node (node size-change &optional tag)
+(defun deep-copy-sparse-rrb-node (node &optional size-change tag)
   (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (with-sparse-rrb-node node
     (let* ((content (sparse-node-content node))
            (current-size (sparse-rrb-node-size node))
-           (desired-size (clamp (the fixnum (+ size-change current-size))
-                                0 +maximum-children-count+)))
+           (desired-size (clamp (if (null size-change)
+                                    (the fixnum (* 2 current-size))
+                                    (the fixnum (+ size-change current-size)))
+                                0
+                                +maximum-children-count+)))
       (declare (type fixnum current-size desired-size))
       (cond ((null tag)
              #1=(make-sparse-node
