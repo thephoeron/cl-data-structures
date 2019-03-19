@@ -34,18 +34,18 @@
        (:generic-function-class ,function-class)
        (:method ,method-lambda-list
          ,(cl-ds.utils:cond+ ((null all) optional-arguments)
-            ((t nil) `(apply-aggregation-function range
-                                                  (function ,function-name)
-                                                  ,@required-arguments))
-            ((nil t) `(apply #'apply-aggregation-function range
+            ((t nil) `(apply-range-function range
+                                            (function ,function-name)
+                                            ,@required-arguments))
+            ((nil t) `(apply #'apply-range-function range
                              (function ,function-name)
                              ,@required-arguments
                              (append ,@optional-arguments ,all)))
-            ((nil nil) `(apply #'apply-aggregation-function range
+            ((nil nil) `(apply #'apply-range-function range
                                (function ,function-name)
                                ,@required-arguments
                                ,all))
-            ((t t) `(apply #'apply-aggregation-function range
+            ((t t) `(apply #'apply-range-function range
                            (function ,function-name)
                            ,@required-arguments
                            (append ,@optional-arguments)))))))
