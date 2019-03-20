@@ -252,29 +252,28 @@
 (defun sparse-rrb-node-erase! (node i)
   (declare (optimize (speed 3)))
   (with-sparse-rrb-node node
-    (when (sparse-rrb-node-contains node i)
-      (let* ((index (sindex i))
-             (old-content (sparse-rrb-node-content node))
-             (old-bitmask (sparse-rrb-node-bitmask node))
-             (new-bitmask (dpb 0 (byte 1 i) old-bitmask))
-             (old-size (logcount old-bitmask))
-             (new-size (logcount new-bitmask))
-             (element-type (array-element-type old-content))
-             (new-content (make-array new-size :element-type element-type)))
-        (iterate
-          (declare (type node-size i))
-          (with i = 0)
-          (while (< i index))
-          (setf (svref new-content i) (svref old-content i))
-          (incf i))
-        (iterate
-          (declare (type node-size i))
-          (with i = index)
-          (while (< i new-size))
-          (setf (svref new-content i) (svref old-content (1+ i)))
-          (incf i))
-        (setf (sparse-rrb-node-bitmask node) new-bitmask
-              (sparse-rrb-node-content node) new-content))))
+    (let* ((index (sindex i))
+           (old-content (sparse-rrb-node-content node))
+           (old-bitmask (sparse-rrb-node-bitmask node))
+           (new-bitmask (dpb 0 (byte 1 i) old-bitmask))
+           (old-size (logcount old-bitmask))
+           (new-size (logcount new-bitmask))
+           (element-type (array-element-type old-content))
+           (new-content (make-array new-size :element-type element-type)))
+      (iterate
+        (declare (type node-size i))
+        (with i = 0)
+        (while (< i index))
+        (setf (svref new-content i) (svref old-content i))
+        (incf i))
+      (iterate
+        (declare (type node-size i))
+        (with i = index)
+        (while (< i new-size))
+        (setf (svref new-content i) (svref old-content (1+ i)))
+        (incf i))
+      (setf (sparse-rrb-node-bitmask node) new-bitmask
+            (sparse-rrb-node-content node) new-content)))
   node)
 
 
