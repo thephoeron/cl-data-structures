@@ -1121,10 +1121,12 @@
 
 
 (defun sparse-rrb-tree-size (tree depth)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
+  (check-type depth fixnum)
   (if (zerop depth)
       (sparse-rrb-node-size tree)
       (iterate
+        (declare (type fixnum i))
         (for i from 0 below +maximum-children-count+)
         (when (sparse-rrb-node-contains tree i)
           (sum (sparse-rrb-tree-size (sparse-nref tree i)
