@@ -266,17 +266,23 @@
 (defmethod at ((range hash-table-range) location &rest more)
   (assert (null more))
   (bind (((:slots (ht %hash-table)) range)
-         ((:hash-table (result location)) ht)
+         ((:values result found) (gethash location ht))
          (test (hash-table-test ht))
          (begin (access-begin range))
          (end (access-end range))
          (keys (read-keys range)))
-    (if (iterate
-          (for i from begin below end)
-          (for l = (aref keys i))
-          (finding t such-that (funcall test l location)))
-        (values result t)
-        (values nil nil))))
+    (cond
+      ((not found)
+       (values nil nil))
+      ((and (zerop begin)
+            (eql (length keys) end))
+       (values result t))
+      ((iterate
+         (for i from begin below end)
+         (for l = (aref keys i))
+         (finding t such-that (funcall test l location)))
+       (values result t))
+      (t (values nil nil)))))
 
 
 (defmethod size ((range hash-table-range))
