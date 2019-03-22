@@ -173,8 +173,8 @@
   (declare (ignore key start initial-value from-end))
   (let* ((result '())
          (final (apply #'reduce
-                       (lambda (a b)
-                         (lret ((r (funcall function a b)))
+                       (lambda (&rest all)
+                         (lret ((r (apply function all)))
                            (push r result)))
                        sequence
                        args)))
@@ -183,11 +183,13 @@
 
 
 (defun homogenousp (sequence &key (test 'eql) (key 'identity))
-  (reduce (lambda (prev next)
-            (if (funcall test
-                         (funcall key prev)
-                         (funcall key next))
-                next
-                (return-from homogenousp nil)))
+  (reduce (lambda (prev &optional (next nil next-bound))
+            (if next-bound
+                (if (funcall test
+                             (funcall key prev)
+                             (funcall key next))
+                    next
+                    (return-from homogenousp nil))
+                prev))
           sequence)
   t)
