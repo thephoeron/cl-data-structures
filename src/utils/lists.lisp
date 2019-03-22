@@ -180,3 +180,14 @@
                        args)))
     (values (nreverse result)
             final)))
+
+
+(defun homogenousp (sequence &key (test 'eql) (key 'identity))
+  (reduce (lambda (prev next)
+            (if (funcall test
+                         (funcall key prev)
+                         (funcall key next))
+                next
+                (return-from homogenousp nil)))
+          sequence)
+  t)

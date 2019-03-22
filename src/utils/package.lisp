@@ -16,6 +16,7 @@
    #:binary-search
    #:bind-lambda
    #:broadcast
+   #:homogenousp
    #:cloning-information
    #:quasi-clone
    #:cartesian
