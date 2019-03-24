@@ -44,11 +44,13 @@
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
-                                           (:file "types")
-                                           (:file "internal-functions")
-                                           (:file "external-functions")
-                                           (:file "docstrings")
-                                           (:test-file "tests")))
+                                           (:module "clara-pam"
+                                            :components ((:file "package")
+                                                         (:file "types")
+                                                         (:file "internal-functions")
+                                                         (:file "external-functions")
+                                                         (:file "docstrings")
+                                                         (:test-file "tests")))))
                              (:module "metric-functions"
                               :components ((:file "package")
                                            (:file "levenshtein")

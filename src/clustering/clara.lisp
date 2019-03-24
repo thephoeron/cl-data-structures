@@ -76,7 +76,7 @@
 
         (lambda (&key vector &allow-other-keys)
           (declare (type vector vector))
-          (cl-ds.utils.cluster:clara-variable-number-of-medoids
+          (cl-ds.utils.cluster.clara/pam:clara-variable-number-of-medoids
            vector metric-type
            metric-fn sample-size sample-count from to
            :key key

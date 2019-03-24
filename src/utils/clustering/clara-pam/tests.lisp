@@ -20,7 +20,7 @@
                          data))
        (clusters (cl-ds.utils.cluster:partition-around-medoids
                   data distance-matrix 10 :attempts 5 :split 105 :merge 50))
-       (clara-clusters (cl-ds.utils.cluster:clara data 5
+       (clara-clusters (cl-ds.utils.cluster.clara/pam:clara data 5
                                                   'fixnum
                                                   #'metric
                                                   150 25
@@ -53,7 +53,7 @@
        (clusters (cl-ds.utils.cluster:partition-around-medoids
                   data distance-matrix 10 :attempts 5 :split 105 :merge 50
                                           :minimal-cluster-size 150))
-       (clara-clusters (cl-ds.utils.cluster:clara data 5
+       (clara-clusters (cl-ds.utils.cluster.clara/pam:clara data 5
                                                   'fixnum
                                                   #'metric
                                                   150 25

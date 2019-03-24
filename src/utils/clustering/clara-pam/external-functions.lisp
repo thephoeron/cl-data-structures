@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils.cluster)
+(in-package #:cl-ds.utils.cluster.clara/pam)
 
 
 (-> partition-around-medoids (vector

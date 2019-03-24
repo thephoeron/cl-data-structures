@@ -1,4 +1,5 @@
-(in-package #:cl-ds.utils.cluster)
+(in-package #:cl-ds.utils.cluster.clara/pam)
+
 
 (locally (declare (optimize (debug 3)))
   (defclass pam-algorithm-state ()

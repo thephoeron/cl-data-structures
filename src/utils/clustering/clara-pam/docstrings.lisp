@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.clustering)
+(in-package #:cl-data-structures.utils.clustering.clara/pam)
 
 
 (docs:define-docs

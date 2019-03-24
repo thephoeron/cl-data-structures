@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils.cluster)
+(in-package #:cl-ds.utils.cluster.clara/pam)
 
 
 (defun clear-unfinished-clusters (state)
@@ -67,7 +67,7 @@
         (finally (return result))))))
 
 
-(defun assign-data-points-to-medoids (state)
+(defmethod assign-data-points-to-medoids (state)
   (declare (optimize (speed 3) (safety 0)))
   (assert (unique-assigment state))
   (order-medoids state)
