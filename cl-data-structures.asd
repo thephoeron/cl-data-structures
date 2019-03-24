@@ -44,6 +44,7 @@
                              (:file "docstrings")
                              (:module "clustering"
                               :components ((:file "package")
+                                           (:file "common")
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")
