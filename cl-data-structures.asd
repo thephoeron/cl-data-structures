@@ -47,12 +47,14 @@
                                            (:file "common")
                                            (:module "k-means"
                                             :components ((:file "package")
-                                                         (:file "types")))
+                                                         (:file "types")
+                                                         (:file "internal")
+                                                         (:file "external")))
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")
-                                                         (:file "internal-functions")
-                                                         (:file "external-functions")
+                                                         (:file "internal")
+                                                         (:file "external")
                                                          (:file "docstrings")
                                                          (:test-file "tests")))))
                              (:module "metric-functions"
