@@ -50,6 +50,7 @@
           :cluster-contents %clusters
           :distance-function #'cl-ds.utils.metric:euclid-metric
           :silhouette-sample-size %silhouette-sample-size
+          :key-function %value-key
           :silhouette-sample-count %silhouette-sample-count)))
 
 
