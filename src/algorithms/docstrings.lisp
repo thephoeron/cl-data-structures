@@ -132,7 +132,7 @@
      :arguments ((range "Input range.")
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
-                 (value-key "Like KEY, but using this instead will preserve the complete element in the result."))
+                 (value-key "Like KEY, but using this instead will preserve the complete element in the result. This argument can be used in combination with KEY, in which case KEY is applied before the VALUE-KEY."))
      :returns "Dotted pair. First value is the extremum that would occur as first element in the sequence sorted according to the FN, second value is the element that would occur last."))
 
   (function cartesian
