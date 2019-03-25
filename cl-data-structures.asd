@@ -42,21 +42,6 @@
                              (:file "embedding")
                              (:file "cloning")
                              (:file "docstrings")
-                             (:module "clustering"
-                              :components ((:file "package")
-                                           (:file "common")
-                                           (:module "k-means"
-                                            :components ((:file "package")
-                                                         (:file "types")
-                                                         (:file "internal")
-                                                         (:file "external")))
-                                           (:module "clara-pam"
-                                            :components ((:file "package")
-                                                         (:file "types")
-                                                         (:file "internal")
-                                                         (:file "external")
-                                                         (:file "docstrings")
-                                                         (:test-file "tests")))))
                              (:module "metric-functions"
                               :components ((:file "package")
                                            (:file "levenshtein")
@@ -72,6 +57,21 @@
                                            (:file "sinkhorn")
                                            (:file "bhattacharyya")
                                            (:file "docstrings")))
+                             (:module "clustering"
+                              :components ((:file "package")
+                                           (:file "common")
+                                           (:module "k-means"
+                                            :components ((:file "package")
+                                                         (:file "types")
+                                                         (:file "internal")
+                                                         (:file "external")))
+                                           (:module "clara-pam"
+                                            :components ((:file "package")
+                                                         (:file "types")
+                                                         (:file "internal")
+                                                         (:file "external")
+                                                         (:file "docstrings")
+                                                         (:test-file "tests")))))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
