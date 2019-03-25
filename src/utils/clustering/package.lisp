@@ -2,4 +2,6 @@
   (:use #:cl #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.utils.cluster)
   (:export
-   ))
+   #:clustering-result
+   #:cluster-contents
+   #:silhouette))

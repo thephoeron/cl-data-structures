@@ -63,7 +63,9 @@
            (for other-cluster in-vector sample)
            (when (eq other-cluster cluster)
              (next-iteration))
-           (minimize (average-distance-to-element distance-matrix k other-cluster))))
+           (minimize (average-distance-to-element distance-matrix
+                                                  k
+                                                  other-cluster))))
        cluster))
 
 
@@ -79,7 +81,8 @@
                  (lambda (cluster)
                    (let* ((size (length cluster))
                           (sample-size (ceiling (* size sample-ratio)))
-                          (result (make-array sample-size :element-type 'fixnum)))
+                          (result (make-array sample-size
+                                              :element-type 'fixnum)))
                      (map-into result
                                (compose %key-function
                                         (curry #'aref cluster)
@@ -134,12 +137,13 @@
                             intra-distances inter-distances)
                        (reduce #'+ _))
                    into sum)
-              (finally (return (/ sum (reduce #'+ sample :key #'length))))))
-           (samples (map-into (make-array %silhouette-sample-count)
-                              (curry #'select-random-cluster-subsets
-                                     clustering-result))))
-      (~>> samples
-           (lparallel:pmap 'vector #'silhouette)))))
+              (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
+      (~>> (curry #'select-random-cluster-subsets
+                  clustering-result)
+           (map-into (make-array %silhouette-sample-count))
+           (lparallel:pmap 'list #'silhouette)
+           (apply #'map '(vector single-float) #'+)
+           (cl-ds.utils:transform (rcurry #'/ %silhouette-sample-count))))))
 
 
 (defmethod silhouette :before ((object clustering-result))

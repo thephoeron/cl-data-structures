@@ -74,6 +74,7 @@
    #:on-ordered-intersection
    #:optimize-value
    #:or*
+   #:ignore-errors*
    #:ordered-exclusion
    #:ordered-intersection
    #:ordered-p
@@ -92,9 +93,9 @@
    #:swap-if
    #:swapop
    #:todo
+   #:transform
    #:try-find
    #:try-find-cell
-   #:ignore-errors*
    #:try-remove
    #:unfold-table
    #:with-keys
