@@ -15,19 +15,19 @@
       (setf (fill-pointer cluster) 0))
     (let ((locks (~> (make-array (length %clusters))
                      (cl-ds.utils:transform #'bt:make-lock))))
-      (lparallel:pmap nil
-                      (lambda (data-point
-                               &aux (data (funcall %value-key data-point)))
-                        (iterate
-                          (for i from 0 below (length %medoids))
-                          (for medoid in-vector %medoids)
-                          (for distance =
-                               (cl-ds.utils.metric:euclid-metric medoid data))
-                          (finding i minimizing distance)
-                          (finally (bt:with-lock-held ((aref locks i))
-                                     (vector-push-extend data-point
-                                                         (aref %clusters i))))))
-                      %data)))
+      (lparallel:pmap
+       nil
+       (lambda (data-point
+                &aux (data (funcall %value-key data-point)))
+         (iterate
+           (for i from 0 below (length %medoids))
+           (for medoid in-vector %medoids)
+           (for distance =
+                (cl-ds.utils.metric:euclid-metric medoid data))
+           (finding i minimizing distance)
+           (finally (bt:with-lock-held ((aref locks i))
+                      (vector-push-extend data-point (aref %clusters i))))))
+       %data)))
   state)
 
 
