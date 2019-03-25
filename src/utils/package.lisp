@@ -16,13 +16,11 @@
    #:binary-search
    #:bind-lambda
    #:broadcast
-   #:homogenousp
-   #:cloning-information
-   #:quasi-clone
    #:cartesian
-   #:clone
    #:cartesian-table
    #:cases
+   #:clone
+   #:cloning-information
    #:cond+
    #:cond-compare
    #:copy-slots
@@ -39,7 +37,9 @@
    #:fill-distance-matrix-from-vector
    #:future-carousel
    #:half-matrix
+   #:homogenousp
    #:if-else
+   #:ignore-errors*
    #:import-all-package-symbols
    #:insert-or-replace
    #:inverted-hash-table
@@ -74,7 +74,6 @@
    #:on-ordered-intersection
    #:optimize-value
    #:or*
-   #:ignore-errors*
    #:ordered-exclusion
    #:ordered-intersection
    #:ordered-p
@@ -82,6 +81,8 @@
    #:parallel-make-distance-matrix-from-vector
    #:pipe-fragment
    #:pop-last
+   #:quasi-clone
+   #:quasi-clone*
    #:read-size
    #:rebind
    #:remove-fill-pointer

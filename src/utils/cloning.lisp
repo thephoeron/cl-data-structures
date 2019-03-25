@@ -22,3 +22,10 @@
            (for (initarg reader) in (cloning-information instance))
            (collect initarg)
            (collect (funcall reader instance)))))
+
+
+(defmacro quasi-clone* (instance &body arguments)
+  (once-only (instance)
+    `(apply #'make-instance (class-of ,instance)
+            ,@arguments
+            (cloning-information ,instance))))
