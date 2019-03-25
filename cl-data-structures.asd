@@ -196,6 +196,7 @@
                              (:file "restrain-size")
                              (:file "repeat")
                              (:file "latch")
+                             (:file "extrema")
                              (:file "cumulative-accumulate")
                              (:file "split-into-chunks")
                              (:file "hash-join")

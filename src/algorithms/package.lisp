@@ -49,8 +49,11 @@
         #:cl-data-structures
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.alg)
+  (:shadow #:extrema)
   (:export
+   #:%summary
    #:accumulate
+   #:bidirectional-chain-of-ranges
    #:bidirectional-proxy-range
    #:cartesian
    #:chain
@@ -59,17 +62,16 @@
    #:count-elements-function
    #:count-elements-if
    #:count-elements-if-function
+   #:cumulative-accumulate
+   #:cumulative-accumulate-range
    #:distinct
+   #:extrema
    #:filtering-proxy
    #:flatten-lists
+   #:forward-chain-of-ranges
    #:forward-proxy-range
    #:gather-prior-states
    #:group-by
-   #:cumulative-accumulate
-   #:cumulative-accumulate-range
-   #:forward-chain-of-ranges
-   #:bidirectional-chain-of-ranges
-   #:random-access-chain-of-ranges
    #:group-by-function
    #:hash-join
    #:latch
@@ -81,6 +83,7 @@
    #:proxy-box-range
    #:proxy-range
    #:proxy-range-aggregator-outer-fn
+   #:random-access-chain-of-ranges
    #:random-access-proxy-range
    #:read-original-range
    #:repeat
@@ -88,9 +91,8 @@
    #:should-skip
    #:shuffled-range
    #:split-into-chunks
-   #:to-vector
    #:summary
-   #:%summary
+   #:to-vector
    #:transparent-to-chunking-mixin
    #:without
    #:wrap-chunk

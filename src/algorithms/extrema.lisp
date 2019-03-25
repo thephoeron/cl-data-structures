@@ -1,0 +1,31 @@
+(in-package #:cl-data-structures.algorithms)
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    extrema extrema-function
+
+  (:range fn &key key value-key)
+  (:range fn &key (key #'identity) (value-key #'identity))
+
+  (%low-value %high-value %fn %first-iteration %value-key)
+
+  ((&key fn value-key)
+   (setf %fn fn
+         %value-key value-key
+         %first-iteration t))
+
+  ((element)
+   (cond (%first-iteration
+          (setf %low-value element
+                %high-value element
+                %first-iteration nil))
+         ((funcall %fn
+                    (funcall %value-key element)
+                    (funcall %value-key %high-value))
+          (setf %high-value element))
+         ((funcall %fn
+                    (funcall %value-key %low-value)
+                    (funcall %value-key element))
+          (setf %low-value element))))
+
+  ((list* %high-value %low-value)))

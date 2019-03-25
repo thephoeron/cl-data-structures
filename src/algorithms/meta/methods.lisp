@@ -311,7 +311,7 @@ Range function invokaction protocol.
 
 (defmethod apply-aggregation-function (range
                                        (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
+                                       &rest all &key (key #'identity) &allow-other-keys)
   (let ((aggregator (construct-aggregator range key function nil all)))
     (apply #'apply-aggregation-function-with-aggregator
            aggregator range function all)))
@@ -338,7 +338,7 @@ Range function invokaction protocol.
 
 (defmethod apply-aggregation-function ((stage aggregation-stage)
                                        (function aggregation-function)
-                                       &rest all &key key &allow-other-keys)
+                                       &rest all &key (key #'identity) &allow-other-keys)
   (bind (((:slots %function %key %state) stage))
     (setf %state (apply #'make-state function all)
           %function function
