@@ -13,15 +13,18 @@
     (iterate
       (for cluster in-vector %clusters)
       (setf (fill-pointer cluster) 0))
-    (iterate
-      (for data-point in-vector %data)
-      (for data = (funcall %value-key data-point))
-      (iterate
-        (for i from 0 below (length %medoids))
-        (for medoid in-vector %medoids)
-        (for distance = (cl-ds.utils.metric:euclid-metric medoid data))
-        (finding i minimizing distance)
-        (finally (vector-push-extend data-point (aref %clusters i))))))
+    (lparallel:pmap nil
+                    (lambda (data-point
+                             &aux (data (funcall %value-key data-point)))
+                      (iterate
+                        (for i from 0 below (length %medoids))
+                        (for medoid in-vector %medoids)
+                        (for distance = (cl-ds.utils.metric:euclid-metric medoid
+                                                                          data))
+                        (finding i minimizing distance)
+                        (finally (vector-push-extend data-point
+                                                     (aref %clusters i)))))
+                    %data))
   state)
 
 
