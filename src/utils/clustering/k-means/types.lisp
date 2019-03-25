@@ -17,19 +17,16 @@
    (%medoids :initarg :medoids
              :type vector
              :accessor access-medoids)
-   (%silhouette-sample-size :initarg :silhouette-sample-size
-                            :type fixnum
-                            :initform 500
-                            :reader silhouette-sample-size)
-   (%silhouette-sample-count :initarg :silhouette-sample-count
-                             :initform 15
-                             :type fixnum
-                             :reader silhouette-sample-count)
+   (%iterations :initarg :iterations
+                :reader read-iterations)
    (%medoids-count :initarg :medoids-count
                    :type non-negative-fixnum
                    :reader read-medoids-count))
   (:default-initargs
    :clusters (vect)
+   :silhouette-sample-count 15
+   :silhouette-sample-size 500
+   :iterations nil
    :medoids (vect)
    :data (vect)))
 
@@ -38,6 +35,7 @@
   (%data read-data)
   (%clusters read-clusters)
   (%value-key read-value-key)
+  (%iterations read-iterations)
   (%distortion-epsilon read-distortion-epsilon)
   (%silhouette-sample-size silhouette-sample-size)
   (%silhouette-sample-count silhouette-sample-count)
@@ -50,6 +48,7 @@
   '((:data read-data)
     (:clusters access-clusters)
     (:medoids access-medoids)
+    (:iterations read-iterations)
     (:value-key read-value-key)
     (:silhouette-sample-size silhouette-sample-size)
     (:silhouette-sample-count silhouette-sample-count)

@@ -5,15 +5,21 @@
                     &key
                     (:silhouette-sample-size (or null positive-fixnum))
                     (:silhouette-sample-count (or null positive-fixnum))
+                    (:iterations (or null positive-fixnum))
                     (:value-key (or null function)))
     cl-ds.utils.cluster:clustering-result)
 (defun k-means (data medoids-count distortion-epsilon
                 &rest all
-                &key silhouette-sample-size silhouette-sample-count value-key)
-  (declare (ignore value-key silhouette-sample-size silhouette-sample-count))
+                &key silhouette-sample-size iterations
+                  silhouette-sample-count value-key)
+  (declare (ignore value-key silhouette-sample-size
+                   iterations silhouette-sample-count))
   (iterate
     (with state = (make-state data medoids-count
                               distortion-epsilon all))
+    (with iterations = (read-iterations state))
+    (for i from 0)
+    (while (or (null iterations) (< i iterations)))
     (assign-data-points-to-medoids state)
     (select-new-medoids state)
     (for distortion = (distortion state))
