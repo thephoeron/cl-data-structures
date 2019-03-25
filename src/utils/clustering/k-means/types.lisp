@@ -5,6 +5,9 @@
   ((%data :initarg :data
           :type vector
           :reader read-data)
+   (%value-key :initarg :value-key
+               :type function
+               :reader read-value-key)
    (%clusters :initarg :clusters
               :type vector
               :reader read-clusters)
@@ -14,6 +17,14 @@
    (%medoids :initarg :medoids
              :type vector
              :accessor access-medoids)
+   (%silhouette-sample-size :initarg :silhouette-sample-size
+                            :type fixnum
+                            :initform 500
+                            :reader silhouette-sample-size)
+   (%silhouette-sample-count :initarg :silhouette-sample-count
+                             :initform 15
+                             :type fixnum
+                             :reader silhouette-sample-count)
    (%medoids-count :initarg :medoids-count
                    :type non-negative-fixnum
                    :reader read-medoids-count))
@@ -26,7 +37,10 @@
 (cl-ds.utils:define-list-of-slots k-means-algorithm-state
   (%data read-data)
   (%clusters read-clusters)
+  (%value-key read-value-key)
   (%distortion-epsilon read-distortion-epsilon)
+  (%silhouette-sample-size silhouette-sample-size)
+  (%silhouette-sample-count silhouette-sample-count)
   (%medoids access-medoids)
   (%medoids-count read-medoids-count))
 
@@ -36,5 +50,8 @@
   '((:data read-data)
     (:clusters access-clusters)
     (:medoids access-medoids)
-    (:distorction-epsilon read-distortion-epsilon)
+    (:value-key read-value-key)
+    (:silhouette-sample-size silhouette-sample-size)
+    (:silhouette-sample-count silhouette-sample-count)
+    (:distortion-epsilon read-distortion-epsilon)
     (:medoids-count read-medoids-count)))

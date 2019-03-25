@@ -43,6 +43,7 @@
    #:state-result
    #:transformation!-function))
 
+
 (defpackage :cl-data-structures.algorithms
   (:use #:cl
         #:cl-data-structures.algorithms.meta
