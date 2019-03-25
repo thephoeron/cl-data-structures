@@ -10,3 +10,22 @@
     (cl-ds.utils:draw-random-vector data medoids-count)
     (setf (access-medoids state) medoids)
     state))
+
+
+(defun assign-data-points-to-medoids (state)
+  cl-ds.utils:todo)
+
+
+(defun distortion (state)
+  cl-ds.utils:todo)
+
+
+(defun obtain-result (state)
+  cl-ds.utils:todo)
+
+
+(defun make-state (data medoids-count distortion-epsilon)
+  (make 'k-means-algorithm-state
+        :data data
+        :medoids-count medoids-count
+        :distortion-epsilon distortion-epsilon))
