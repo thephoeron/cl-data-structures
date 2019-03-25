@@ -22,13 +22,17 @@
       (for cluster in-vector %clusters)
       (for medoid in-vector %medoids)
       (iterate
-        (declare (type fixnum size)
-                 (type single-float c m))
+        (declare (type fixnum size i))
         (with size = (length cluster))
         (for i from 0 below size)
         (for c = (aref cluster i))
-        (for m = (aref medoid i))
-        (in outer (sum (expt (- c m) 2)))))))
+        (iterate
+          (declare (type fixnum size i))
+          (with size = (length c))
+          (for i from 0 below size)
+          (for error = (- (the single-float (aref c i))
+                          (the single-float (aref medoid i))))
+          (in outer (sum (expt error 2))))))))
 
 
 (defun obtain-result (state)
