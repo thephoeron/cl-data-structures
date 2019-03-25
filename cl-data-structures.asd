@@ -45,6 +45,9 @@
                              (:module "clustering"
                               :components ((:file "package")
                                            (:file "common")
+                                           (:module "k-means"
+                                            :components ((:file "package")
+                                                         (:file "types")))
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")
