@@ -44,3 +44,7 @@
         :data data
         :medoids-count medoids-count
         :distortion-epsilon distortion-epsilon))
+
+
+(defun select-new-medoids (state)
+  cl-ds.utils:todo)
