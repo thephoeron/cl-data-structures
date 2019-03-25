@@ -47,4 +47,18 @@
 
 
 (defun select-new-medoids (state)
-  cl-ds.utils:todo)
+  (cl-ds.utils:with-slots-for (state k-means-algorithm-state)
+    (iterate
+      (for i from 0)
+      (for cluster in-vector %clusters)
+      (for medoid in-vector %medoids)
+      (for new-medoid = (make-array (length medoid)
+                                    :element-type 'single-float
+                                    :initial-element 0.0))
+      (iterate
+        (for c in-vector cluster)
+        (for i from 0)
+        (incf (aref new-medoid i) c))
+      (cl-ds.utils:transform (rcurry #'/ (length cluster)) new-medoid)
+      (setf (aref %medoids i) new-medoid)))
+  state)
