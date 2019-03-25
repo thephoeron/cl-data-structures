@@ -13,7 +13,7 @@
   (declare (ignore value-key silhouette-sample-size silhouette-sample-count))
   (iterate
     (with state = (make-state data medoids-count
-                               distortion-epsilon all))
+                              distortion-epsilon all))
     (assign-data-points-to-medoids state)
     (select-new-medoids state)
     (for distortion = (distortion state))
