@@ -13,7 +13,7 @@
                               (:cluster-sample-size positive-integer)
                               (:split (or null positive-fixnum))
                               (:merge (or null positive-fixnum)))
-    clustering-result)
+    cl-ds.utils.cluster:clustering-result)
 (defun partition-around-medoids (input-data
                                  distance-matrix
                                  number-of-medoids
@@ -65,7 +65,7 @@
            (:minimal-cluster-size positive-fixnum)
            (:split (or null positive-fixnum))
            (:merge (or null positive-fixnum)))
-    clustering-result)
+    cl-ds.utils.cluster:clustering-result)
 (defun clara (input-data
               number-of-medoids
               metric-fn
@@ -126,7 +126,7 @@
                                       (:minimal-cluster-size positive-fixnum)
                                       (:split (or null positive-fixnum))
                                       (:merge (or null positive-fixnum)))
-    clustering-result)
+    cl-ds.utils.cluster:clustering-result)
 (defun clara-variable-number-of-medoids (input-data
                                          metric-fn
                                          sample-size

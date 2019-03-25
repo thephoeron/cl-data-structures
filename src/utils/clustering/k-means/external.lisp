@@ -1,6 +1,12 @@
 (in-package #:cl-data-structures.utils.clustering.k-means)
 
 
+(-> k-means (vector positive-fixnum non-negative-single-float
+                    &key
+                    (:silhouette-sample-size (or null positive-fixnum))
+                    (:silhouette-sample-count (or null positive-fixnum))
+                    (:value-key (or null function)))
+    cl-ds.utils.cluster:clustering-result)
 (defun k-means (data medoids-count distortion-epsilon
                 &rest all
                 &key silhouette-sample-size silhouette-sample-count value-key)
