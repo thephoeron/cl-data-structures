@@ -76,17 +76,12 @@
                               "TO must be greater then FROM, otherwise incompatible-arguments error is signaled.")
      :returns "FORWARD-RANGE"))
 
-  ;; (function summary
-  ;;   (:description "Summary is a function that allows to perform multiple aggregations in one form."
-  ;;    :arguments ((range "Range to aggregate.")
-  ;;                (forms "Lists describing way to invoke function. First element of list is label used to identify value in the result range, second is aggregation function designator, the rest is list of arguments that should be passed to the function, with range being replaced by the keyword :range."))
-  ;;    :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."))
-
-  (function unique
-    (:description "Layer function. Creates range that will skip duplicate values."
-     :arguments ((range "Input range.")
-                 (key "Key function used to extract value for duplication check.")
-                 (test "Test for the make-hash-table."))))
+  (macro summary
+    (:description "Summary is a macro that allows to perform multiple aggregations in one form."
+     :arguments ((range "Range to aggregate.")
+                 (forms "Way to invoke function in the form of the plist. Key is a label used to identify value in the result range, second is aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_'."))
+     :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
+     :notes "Currently, this macro does support only the single stage aggregation functions."))
 
   (function only
     (:description "Layer funciton. Creates range that skips elements that return NIL when passed to the PREDICATE function through key function."
@@ -131,6 +126,14 @@
                  (size "What should be limit on the new range?"))
      :returns "FORWARD-RANGE"
      :exceptional-situations "Will raise type-error when SIZE is not of the type non-negative-integer."))
+
+  (function extrema
+    (:description "Aggregation function. Find extrema (both minimum and maximum) in the RANGE, according to the FN comparsion function."
+     :arguments ((range "Input range.")
+                 (fn "Comparsion function.")
+                 (key "Function used to extract values from the elements in the RANGE.")
+                 (value-key "Like KEY, but using this instead will preserve the complete element in the result."))
+     :returns "Dotted pair. First value is the extremum that would occur as first element in the sequence sorted according to the FN, second value is the element that would occur last."))
 
   (function cartesian
     (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
