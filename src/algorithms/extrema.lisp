@@ -15,17 +15,18 @@
          %first-iteration t))
 
   ((element)
-   (cond (%first-iteration
-          (setf %low-value element
-                %high-value element
-                %first-iteration nil))
-         ((funcall %fn
-                    (funcall %value-key element)
-                    (funcall %value-key %high-value))
-          (setf %high-value element))
-         ((funcall %fn
-                    (funcall %value-key %low-value)
-                    (funcall %value-key element))
-          (setf %low-value element))))
+   (cl-ds.utils:lazy-let ((elt (funcall %value-key element)))
+     (cond (%first-iteration
+            (setf %low-value element
+                  %high-value element
+                  %first-iteration nil))
+           ((funcall %fn
+                     elt
+                     (funcall %value-key %high-value))
+            (setf %high-value element))
+           ((funcall %fn
+                     (funcall %value-key %low-value)
+                     elt)
+            (setf %low-value element)))))
 
   ((list* %high-value %low-value)))
