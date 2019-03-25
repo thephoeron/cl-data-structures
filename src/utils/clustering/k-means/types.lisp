@@ -23,6 +23,14 @@
    :data (vect)))
 
 
+(cl-ds.utils:define-list-of-slots k-means-algorithm-state
+  (%data read-data)
+  (%clusters read-clusters)
+  (%distortion-epsilon read-distortion-epsilon)
+  (%medoids access-medoids)
+  (%medoids-count read-medoids-count))
+
+
 (defmethod cl-ds.utils:cloning-information
     :append ((obj k-means-algorithm-state))
   '((:data read-data)

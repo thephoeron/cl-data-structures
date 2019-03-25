@@ -17,7 +17,18 @@
 
 
 (defun distortion (state)
-  cl-ds.utils:todo)
+  (cl-ds.utils:with-slots-for (state k-means-algorithm-state)
+    (iterate outer
+      (for cluster in-vector %clusters)
+      (for medoid in-vector %medoids)
+      (iterate
+        (declare (type fixnum size)
+                 (type single-float c m))
+        (with size = (length cluster))
+        (for i from 0 below size)
+        (for c = (aref cluster i))
+        (for m = (aref medoid i))
+        (in outer (sum (expt (- c m) 2)))))))
 
 
 (defun obtain-result (state)
