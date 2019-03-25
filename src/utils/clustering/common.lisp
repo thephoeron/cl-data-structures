@@ -118,7 +118,7 @@
 
 
 (defun calculate-silhouette (clustering-result &optional distance-matrix)
-  (declare (optimize (debug 3) (safety 1)))
+  (declare (optimize (speed 1) (safety 1)))
   (cl-ds.utils:with-slots-for (clustering-result clustering-result)
     (bind (((:flet distance-difference (intra inter))
             (cond ((null intra) 0.0)
