@@ -52,7 +52,6 @@
 
 (-> clara (vector
            positive-fixnum
-           (or symbol list)
            (or symbol function)
            positive-fixnum
            positive-fixnum
@@ -69,7 +68,6 @@
     clustering-result)
 (defun clara (input-data
               number-of-medoids
-              metric-type
               metric-fn
               sample-size
               sample-count
@@ -92,11 +90,12 @@
          sample-count
          sample-size)
       (setf state (build-clara-clusters
-                   input-data number-of-medoids metric-type
+                   input-data number-of-medoids
                    (ensure-function metric-fn) sample-size sample-count
                    :key (ensure-function key)
                    :select-medoids-attempts-count select-medoids-attempts-count
                    :silhouette-sample-size silhouette-sample-size
+                   :silhouette-sample-count silhouette-sample-count
                    :cluster-sample-size cluster-sample-size
                    :minimal-cluster-size minimal-cluster-size
                    :silhouette-sample-count silhouette-sample-size
@@ -112,7 +111,6 @@
 
 
 (-> clara-variable-number-of-medoids (vector
-                                      (or symbol list)
                                       (or symbol function)
                                       positive-fixnum
                                       positive-fixnum
@@ -130,7 +128,6 @@
                                       (:merge (or null positive-fixnum)))
     clustering-result)
 (defun clara-variable-number-of-medoids (input-data
-                                         metric-type
                                          metric-fn
                                          sample-size
                                          sample-count
@@ -155,27 +152,29 @@
          "Clustering data set of size ~a using CLARA algorithm searching for optimal medoids count (between ~a and ~a)."
          (length input-data)
          from to)
-      (iterate
-        (with progress-bar = cl-progress-bar:*progress-bar*)
-        (for index from 0 below (length vector))
-        (for i from from to to)
-        (nest (setf (aref vector index))
-              (cl-ds.utils:with-rebind (cl-progress-bar:*progress-bar* i))
-              (bt:make-thread)
-              (lambda ())
-              (cl-ds.utils:rebind)
-              (build-clara-clusters
-               input-data i metric-type metric-fn
-               sample-size sample-count
-               :key key
-               :silhouette-sample-size silhouette-sample-size
-               :silhouette-sample-count silhouette-sample-size
-               :select-medoids-attempts-count select-medoids-attempts-count
-               :cluster-sample-size cluster-sample-size
-               :minimal-cluster-size minimal-cluster-size
-               :attempts attempts
-               :split split
-               :merge merge)))
+      (flet ((make-thread (i)
+               (nest
+                (cl-ds.utils:with-rebind (cl-progress-bar:*progress-bar* i))
+                (bt:make-thread)
+                (lambda ())
+                (cl-ds.utils:rebind)
+                (build-clara-clusters
+                 input-data i metric-fn
+                 sample-size sample-count
+                 :key key
+                 :silhouette-sample-size silhouette-sample-size
+                 :silhouette-sample-count silhouette-sample-count
+                 :select-medoids-attempts-count select-medoids-attempts-count
+                 :cluster-sample-size cluster-sample-size
+                 :minimal-cluster-size minimal-cluster-size
+                 :attempts attempts
+                 :split split
+                 :merge merge))))
+        (iterate
+          (with progress-bar = cl-progress-bar:*progress-bar*)
+          (for index from 0 below (length vector))
+          (for i from from to to)
+          (setf (aref vector index) (make-thread i))))
       (iterate
         (for thread in-vector vector)
         (for state = (bt:join-thread thread))

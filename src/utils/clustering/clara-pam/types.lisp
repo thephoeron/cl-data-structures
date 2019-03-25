@@ -56,9 +56,6 @@
                                :accessor access-result-cluster-contents)
      (%all-indexes :accessor access-all-indexes
                    :type (vector non-negative-fixnum))
-     (%metric-type :initarg :metric-type
-                   :accessor access-metric-type
-                   :type (or symbol list))
      (%metric-fn :initarg :metric-fn
                  :accessor access-metric-fn
                  :type function)
@@ -76,23 +73,8 @@
                    :initform 0
                    :accessor access-sample-size)
      (%silhouette :initform nil
-                  :type (or null (vector number))
-                  :accessor access-silhouette)))
-
-
-  (defclass clustering-result ()
-    ((%cluster-contents :initarg :cluster-contents
-                        :type vector
-                        :reader read-cluster-contents)
-     (%silhouette :initarg :silhouette
-                  :type (vector number)
-                  :reader read-silhouette))))
-
-
-(defun empty-clustering-result ()
-  (make 'clustering-result
-        :cluster-content #()
-        :silhouette (make-array 0 :element-type 'number)))
+                  :type (or null (vector single-float))
+                  :accessor access-silhouette))))
 
 
 (cl-ds.utils:define-list-of-slots pam-algorithm-state
@@ -129,7 +111,6 @@
   (%indexes access-indexes)
   (%cluster-size access-cluster-size)
   (%metric-fn access-metric-fn)
-  (%metric-type access-metric-type)
   (%sample-size access-sample-size)
   (%cluster-contents access-cluster-contents)
   (%silhouette access-silhouette)

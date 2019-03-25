@@ -15,10 +15,11 @@
                              :type fixnum
                              :reader silhouette-sample-count)
    (%key-function :initarg :key-function
+                  :initform #'identity
                   :type function
                   :reader key-function)
    (%silhouette :initarg :silhouette
-                :type (vector number)
+                :type (vector single-float)
                 :reader silhouette)))
 
 
@@ -69,7 +70,8 @@
        cluster))
 
 
-(defun select-random-cluster-subsets (state)
+(defun select-random-cluster-subsets (state distance-matrix-supplied)
+  (declare (optimize (debug 3)))
   (cl-ds.utils:with-slots-for (state clustering-result)
     (bind ((sample-size %silhouette-sample-size)
            (total-size (reduce #'+ %cluster-contents
@@ -94,11 +96,13 @@
            (whole-sample (make-array total-size)))
       (iterate
         (for cluster in-vector sample)
-        (for offset in sizes)
+        (for offset in (cons 0 sizes))
         (iterate
           (for j from 0 below (length cluster))
           (for i from offset)
-          (shiftf (aref whole-sample i) (aref cluster j) i)))
+          (if distance-matrix-supplied
+              (setf (aref whole-sample i) (aref cluster j))
+              (shiftf (aref whole-sample i) (aref cluster j) i))))
       (list* sample whole-sample))))
 
 
@@ -113,8 +117,8 @@
                              'single-float)))))
 
 
-(defun calculate-silhouette (clustering-result)
-  (declare (optimize (speed 1) (safety 1)))
+(defun calculate-silhouette (clustering-result &optional distance-matrix)
+  (declare (optimize (debug 3) (safety 1)))
   (cl-ds.utils:with-slots-for (clustering-result clustering-result)
     (bind (((:flet distance-difference (intra inter))
             (cond ((null intra) 0.0)
@@ -125,25 +129,35 @@
            ((:flet silhouette (sample.whole))
             (iterate
               (with (sample . whole) = sample.whole)
-              (with distance-matrix = (build-distance-matrix clustering-result
-                                                             whole))
+              (with result = (make-array (length sample)
+                                         :element-type 'single-float))
+              (with distance-matrix = (or distance-matrix
+                                          (build-distance-matrix clustering-result
+                                                                 whole)))
               (for sub in-vector sample)
+              (for i from 0)
               (for inter-distances = (inter-cluster-distances distance-matrix
                                                               sub
                                                               sample))
               (for intra-distances = (intra-cluster-distances distance-matrix
                                                               sub))
-              (sum (~> (map '(vector single-float) #'distance-difference
-                            intra-distances inter-distances)
-                       (reduce #'+ _))
-                   into sum)
-              (finally (return (/ sum (reduce #'+ sample :key #'length)))))))
-      (~>> (curry #'select-random-cluster-subsets
-                  clustering-result)
-           (map-into (make-array %silhouette-sample-count))
+              (setf (aref result i)
+                    (~> (map '(vector single-float) #'distance-difference
+                             intra-distances inter-distances)
+                        (reduce #'+ _)
+                        (/ (length sub))
+                        (coerce 'single-float)))
+              (finally (return result)))))
+      (~>> (map-into (make-array %silhouette-sample-count)
+                     (curry #'select-random-cluster-subsets
+                            clustering-result
+                            (~> distance-matrix not null)))
            (lparallel:pmap 'list #'silhouette)
-           (apply #'map '(vector single-float) #'+)
-           (cl-ds.utils:transform (rcurry #'/ %silhouette-sample-count))))))
+           (apply #'map '(vector single-float)
+                  (compose (rcurry #'coerce 'single-float)
+                           #'+))
+           (cl-ds.utils:transform (compose (rcurry #'coerce 'single-float)
+                                           (rcurry #'/ %silhouette-sample-count)))))))
 
 
 (defmethod silhouette :before ((object clustering-result))

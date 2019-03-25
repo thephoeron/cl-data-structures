@@ -19,7 +19,6 @@
   (function clara-variable-number-of-medoids
     (:description "Runs clara mutiple-times with different NUMBER-OF-MEDOIDS, selects best number of medoids based on the silhouette and then returns it."
      :arguments ((input-data "Data to cluster.")
-                 (metric-type "Type returned by metric-function.")
                  (sample-size "Size of sample for clara algorithm.")
                  (sample-count "Number of samples drawn for clara.")
                  (from "Smallest number of medoids to try.")
