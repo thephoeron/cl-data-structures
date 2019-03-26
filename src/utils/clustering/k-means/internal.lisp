@@ -10,20 +10,25 @@
 
 
 (defun assign-data-points-to-medoids (state)
+  (declare (optimize (speed 3)))
   (cl-ds.utils:with-slots-for (state k-means-algorithm-state)
-    (iterate
-      (for cluster in-vector %clusters)
-      (setf (fill-pointer cluster) 0))
-    (let* ((locks (~> (make-array (length %clusters))
+    (let* ((clusters %clusters)
+           (locks (~> (make-array (length clusters))
                       (cl-ds.utils:transform #'bt:make-lock)))
            (medoids %medoids)
+           (value-key %value-key)
            (length (length medoids)))
       (declare (type fixnum length)
-               (type vector medoids))
+               (type simple-vector locks)
+               (type function value-key)
+               (type vector clusters medoids))
+      (map nil (lambda (cluster)
+                 (setf (fill-pointer cluster) 0))
+           clusters)
       (lparallel:pmap
        nil
        (lambda (data-point
-                &aux (data (funcall %value-key data-point)))
+                &aux (data (funcall value-key data-point)))
          (iterate
            (declare (type fixnum i)
                     (type (simple-array single-float (*)) medoid)
@@ -33,7 +38,7 @@
            (for distance = (cl-ds.utils.metric:euclid-metric medoid data))
            (finding i minimizing distance)
            (finally (bt:with-lock-held ((aref locks i))
-                      (vector-push-extend data-point (aref %clusters i))))))
+                      (vector-push-extend data-point (aref clusters i))))))
        %data)))
   state)
 
