@@ -20,10 +20,15 @@
        (lambda (data-point
                 &aux (data (funcall %value-key data-point)))
          (iterate
-           (for i from 0 below (length %medoids))
-           (for medoid in-vector %medoids)
-           (for distance =
-                (cl-ds.utils.metric:euclid-metric medoid data))
+           (declare (type fixnum length i)
+                    (type vector medoids)
+                    (type (simple-array single-float (*)))
+                    (type single-float distance))
+           (with medoids = %medoids)
+           (with length = (length %medoids))
+           (for i from 0 below length)
+           (for medoid = (aref medoids i))
+           (for distance = (cl-ds.utils.metric:euclid-metric medoid data))
            (finding i minimizing distance)
            (finally (bt:with-lock-held ((aref locks i))
                       (vector-push-extend data-point (aref %clusters i))))))
