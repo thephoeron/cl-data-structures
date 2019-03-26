@@ -3,8 +3,9 @@
 
 (defun select-initial-medoids (state)
   (cl-ds.utils:with-slots-for (state k-means-algorithm-state)
-    (setf %medoids (cl-ds.utils:draw-random-vector %data %medoids-count))
-    (cl-ds.utils:transform %value-key %medoids))
+    (cl-ds.utils:draw-random-vector %data %medoids-count %medoids)
+    (cl-ds.utils:transform %value-key %medoids)
+    (setf (fill-pointer %clusters) (fill-pointer %medoids)))
   state)
 
 
@@ -13,19 +14,20 @@
     (iterate
       (for cluster in-vector %clusters)
       (setf (fill-pointer cluster) 0))
-    (let ((locks (~> (make-array (length %clusters))
-                     (cl-ds.utils:transform #'bt:make-lock))))
+    (let* ((locks (~> (make-array (length %clusters))
+                      (cl-ds.utils:transform #'bt:make-lock)))
+           (medoids %medoids)
+           (length (length medoids)))
+      (declare (type fixnum length)
+               (type vector medoids))
       (lparallel:pmap
        nil
        (lambda (data-point
                 &aux (data (funcall %value-key data-point)))
          (iterate
-           (declare (type fixnum length i)
-                    (type vector medoids)
-                    (type (simple-array single-float (*)))
+           (declare (type fixnum i)
+                    (type (simple-array single-float (*)) medoid)
                     (type single-float distance))
-           (with medoids = %medoids)
-           (with length = (length %medoids))
            (for i from 0 below length)
            (for medoid = (aref medoids i))
            (for distance = (cl-ds.utils.metric:euclid-metric medoid data))
@@ -71,9 +73,13 @@
 (defun make-state (data medoids-count distortion-epsilon all)
   (~> (apply #'make 'k-means-algorithm-state
              :data data
-             :cluster-contents (~> (make-array medoids-count)
+             :cluster-contents (~> (make-array medoids-count
+                                               :adjustable t
+                                               :fill-pointer medoids-count)
                                    (map-into #'vect))
-             :medoids (make-array medoids-count)
+             :medoids (make-array medoids-count
+                                  :adjustable t
+                                  :fill-pointer medoids-count)
              :medoids-count medoids-count
              :distortion-epsilon distortion-epsilon
              all)

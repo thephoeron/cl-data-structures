@@ -1,7 +1,6 @@
 (in-package #:cl-data-structures.utils.metric)
 
 
-(declaim (inline euclid-metric))
 (defun euclid-metric (a b)
   (declare (type (simple-array single-float (*)) a b)
            (optimize (speed 3)))
