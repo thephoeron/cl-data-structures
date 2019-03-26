@@ -39,25 +39,35 @@
 
 
 (defun distortion (state)
+  (declare (optimize (speed 3)))
   (cl-ds.utils:with-slots-for (state k-means-algorithm-state)
-    (~>> (lparallel:pmap
-          '(vector single-float)
-          (lambda (cluster medoid)
-            (iterate outer
-              (declare (type fixnum size i))
-              (with size = (length cluster))
-              (for i from 0 below size)
-              (for c = (funcall %value-key (aref cluster i)))
+    (let ((value-key %value-key))
+      (declare (type function value-key))
+      (~>> (lparallel:pmap
+            '(vector single-float)
+            (lambda (cluster medoid)
+              (declare (type (simple-array single-float (*)) medoid)
+                       (type (vector t) cluster))
               (iterate
-                (declare (type fixnum size i))
-                (with size = (length c))
+                (declare (type fixnum size i)
+                         (type (simple-array single-float (*)) c)
+                         (type single-float sum))
+                (with sum = 0.0)
+                (with size = (length cluster))
                 (for i from 0 below size)
-                (for error = (- (the single-float (aref c i))
-                                (the single-float (aref medoid i))))
-                (in outer (sum (expt error 2))))))
-          %clusters
-          %medoids)
-         (reduce #'+))))
+                (for c = (funcall value-key (aref cluster i)))
+                (iterate
+                  (declare (type fixnum size i)
+                           (type single-float error))
+                  (with size = (length c))
+                  (for i from 0 below size)
+                  (for error = (- (the single-float (aref c i))
+                                  (the single-float (aref medoid i))))
+                  (incf sum (expt error 2)))
+                (finally (return sum))))
+            %clusters
+            %medoids)
+           (reduce #'+)))))
 
 
 (defun obtain-result (state)
