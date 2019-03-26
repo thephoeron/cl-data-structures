@@ -6,6 +6,7 @@
           :type vector
           :reader read-data)
    (%value-key :initarg :value-key
+               :initarg :key
                :type function
                :reader read-value-key)
    (%clusters :initarg :clusters

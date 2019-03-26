@@ -8,15 +8,15 @@
 
 (defgeneric k-means (range number-of-medoids distortion-epsilon
                      &rest all
-                     &key silhouette-sample-size iterations
-                       silhouette-sample-count value-key)
+                     &key key silhouette-sample-size iterations
+                       silhouette-sample-count)
   (:generic-function-class k-means-function)
   (:method (range number-of-medoids distortion-epsilon
             &rest all
-            &key silhouette-sample-size iterations
-              silhouette-sample-count value-key)
+            &key key silhouette-sample-size iterations
+              silhouette-sample-count)
     (declare (ignore silhouette-sample-size iterations
-                     silhouette-sample-count value-key))
+                     silhouette-sample-count key))
     (apply #'cl-ds.alg.meta:apply-range-function
            range #'k-means
            :number-of-medoids number-of-medoids
