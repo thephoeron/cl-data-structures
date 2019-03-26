@@ -21,7 +21,7 @@
             sample-count metric-fn &key
               (key #'identity) (select-medoids-attempts-count 50)
               (attempts 0) split merge)
-    (cl-ds.alg.meta:apply-aggregation-function
+    (cl-ds.alg.meta:apply-range-function
      range #'clara
      :key key
      :number-of-medoids number-of-medoids
@@ -44,7 +44,7 @@
             sample-count metric-fn
             &key (key #'identity) (select-medoids-attempts-count 50)
               (attempts 0) split merge)
-    (cl-ds.alg.meta:apply-aggregation-function
+    (cl-ds.alg.meta:apply-range-function
      range #'clara-variable-number-of-medoids
      :key key
      :from from

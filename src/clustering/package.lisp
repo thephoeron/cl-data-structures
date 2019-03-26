@@ -7,6 +7,7 @@
   (:import-from cl-ds.utils.cluster silhouette cluster-contents)
   (:export
    #:clara
+   #:k-means
    #:silhouette
    #:cluster-contents
    #:clara-variable-number-of-medoids))

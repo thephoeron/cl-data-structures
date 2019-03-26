@@ -230,6 +230,7 @@
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")
+                             (:file "k-means")
                              (:file "docstrings")))
                (:module "math"
                 :components ((:module "aux"

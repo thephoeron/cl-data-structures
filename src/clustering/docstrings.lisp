@@ -4,6 +4,9 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (function k-means
+    (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional simple-arrays specialized for single-floats."))
+
   (function clara
     (:description "Clusters data set using CLARA algorithm. This algorithm attempts to cluster random subset, picking best set of clusters."
      :notes "Useful for clustering large data sets, as required memory is linear to the size of data set and quadratic to the size of the sample."
