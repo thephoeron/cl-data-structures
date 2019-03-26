@@ -24,11 +24,13 @@
                    :reader read-medoids-count))
   (:default-initargs
    :clusters (vect)
+   :value-key #'identity
    :silhouette-sample-count 15
    :silhouette-sample-size 500
    :iterations nil
    :medoids (vect)
    :data (vect)))
+
 
 
 (cl-ds.utils:define-list-of-slots k-means-algorithm-state
@@ -54,3 +56,10 @@
     (:silhouette-sample-count silhouette-sample-count)
     (:distortion-epsilon read-distortion-epsilon)
     (:medoids-count read-medoids-count)))
+
+
+(defmethod initialize-instance :after ((object k-means-algorithm-state)
+                                       &rest all)
+  (declare (ignore all))
+  (cl-ds.utils:with-slots-for (object k-means-algorithm-state)
+    (ensure-function %value-key)))
