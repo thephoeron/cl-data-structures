@@ -33,7 +33,6 @@
    :data (vect)))
 
 
-
 (cl-ds.utils:define-list-of-slots k-means-algorithm-state
   (%data read-data)
   (%clusters read-clusters)
