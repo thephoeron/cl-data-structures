@@ -1,5 +1,6 @@
 (in-package #:cl-ds.math.aux)
 
+
 (defun gamma (xx)
   "Calculates value of gamma function with Lancoz optimization."
   (if (< (realpart xx) 1.0)
@@ -18,4 +19,3 @@
                    (/  -1.231739516d0  (+ z 4.0d0))
                    (/   0.120858003d-2 (+ z 5.0d0))
                    (/ -0.536382d-5     (+ z 6.0d0))))))))
-
