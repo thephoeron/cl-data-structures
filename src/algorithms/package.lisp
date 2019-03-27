@@ -50,7 +50,7 @@
         #:cl-data-structures
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.alg)
-  (:shadow #:extrema)
+  (:shadow #:extrema #:extremum)
   (:export
    #:%summary
    #:accumulate
@@ -67,6 +67,7 @@
    #:cumulative-accumulate-range
    #:distinct
    #:extrema
+   #:extremum
    #:filtering-proxy
    #:flatten-lists
    #:forward-chain-of-ranges

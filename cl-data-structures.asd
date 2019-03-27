@@ -197,6 +197,7 @@
                              (:file "repeat")
                              (:file "latch")
                              (:file "extrema")
+                             (:file "extremum")
                              (:file "cumulative-accumulate")
                              (:file "split-into-chunks")
                              (:file "hash-join")
