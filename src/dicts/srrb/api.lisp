@@ -185,7 +185,9 @@
 
 
 (defmethod cl-ds:become-transactional ((container transactional-sparse-rrb-vector))
-  (cl-ds.utils:quasi-clone container :tail (deep-copy-of-tail container)))
+  (cl-ds.utils:quasi-clone* container
+    :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+    :tail (deep-copy-of-tail container)))
 
 
 (defmethod cl-ds:become-transactional ((container fundamental-sparse-rrb-vector))

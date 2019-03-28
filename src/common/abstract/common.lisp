@@ -38,6 +38,6 @@
 
 (defun replica (object isolate)
   (check-type object fundamental-ownership-tagged-object)
-  (lret ((cl-ds:become-transactional object))
+  (lret ((result (cl-ds:become-transactional object)))
     (when isolate
       (reset-ownership-tag object))))
