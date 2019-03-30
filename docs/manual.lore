@@ -115,7 +115,7 @@
 
 @begin{section} @label{cl-ds API}
 @title{API Reference}
-@text{This section contains reference of all the functions, classes and macros provided by this library to the user.}
+@text{This section contains reference of all the basic functions, classes and macros provided by this library to the user.}
  @begin{section}
  @title{Common API}
  @include{API Generic Functions}
@@ -123,4 +123,38 @@
  @include{API Classes}
  @include{API Conditions}
  @end{section}
+@end{section}
+
+
+@begin{section} @label{cl-ds algorithms}
+@title{Algorithms Reference}
+@text{This section contains reference of all the functions in the CL-DS.ALG package. Majority of those functions are either layer functions or aggregation functions.}
+ @begin{section} @title{Aggregation Functions}
+ @begin{documentation}
+  @pack{CL-DATA-STRUCTURES.ALGORITHMS}
+  @docfun['cl-ds.alg:accumulate]
+  @docfun['cl-ds.alg:hash-join]
+  @docfun['cl-ds.alg:count-elements]
+  @docmacro['cl-ds.alg:summary]
+  @docfun['cl-ds.alg:extrema]
+  @docfun['cl-ds.alg:extremum]
+  @docfun['cl-ds.alg:extrema]
+;@docfun['cl-ds.alg:distinct]
+;@docfun['cl-ds.alg:split-into-chunks]
+;@docfun['cl-ds.alg:partition-if]
+  @docfun['cl-ds.alg:to-vector]
+ @end{documentation}
+ @end{section}
+@end{section}
+
+
+@begin{section} @label{cl-ds file system}
+@title{File System Reference}
+@text{This section contains reference of all the functions, classes and macros in the CL-DS.FS package. Those functions act primarly as a simple bridge between files in the operating system and the algorithms package and therefore usually return ranges.}
+@end{section}
+
+
+@begin{section} @label{cl-ds math}
+@title{Math Reference}
+@text{This section contains reference of all the functions, classes and macros in the CL-DS.MATH package.}
 @end{section}

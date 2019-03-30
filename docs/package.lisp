@@ -32,5 +32,8 @@
   @title{CL-DATA-STRUCTURES}
   @include{cl-ds intro}
   @include{cl-ds API}
+  @include{cl-ds algorithms}
+  @include{cl-ds file system}
+  @include{cl-ds math}
   @include{cl-ds internals}
   @include{dicts})

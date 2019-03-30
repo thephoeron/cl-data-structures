@@ -76,7 +76,7 @@
                               "TO must be greater then FROM, otherwise incompatible-arguments error is signaled.")
      :returns "FORWARD-RANGE"))
 
-  (macro summary
+  (function summary
     (:description "Summary is a macro that allows to perform multiple aggregations in one form."
      :arguments ((range "Range to aggregate.")
                  (forms "Way to invoke function in the form of the plist. Key is a label used to identify value in the result range, second is aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_'."))
@@ -126,6 +126,14 @@
                  (size "What should be limit on the new range?"))
      :returns "FORWARD-RANGE"
      :exceptional-situations "Will raise type-error when SIZE is not of the type non-negative-integer."))
+
+  (function extremum
+    (:description "Aggregation function. Find extremum (first value that would occur if whole range was sorted according to the FN). This can be used to find either the maximum or the minium."
+     :arguments ((range "Input range.")
+                 (fn "Comparsion function.")
+                 (key "Function used to extract values from the elements in the RANGE.")
+                 (value-key "Like KEY, but using this instead will preserve the complete element in the result. This argument can be used in combination with KEY, in which case KEY is applied before the VALUE-KEY."))
+     :returns "Extremum"))
 
   (function extrema
     (:description "Aggregation function. Find extrema (both minimum and maximum) in the RANGE, according to the FN comparsion function."
