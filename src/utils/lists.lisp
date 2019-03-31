@@ -195,4 +195,5 @@
   t)
 
 (defun transform (function sequence &rest more-sequences)
-  (apply #'map-into sequence function more-sequences))
+  (apply #'map-into sequence function sequence
+         more-sequences))

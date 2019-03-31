@@ -64,7 +64,8 @@
                                             :components ((:file "package")
                                                          (:file "types")
                                                          (:file "internal")
-                                                         (:file "external")))
+                                                         (:file "external")
+                                                         (:test-file "tests")))
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")

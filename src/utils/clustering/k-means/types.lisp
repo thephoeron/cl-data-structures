@@ -9,6 +9,10 @@
                :initarg :key
                :type function
                :reader read-value-key)
+   (%silhouette-sample-size :initarg :silhouette-sample-size
+                            :reader silhouette-sample-size)
+   (%silhouette-sample-count :initarg :silhouette-sample-count
+                             :reader silhouette-sample-count)
    (%clusters :initarg :clusters
               :type vector
               :reader read-clusters)
@@ -31,6 +35,12 @@
    :iterations nil
    :medoids (vect)
    :data (vect)))
+
+
+(defmethod initialize-instance ((object k-means-algorithm-state)
+                                &rest initargs
+                                &key &allow-other-keys)
+  (call-next-method))
 
 
 (cl-ds.utils:define-list-of-slots k-means-algorithm-state

@@ -45,10 +45,15 @@
 @end{section}
 
 
+@begin{section} @title{Sparse RRB Vector} @label{SRRB}
+@text{Sparse variant of the RRB vector. Unlike the cl:hash-table, this container will guarantee that the content is stored in the ascending order.}
+@end{section}
+
+
 @begin{section}
 @title{HAMT}
 @label{HAMT}
-@text{HAMT stands from hash array mapped trie. This data structure is used most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copy-on-write whole path from root to the bottom (conflict) node.}
+@text{HAMT stands from hash array mapped trie. This data structure is used the most commonly as functional dictionary in standard libraries of few recent languages (including Clojure and Scala). Cl-data-structures implementation offers also mutable and transactional variant of this structure. Although this container is not optimized for destructive modification, it is still faster then copy-on-write whole path from root to the bottom (conflict) node.}
 @text{Dictionary implementation of HAMT is present in the system as a class.}
 @docclass['cl-ds.dicts.hamt:hamt-dictionary]
 @docclass['cl-ds.dicts.hamt:functional-hamt-dictionary]
@@ -83,4 +88,6 @@
 @text{Dictionaries map values to unique keys. @lisp standard already contains such structures (hash tables, alists, plists) and therefore idea should not be alien to a Lisp programmer. CL-DATA-STRUCTURES offers both functional and mutable dictionaries, with HAMT being the prime example of complete, feature rich implementation of the protocol. In practice, containers present in this module are either ordered containers (for instance binary search trees) or some sort of unordered hash table (either classiscal hashtable or some sort of hashing tree). In each case, overview of data structure is present in this document.}
 @include{Dicts API}
 @include{HAMT}
+@include{SRRB}
+
 @end{section}
