@@ -762,17 +762,21 @@
     transactional))
 
 
-(defun make-functional-rrb-vector ()
-  (make 'functional-rrb-vector))
+(defun make-functional-rrb-vector (&rest all &key element-type)
+  (declare (ignore element-type))
+  (apply #'make 'functional-rrb-vector all))
 
 
-(defun make-mutable-rrb-vector ()
-  (make 'mutable-rrb-vector))
+(defun make-mutable-rrb-vector (&rest all &key element-type)
+  (declare (ignore element-type))
+  (apply #'make 'mutable-rrb-vector all))
 
 
-(defun make-transactional-rrb-vector ()
-  (make 'transactional-rrb-vector
-        :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+(defun make-transactional-rrb-vector (&rest all &key element-type)
+  (declare (ignore element-type))
+  (apply #'make 'transactional-rrb-vector
+         :ownership-tag (cl-ds.common.abstract:make-ownership-tag)
+         all))
 
 
 (defun make-mutable-of-size (size tag arguments)

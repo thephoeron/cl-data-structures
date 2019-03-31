@@ -154,6 +154,7 @@
                              (:file "common")
                              (:module "rrb"
                               :components ((:file "api")
+                                           (:file "docstrings")
                                            (:test-file "tests")))))
                (:module "queues"
                 :components ((:file "packages")
