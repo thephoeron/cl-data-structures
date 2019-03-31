@@ -127,24 +127,37 @@
 
 
 @begin{section} @label{cl-ds algorithms}
-@title{Algorithms Reference}
-@text{This section contains reference of all the functions in the CL-DS.ALG package. Majority of those functions are either layer functions or aggregation functions.}
+ @title{Algorithms Reference}
+ @text{This section contains reference of all the functions in the CL-DS.ALG package.}
+
  @begin{section} @title{Aggregation Functions}
- @begin{documentation}
-  @pack{CL-DATA-STRUCTURES.ALGORITHMS}
-  @docfun['cl-ds.alg:accumulate]
-  @docfun['cl-ds.alg:hash-join]
-  @docfun['cl-ds.alg:count-elements]
-  @docmacro['cl-ds.alg:summary]
-  @docfun['cl-ds.alg:extrema]
-  @docfun['cl-ds.alg:extremum]
-  @docfun['cl-ds.alg:extrema]
-;@docfun['cl-ds.alg:distinct]
-;@docfun['cl-ds.alg:split-into-chunks]
-;@docfun['cl-ds.alg:partition-if]
-  @docfun['cl-ds.alg:to-vector]
- @end{documentation}
+  @text{Aggregation functions transform range into a singular value, akin to the SQL aggergation functions.}
+  @begin{documentation}
+   @pack{CL-DATA-STRUCTURES.ALGORITHMS}
+   @docfun['cl-ds.alg:accumulate]
+   @docfun['cl-ds.alg:hash-join]
+   @docfun['cl-ds.alg:count-elements]
+   @docmacro['cl-ds.alg:summary]
+   @docfun['cl-ds.alg:extrema]
+   @docfun['cl-ds.alg:extremum]
+   @docfun['cl-ds.alg:extrema]
+   @docfun['cl-ds.alg:to-vector]
+  @end{documentation}
  @end{section}
+
+ @begin{section} @title{Layer Functions}
+  @text{Layer functions decorate the input range to add a new behavior to it.}
+  @begin{documentation}
+   @pack{CL-DATA-STRUCTURES.ALGORITHMS}
+   @docfun['cl-ds.alg:distinct]
+   @docfun['cl-ds.alg:split-into-chunks]
+   @docfun['cl-ds.alg:group-by]
+   @docfun['cl-ds.alg:repeat]
+   @docfun['cl-ds.alg:restrain-size]
+   @docfun['cl-ds.alg:partition-if]
+  @end{documentation}
+ @end{section}
+
 @end{section}
 
 
