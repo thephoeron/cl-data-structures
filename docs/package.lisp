@@ -35,5 +35,7 @@
   @include{cl-ds algorithms}
   @include{cl-ds file system}
   @include{cl-ds math}
+  @include{cl-ds clustering}
+  @include{dicts}
   @include{cl-ds internals}
-  @include{dicts})
+  )

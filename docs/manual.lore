@@ -137,7 +137,6 @@
    @docfun['cl-ds.alg:accumulate]
    @docfun['cl-ds.alg:hash-join]
    @docfun['cl-ds.alg:count-elements]
-   @docmacro['cl-ds.alg:summary]
    @docfun['cl-ds.alg:extrema]
    @docfun['cl-ds.alg:extremum]
    @docfun['cl-ds.alg:extrema]
@@ -155,19 +154,36 @@
    @docfun['cl-ds.alg:repeat]
    @docfun['cl-ds.alg:restrain-size]
    @docfun['cl-ds.alg:partition-if]
+   @docfun['cl-ds.alg:flatten-lists]
+   @docfun['cl-ds.alg:only]
+   @docfun['cl-ds.alg:without]
+  @end{documentation}
+ @end{section}
+
+ @begin{section} @title{Other Functions}
+  @begin{documentation}
+   @pack{CL-DATA-STRUCTURES.ALGORITHMS}
+   @docfun['cl-ds.alg:cartesian]
+   @docfun['cl-ds.alg:chain]
+   @docfun['cl-ds.alg:zip]
+   @docmacro['cl-ds.alg:summary]
+   @docfun['cl-ds.alg:shuffled-range]
   @end{documentation}
  @end{section}
 
 @end{section}
-
 
 @begin{section} @label{cl-ds file system}
 @title{File System Reference}
 @text{This section contains reference of all the functions, classes and macros in the CL-DS.FS package. Those functions act primarly as a simple bridge between files in the operating system and the algorithms package and therefore usually return ranges.}
 @end{section}
 
-
 @begin{section} @label{cl-ds math}
 @title{Math Reference}
-@text{This section contains reference of all the functions, classes and macros in the CL-DS.MATH package.}
+@text{This section contains reference of all the functions in the CL-DS.MATH package.}
+@end{section}
+
+@begin{section} @label{cl-ds clustering}
+@title{Clustering Reference}
+@text{This section contains reference of all functions and classes in the CL-DS.CLUSTER package.}
 @end{section}
