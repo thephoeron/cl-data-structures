@@ -5,7 +5,9 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function k-means
-    (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional simple-arrays specialized for single-floats."))
+    (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional simple-arrays specialized for single-floats."
+     :returns "Clusters object. Clusters itself are represented as vector of vectors and can be read using CLUSTER-CONTENTS function. Addiditionally, silhouette values can be read with SILHOUETTE function."
+     :thread-safety "Uses lparallel underneath."))
 
   (function clara
     (:description "Clusters data set using CLARA algorithm. This algorithm attempts to cluster random subset, picking best set of clusters."
@@ -21,6 +23,5 @@
                  (attempts "How many times clusters should be splitted and merged before accepting suboptimal cluster sizes.")
                  (split "Threshold size of clusters. Clusters above this size will attempt to be splitted.")
                  (merge "Threshold size of clusters. Clusters below this size will attempt to be merged."))
-     :returns ("Vector of vectors (each inner vector represents cluster)."
-               "Silhouette of each cluster (as vector of single-floats).")
+     :returns "Clusters object. Clusters itself are represented as vector of vectors and can be read using CLUSTER-CONTENTS function. Addiditionally, silhouette values can be read with SILHOUETTE function."
      :thread-safety "Uses lparallel underneath.")))

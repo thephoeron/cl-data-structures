@@ -185,4 +185,11 @@
 @begin{section} @label{cl-ds clustering}
 @title{Clustering Reference}
 @text{This section contains reference of all functions and classes in the CL-DS.CLUSTER package.}
+
+@begin{documentation}
+@pack{CL-DATA-STRUCTURES.CLUSTERING}
+@docgeneric['cl-ds.cluster:clara]
+@docgeneric['cl-ds.cluster:k-means]
+@end{documentation}
+
 @end{section}
