@@ -21,7 +21,7 @@
      :arguments ((range "Object to process.")
                  (key "Function used to extract values from the RANGE."))))
 
-  (function hodges-lehman-estimator
+  (function hodges-lehmann-estimator
     (:description "Calculates Hodges-Lehman estimator for range."
      :arguments ((range "Object to aggregate")
                  (key "Function used to extract value from element.")

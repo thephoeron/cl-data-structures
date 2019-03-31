@@ -180,6 +180,20 @@
 @begin{section} @label{cl-ds math}
 @title{Math Reference}
 @text{This section contains reference of all the functions in the CL-DS.MATH package.}
+@begin{documentation}
+@pack{CL-DATA-STRUCTURES.MATH}
+@docgeneric['cl-ds.math:average]
+@docgeneric['cl-ds.math:bootstrap]
+@docgeneric['cl-ds.math:chi-squared]
+@docgeneric['cl-ds.math:hodges-lehmann-estimator]
+@docgeneric['cl-ds.math:moments]
+@docgeneric['cl-ds.math:moments]
+@docgeneric['cl-ds.math:moving-average]
+@docgeneric['cl-ds.math:mutual-information]
+@docgeneric['cl-ds.math:simple-linear-regression]
+@docgeneric['cl-ds.math:statistical-summary]
+@docgeneric['cl-ds.math:variance]
+@end{documentation}
 @end{section}
 
 @begin{section} @label{cl-ds clustering}
