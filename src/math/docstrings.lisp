@@ -34,7 +34,7 @@
      :thread-safety "Will ues lparallel if PARALLEL is T."))
 
   (function bootstrap
-    (:description "Changes aggregation into bootstrapping schema using percentail method. Reduces time needed to calculate functions with expensive complexity."
+    (:description "Changes aggregation into bootstrapping schema using percentail method. Reduces the ammount of resources needed to obtain the value."
      :arguments ((range "Data for aggregation.")
                  (sample-size "Size of the single sample.")
                  (samples-count "Total number of samples drawn.")
@@ -43,7 +43,7 @@
                  (compare "Function passed to SORT function.")
                  (parallel "Will use lparallel to evaluate samples if T. Defaults to T."))
      :thread-safety "Will use lparallel for each sample if PARALLEL is T."
-     :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in aggregation funciton."))
+     :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in the aggregation function."))
 
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."
