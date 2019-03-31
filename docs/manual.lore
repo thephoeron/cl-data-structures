@@ -148,14 +148,14 @@
   @begin{documentation}
    @pack{CL-DATA-STRUCTURES.ALGORITHMS}
    @docfun['cl-ds.alg:distinct]
-   @docfun['cl-ds.alg:split-into-chunks]
+   @docfun['cl-ds.alg:flatten-lists]
    @docfun['cl-ds.alg:group-by]
+   @docfun['cl-ds.alg:on-each]
+   @docfun['cl-ds.alg:only]
+   @docfun['cl-ds.alg:partition-if]
    @docfun['cl-ds.alg:repeat]
    @docfun['cl-ds.alg:restrain-size]
-   @docfun['cl-ds.alg:partition-if]
-   @docfun['cl-ds.alg:flatten-lists]
-   @docfun['cl-ds.alg:only]
-   @docfun['cl-ds.alg:on-each]
+   @docfun['cl-ds.alg:split-into-chunks]
    @docfun['cl-ds.alg:without]
   @end{documentation}
  @end{section}
