@@ -155,6 +155,7 @@
    @docfun['cl-ds.alg:partition-if]
    @docfun['cl-ds.alg:flatten-lists]
    @docfun['cl-ds.alg:only]
+   @docfun['cl-ds.alg:on-each]
    @docfun['cl-ds.alg:without]
   @end{documentation}
  @end{section}

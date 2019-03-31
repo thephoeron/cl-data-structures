@@ -44,7 +44,7 @@
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE."
      :returns "Another range."
-     :notes "Works almost like cl:map-and-friends, but lazy evaluated."))
+     :notes "Works almost like cl:map-and-friends."))
 
   (function count-elements
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
