@@ -139,7 +139,6 @@
    @docfun['cl-ds.alg:count-elements]
    @docfun['cl-ds.alg:extrema]
    @docfun['cl-ds.alg:extremum]
-   @docfun['cl-ds.alg:extrema]
    @docfun['cl-ds.alg:to-vector]
   @end{documentation}
  @end{section}
