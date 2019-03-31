@@ -36,6 +36,7 @@
   @include{cl-ds file system}
   @include{cl-ds math}
   @include{cl-ds clustering}
+  @include{cl-ds threads}
   @include{dicts}
   @include{cl-ds internals}
   )
