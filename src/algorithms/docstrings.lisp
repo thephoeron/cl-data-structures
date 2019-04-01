@@ -33,18 +33,18 @@
   (function to-vector
     (:description "Collects all elements into CL:VECTOR."
      :returns "cl:vector with content of the range."
-     :notes ("There is no way to know ahead of time how large vector will be created, therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
-             "To avoid copying in cases when RANGE is also a vector, pass nil as :force-copy.")
-     :arguments ((range "Object to aggregate accross.")
+     :notes ("There is no way to know ahead of time how large vector will be created, and therefore multiple reallocations may be performed during aggregation. User can supply :SIZE to mitigate that."
+             "To avoid copying in case when RANGE is also a vector, pass NIL as :FORCE-COPY.")
+     :arguments ((range "The object to aggregate.")
                  (:key "Key function used to extract value for vector.")
-                 (:element-type ":element-type for result vector.")
-                 (:size "Initial size of internal vector. Supplied to optimize memory allocations.")
+                 (:element-type ":ELEMENT-TYPE for the result vector.")
+                 (:size "Initial size of the internal vector. Supplie to minimize memory allocations count.")
                  (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
     (:description "Creates new range by applying FUNCTION to each element of the RANGE."
      :returns "Another range."
-     :notes "Works almost like cl:map-and-friends."))
+     :notes "Works almost like cl:map-and-friends, but lazily evaluated values.."))
 
   (function count-elements
     (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."

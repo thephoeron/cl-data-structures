@@ -5,10 +5,10 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (class fundamental-queue
-    (:description "Fundamental base class of all queues."))
+    (:description "A fundamental base class of all queues."))
 
   (class fundamental-mutable-queue
-    (:description "Fundamental base class of all mutable queues."))
+    (:description "A fundamental base class of all mutable queues."))
 
   (class fundamental-functional-queue
-    (:description "Fundamental base class of all functional queues.")))
+    (:description "A fundamental base class of all functional queues.")))
