@@ -5,14 +5,14 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function thread-buffer
-    (:description "Creates proxy range that will present exactly the same context as original range. However, when calling TRAVERSE or ACROSS it will create internal thread with queue to values from inner thread, and pass it into queue. Main thread feeds data from the queue and calls passed callback on it. In result, it allows to speed up aggregation functions on nested complex pipes."
-     :arguments-and-values ((range "Input range.")
-                            (limit "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")
-                            (:context-function "Function that should accept function and then call it. Can be used to establish dynamic scope bindings when traversing internal range. Defaults to #'FUNCALL."))
-     :returns "BUFFER-RANGE subclass. Depending on the RANGE argument class it may be FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
+    (:description "Creates a proxy range that will present exactly the same context as the original range. However, when calling TRAVERSE or ACROSS an internal thread with queue will created. Values from the inner range will be read on the new thread and next passed to the queue. The main thread feeds data from the queue and calls passed callback on it."
+     :arguments-and-values ((range "The input range.")
+                            (limit "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead.")
+                            (:context-function "Function that will accept and call another function. Defaults to #'FUNCALL. Can be used to establish a dynamic scope bindings when traversing the internal range."))
+     :returns "An BUFFER-RANGE subclass. Depending on the class of the RANGE it may be a FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
 
   (function in-parallel
-    (:description "Changes how traverse and accross functions work on inner ranges. Instead for working directly, it will first obtain chunked range, then each chunk will be scheduled to obtain values on lparallel worker. Results are then pushed into queue and read on the caller thread. Useful in conjuction with time consuming on-each functions."
+    (:description "Changes how traverse and accross functions work on the inner ranges. Instead of working directly, it will first obtain a chunked range, then each chunk will be scheduled on a lparallel worker. Results are then pushed into queue and read on the caller thread. Useful in conjuction with time consuming on-each functions underneath."
      :notes ("This changes how aggregation functions work (because aggregation uses accross underneath)."
              "Calling this function on object that does not support CHUNKED function will result into fallback to ordinary traverse.")
      :arguments-and-values ((range "Input range.")
