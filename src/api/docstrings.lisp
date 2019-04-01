@@ -483,6 +483,12 @@
      :arguments ((status "instance of the modification status class"))
      :returns "T if operation changed the container."))
 
+  (function xpr
+    (:syntax "xpr arguments => expression"
+     :arguments ((arguments "Lambda list of the expression, in the form of the plist")
+                 (body "Body of the expression."))
+     :description "Constructs expression. Expression is a forward range build around the function closed over the state. State can be modified with send-recur and recur statements."))
+
   (function found
     (:syntax "found status => boolean"
      :arguments ((status "instance of modification status class."))
