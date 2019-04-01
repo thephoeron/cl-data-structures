@@ -8,14 +8,14 @@
 
   (function
     approximated-set-cardinality
-    (:description "Calculates estimated set cardinality using HyperLogLog algorithm. This requires only a constant ammount of memory."
+    (:description "Calculates a estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) ammount of memory."
      :arguments ((range "Object to aggregate.")
-                 (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are prefered for accurate results.")
+                 (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (hash-fn "Hashing function. SXHASH will do for strings.")
-                 (key "Function used to extract extract value from each element."))
-     :notes ("This algorithm gives solid estimates for large sets, not so good for small sets."
+                 (key "A function used to extract extract value from each element."))
+     :notes ("This algorithm gives a solid estimate for large sets, not so good for small sets."
              "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
-             "Can be used to (for instance) estimate number of keys for hash table before creating one. Good estimate will minimize rehashing and reduce both memory that needs to allocated and time required to fill hash table.")
+             "Can be used to (for instance) estimate number of keys before creating hash table. Good estimate of size minimizes rehashing and therefore reduces both memory allocation and time required to fill hash table.")
      :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
      :examples [(let ((data (cl-ds:xpr (:i 0)
                               (when (< i 500000)
