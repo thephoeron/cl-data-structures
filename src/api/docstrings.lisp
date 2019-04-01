@@ -487,6 +487,7 @@
     (:syntax "xpr arguments => expression"
      :arguments ((arguments "Lambda list of the expression, in the form of the plist")
                  (body "Body of the expression."))
+     :notes "Objects used as part of the state should be immutable to support reset and clone operations properly."
      :description "Constructs expression. Expression is a forward range build around the function closed over the state. State can be modified with send-recur and recur statements."))
 
   (function found
