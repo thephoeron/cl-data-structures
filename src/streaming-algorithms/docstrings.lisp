@@ -47,4 +47,4 @@
                  (space "Positive-fixnum. What is the bloom vector size?")
                  (count "How many bits are used for each item?")
                  (:key "Function used to extract value for to hashing.")
-                 (:hashes "Optional hashes vector. Needs to be supplied if ensuring same hash values between different filters is required.")))))
+                 (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")))))
