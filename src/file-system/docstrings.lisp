@@ -12,4 +12,4 @@
      :notes "File is opened lazily. Calling either TRAVERSE or ACROSS on the line-by-line range will automaticly close the inner file. This makes it suitable to use with the aggregation functions without additional code."))
 
   (function find
-    (:description "Function that is somewhat similar to posix find tool. Depending on the current filesystem and the DESCRIPTION list, it will return forward-range containing pathnames matching DESCRIPTION.")))
+    (:description "A function somewhat similar to the posix find tool. Depending on the filesystem content and the DESCRIPTION list, returns a forward-range containing pathnames matching the DESCRIPTION.")))
