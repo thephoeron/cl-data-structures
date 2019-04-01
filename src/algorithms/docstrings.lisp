@@ -97,8 +97,8 @@
   (function without
     (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
      :arguments ((range "Range argument.")
-                 (predicate "Test used to check if element should be skipped.")
-                 (key "Key function used to extract value for predicate."))
+                 (predicate "Test used to check if an element should be skipped.")
+                 (key "Key function used to extract an value for the predicate."))
      :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function flatten-lists
@@ -108,7 +108,7 @@
      :returns "FORWARD-RANGE"))
 
   (function latch
-    (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from primary range, where, on corresponding positions, each of the latch ranges contains non-nil value."
+    (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from the primary range, where, on a corresponding positions, each of the latch ranges contains a non-nil value."
      :arguments-and-values ((range "Primary input range.")
                             (latch "Range with boolean values.")
                             (more-latches "Ranges with booleans values."))
@@ -148,7 +148,7 @@
      :returns "Dotted pair. First value is the extremum that would occur as first element in the sequence sorted according to the FN, second value is the element that would occur last."))
 
   (function cartesian
-    (:description "Combine ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
+    (:description "Combines ranges into one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
      :arguments ((function "Function used to combine input ranges.")
                  (range "First input range.")
                  (more-ranges "All other ranges."))
@@ -156,7 +156,7 @@
      :returns "FORWARD-RANGE"))
 
   (function group-by
-    (:description "Groups RANGE into partitions according to the TEST. This does not change content of the RANGE, but it will force aggregation to be performed on every group independently."
+    (:description "Groups RANGE into partitions according to the TEST. This does not change content of the RANGE, but will force aggregation to be performed on every group independently."
      :arguments ((range "Range that is supposed to be groupped.")
                  (key "Key function, used to extract value for TEST")
                  (test "Test for inner hashtable (either eq, eql or equal)."))
