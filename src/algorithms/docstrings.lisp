@@ -60,9 +60,7 @@
      :returns "FORWARD-RANGE"
      :examples [(let ((result (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                    (list (cl-ds:field :data #(1 2 3)
-                                                                      :key #'identity))
-                                                   #'<
-                                                   :key #'first)))
+                                                                      :key #'identity)))))
                   (map nil (lambda (x) (prove:is (first x) (second x))) result))]))
 
   (function chain
@@ -81,7 +79,7 @@
                                 :min (cl-ds.alg:accumulate #'min)
                                 :max (cl-ds.alg:accumulate #'max))))
                   (prove:is (cl-ds:at result :min) 0)
-                  (prove:is (cl-ds:at result :min) 249))]
+                  (prove:is (cl-ds:at result :max) 249))]
      :arguments ((range "Range to aggregate.")
                  (forms "Way to invoke function in the form of the plist. Key is a label used to identify value in the result range, second is aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_'."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
