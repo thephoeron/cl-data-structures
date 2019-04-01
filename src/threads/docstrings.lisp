@@ -17,5 +17,5 @@
              "Calling this function on object that does not support CHUNKED function will result into fallback to ordinary traverse.")
      :arguments-and-values ((range "Input range.")
                             (:limit "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")
-                            (:context-function "Function that should accept function and then call it. Can be used to establish dynamic scope bindings for traversing internal chunked range. Defaults to #'FUNCALL."))
+                            (:context-function "Function that should accept function and then call it. Can be used to establish a dynamic scope bindings for traversing the internal chunked range. Defaults to #'FUNCALL."))
      :returns "IN-PARALLEL-RANGE subclass.")))

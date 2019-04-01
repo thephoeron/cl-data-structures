@@ -66,16 +66,18 @@
 
 (defmethod cl-ds:across ((range line-by-line-range) function)
   (unless (~> range access-reached-end)
-    (let ((position (access-current-position range)))
-      (with-open-file (stream (read-path range))
-        (unless (file-position stream position)
-          (error 'cl-ds:file-releated-error
-                 :format-control "Can't set position in the stream."
-                 :path (read-path range)))
-        (iterate
-          (for line = (read-line stream nil nil))
-          (until (null line))
-          (funcall function line)))))
+    (unwind-protect
+         (let ((position (access-current-position range)))
+           (with-open-file (stream (read-path range))
+             (unless (file-position stream position)
+               (error 'cl-ds:file-releated-error
+                      :format-control "Can't set position in the stream."
+                      :path (read-path range)))
+             (iterate
+               (for line = (read-line stream nil nil))
+               (until (null line))
+               (funcall function line))))
+      (close-stream range))) ; this is not strictly required, but it is handy.
   range)
 
 
