@@ -74,7 +74,7 @@
      :returns "FORWARD-RANGE"))
 
   (function summary
-    (:description "Summary is a macro that allows to perform multiple aggregations in one form."
+    (:description "Summary is a macro allowing to perform multiple aggregations in one function call."
      :examples [(let ((result (cl-ds.alg:summary (cl-ds:iota-range :to 250)
                                 :min (cl-ds.alg:accumulate #'min)
                                 :max (cl-ds.alg:accumulate #'max))))
@@ -83,7 +83,8 @@
      :arguments ((range "Range to aggregate.")
                  (forms "Description of function invocation in the form of the plist. Key is a label used to identify value in the result range, value is a aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_' if such symbol is present."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
-     :notes "Currently, this macro does support only the single stage aggregation functions."))
+     :notes ("Currently, this macro does support only the single stage aggregation functions."
+             "Particulary useful when the iteration alone requires considerable time and repeating it should be avoided.")))
 
   (function only
     (:description "Layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
