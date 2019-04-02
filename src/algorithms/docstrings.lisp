@@ -11,7 +11,7 @@
     (:description "Like CL:REDUCE but works on all traversable objects."))
 
   (function hash-join
-    (:description "Joins multiple ranges into one using JOIN-FUNCTION."))
+    (:description "Joins multiple ranges into one using the JOIN-FUNCTION."))
 
   (function distinct
     (:description "Returns forward range that skips elements that were already seen."))
@@ -42,12 +42,12 @@
                  (:force-copy "Pass NIL to allow returning vector passed as RANGE."))))
 
   (function on-each
-    (:description "Creates new range by applying FUNCTION to each element of the RANGE."
+    (:description "Creates a new range by applying FUNCTION to each element of the RANGE."
      :returns "Another range."
-     :notes "Works almost like cl:map-and-friends, but lazily evaluated values.."))
+     :notes "Works almost like cl:map-and-friends, but lazily evaluates content."))
 
   (function count-elements
-    (:description "Counts number of elements. Usefull mostly in conjuction with GROUP-BY."
+    (:description "Counts number of elements. Usefull mostly in conjuction with a GROUP-BY."
      :returns "Integer with count of elements."
      :examples [(let ((data #(1 2 3 4 5)))
                   (prove:is (length data) (cl-ds.alg:count-elements data))
@@ -56,7 +56,7 @@
      :see-also (group-by)))
 
   (function hash-join
-    (:description "Joins multiple ranges using hash join algorithm."
+    (:description "Joins multiple ranges using a hash join algorithm."
      :returns "FORWARD-RANGE"
      :examples [(let ((result (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                    (list (cl-ds:field :data #(1 2 3)
@@ -81,19 +81,19 @@
                   (prove:is (cl-ds:at result :min) 0)
                   (prove:is (cl-ds:at result :max) 249))]
      :arguments ((range "Range to aggregate.")
-                 (forms "Way to invoke function in the form of the plist. Key is a label used to identify value in the result range, second is aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_'."))
+                 (forms "Description of function invocation in the form of the plist. Key is a label used to identify value in the result range, value is a aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_' if such symbol is present."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
      :notes "Currently, this macro does support only the single stage aggregation functions."))
 
   (function only
-    (:description "Layer funciton. Creates range that skips elements that return NIL when passed to the PREDICATE function through key function."
+    (:description "Layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
      :arguments ((range "Range argument.")
                  (predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract value for predicate."))
      :returns "Either forward, bidirectional or random-access range, depending on the RANGE."))
 
   (function without
-    (:description "Layer function. Creates range that skips elements that return T when passed to the PREDICATE function through key function."
+    (:description "Layer function. Creates a range that skips elements that PREDICATE (KEY element) => T."
      :arguments ((range "Range argument.")
                  (predicate "Test used to check if an element should be skipped.")
                  (key "Key function used to extract an value for the predicate."))
