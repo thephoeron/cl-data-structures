@@ -18,7 +18,7 @@
 
   (function split-into-chunks
     (:description "Divides aggregation process into partitions upto size."
-     :returns "A SPLIT-INTO-CHUNKS-PROXY range subclass."
+     :returns "Instance of SPLIT-INTO-CHUNKS-PROXY range subclass."
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
                   (prove:is (cl-ds:size data) 3)
                   (prove:is (cl-ds:at data 0) #(1 2) :test 'equalp)
@@ -43,12 +43,12 @@
 
   (function on-each
     (:description "Creates a new range by applying the FUNCTION to each element of the RANGE."
-     :returns "A another range."
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :notes "Works almost like cl:map-and-friends, but lazily evaluates content."))
 
   (function count-elements
     (:description "Counts the number of elements. Useful mostly in conjunction with a GROUP-BY."
-     :returns "An integer."
+     :returns "Integer."
      :examples [(let ((data #(1 2 3 4 5)))
                   (prove:is (length data) (cl-ds.alg:count-elements data))
                   (prove:is 3 (cl-ds:at (cl-ds.alg:count-elements (cl-ds.alg:group-by data :key #'evenp))
@@ -57,7 +57,7 @@
 
   (function hash-join
     (:description "Joins multiple ranges using a hash join algorithm."
-     :returns "A FORWARD-RANGE."
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :examples [(let ((result (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                    (list (cl-ds:field :data #(1 2 3)
                                                                       :key #'identity)))))
@@ -65,13 +65,13 @@
 
   (function chain
     (:description "Sequentially concatenate multiple ranges into one."
-     :returns "An another range."))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function shuffled-range
     (:description "Creates a range of shuffled integers from FROM, to TO."
      :exceptional-situations ("Raises type-error if FROM or TO is not an integer."
                               "TO must be greater then FROM, otherwise the incompatible-arguments error is signaled.")
-     :returns "A FORWARD-RANGE."))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function summary
     (:description "The summary is a macro allowing to perform multiple aggregations in one function call."
@@ -82,7 +82,7 @@
                   (prove:is (cl-ds:at result :max) 249))]
      :arguments ((range "A range to aggregate.")
                  (forms "A description of function invocation in the form of the plist. Key is a label used to identify value in the result range, a value is an aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_' if such symbol is present."))
-     :returns "A range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
+     :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
      :notes ("Currently, this macro does support only the single stage aggregation functions."
              "Particularly useful when the iteration over the range requires considerable time alone and therefore repeating it should be avoided for efficiency sake.")))
 
@@ -104,14 +104,14 @@
     (:description "A layer function. Flattens each list in the input range to the atoms."
      :arguments ((range "A input range.")
                  (key "The function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
-     :returns "FORWARD-RANGE"))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function latch
     (:description "Combines primary range with multiple latch ranges. The returned range contains elements picked from the primary range, where, on corresponding positions, each of the latch ranges contains a non-nil value."
      :arguments-and-values ((range "A primary input range.")
                             (latch "A range with boolean values.")
                             (more-latches "Ranges with boolean values."))
-     :returns "Another range."))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function zip
     (:description "Combines multiple ranges into a single range by applying function lengthwise."))
@@ -121,13 +121,13 @@
      :arguments ((range "The input range used to construct the result.")
                  (times "How many times the range will be repeated? Unlimited by default."))
      :exceptional-situations ("Will raise the type-error when TIMES is not of the type (or null positive-integer).")
-     :returns "A FORWARD-RANGE."))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function restrain-size
     (:description "A layer function. Constructs new range from the RANGE. New range contains a limit on how many times consume-front can be called on it before returning (values nil nil) effectively reducing the size."
      :arguments ((range "An input range used to construct the result.")
                  (size "What should be the limit on the new range?"))
-     :returns "FORWARD-RANGE"
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :exceptional-situations "Will raise a type-error when the SIZE is not of the type non-negative-integer."))
 
   (function extremum
@@ -136,7 +136,7 @@
                  (fn "A comparsion function.")
                  (key "A function used to extract values from the elements in the RANGE.")
                  (value-key "Like KEY, but using this instead will preserve the complete element in the result. This argument can be used in combination with KEY, in which case KEY is applied before the VALUE-KEY."))
-     :returns "A single extremum value"))
+     :returns "Single extremum value."))
 
   (function extrema
     (:description "An aggregation function. Finds extrema (both minimum and maximum) in the RANGE, according to the FN comparsion function."
@@ -144,7 +144,7 @@
                  (fn "A comparsion function.")
                  (key "A function used to extract values from the elements in the RANGE.")
                  (value-key "Like KEY, but using this instead will preserve the complete element in the result. This argument can be used in combination with KEY, in which case KEY is applied before the VALUE-KEY."))
-     :returns "A dotted pair. The first value is the extremum that would occur as a first element in the sequence sorted according to the FN, second value is an element that would occur the last."))
+     :returns "Dotted pair. The first value is the extremum that would occur as a first element in the sequence sorted according to the FN, second value is an element that would occur the last."))
 
   (function cartesian
     (:description "Combines ranges into a one range that contains result of FUNCTION application on cartesian combination of all elements in the input ranges."
@@ -152,7 +152,7 @@
                  (range "First input range.")
                  (more-ranges "All other ranges."))
      :exceptional-situations "Will raise a type-error if any of the ranges is of a wrong type."
-     :returns "FORWARD-RANGE"))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change the content of the RANGE, but will force aggregation to be performed on every group independently."
