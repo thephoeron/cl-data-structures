@@ -84,7 +84,7 @@
                  (forms "Description of function invocation in the form of the plist. Key is a label used to identify value in the result range, value is a aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_' if such symbol is present."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
      :notes ("Currently, this macro does support only the single stage aggregation functions."
-             "Particulary useful when the iteration alone requires considerable time and repeating it should be avoided.")))
+             "Particulary useful when the iteration over the range requires considerable time alone and repeating it should be avoided.")))
 
   (function only
     (:description "Layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
@@ -108,9 +108,9 @@
 
   (function latch
     (:description "Combines primary range with multiple latch ranges. Returned range contains elements picked from the primary range, where, on a corresponding positions, each of the latch ranges contains a non-nil value."
-     :arguments-and-values ((range "Primary input range.")
-                            (latch "Range with boolean values.")
-                            (more-latches "Ranges with booleans values."))
+     :arguments-and-values ((range "The primary input range.")
+                            (latch "Range with a boolean values.")
+                            (more-latches "Ranges with a boolean values."))
      :returns "Another range."))
 
   (function zip
