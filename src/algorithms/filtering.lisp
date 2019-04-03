@@ -71,9 +71,8 @@
 
 
 (defmethod clone ((range filtering-proxy))
-  (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
-                 :key (read-key range)))
+  (cl-ds.utils:quasi-clone* range
+    :original-range (clone (read-original-range range))))
 
 
 (defmethod cl-ds:traverse ((range filtering-proxy) function)

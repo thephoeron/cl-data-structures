@@ -7,7 +7,7 @@
 
 
 (defmethod cl-ds.utils:cloning-information append
-    ((proxy filtering-proxy))
+    ((proxy without-proxy))
   '((:predicate read-predicate)))
 
 

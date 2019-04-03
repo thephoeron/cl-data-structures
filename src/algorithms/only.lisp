@@ -21,13 +21,6 @@
   ())
 
 
-(defmethod clone ((range only-proxy))
-  (make-instance (type-of range)
-                 :original-range (clone (read-original-range range))
-                 :predicate (read-predicate range)
-                 :key (read-key range)))
-
-
 (defmethod should-skip ((range only-proxy) element can-mutate)
   (declare (ignore can-mutate))
   (~>> element (funcall (read-predicate range)) not))

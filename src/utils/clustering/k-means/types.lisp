@@ -56,7 +56,7 @@
 
 
 (defmethod cl-ds.utils:cloning-information
-    :append ((obj k-means-algorithm-state))
+    append ((obj k-means-algorithm-state))
   '((:data read-data)
     (:clusters access-clusters)
     (:medoids access-medoids)
