@@ -13,7 +13,7 @@
     (clone-cell stack)))
 
 
-(defmethod cl-ds.utils:cloning-information ((object find-range))
+(defmethod cl-ds.utils:cloning-information :append ((object find-range))
   '((:stack clone-of-stack)))
 
 
