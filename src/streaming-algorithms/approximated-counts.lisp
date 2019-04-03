@@ -30,7 +30,7 @@
   (ensure-functionf (access-hash-fn object))
   (check-type (access-space object) positive-fixnum)
   (check-type (access-count object) positive-fixnum)
-  (check-type (access-hashes object) (or null (simple-array fixnum (*)))))
+  (check-type (access-hashes object) (simple-array fixnum (*))))
 
 
 (defmethod cl-ds.utils:cloning-information append
