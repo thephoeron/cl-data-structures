@@ -1,7 +1,7 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass approximated-counts ()
+(defclass approximated-counts (fundamental-data-sketch)
   ((%counters :initarg :counters
               :type vector
               :reader read-counters)
@@ -20,6 +20,21 @@
    (%hash-fn :initarg :hash-fn
              :reader read-hash-fn
              :type function)))
+
+
+(defmethod cl-ds.utils:cloning-information append
+  ((sketch fundamental-data-sketch))
+  '((:counters read-counters)
+    (:hashes read-hashes)
+    (:count read-count)
+    (:size cl-ds:size)
+    (:hash-fn read-hash-fn)))
+
+
+(defmethod cl-ds:clone ((sketch approximated-counts))
+  (cl-ds.utils:quasi-clone* sketch
+    :counters (~> sketch read-counters copy-array)
+    :hashes (~> sketch read-hashes)))
 
 
 (defmethod cl-ds:at ((container approximated-counts)

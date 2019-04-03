@@ -28,6 +28,10 @@
                                  #'sxhash))
                                510000)))]))
 
+  (class
+    fundamental-data-sketch
+    (:description "The base class of all data sketches. Instances of this class can be passed to streaming algorihms as initial states, cloned and combined into unions."))
+
   (function
     approximated-counts
     (:description "Calculates estimated counts using Min-Count sketch alogrithm. This requiret only a constant ammount of memory."

@@ -21,3 +21,12 @@
   (lret ((result (make-array (list count 2) :element-type 'fixnum)))
     (map-into (cl-ds.utils:unfold-table result)
               (curry #'random most-positive-fixnum))))
+
+
+(defclass fundamental-data-sketch ()
+  ())
+
+
+(defgeneric compatible-p (first-sketch &rest more-sketches))
+
+(defgeneric union (first-sketch &rest more-sketches))
