@@ -8,7 +8,7 @@
 
   (function
     approximated-set-cardinality
-    (:description "Calculates a estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) ammount of memory."
+    (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) ammount of memory."
      :arguments ((range "Object to aggregate.")
                  (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (hash-fn "Hashing function. SXHASH will do for strings.")
