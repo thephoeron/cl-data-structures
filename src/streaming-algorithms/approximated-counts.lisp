@@ -4,7 +4,7 @@
 (defclass approximated-counts (fundamental-data-sketch)
   ((%counters :initarg :counters
               :type vector
-              :reader read-counters)
+              :accessor access-counters)
    (%hashes :initarg :hashes
             :type vector
             :accessor access-hashes)
@@ -13,38 +13,48 @@
            :accessor access-count)
    (%space :initarg :space
            :type fixnum
-           :accessor access-space)
-   (%size :initarg :size
-          :initform 0
-          :type integer
-          :accessor access-size
-          :reader cl-ds:size)
-   (%hash-fn :initarg :hash-fn
-             :accessor access-hash-fn
-             :type function)))
+           :accessor access-space)))
+
+
+(defmethod union ((first approximated-counts) &rest more)
+  (cl-ds.utils:quasi-clone* first
+    :counters (apply #'cl-ds.utils:transform
+                     #'max
+                     (~> first access-counters copy-array)
+                     (mapcar #'access-counters more))))
 
 
 (defmethod initialize-instance :after ((object approximated-counts)
                                        &rest all)
   (declare (ignore all))
-  (ensure-functionf (access-hash-fn object))
   (check-type (access-space object) positive-fixnum)
   (check-type (access-count object) positive-fixnum)
-  (check-type (access-hashes object) (simple-array fixnum (*))))
+  (check-type (access-hashes object) (simple-array fixnum (* 2)))
+  (check-type (access-counters object) (simple-array fixnum (*)))
+  (unless (eql (array-dimension (access-counters object) 0)
+               (access-space object))
+    (error 'cl-ds:incompatible-arguments
+           :parameters '(hashes space)
+           :values `(,(access-hashes object) ,(access-space object))
+           :format-control "First dimension of the COUNTERS is expected to be equal to SPACE."))
+  (unless (eql (array-dimension (access-hashes object) 0)
+               (access-count object))
+    (error 'cl-ds:incompatible-arguments
+           :parameters '(hashes space)
+           :values `(,(access-hashes object) ,(access-space object))
+           :format-control "First dimension of the hashes is expected to be equal to space.")))
 
 
 (defmethod cl-ds.utils:cloning-information append
   ((sketch approximated-counts))
-  '((:counters read-counters)
+  '((:counters access-counters)
     (:hashes access-hashes)
-    (:count access-count)
-    (:size cl-ds:size)
-    (:hash-fn access-hash-fn)))
+    (:count access-count)))
 
 
 (defmethod cl-ds:clone ((sketch approximated-counts))
   (cl-ds.utils:quasi-clone* sketch
-    :counters (~> sketch read-counters copy-array)
+    :counters (~> sketch access-counters copy-array)
     :hashes (~> sketch access-hashes)))
 
 
@@ -58,7 +68,7 @@
     (with hash = (ldb (byte 32 0)
                       (funcall (access-hash-fn container)
                                location)))
-    (with counts = (read-counters container))
+    (with counts = (access-counters container))
     (with hashes = (access-hashes container))
     (with space = (access-space container))
     (for j from 0 below (access-count container))
@@ -84,7 +94,8 @@
 
   (%data-sketch)
 
-  ((&key data-sketch)
+  ((&key data-sketch &allow-other-keys)
+   (check-type data-sketch approximated-counts)
    (setf %data-sketch data-sketch))
 
   ((element)
@@ -92,7 +103,7 @@
    (iterate
      (with hash = (funcall (access-hash-fn %data-sketch) element))
      (with hashes = (access-hashes %data-sketch))
-     (with counters = (read-counters %data-sketch))
+     (with counters = (access-counters %data-sketch))
      (with count = (access-count %data-sketch))
      (with space = (access-space %data-sketch))
      (for j from 0 below count)

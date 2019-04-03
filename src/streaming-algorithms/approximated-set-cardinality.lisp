@@ -1,12 +1,47 @@
 (in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass approximated-set-cardinality-result ()
-  ((%bits :initarg :bits)
-   (%registers :initarg :registers)))
+(defclass approximated-set-cardinality (fundamental-data-sketch)
+  ((%bits :initarg :bits
+          :accessor access-bits)
+   (%registers :initarg :registers
+               :accessor access-registers)))
 
 
-(defmethod cl-ds:value ((state approximated-set-cardinality-result))
+(defmethod cl-ds.utils:cloning-information append
+    ((sketch approximated-set-cardinality))
+  '((:bits access-bits)
+    (:registers access-registers)))
+
+
+(defmethod cl-ds:clone ((object approximated-set-cardinality))
+  (cl-ds.utils:quasi-clone* object
+    :registers (~> object access-registers copy-array)))
+
+
+(defmethod union ((first approximated-set-cardinality) &rest more)
+  (cl-ds.utils:quasi-clone* first
+    :registers (apply #'cl-ds.utils:transform #'max
+                      (~> first access-registers copy-array)
+                      (mapcar #'access-registers more))))
+
+
+(defmethod initialize-instance :after ((object approximated-set-cardinality)
+                                       &rest all)
+  (declare (ignore all))
+  (bind (((:slots %bits %registers %hash-fn) state))
+    (check-type %bits integer)
+    (unless (< 3 %bits 21)
+      (error 'cl-ds:argument-out-of-bounds
+             :argument 'bits
+             :bounds (list 4 21)
+             :value %bits
+             :format-control "Bits out of range."))
+    (check-type %registers (simple-array (unsigned-byte 8) (*)))
+    (assert (eql (ash 1 %bits) (length %registers)))))
+
+
+(defmethod cl-ds:value ((state approximated-set-cardinality))
   (bind (((:slots %bits %registers) state)
          (size (length %registers))
          (alpha-mm (* (cond ((eql 4 %bits) 0.673)
@@ -34,31 +69,29 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-set-cardinality approximated-set-cardinality-function
 
-  (:range bits hash-fn &key key)
-  (:range bits hash-fn &key (key #'identity))
+  (:range &key bits hash-fn key data-sketch)
+  (:range &key bits hash-fn (key #'identity)
+          (data-sketch
+           (make 'approximated-set-cardinality
+                 :bits bits
+                 :registers (make-array (ash 1 bits)
+                                        :element-type '(unsigned-byte 8))
+                 :hash-fn hash-fn)))
 
-  (%bits %registers %hash-fn)
+  (%data-sketch)
 
-  ((&key bits hash-fn &allow-other-keys)
-   (unless (< 3 bits 21)
-     (error 'cl-ds:argument-out-of-bounds
-            :argument 'bits
-            :bounds (list 4 21)
-            :value bits
-            :format-control "Bits out of range."))
-   (setf %bits bits
-         %hash-fn hash-fn
-         %registers (make-array (ash 1 bits)
-                                :element-type '(unsigned-byte 8))))
+  ((&key data-sketch &allow-other-keys)
+
+   (check-type data-sketch approximated-set-cardinality)
+   (setf %data-sketch data-sketch))
 
   ((element)
-   (bind ((hash (ldb (byte 32 0) (funcall %hash-fn element)))
+   (bind (((:slots %hash-fn %bits %registers) %data-sketch)
+          (hash (ldb (byte 32 0) (funcall %hash-fn element)))
           (index (ash hash (- (- 32 %bits))))
           (hash-length (integer-length hash))
           (rank (if (zerop hash-length) 0 (1- hash-length))))
      (when (> rank (aref %registers index))
        (setf (aref %registers index) rank))))
 
-  ((make 'approximated-set-cardinality-result
-         :bits %bits
-         :registers %registers)))
+  (%data-sketch))
