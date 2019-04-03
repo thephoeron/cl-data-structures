@@ -24,6 +24,16 @@
                      (mapcar #'access-counters more))))
 
 
+(defmethod compatible-p ((first approximated-counts) &rest more)
+  (push first more)
+  (and (cl-ds.utils:homogenousp more :key #'access-count)
+       (cl-ds.utils:homogenousp more :key #'access-space)
+       (cl-ds.utils:homogenousp more :key (compose #'access-counters
+                                                   #'length))
+       (cl-ds.utils:homogenousp more :key #'access-hashes
+                                     :test #'vector=)))
+
+
 (defmethod initialize-instance :after ((object approximated-counts)
                                        &rest all)
   (declare (ignore all))

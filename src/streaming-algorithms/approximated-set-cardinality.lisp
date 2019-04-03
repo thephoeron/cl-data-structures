@@ -19,6 +19,15 @@
     :registers (~> object access-registers copy-array)))
 
 
+(defmethod compatible-p ((first-sketch fundamental-data-sketch)
+                         &rest more-sketches)
+  (push first-sketch more-sketches)
+  (and (cl-ds.utils:homogenousp more-sketches
+                                :key #'access-bits)
+       (cl-ds.utils:homogenousp more-sketches
+                                :key (compose #'access-registers #'length))))
+
+
 (defmethod union ((first approximated-set-cardinality) &rest more)
   (cl-ds.utils:quasi-clone* first
     :registers (apply #'cl-ds.utils:transform #'max

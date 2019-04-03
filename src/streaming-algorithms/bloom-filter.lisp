@@ -24,6 +24,16 @@
     (:space access-space)))
 
 
+(defmethod compatible-p ((first bloom-filter) &rest more)
+  (push first more)
+  (and (cl-ds.utils:homogenousp more :key #'access-count)
+       (cl-ds.utils:homogenousp more :key #'access-space)
+       (cl-ds.utils:homogenousp more :key (compose #'access-counters
+                                                   #'length))
+       (cl-ds.utils:homogenousp more :key #'access-hashes
+                                     :test #'vector=)))
+
+
 (defmethod initialize-instance :after ((sketch bloom-filter) &rest all)
   (declare (ignore all))
   (bind (((:slots %space %counters %count %hashes) sketch))
