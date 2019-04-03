@@ -105,6 +105,7 @@
   (%data-sketch)
 
   ((&key data-sketch &allow-other-keys)
+   (check-type data-sketch bloom-filter)
    (setf %data-sketch data-sketch))
 
   ((element)
