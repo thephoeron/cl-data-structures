@@ -29,7 +29,7 @@
 (defmethod initialize-instance :after ((object approximated-set-cardinality)
                                        &rest all)
   (declare (ignore all))
-  (bind (((:slots %bits %registers %hash-fn) state))
+  (bind (((:slots %bits %registers %hash-fn) object))
     (check-type %bits integer)
     (unless (< 3 %bits 21)
       (error 'cl-ds:argument-out-of-bounds
