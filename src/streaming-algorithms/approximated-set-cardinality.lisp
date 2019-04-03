@@ -72,11 +72,9 @@
   (:range &key bits hash-fn key data-sketch)
   (:range &key bits hash-fn (key #'identity)
           (data-sketch
-           (make 'approximated-set-cardinality
-                 :bits bits
-                 :registers (make-array (ash 1 bits)
-                                        :element-type '(unsigned-byte 8))
-                 :hash-fn hash-fn)))
+           (clean-sketch #'approximated-set-cardinality
+                         :bits bits
+                         :hash-fn hash-fn)))
 
   (%data-sketch)
 
@@ -95,3 +93,13 @@
        (setf (aref %registers index) rank))))
 
   (%data-sketch))
+
+
+(defmethod clean-sketch ((function approximated-set-cardinality-function)
+                         &rest all &key bits hash-fn)
+  (declare (ignore all))
+  (make 'approximated-set-cardinality
+        :bits bits
+        :registers (make-array (ash 1 bits)
+                               :element-type '(unsigned-byte 8))
+        :hash-fn hash-fn))

@@ -50,6 +50,9 @@
     (call-next-method)))
 
 
+(defgeneric clean-sketch (function &rest arguments &key))
+
+
 (defgeneric union (first-sketch &rest more-sketches)
   (:method :around ((sketch fundamental-data-sketch) &rest more-sketches)
     (unless (apply #'compatible-p sketch more-sketches)

@@ -85,13 +85,12 @@
   (:range &key hash-fn space count key hashes data-sketch)
   (:range &key hash-fn space count (key #'identity) hashes
           (data-sketch
-           (make 'bloom-filter
-                 :count count
-                 :space space
-                 :total 0
-                 :hashes (or hashes (make-hash-array count))
-                 :counters (make-array space :element-type 'bit)
-                 :hash-fn hash-fn)))
+           (clean-sketch
+            #'bloom-filter
+            :count count
+            :space space
+            :hashes hashes
+            :hash-fn hash-fn)))
 
   (%data-sketch)
 
@@ -109,3 +108,17 @@
      (setf (aref counters position) 1)))
 
   (%data-sketch))
+
+
+(defmethod clean-sketch ((function bloom-filter-function)
+                         &rest all &key hashes hash-fn space count)
+  (declare (ignore all))
+  (make 'cl-ds.utils:cloning-information
+        :counters (make-array
+                   space
+                   :initial-element 0
+                   :element-type 'non-negative-fixnum)
+        :hashes (or hashes (make-hash-array count))
+        :hash-fn (ensure-function hash-fn)
+        :space space
+        :count count))

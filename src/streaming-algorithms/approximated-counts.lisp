@@ -82,15 +82,12 @@
 
   (:range &key hash-fn space count key hashes data-sketch)
   (:range &key hash-fn space count (key #'identity) hashes
-          (data-sketch (make 'cl-ds.utils:cloning-information
-                             :counters (make-array
-                                        space
-                                        :initial-element 0
-                                        :element-type 'non-negative-fixnum)
-                             :hashes (or hashes (make-hash-array count))
-                             :hash-fn (ensure-function hash-fn)
-                             :space space
-                             :count count)))
+          (data-sketch (clean-sketch
+                        #'approximated-counts
+                        :hashes hashes
+                        :hash-fn hash-fn
+                        :space space
+                        :count count)))
 
   (%data-sketch)
 
@@ -111,3 +108,17 @@
      (incf (aref counters hashval))))
 
   (%data-sketch))
+
+
+(defmethod clean-sketch ((function approximated-counts-function)
+                         &rest all &key hashes hash-fn space count)
+  (declare (ignore all))
+  (make 'cl-ds.utils:cloning-information
+        :counters (make-array
+                   space
+                   :initial-element 0
+                   :element-type 'non-negative-fixnum)
+        :hashes (or hashes (make-hash-array count))
+        :hash-fn (ensure-function hash-fn)
+        :space space
+        :count count))
