@@ -15,7 +15,9 @@
            :type fixnum
            :reader read-space)
    (%size :initarg :size
+          :initform 0
           :type integer
+          :accessor access-size
           :reader cl-ds:size)
    (%hash-fn :initarg :hash-fn
              :reader read-hash-fn
@@ -59,40 +61,33 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-  (:range hash-fn space count &key key hashes)
-  (:range hash-fn space count &key (key #'identity) hashes)
+  (:range &key hash-fn space count key hashes data-sketch)
+  (:range &key hash-fn space count (key #'identity) hashes
+          (data-sketch (make 'cl-ds.utils:cloning-information
+                             :counters (make-array
+                                        space
+                                        :initial-element 0
+                                        :element-type 'non-negative-fixnum)
+                             :hashes (or hashes (make-hash-array count))
+                             :hash-fn (ensure-function hash-fn)
+                             :space space
+                             :count count)))
 
-  (%space %count %hash-fn %total %counters %hashes)
+  (%data-sketch)
 
-  ((&key hash-fn count space hashes)
-   (check-type space positive-fixnum)
-   (check-type count positive-fixnum)
-   (check-type hashes (or null (simple-array fixnum (*))))
-   (ensure-functionf hash-fn)
-   (setf %hash-fn hash-fn
-         %count count
-         %space space
-         %total 0
-         %counters (make-array %space :initial-element 0
-                                      :element-type 'non-negative-fixnum)
-         %hashes (or hashes (make-hash-array count)))
-   (unless (eql count (array-dimension %hashes 0))
-     (error 'cl-ds:invalid-value
-            :value count
-            :format-control "Invalid first dimension of %hashes")))
+  ((&key data-sketch)
+   (setf %data-sketch data-sketch))
 
   ((element)
-   (incf %total)
+   (incf (access-size %data-sketch))
    (iterate
-     (with hash = (funcall %hash-fn element))
-     (for j from 0 below %count)
-     (for hashval = (hashval %hashes %space j hash))
-     (incf (aref %counters hashval))))
+     (with hash = (funcall (read-hash-fn %data-sketch) element))
+     (with hashes = (read-hashes %data-sketch))
+     (with counters = (read-counters %data-sketch))
+     (with count = (read-count %data-sketch))
+     (with space = (read-space %data-sketch))
+     (for j from 0 below count)
+     (for hashval = (hashval hashes space j hash))
+     (incf (aref counters hashval))))
 
-  ((make 'approximated-counts
-         :hash-fn %hash-fn
-         :counters %counters
-         :space %space
-         :count %count
-         :size %total
-         :hashes %hashes)))
+  (%data-sketch))
