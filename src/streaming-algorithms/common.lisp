@@ -59,5 +59,5 @@
       (error 'cl-ds:incompatible-arguments
              :parameters '(sketch more-sketches)
              :values `(,sketch ,more-sketches)
-             :format-control "Sketches passed to the union are not of the same class."))
+             :format-control "Sketches passed to the union are not compatible."))
     (call-next-method)))
