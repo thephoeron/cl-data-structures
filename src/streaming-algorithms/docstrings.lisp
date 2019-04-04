@@ -6,6 +6,9 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (function union
+    (:description "Creates new data-sketch from the provided. Can be used to join sketches build on different data chunks."))
+
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
      :arguments ((range "Object to aggregate.")
@@ -28,13 +31,10 @@
                                  :hash-fn #'sxhash))
                                510000)))]))
 
-  (generic union
-    (:description "Merges multiple data-sketches together."))
-
-  (generic clean-sketch
+  (function clean-sketch
     (:description "Creates a new, empty data-sketch that would be produced by the function. New data-sketch can be cloned and passed as :data-sketch. This allows to keep compatibility between results of call to the streaming function."))
 
-  (class fundamental-data-sketch
+  (type fundamental-data-sketch
     (:description "The base class of all data sketches. Instances of this class can be passed to streaming algorihms as initial states, cloned and combined into unions."))
 
   (function approximated-counts

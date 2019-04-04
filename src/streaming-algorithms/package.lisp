@@ -6,9 +6,10 @@
   (:nicknames #:cl-ds.sa)
   (:shadow cl:union)
   (:export
-   #:approximated-set-cardinality
    #:approximated-counts
    #:bloom-filter
-   #:union
    #:clean-sketch
-   #:make-hash-array))
+   #:fundamental-data-sketch
+   #:make-hash-array
+   #:union
+   #:approximated-set-cardinality))

@@ -37,6 +37,7 @@
   @include{cl-ds math}
   @include{cl-ds clustering}
   @include{cl-ds threads}
+  @include{cl-ds streaming}
   @include{dicts}
   @include{cl-ds internals}
   )

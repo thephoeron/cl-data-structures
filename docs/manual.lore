@@ -216,3 +216,17 @@
 @docgeneric['cl-ds.threads:in-parallel]
 @end{documentation}
 @end{section}
+
+@begin{section} @label{cl-ds streaming}
+@title{Streaming Algorihms Reference}
+@text{This section contains reference of the data sketches.}
+@begin{documentation}
+@pack{CL-DATA-STRUCTURES.STREAMING-ALGORITHMS}
+@docgeneric['cl-ds.sa:bloom-filter]
+@docgeneric['cl-ds.sa:approximated-counts]
+@docgeneric['cl-ds.sa:approximated-set-cardinality]
+@docgeneric['cl-ds.sa:union]
+@docgeneric['cl-ds.sa:clean-sketch]
+@docclass['cl-ds.sa:fundamental-data-sketch]
+@end{documentation}
+@end{section}
