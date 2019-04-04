@@ -10,13 +10,14 @@
     approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) ammount of memory."
      :arguments ((range "Object to aggregate.")
-                 (bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
-                 (hash-fn "Hashing function. SXHASH will do for strings.")
-                 (key "A function used to extract extract value from each element."))
+                 (:bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
+                 (:hash-fn "Hashing function. SXHASH will do for strings.")
+                 (:data-sketch "Instead of the bits and the hash-fn, user can pass data-sketch argument.")
+                 (:key "A function used to extract extract value from each element."))
      :notes ("This algorithm gives a solid estimate for large sets, not so good for small sets."
              "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
              "Can be used to (for instance) estimate number of keys before creating hash table. Good estimate of size minimizes rehashing and therefore reduces both memory allocation and time required to fill hash table.")
-     :returns "Object storing internal state. Use CL-DS:VALUE to extract estimate from it."
+     :returns "Instance of fundamental-data-sketch. Use CL-DS:VALUE to extract estimate from it."
      :examples [(let ((data (cl-ds:xpr (:i 0)
                               (when (< i 500000)
                                 (cl-ds:send-recur (random 99999999999) :i (1+ i))))))
@@ -36,19 +37,21 @@
     approximated-counts
     (:description "Calculates estimated counts using Min-Count sketch alogrithm. This requiret only a constant ammount of memory."
      :arguments ((range "Object to aggregate.")
-                 (hash-fn "Hashing function. SXHASH will do for strings.")
-                 (space "Positive integer. Size of the counters array")
-                 (count "Number of hashing functions used."))
-     :returns "Object storing internal state. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
+                 (:hash-fn "Hashing function. SXHASH will do for strings.")
+                 (:space "Positive integer. Size of the counters array")
+                 (:count "Number of hashing functions used.")
+                 (:data-sketch "Instead of the bits and the hash-fn, user can pass data-sketch argument."))
+     :returns "Instance of fundamental-data-sketch. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
              "Sensitive to a hash function. Large avalanche factor is very helpful.")))
 
   (function
     bloom-filter
     (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if item is absent from the range (if at returns nil, item is certainly absent, if at returns t item either present or not)."
-     :returns "Bloom filter object. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
+     :returns "Instance of fundamental-data-sketch. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
      :arguments ((range "Input for the creation of the bloom filter.")
-                 (space "Positive-fixnum. What is the bloom vector size?")
-                 (count "How many bits are used for each item?")
+                 (:space "Positive-fixnum. What is the bloom vector size?")
+                 (:count "How many bits are used for each item?")
                  (:key "Function used to extract value for to hashing.")
-                 (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")))))
+                 (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")
+                 (:data-sketch "Instead of the bits and the hash-fn, user can pass data-sketch argument.")))))
