@@ -6,8 +6,7 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
-  (function
-    approximated-set-cardinality
+  (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
      :arguments ((range "Object to aggregate.")
                  (:bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
@@ -29,12 +28,16 @@
                                  :hash-fn #'sxhash))
                                510000)))]))
 
-  (class
-    fundamental-data-sketch
+  (generic union
+    (:description "Merges multiple data-sketches together."))
+
+  (generic clean-sketch
+    (:description "Creates a new, empty data-sketch that would be produced by the function. New data-sketch can be cloned and passed as :data-sketch. This allows to keep compatibility between results of call to the streaming function."))
+
+  (class fundamental-data-sketch
     (:description "The base class of all data sketches. Instances of this class can be passed to streaming algorihms as initial states, cloned and combined into unions."))
 
-  (function
-    approximated-counts
+  (function approximated-counts
     (:description "Calculates estimated counts using Min-Count sketch algorithm. This requires only a constant amount of memory."
      :arguments ((range "Object to aggregate.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
@@ -45,8 +48,7 @@
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
              "Sensitive to a hash function. Large avalanche factor is very helpful.")))
 
-  (function
-    bloom-filter
+  (function bloom-filter
     (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if an item is absent from the range (if AT returns nil, the item is certainly absent, if at returns T item either present or not)."
      :returns "Instance of the fundamental-data-sketch class. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
      :arguments ((range "Input for the creation of the bloom filter.")
