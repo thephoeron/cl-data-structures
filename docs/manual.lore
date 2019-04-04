@@ -218,7 +218,7 @@
 @end{section}
 
 @begin{section} @label{cl-ds streaming}
-@title{Streaming Algorihms Reference}
+@title{Streaming Algorithms Reference}
 @text{This section contains reference of the data sketches.}
 @begin{documentation}
 @pack{CL-DATA-STRUCTURES.STREAMING-ALGORITHMS}
