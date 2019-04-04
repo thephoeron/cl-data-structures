@@ -44,7 +44,7 @@
                  (:space "Positive integer. Size of the counters array")
                  (:count "Number of hashing functions used.")
                  (:data-sketch "Instead of the bits and the hash-fn, the user can pass a data-sketch argument."))
-     :returns "Instance of the fundamental-data-sketch class. Use CL-DS:AT to extract count estimate for element from it. CL-DS:SIZE can be used to extract the total size of range that was aggregated."
+     :returns "Instance of the fundamental-data-sketch class. Use CL-DS:AT to extract count estimate for element from it."
      :notes ("Quality of the estimate directly depends on DEPTH and WIDTH."
              "Sensitive to a hash function. Large avalanche factor is very helpful.")))
 
