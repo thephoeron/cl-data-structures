@@ -4,6 +4,9 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (generic set-index
+    (:description "Constructs the set-index out of the RANGE."))
+
   (function find-association
     (:description "Find and return APRIORI-SET object containing apriori set and aposteriori set. Returned object can be used to obtain association-frequency, support and to find super-sets."
      :arguments ((index "SET-INDEX instance.")
