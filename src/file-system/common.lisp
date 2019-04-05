@@ -14,7 +14,9 @@
                       :reader read-initial-position)
    (%stream :initarg :stream
             :initform (list nil)
-            :type list)))
+            :type list)
+   (%mutex :initform (bt:make-lock)
+           :reader read-mutex)))
 
 
 (defmethod cl-ds:reset! ((range file-range-mixin))
@@ -22,6 +24,7 @@
   (ensure-stream range)
   (unless (file-position (read-stream range)
                          (read-initial-position range))
+    (close-stream range)
     (error 'cl-ds:file-releated-error
            :format-control "Can't change position in the stream."))
   (setf (access-reached-end range) nil)
@@ -34,15 +37,16 @@
 
 
 (defun ensure-stream (range)
-  (when (~> range read-stream null)
-    (let ((file (~> range read-path open)))
-      (unless (file-position file (access-current-position range))
-        (error 'cl-ds:file-releated-error
-               :path (read-path range)
-               :format-control "Can't change position in the stream."))
-      (setf (car (slot-value range '%stream)) file
-            (access-reached-end range) nil)))
-  (read-stream range))
+  (bt:with-lock-held ((read-mutex range))
+    (when (~> range read-stream null)
+      (let ((file (~> range read-path open)))
+        (unless (file-position file (access-current-position range))
+          (error 'cl-ds:file-releated-error
+                 :path (read-path range)
+                 :format-control "Can't change position in the stream."))
+        (setf (car (slot-value range '%stream)) file
+              (access-reached-end range) nil)))
+    (read-stream range)))
 
 
 (defun close-silence-errors (stream) ; in case if closing already close streams produces error
@@ -99,9 +103,10 @@
 
 
 (defun close-stream (range)
-  (unless (~> range read-stream null)
-     (~> range read-stream close-silence-errors)
-     (setf (car (slot-value range '%stream)) nil)))
+  (bt:with-lock-held ((read-mutex range))
+    (unless (~> range read-stream null)
+      (~> range read-stream close-silence-errors)
+      (setf (car (slot-value range '%stream)) nil))))
 
 
 (defmethod cl-ds:across ((range file-range-mixin) function)
