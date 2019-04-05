@@ -42,7 +42,7 @@
                  (key "Key passed to SORT function.")
                  (compare "Function passed to SORT function.")
                  (parallel "Will use lparallel to evaluate samples if T. Defaults to T."))
-     :thread-safety "Will use lparallel for each sample if PARALLEL is T."
+     :thread-safety "Will process each sample in the lparallel task if PARALLEL is T."
      :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in the aggregation function."))
 
   (function simple-linear-regression
