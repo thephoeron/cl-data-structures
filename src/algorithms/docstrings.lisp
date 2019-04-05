@@ -105,6 +105,7 @@
     (:description "A layer function. Flattens each list in the input range to the atoms."
      :arguments ((range "Input range.")
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
+     :notes ("Pretty much the same purpose ALEXANDRIA:FLATTEN.")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function latch
@@ -118,7 +119,7 @@
     (:description "Combines multiple ranges into a single range by applying FUNCTION lengthwise."))
 
   (function repeat
-    (:description "A layer function. Constructs new range from the RANGE. The new range is cyclic and will reset to initial position once the end is reached when calling the CONSUME-FRONT function. This happens always by default, and can be limited to a number of times by supplying optional TIMES argument. This function can be therefore used to go over the same range multiple times in the aggregation function."
+    (:description "A layer function. Constructs new range from the RANGE. The new range is cyclic and will reset to initial position once the end is reached when calling the CONSUME-FRONT function or after calling TRAVERSE. This happens always by default, and can be limited to a number of times by supplying optional TIMES argument. This function can be therefore used to go over the same range multiple times in a aggregation function."
      :arguments ((range "Input range used to construct the result.")
                  (times "How many times the range will be repeated? Unlimited by default."))
      :exceptional-situations ("Will raise the TYPE-ERROR when TIMES is not of the type (OR NULL POSITIVE-INTEGER).")
