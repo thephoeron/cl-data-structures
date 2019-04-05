@@ -17,7 +17,7 @@
     (:description "Returns forward range that skips elements that were already seen."))
 
   (function split-into-chunks
-    (:description "Divides aggregation process into partitions upto size."
+    (:description "Divides aggregation process into partitions up to size."
      :returns "Instance of SPLIT-INTO-CHUNKS-PROXY range subclass."
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
                   (prove:is (cl-ds:size data) 3)
@@ -69,7 +69,7 @@
                   (map nil (lambda (x) (prove:is (first x) (second x))) result))]))
 
   (function chain
-    (:description "Sequentially concatenate multiple ranges into one."
+    (:description "Concatenate multiple ranges into one."
      :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE).")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
@@ -121,7 +121,7 @@
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function zip
-    (:description "Combines multiple ranges into a single range by applying FUNCTION lengthwise."))
+    (:description "Combines multiple ranges into a single range by applying FUNCTION elementwise."))
 
   (function repeat
     (:description "A layer function. Constructs new range from the RANGE. The new range is cyclic and will reset to initial position once the end is reached when calling the CONSUME-FRONT function or after calling TRAVERSE. This happens always by default, and can be limited to a number of times by supplying optional TIMES argument. This function can be therefore used to go over the same range multiple times in a aggregation function."
