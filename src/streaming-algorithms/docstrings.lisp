@@ -7,7 +7,7 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function union
-    (:description "Creates new data-sketch from the provided. Can be used to join sketches build on different data chunks."))
+    (:description "Creates new data-sketch from the provided. Can be used to join sketches built on different data chunks."))
 
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
@@ -49,11 +49,11 @@
              "Sensitive to a hash function. Large avalanche factor is very helpful.")))
 
   (function bloom-filter
-    (:description "Creates bloom filter out of elements in the range. Bloom filter is memory efficient data structures allowing to check if an item is absent from the range (if AT returns nil, the item is certainly absent, if at returns T item either present or not)."
+    (:description "Creates bloom filter out of elements in the range. Bloom filter is a memory efficient data structure allowing to check if an item is absent from the range. If AT returns nil, the item is certainly absent. If AT returns T item either present or not."
      :returns "Instance of the fundamental-data-sketch class. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
      :arguments ((range "Input for the creation of the bloom filter.")
                  (:space "Positive-fixnum. What is the bloom vector size?")
                  (:count "How many bits are used for each item?")
-                 (:key "Function used to extract value for to hashing.")
+                 (:key "Function used to extract value for hashing.")
                  (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")
                  (:data-sketch "Instead of the bits and the hash-fn, the user can pass a data-sketch argument.")))))
