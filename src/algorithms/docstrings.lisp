@@ -18,7 +18,7 @@
                  (test "Function used to compare elements. Defaults to EQL.")
                  (hash-function "Function used for hashing. Defaults to #'sxhash.")
                  (key "Key function, used to extract values for test."))
-     :exceptional-situations "Will signal TYPE-ERROR if either TEST, HASH-FUNCTION or KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if either TEST, HASH-FUNCTION or KEY is not funcallable."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :description "Returns forward range that skips elements that were already seen."))
 
@@ -50,7 +50,7 @@
      :returns "CL:VECTOR with the content of the RANGE."
      :notes ("There is no way to know ahead of time how large vector will be created, and therefore multiple reallocations may be performed during aggregation. A user can supply :SIZE to mitigate that."
              "To avoid copying in the case when RANGE is also a vector, pass NIL as :FORCE-COPY.")
-     :exceptional-situations ("Will signal TYPE-ERROR if KEY is not funcallable."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable."
                               "Will signal same conditions as make-array would when ELEMENT-TYPE or SIZE are invalid.")
      :arguments ((range "Object to aggregate.")
                  (:key "Key function used to extract value to the result vector.")
@@ -64,7 +64,7 @@
                  (function "Function called on the RANGE content.")
                  (key "Function used to extract content for the FUNCTION. Defaults to the CL:IDENTITY."))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
-     :exceptional-situations "Will signal TYPE-ERROR if KEY or FUNCTION is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if KEY or FUNCTION is not funcallable."
      :notes "Works almost like cl:map-and-friends, but lazily evaluates content."))
 
   (function count-elements
@@ -121,7 +121,7 @@
 
   (function only
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
-     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if either PREDICATE or KEY is not funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract a value for predicate."))
@@ -129,7 +129,7 @@
 
   (function without
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => T."
-     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if either PREDICATE or KEY is not funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if an element should be skipped.")
                  (key "Key function used to extract a value for the predicate."))
@@ -137,7 +137,7 @@
 
   (function flatten-lists
     (:description "A layer function. Flattens each list in the input range to the atoms."
-     :exceptional-situations "Will signal TYPE-ERROR if KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if KEY is not funcallable."
      :arguments ((range "Input range.")
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
      :notes ("Pretty much the same purpose ALEXANDRIA:FLATTEN.")
@@ -179,7 +179,7 @@
 
   (function extremum
     (:description "An aggregation function. Finds the extremum (the first value that would occur if the whole range was sorted according to the FN). This can be used to find either the maximum or the minimum."
-     :exceptional-situations "Will signal TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
      :arguments ((range "Input range.")
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
@@ -189,7 +189,7 @@
 
   (function extrema
     (:description "An aggregation function. Finds extrema (both minimum and maximum) in the RANGE, according to the FN comparsion function."
-     :exceptional-situations "Will signal TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
+     :exceptional-situations "Will signal a TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
      :arguments ((range "Input range.")
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
@@ -206,7 +206,7 @@
 
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change the content of the RANGE, but will force aggregation to be performed on every group independently."
-     :exceptional-situations ("Will signal TYPE-ERROR if KEY is not funcallable."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable."
                               "Will pass TEST to MAKE-HASH-TABLE and therefore will signal same conditions as MAKE-HASH-TABLE.")
      :arguments ((range "Range that is supposed to be groupped.")
                  (key "Key function, used to extract value for TEST.")
