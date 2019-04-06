@@ -79,6 +79,12 @@
   (function hash-join
     (:description "Joins multiple ranges using the hash join algorithm."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
+     :arguments ((primary-range "Input range.")
+                 (primary-key "Key function used to extract values from the PRIMARY-RANGE.")
+                 (secondary-range-forms "List of forms describing the other ranges.")
+                 (:test "Test for the inner HASH-TABLE.")
+                 (:join-function "Function applied to each group. Defaults to CL:LIST.")
+                 (:key "Key function. Defaults to CL:IDENTITY."))
      :examples [(let ((result (cl-ds.alg:hash-join #(1 2 3 4) #'identity
                                                    (list (cl-ds:field :data #(1 2 3)
                                                                       :key #'identity)))))
@@ -114,6 +120,7 @@
 
   (function only
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
+     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is nof funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract a value for predicate."))
@@ -121,6 +128,7 @@
 
   (function without
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => T."
+     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is nof funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if an element should be skipped.")
                  (key "Key function used to extract a value for the predicate."))
@@ -142,7 +150,7 @@
 
   (function zip
     (:description "Combines multiple ranges into a single range by applying FUNCTION elementwise."
-     :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE).")
+     :exceptional-situations "Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE)."
      :notes "Can be considered to be lazy variant of CL:MAP function called on multiple sequences."
      :examples ([(prove:is (cl-ds.alg:to-vector (cl-ds.alg:zip #'list '(1 2 3) '(4 5 6)))
                            #((1 4) (2 5) (3 6))
