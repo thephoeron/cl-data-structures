@@ -14,10 +14,10 @@
     (:description "Like ACCUMULATE, but produces range with all intermediate accumulation states."))
 
   (function distinct
-    (:arguments-and-values ((range "Input range.")
-                            (test "Function used to compare elements. Defaults to EQL.")
-                            (hash-function "Function used for hashing. Defaults to #'sxhash.")
-                            (key "Key function, used to extract values for test."))
+    (:arguments ((range "Input range.")
+                 (test "Function used to compare elements. Defaults to EQL.")
+                 (hash-function "Function used for hashing. Defaults to #'sxhash.")
+                 (key "Key function, used to extract values for test."))
      :exceptional-situations "Will signal TYPE-ERROR if either TEST, HASH-FUNCTION or KEY is not funcallable."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :description "Returns forward range that skips elements that were already seen."))
@@ -60,9 +60,9 @@
 
   (function on-each
     (:description "Creates a new range by applying the FUNCTION to each element of the RANGE."
-     :arguments-and-values ((range "Input range.")
-                            (function "Function called on the RANGE content.")
-                            (key "Function used to extract content for the FUNCTION. Defaults to the CL:IDENTITY."))
+     :arguments ((range "Input range.")
+                 (function "Function called on the RANGE content.")
+                 (key "Function used to extract content for the FUNCTION. Defaults to the CL:IDENTITY."))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :exceptional-situations "Will signal TYPE-ERROR if KEY or FUNCTION is not funcallable."
      :notes "Works almost like cl:map-and-friends, but lazily evaluates content."))
@@ -135,9 +135,9 @@
 
   (function latch
     (:description "Combines primary range with multiple latch ranges. The returned range contains elements picked from the primary range, where, on corresponding positions, each of the latch ranges contains a non-nil value."
-     :arguments-and-values ((range "Primary input range.")
-                            (latch "Range with boolean values.")
-                            (more-latches "Ranges with boolean values."))
+     :arguments ((range "Primary input range.")
+                 (latch "Range with boolean values.")
+                 (more-latches "Ranges with boolean values."))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function zip
@@ -148,8 +148,8 @@
                            #((1 4) (2 5) (3 6))
                            :test #'equalp)])
      :returns "New fundamental-forward-range instance."
-     :arguments-and-values ((function "Function used to join contents of the RANGES.")
-                            (ranges "Input."))))
+     :arguments ((function "Function used to join contents of the RANGES.")
+                 (ranges "Input."))))
 
   (function repeat
     (:description "A layer function. Constructs new range from the RANGE. The new range is cyclic and will reset to initial position once the end is reached when calling the CONSUME-FRONT function or after calling TRAVERSE. This happens always by default, and can be limited to a number of times by supplying optional TIMES argument. This function can be therefore used to go over the same range multiple times in a aggregation function."
