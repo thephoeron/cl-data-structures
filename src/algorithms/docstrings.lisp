@@ -194,9 +194,11 @@
 
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change the content of the RANGE, but will force aggregation to be performed on every group independently."
+     :exceptional-situations ("Will signal TYPE-ERROR if KEY is not funcallable."
+                              "Will pass TEST to MAKE-HASH-TABLE and therefore will signal same conditions as MAKE-HASH-TABLE.")
      :arguments ((range "Range that is supposed to be groupped.")
                  (key "Key function, used to extract value for TEST.")
-                 (test "A test for inner hashtable (either eq, eql or equal)."))
+                 (test "Test for inner hashtable (either eq, eql or equal)."))
      :returns "GROUP-BY-RANGE instance (either forward, bidirectional or random access, based on the class of the RANGE)."
      :examples [(let* ((data #(1 2 3 4 5 6 7 8 9 10))
                        (sums (cl-ds.alg:accumulate (cl-ds.alg:group-by data :key #'evenp) #'+)))
