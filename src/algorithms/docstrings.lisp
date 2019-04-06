@@ -14,7 +14,12 @@
     (:description "Like ACCUMULATE, but produces range with all intermediate accumulation states."))
 
   (function distinct
-    (:description "Returns forward range that skips elements that were already seen."))
+    (:arguments-and-values ((range "Input range.")
+                            (test "Function used to compare elements. Defaults to EQL.")
+                            (hash-function "Function used for hashing. Defaults to #'sxhash.")
+                            (key "Key function, used to extract values for test."))
+     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
+     :description "Returns forward range that skips elements that were already seen."))
 
   (function split-into-chunks
     (:description "Divides aggregation process into partitions up to size."
