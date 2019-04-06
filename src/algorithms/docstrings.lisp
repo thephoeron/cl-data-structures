@@ -167,6 +167,7 @@
 
   (function extremum
     (:description "An aggregation function. Finds the extremum (the first value that would occur if the whole range was sorted according to the FN). This can be used to find either the maximum or the minimum."
+     :exceptional-situations "Will signal TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
      :arguments ((range "Input range.")
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
@@ -176,6 +177,7 @@
 
   (function extrema
     (:description "An aggregation function. Finds extrema (both minimum and maximum) in the RANGE, according to the FN comparsion function."
+     :exceptional-situations "Will signal TYPE-ERROR if either FN, KEY or VALUE-KEY is not funcallable."
      :arguments ((range "Input range.")
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
