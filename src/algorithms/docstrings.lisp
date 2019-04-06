@@ -26,13 +26,14 @@
                   (prove:is (cl-ds:at data 2) #(5 6) :test 'equalp))]))
 
   (function partition-if
-    (:description "Groups consecutive elements in the range into a partition if TEST called on the previous value in the range and the current value in the range returns non-NIL, creates new partition otherwise. This does not change the content of the RANGE, but it will force aggregation to be performed on every group independently."
+    (:description "Groups consecutive elements in the range into a partition if TEST called on the previous value in the range and the current value in the range returns non-NIL, creates new partition otherwise. This does not change the content of the RANGE, but it will force aggregation to be performed on every group independently. Order of the groups is preserved in the aggregation result."
      :examples [(let* ((data '((1 #\w) (1 #\o) (1 #\r) (1 #\d) (2 #\a) (2 #\s) (3 #\l) (3 #\a) (3 #\w)))
                        (partitioned (cl-ds.alg:partition-if data (lambda (prev next) (= (first prev) (first next)))))
                        (aggregated (cl-ds.alg:to-vector partitioned :element-type 'character :key #'second)))
                   (prove:is (cl-ds.alg:to-vector aggregated) #("word" "as" "law") :test #'equalp))]
-     :notes "Aggregation on the returned range is performed eagerly."
-     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
+     :notes ("Aggregation on the returned range is performed eagerly."
+             "Can be considered to be alternative to the GROUP-BY, suitable for the ordered data.")
+     :returns "FUNDAMENTAL-RANDOM-ACCESS-RANGE instance."
      :arguments ((range "An input range.")
                  (test "A function of two arguments used to check if elements belong to the same partition."))))
 
@@ -179,6 +180,7 @@
      :arguments ((range "Range that is supposed to be groupped.")
                  (key "Key function, used to extract value for TEST.")
                  (test "A test for inner hashtable (either eq, eql or equal)."))
+     :returns "GROUP-BY-RANGE instance (either forward, bidirectional or random access, based on the class of the RANGE)."
      :examples [(let* ((data #(1 2 3 4 5 6 7 8 9 10))
                        (sums (cl-ds.alg:accumulate (cl-ds.alg:group-by data :key #'evenp) #'+)))
                   (prove:is (cl-ds:size sums) 2)
