@@ -12,7 +12,7 @@
 (defmethod cl-ds.utils:cloning-information append
     ((range forward-zipped-ranges))
   '((:ranges read-ranges)
-    (:function :read-function)))
+    (:function read-function)))
 
 
 (defclass bidirectional-zipped-ranges (forward-zipped-ranges
@@ -51,11 +51,11 @@
   (init-zipped-ranges range))
 
 
-(defun zip (function &rest ranges)
+(defun zip (function range &rest ranges)
   (let* ((ranges (mapcar (cl-ds.utils:if-else
                           (rcurry #'typep 'cl-ds:fundamental-forward-range)
                           #'identity #'cl-ds:whole-range)
-                         ranges))
+                         (cons range ranges)))
          (type (common-fundamental-range-class ranges)))
     (assert type)
     (make (eswitch (type)

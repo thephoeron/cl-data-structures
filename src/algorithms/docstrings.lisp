@@ -11,7 +11,7 @@
     (:description "Like CL:REDUCE but works on all traversable objects."))
 
   (function cumulative-accumulate
-    (:description ""))
+    (:description "Like ACCUMULATE, but produces range with all intermediate accumulation states."))
 
   (function distinct
     (:description "Returns forward range that skips elements that were already seen."))
@@ -31,6 +31,7 @@
                        (partitioned (cl-ds.alg:partition-if data (lambda (prev next) (= (first prev) (first next)))))
                        (aggregated (cl-ds.alg:to-vector partitioned :element-type 'character :key #'second)))
                   (prove:is (cl-ds.alg:to-vector aggregated) #("word" "as" "law") :test #'equalp))]
+     :notes "Aggregation on the returned range is performed eagerly."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :arguments ((range "An input range.")
                  (test "A function of two arguments used to check if elements belong to the same partition."))))
@@ -70,6 +71,9 @@
 
   (function chain
     (:description "Concatenate multiple ranges into one."
+     :examples ([(prove:is (cl-ds.alg:to-vector (cl-ds.alg:chain '(1 2 3) '(4 5 6)))
+                           #(1 2 3 4 5 6)
+                           :test #'equalp)])
      :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE).")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
@@ -121,7 +125,15 @@
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function zip
-    (:description "Combines multiple ranges into a single range by applying FUNCTION elementwise."))
+    (:description "Combines multiple ranges into a single range by applying FUNCTION elementwise."
+     :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE).")
+     :notes "Can be considered to be lazy variant of CL:MAP function called on multiple sequences."
+     :examples ([(prove:is (cl-ds.alg:to-vector (cl-ds.alg:zip #'list '(1 2 3) '(4 5 6)))
+                           #((1 4) (2 5) (3 6))
+                           :test #'equalp)])
+     :returns "New fundamental-forward-range instance."
+     :arguments-and-values ((function "Function used to join contents of the RANGES.")
+                            (ranges "Input."))))
 
   (function repeat
     (:description "A layer function. Constructs new range from the RANGE. The new range is cyclic and will reset to initial position once the end is reached when calling the CONSUME-FRONT function or after calling TRAVERSE. This happens always by default, and can be limited to a number of times by supplying optional TIMES argument. This function can be therefore used to go over the same range multiple times in a aggregation function."
