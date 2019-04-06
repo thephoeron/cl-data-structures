@@ -120,7 +120,7 @@
 
   (function only
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => NIL."
-     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is nof funcallable."
+     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is not funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if element should be skipped.")
                  (key "Key function used to extract a value for predicate."))
@@ -128,7 +128,7 @@
 
   (function without
     (:description "A layer function. Creates a range that skips elements that PREDICATE (KEY element) => T."
-     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is nof funcallable."
+     :exceptional-situations "Will signal TYPE-ERROR if either PREDICATE or KEY is not funcallable."
      :arguments ((range "Input range.")
                  (predicate "Test used to check if an element should be skipped.")
                  (key "Key function used to extract a value for the predicate."))
@@ -136,6 +136,7 @@
 
   (function flatten-lists
     (:description "A layer function. Flattens each list in the input range to the atoms."
+     :exceptional-situations "Will signal TYPE-ERROR if KEY is not funcallable."
      :arguments ((range "Input range.")
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
      :notes ("Pretty much the same purpose ALEXANDRIA:FLATTEN.")
