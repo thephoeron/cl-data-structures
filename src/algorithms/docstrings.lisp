@@ -109,6 +109,7 @@
                  (forms "Description of function invocation in the form of the plist. Key is a label used to identify value in the result range, a value is an aggregation function form (function and the function arguments). The range will be inserted as the first argument in the aggregation function call by default, or in the place of any symbol with name '_' if such symbol is present."))
      :returns "Range of results. Use cl-ds:at with label to extract result of each individual aggregation form."
      :notes ("Currently, this macro does support only the single stage aggregation functions."
+             "This macro expands to %SUMMARY call. Programmer may opt to write %SUMMARY call directly despite extra boilerplate required."
              "Particularly useful when the iteration over the range requires considerable time alone and therefore repeating it should be avoided for efficiency sake.")))
 
   (function only
