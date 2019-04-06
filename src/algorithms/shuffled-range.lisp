@@ -17,7 +17,7 @@
 (defun shuffled-range (from to)
   (check-type from integer)
   (check-type to integer)
-  (unless (< from to)
+  (unless (<= from to)
     (error 'cl-ds:incompatible-arguments
            :format-control "FROM must be smaller then TO."
            :parameters '(from to)

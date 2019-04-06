@@ -8,10 +8,12 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function accumulate
-    (:description "Like CL:REDUCE but works on all traversable objects."))
+    (:description "Like CL:REDUCE but works on all traversable objects."
+     :see-also (cumulative-accumulate)))
 
   (function cumulative-accumulate
-    (:description "Like ACCUMULATE, but produces range with all intermediate accumulation states."))
+    (:description "Like ACCUMULATE, but produces range with all intermediate accumulation states."
+     :see-also (accumulate)))
 
   (function distinct
     (:arguments ((range "Input range.")
@@ -101,8 +103,10 @@
 
   (function shuffled-range
     (:description "Creates a range of shuffled integers from FROM, to TO."
+     :arguments ((from "The lowest integer.")
+                 (to "The highest integer."))
      :exceptional-situations ("Raises TYPE-ERROR if FROM or TO is not an integer."
-                              "TO must be greater then FROM, otherwise the incompatible-arguments error is signaled.")
+                              "TO must be equal or greater then FROM, otherwise the incompatible-arguments error is signaled.")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function summary

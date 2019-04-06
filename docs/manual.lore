@@ -148,6 +148,7 @@
   @begin{documentation}
    @pack{CL-DATA-STRUCTURES.ALGORITHMS}
    @docfun['cl-ds.alg:distinct]
+   @docfun['cl-ds.alg:cumulative-accumulate]
    @docfun['cl-ds.alg:flatten-lists]
    @docfun['cl-ds.alg:group-by]
    @docfun['cl-ds.alg:on-each]
@@ -155,6 +156,7 @@
    @docfun['cl-ds.alg:without]
    @docfun['cl-ds.alg:partition-if]
    @docfun['cl-ds.alg:repeat]
+   @docfun['cl-ds.alg:latch]
    @docfun['cl-ds.alg:restrain-size]
    @docfun['cl-ds.alg:split-into-chunks]
   @end{documentation}
@@ -165,6 +167,7 @@
    @pack{CL-DATA-STRUCTURES.ALGORITHMS}
    @docfun['cl-ds.alg:cartesian]
    @docfun['cl-ds.alg:chain]
+   @docfun['cl-ds.alg:shuffled-range]
    @docfun['cl-ds.alg:zip]
    @docmacro['cl-ds.alg:summary]
    @docfun['cl-ds.alg:shuffled-range]
