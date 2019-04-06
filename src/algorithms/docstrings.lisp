@@ -72,9 +72,9 @@
 
   (function chain
     (:description "Concatenate multiple ranges into one."
-     :examples ([(prove:is (cl-ds.alg:to-vector (cl-ds.alg:chain '(1 2 3) '(4 5 6)))
-                           #(1 2 3 4 5 6)
-                           :test #'equalp)])
+     :examples [(prove:is (cl-ds.alg:to-vector (cl-ds.alg:chain '(1 2 3) '(4 5 6)))
+                          #(1 2 3 4 5 6)
+                          :test #'equalp)]
      :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE).")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
