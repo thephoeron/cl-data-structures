@@ -3,7 +3,16 @@
 
 (defclass split-into-chunks-proxy (proxy-range)
   ((%count-in-chunk :initarg :count-in-chunk
-                    :reader read-count-in-chunk)))
+                    :accessor access-count-in-chunk)))
+
+
+(defmethod initialize-instance :after ((object proxy-range) &key)
+  (check-type (access-count-in-chunk object) integer)
+  (unless (< 0 (access-count-in-chunk object))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'chunk-size
+           :bounds '(< 0)
+           :value (access-count-in-chunk object))))
 
 
 (defclass forward-split-into-chunks-proxy
@@ -24,7 +33,7 @@
 (defmethod clone ((range split-into-chunks-proxy))
   (make-instance (type-of range)
                  :original-range (~> range read-original-range clone)
-                 :count-in-chunk (read-count-in-chunk range)))
+                 :count-in-chunk (access-count-in-chunk range)))
 
 
 (defclass split-into-chunks-aggregator (cl-ds.alg.meta:fundamental-aggregator)
@@ -127,7 +136,7 @@
         (lambda ()
           (make 'multi-split-into-chunks-aggregator
                 :outer-fn outer-fn
-                :maximal-count-in-chunk (read-count-in-chunk range)
+                :maximal-count-in-chunk (access-count-in-chunk range)
                 :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
                                function
                                arguments)
@@ -136,7 +145,7 @@
           (make 'linear-split-into-chunks-aggregator
                 :outer-fn outer-fn
                 :key key
-                :maximal-count-in-chunk (read-count-in-chunk range))))))
+                :maximal-count-in-chunk (access-count-in-chunk range))))))
 
 
 (defclass split-into-chunks-function (layer-function)

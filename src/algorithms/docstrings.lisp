@@ -25,6 +25,8 @@
   (function split-into-chunks
     (:description "Divides aggregation process into partitions up to size."
      :returns "Instance of SPLIT-INTO-CHUNKS-PROXY range subclass."
+     :exceptional-situations ("Will signal type error if CHUNK-SIZE is not INTEGER."
+                              "Will signal ARGUMENT-OUT-OF-BOUNDS if CHUNK-SIZE is not above 0.")
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
                   (prove:is (cl-ds:size data) 3)
                   (prove:is (cl-ds:at data 0) #(1 2) :test 'equalp)
