@@ -50,15 +50,21 @@
      :returns "CL:VECTOR with the content of the RANGE."
      :notes ("There is no way to know ahead of time how large vector will be created, and therefore multiple reallocations may be performed during aggregation. A user can supply :SIZE to mitigate that."
              "To avoid copying in the case when RANGE is also a vector, pass NIL as :FORCE-COPY.")
+     :exceptional-situations ("Will signal TYPE-ERROR if KEY is not funcallable."
+                              "Will signal same conditions as make-array would when ELEMENT-TYPE or SIZE are invalid.")
      :arguments ((range "Object to aggregate.")
                  (:key "Key function used to extract value to the result vector.")
                  (:element-type ":ELEMENT-TYPE for the result vector.")
                  (:size "Initial size of the internal vector. Supplie to minimize memory allocations count.")
-                 (:force-copy "When NIL, TO-VECTOR called with CL:VECTOR is allowed to return the input."))))
+                 (:force-copy "When false, TO-VECTOR called with CL:VECTOR is allowed to return the input."))))
 
   (function on-each
     (:description "Creates a new range by applying the FUNCTION to each element of the RANGE."
+     :arguments-and-values ((range "Input range.")
+                            (function "Function called on the RANGE content.")
+                            (key "Function used to extract content for the FUNCTION. Defaults to the CL:IDENTITY."))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
+     :exceptional-situations "Will signal TYPE-ERROR if KEY or FUNCTION is not funcallable."
      :notes "Works almost like cl:map-and-friends, but lazily evaluates content."))
 
   (function count-elements

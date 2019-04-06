@@ -68,10 +68,6 @@
 
 
 (defgeneric on-each-proxy-range-from-range (range function key)
-  (:method :around ((range fundamental-range) function key)
-    (check-type function (or symbol function))
-    (check-type key (or symbol function))
-    (call-next-method))
   (:method ((range fundamental-forward-range) function key)
     (make 'forward-proxy-box-range
           :original-range range
@@ -93,6 +89,7 @@
                         (fn on-each-function)
                         &rest all &key function key)
   (declare (ignore all))
+  (ensure-functionf function key)
   (on-each-proxy-range-from-range range function key))
 
 
