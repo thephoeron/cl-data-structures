@@ -70,6 +70,7 @@
   (function count-elements
     (:description "Counts the number of elements. Useful mostly in conjunction with a GROUP-BY."
      :returns "Integer."
+     :arguments ((range "Input range."))
      :examples [(let ((data #(1 2 3 4 5)))
                   (prove:is (length data) (cl-ds.alg:count-elements data))
                   (prove:is 3 (cl-ds:at (cl-ds.alg:count-elements (cl-ds.alg:group-by data :key #'evenp))
