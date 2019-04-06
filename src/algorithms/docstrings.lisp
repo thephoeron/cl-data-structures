@@ -18,6 +18,7 @@
                             (test "Function used to compare elements. Defaults to EQL.")
                             (hash-function "Function used for hashing. Defaults to #'sxhash.")
                             (key "Key function, used to extract values for test."))
+     :exceptional-situations "Will signal TYPE-ERROR if either TEST, HASH-FUNCTION or KEY is not funcallable."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :description "Returns forward range that skips elements that were already seen."))
 

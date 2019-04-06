@@ -117,7 +117,7 @@
 (defgeneric distinct (range &key key test hash-function)
   (:generic-function-class distinct-function)
   (:method (range &key (key #'identity) (test 'eql) (hash-function #'sxhash))
-    (ensure-functionf key hash-function)
+    (ensure-functionf key test hash-function)
     (apply-range-function range #'distinct :key key :test test
                                            :hash-function hash-function)))
 
