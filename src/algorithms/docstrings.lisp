@@ -151,7 +151,8 @@
 
   (function zip
     (:description "Combines multiple ranges into a single range by applying FUNCTION elementwise."
-     :exceptional-situations "Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE)."
+     :exceptional-situations ("Raises TYPE-ERROR if any of the input ranges is not (OR CL:SEQUENCE FUNDAMENTAL-FORWARD-RANGE)."
+                              "Will raise TYPE-ERROR if FUNCTION is not FUNCALLABLE.")
      :notes "Can be considered to be lazy variant of CL:MAP function called on multiple sequences."
      :examples ([(prove:is (cl-ds.alg:to-vector (cl-ds.alg:zip #'list '(1 2 3) '(4 5 6)))
                            #((1 4) (2 5) (3 6))
@@ -172,7 +173,8 @@
      :arguments ((range "Input range used to construct the result.")
                  (size "What should be the limit on the new range?"))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
-     :exceptional-situations "Will raise a type-error when the SIZE is not of the type non-negative-integer."))
+     :exceptional-situations ("Will raise a TYPE-ERROR when the SIZE is not of the type INTEGER."
+                              "Will raise ARGUMENT-OUT-OF-BOUNDS when the SIZE is negative.")))
 
   (function extremum
     (:description "An aggregation function. Finds the extremum (the first value that would occur if the whole range was sorted according to the FN). This can be used to find either the maximum or the minimum."

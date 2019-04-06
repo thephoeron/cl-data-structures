@@ -63,7 +63,12 @@
                                        (fn restrain-size-function)
                                        &rest all &key size)
   (declare (ignore all))
-  (check-type size non-negative-integer)
+  (check-type size integer)
+  (unless (<= 0 size)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'size
+           :bounds '(< 0)
+           :value size))
   (make 'forward-restrain-size-proxy
         :size size
         :original-range range))
