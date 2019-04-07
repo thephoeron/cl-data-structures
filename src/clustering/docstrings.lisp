@@ -6,6 +6,7 @@
 
   (function k-means
     (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional simple-arrays specialized for single-floats."
+     :exceptional-situations "Will signal a TYPE-ERROR when key does not return (SIMPLE-ARRAY 'SINGLE-FLOAT (*))."
      :returns "Clusters object. Clusters itself are represented as a vector of vectors and can be read using CLUSTER-CONTENTS function. Additionally, silhouette values can be read with SILHOUETTE function."
      :notes "This algorithm does not calculate silhouette during it's operation and because of that calling silhouette on the result will take extra time."
      :thread-safety "Uses lparallel underneath."))

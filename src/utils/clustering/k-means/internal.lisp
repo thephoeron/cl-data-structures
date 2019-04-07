@@ -36,6 +36,7 @@
          nil
          (lambda (data-point
                   &aux (data (funcall value-key data-point)))
+           (check-type data (simple-array single-float (*)))
            (let ((i (iterate
                       (declare (type fixnum i)
                                (type (simple-array single-float (*)) medoid)
@@ -65,6 +66,7 @@
             (lambda (cluster medoid)
               (declare (type (simple-array single-float (*)) medoid)
                        (type (vector t) cluster))
+              (check-type medoid (simple-array single-float (*)))
               (iterate
                 (declare (type fixnum size i)
                          (type (simple-array single-float (*)) c)
@@ -73,6 +75,7 @@
                 (with size = (length cluster))
                 (for i from 0 below size)
                 (for c = (funcall value-key (aref cluster i)))
+                (check-type c (simple-array single-float (*)))
                 (iterate
                   (declare (type fixnum size i)
                            (type single-float error))
