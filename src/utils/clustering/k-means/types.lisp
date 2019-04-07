@@ -74,5 +74,5 @@
   (cl-ds.utils:with-slots-for (object k-means-algorithm-state)
     (ensure-function %value-key)
     (check-type %distortion-epsilon single-float)
-    (check-type %medoids-count positive-fixnum)
-    (check-type %iterations (or positive-fixnum null))))
+    (check-type %medoids-count integer)
+    (check-type %iterations (or integer null))))

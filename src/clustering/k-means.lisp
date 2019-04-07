@@ -13,8 +13,10 @@
   (:generic-function-class k-means-function)
   (:method (range number-of-medoids distortion-epsilon
             &rest all
-            &key key silhouette-sample-size iterations
-              silhouette-sample-count)
+            &key (key #'identity)
+              (silhouette-sample-size 500)
+              (iterations nil)
+              (silhouette-sample-count 15))
     (declare (ignore silhouette-sample-size iterations
                      silhouette-sample-count key))
     (apply #'cl-ds.alg.meta:apply-range-function
@@ -27,7 +29,40 @@
 (defmethod cl-ds.alg.meta:multi-aggregation-function
     ((function k-means-function)
      &rest all
-     &key number-of-medoids distortion-epsilon)
+     &key number-of-medoids distortion-epsilon
+       silhouette-sample-size iterations
+       silhouette-sample-count)
+  (check-type number-of-medoids integer)
+  (check-type distortion-epsilon single-float)
+  (check-type silhouette-sample-size integer)
+  (check-type silhouette-sample-count integer)
+  (check-type iterations (or null integer))
+  (unless (< 0 distortion-epsilon)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'distortion-epsilon
+           :bounds '(< 0.0)
+           :value distortion-epsilon))
+  (unless (< 0 silhouette-sample-size)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'silhouette-sample-size
+           :bounds '(< 0)
+           :value silhouette-sample-size))
+  (unless (or (null iterations)
+              (< 0 iterations))
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'iterations
+           :bounds '(< 0)
+           :value iterations))
+  (unless (< 0 silhouette-sample-count)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'silhouette-sample-count
+           :bounds '(< 0)
+           :value silhouette-sample-count))
+  (unless (< 0 number-of-medoids)
+    (error 'cl-ds:argument-out-of-bounds
+           :argument 'number-of-medoids
+           :bounds '(< 0)
+           :value number-of-medoids))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
           (cl-ds.alg:to-vector range :force-copy nil))
