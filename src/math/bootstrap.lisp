@@ -103,24 +103,12 @@
             &key
               (confidence 0.95) (key #'identity) (compare #'<)
               (parallel t) (context-function #'identity))
-    (unless (< 0.0 confidence 1.0)
-      (error 'cl-ds:argument-out-of-bounds
-             :format-control "Confidence should be between 0 and 1"
-             :argument 'confidence
-             :value confidence
-             :bounds `(< 0.0 confidence 1.0)))
-    (unless (< 8 samples-count)
-      (error 'cl-ds:argument-out-of-bounds
-             :argument 'samples-count
-             :value samples-count
-             :format-control "At least 8 samples required."
-             :bounds `(< 8 samples-count)))
-    (unless (< 8 samples-size)
-      (error 'cl-ds:argument-out-of-bounds
-             :argument 'samples-size
-             :value samples-size
-             :format-control "Samples should be at least of size 8."
-             :bounds `(< 8 samples-size)))
+    (check-type samples-count integer)
+    (check-type sample-size integer)
+    (check-type confidence float)
+    (cl-ds:check-argument-bounds confidence (< 0.0 confidence 1.0))
+    (cl-ds:check-argument-bounds samples-count (< 8 samples-count))
+    (cl-ds:check-argument-bounds samples-count (< 8 sample-size))
     (cl-ds.alg.meta:apply-range-function range #'bootstrap
                                          :confidence confidence
                                          :key key
