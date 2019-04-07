@@ -37,32 +37,17 @@
   (check-type silhouette-sample-size integer)
   (check-type silhouette-sample-count integer)
   (check-type iterations (or null integer))
-  (unless (< 0 distortion-epsilon)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'distortion-epsilon
-           :bounds '(< 0.0)
-           :value distortion-epsilon))
-  (unless (< 0 silhouette-sample-size)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'silhouette-sample-size
-           :bounds '(< 0)
-           :value silhouette-sample-size))
-  (unless (or (null iterations)
-              (< 0 iterations))
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'iterations
-           :bounds '(< 0)
-           :value iterations))
-  (unless (< 0 silhouette-sample-count)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'silhouette-sample-count
-           :bounds '(< 0)
-           :value silhouette-sample-count))
-  (unless (< 0 number-of-medoids)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'number-of-medoids
-           :bounds '(< 0)
-           :value number-of-medoids))
+  (cl-ds:check-argument-bounds distortion-epsilon
+                               (< 0.0 distortion-epsilon))
+  (cl-ds:check-argument-bounds silhouette-sample-size
+                               (< 0 silhouette-sample-size))
+  (cl-ds:check-argument-bounds silhouette-sample-count
+                               (< 0 silhouette-sample-count))
+  (cl-ds:check-argument-bounds number-of-medoids
+                               (< 0 number-of-medoids))
+  (unless (null iterations)
+    (cl-ds:check-argument-bounds iterations
+                                 (< 0 iterations)))
   (list (cl-ds.alg.meta:stage :vector (range &rest all)
           (declare (ignore all))
           (cl-ds.alg:to-vector range :force-copy nil))

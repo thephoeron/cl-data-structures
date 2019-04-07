@@ -44,3 +44,11 @@
               :format-control "Can't pass more then one dimension into one dimensional data structures."
               :value (1+ (length ,more))
               :bounds 1))))
+
+
+(defmacro check-argument-bounds (argument expression)
+  `(unless ,expression
+     (error 'cl-ds:argument-out-of-bounds
+            :argument ',argument
+            :bounds ',expression
+            :value ,argument)))

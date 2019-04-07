@@ -35,6 +35,7 @@
    #:empty-container
    #:empty-range
    #:erase
+   #:check-argument-bounds
    #:erase!
    #:erase-if
    #:erase-if!
