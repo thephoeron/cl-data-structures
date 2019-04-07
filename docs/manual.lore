@@ -192,7 +192,6 @@
 @docgeneric['cl-ds.math:chi-squared]
 @docgeneric['cl-ds.math:hodges-lehmann-estimator]
 @docgeneric['cl-ds.math:moments]
-@docgeneric['cl-ds.math:moments]
 @docgeneric['cl-ds.math:moving-average]
 @docgeneric['cl-ds.math:mutual-information]
 @docgeneric['cl-ds.math:simple-linear-regression]
