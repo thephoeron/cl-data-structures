@@ -98,6 +98,11 @@
 (defgeneric in-parallel (range &key limit context-function chunk-size-hint)
   (:generic-function-class in-parallel-function)
   (:method (range &key (limit 512) (context-function #'funcall) chunk-size-hint)
+    (ensure-functionf context-function)
+    (check-type chunk-size-hint integer)
+    (check-type limit integer)
+    (cl-ds:check-argument-bounds chunk-size-hint (< 0 chunk-size-hint))
+    (cl-ds:check-argument-bounds limit (< 0 limit))
     (cl-ds.alg.meta:apply-range-function range #'in-parallel
                                          :limit limit
                                          :chunk-size-hint chunk-size-hint

@@ -77,6 +77,9 @@
 (defgeneric thread-buffer (range limit &key context-function)
   (:generic-function-class thread-buffer-function)
   (:method (range limit &key (context-function #'funcall))
+    (ensure-functionf context-function)
+    (check-type limit integer)
+    (cl-ds:check-argument-bounds limit (<= 16 limit))
     (cl-ds.alg.meta:apply-range-function range #'thread-buffer
                                          :limit limit
                                          :context-function context-function)))
