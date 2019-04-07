@@ -135,6 +135,7 @@
   @begin{documentation}
    @pack{CL-DATA-STRUCTURES.ALGORITHMS}
    @docfun['cl-ds.alg:accumulate]
+   @docfun['cl-ds.alg:cumulative-accumulate]
    @docfun['cl-ds.alg:hash-join]
    @docfun['cl-ds.alg:count-elements]
    @docfun['cl-ds.alg:extrema]
