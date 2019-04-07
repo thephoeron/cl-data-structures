@@ -59,18 +59,11 @@
                      &optional maximal-size)
   (check-type minimal-frequency real)
   (check-type maximal-size (or null integer))
-  (unless (<= 0 minimal-frequency 1)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'minimal-frequency
-           :bounds '(<= 0 1)
-           :value minimal-frequency
-           :format-control "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
-  (when (and maximal-size (<= maximal-size 0))
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'maximal-size
-           :bounds '(> 0)
-           :value maximal-size
-           :format-control "MAXIMAL-SIZE is supposed to be above 0."))
+  (cl-ds:check-argument-bounds minimal-frequency
+                               (<= 0 minimal-frequency 1))
+  (when maximal-size
+    (cl-ds:check-argument-bounds maximal-size
+                                 (<= maximal-size 0)))
   (data-range index
               minimal-frequency
               (lambda (x)
@@ -87,18 +80,11 @@
                                    &optional maximal-size)
   (check-type minimal-frequency real)
   (check-type maximal-size (or null integer))
-  (unless (<= 0 minimal-frequency 1)
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'minimal-frequency
-           :bounds '(<= 0 1)
-           :value minimal-frequency
-           :format-control "MINIMAL-FREQUENCY is supposed to be between 0 and 1."))
-  (when (and maximal-size (<= maximal-size 0))
-    (error 'cl-ds:argument-out-of-bounds
-           :argument 'maximal-size
-           :bounds '(> 0)
-           :value maximal-size
-           :format-control "MAXIMAL-SIZE is supposed to be above 0.")))
+  (cl-ds:check-argument-bounds minimal-frequency
+                               (<= 0 minimal-frequency 1))
+  (when maximal-size
+    (cl-ds:check-argument-bounds maximal-size
+                                 (<= maximal-size 0))))
 
 
 (defmethod all-super-sets ((set empty-mixin) minimal-frequency
