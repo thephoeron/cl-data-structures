@@ -108,7 +108,7 @@
      :arguments ((from "The lowest integer.")
                  (to "The highest integer."))
      :exceptional-situations ("Raises TYPE-ERROR if FROM or TO is not an integer."
-                              "TO must be equal or greater then FROM, otherwise the incompatible-arguments error is signaled.")
+                              "TO must be equal or greater than FROM, otherwise the incompatible-arguments error is signaled.")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function summary
