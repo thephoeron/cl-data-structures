@@ -107,6 +107,9 @@
 (defmethod clean-sketch ((function approximated-set-cardinality-function)
                          &rest all &key bits hash-fn)
   (declare (ignore all))
+  (ensure-functionf hash-fn)
+  (check-type bits integer)
+  (cl-ds:check-argument-bounds bits (< 3 bits 21))
   (make 'approximated-set-cardinality
         :bits bits
         :registers (make-array (ash 1 bits)

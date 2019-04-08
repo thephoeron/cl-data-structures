@@ -11,6 +11,9 @@
 
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
+     :exceptional-situations ("Will signal a TYPE-ERROR if BITS is not integer."
+                              "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
+                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if BITS is not at least 4 and 20 at most.")
      :arguments ((range "Object to aggregate.")
                  (:bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
@@ -39,6 +42,10 @@
 
   (function approximated-counts
     (:description "Calculates estimated counts using Min-Count sketch algorithm. This requires only a constant amount of memory."
+     :exceptional-situations ("Will signal a TYPE-ERROR when either COUNT or SPACE is not integer."
+                              "Will signal a TYPE-ERROR when HASH-FN is not funcallable."
+                              "Will signal a TYPE-ERROR when HASHES is not either NIL or (SIMPLE-ARRAY FIXNUM (*))."
+                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if either COUNT or SPACE is not above zero.")
      :arguments ((range "Object to aggregate.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
                  (:space "Positive integer. Size of the counters array")

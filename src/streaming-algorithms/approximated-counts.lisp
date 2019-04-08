@@ -37,8 +37,8 @@
 (defmethod initialize-instance :after ((object approximated-counts)
                                        &rest all)
   (declare (ignore all))
-  (check-type (access-space object) positive-fixnum)
-  (check-type (access-count object) positive-fixnum)
+  (check-type (access-space object) integer)
+  (check-type (access-count object) integer)
   (check-type (access-hashes object) (simple-array fixnum (* 2)))
   (check-type (access-counters object) (simple-array fixnum (*)))
   (unless (eql (array-dimension (access-counters object) 0)
@@ -123,6 +123,11 @@
 (defmethod clean-sketch ((function approximated-counts-function)
                          &rest all &key hashes hash-fn space count)
   (declare (ignore all))
+  (check-type count integer)
+  (check-type space integer)
+  (check-type hashes (or null (simple-array fixnum (* 2))))
+  (cl-ds:check-argument-bounds count (< 0 count))
+  (cl-ds:check-argument-bounds space (< 0 space))
   (make 'cl-ds.utils:cloning-information
         :counters (make-array
                    space
