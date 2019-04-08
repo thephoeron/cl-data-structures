@@ -6,7 +6,7 @@
                     :accessor access-count-in-chunk)))
 
 
-(defmethod initialize-instance :after ((object proxy-range) &key)
+(defmethod initialize-instance :after ((object split-into-chunks-proxy) &key)
   (check-type (access-count-in-chunk object) integer)
   (unless (< 0 (access-count-in-chunk object))
     (error 'cl-ds:argument-out-of-bounds
