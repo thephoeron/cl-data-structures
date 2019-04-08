@@ -37,8 +37,8 @@
 (defmethod initialize-instance :after ((sketch bloom-filter) &rest all)
   (declare (ignore all))
   (bind (((:slots %space %counters %count %hashes) sketch))
-    (check-type %space positive-fixnum)
-    (check-type %count positive-fixnum)
+    (check-type %space integer)
+    (check-type %count integer)
     (check-type %counters (simple-array bit (*)))
     (check-type %hashes (simple-array fixnum (* 2)))
     (unless (eql (array-dimension (access-counters sketch) 0)
@@ -124,6 +124,12 @@
 (defmethod clean-sketch ((function bloom-filter-function)
                          &rest all &key hashes hash-fn space count)
   (declare (ignore all))
+  (ensure-functionf hash-fn)
+  (check-type space integer)
+  (check-type count integer)
+  (check-type hashes (or null (simple-array fixnum (* 2))))
+  (cl-ds:check-argument-bounds space (< 0 space))
+  (cl-ds:check-argument-bounds count (< 0 count))
   (make 'cl-ds.utils:cloning-information
         :counters (make-array
                    space

@@ -58,8 +58,11 @@
   (function bloom-filter
     (:description "Creates bloom filter out of elements in the range. Bloom filter is a memory efficient data structure allowing to check if an item is absent from the range. If AT returns nil, the item is certainly absent. If AT returns T item either present or not."
      :returns "Instance of the fundamental-data-sketch class. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
+     :exceptional-situations ("Will signal a TYPE-ERROR if either SPACE or COUNT is not integer."
+                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if either SPACE or COUNT is not above 0."
+                              "Will signal a TYPE-ERROR if HASHES is not (OR NULL (SIMPLE-ARRAY FIXNUM (* 2)).")
      :arguments ((range "Input for the creation of the bloom filter.")
-                 (:space "Positive-fixnum. What is the bloom vector size?")
+                 (:space "What is the bloom vector size?")
                  (:count "How many bits are used for each item?")
                  (:key "Function used to extract value for hashing.")
                  (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")
