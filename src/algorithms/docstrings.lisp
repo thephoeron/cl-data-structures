@@ -200,6 +200,7 @@
                  (fn "Comparsion function.")
                  (key "Function used to extract values from the elements in the RANGE.")
                  (value-key "Like KEY, but using this instead will preserve the complete element in the result. This argument can be used in combination with KEY, in which case KEY is applied before the VALUE-KEY."))
+     :notes ("Shadows serapeum:extrema.")
      :returns "Dotted pair. The first value is the extremum that would occur as the first element in the sequence sorted according to the FN, second value is an element that would occur as the last."))
 
   (function cartesian
