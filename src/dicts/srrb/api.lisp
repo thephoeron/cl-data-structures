@@ -361,7 +361,7 @@
 
 
 (defmethod cl-ds:empty-clone ((vector fundamental-sparse-rrb-vector))
-  (make (type-of vector) :element-type (read-element-type vector)))
+  (make (class-of vector) :element-type (read-element-type vector)))
 
 
 (defmethod cl-ds:across ((vector fundamental-sparse-rrb-vector) function)
