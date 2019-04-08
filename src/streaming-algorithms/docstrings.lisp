@@ -60,9 +60,11 @@
      :returns "Instance of the fundamental-data-sketch class. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
      :exceptional-situations ("Will signal a TYPE-ERROR if either SPACE or COUNT is not integer."
                               "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if either SPACE or COUNT is not above 0."
+                              "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
                               "Will signal a TYPE-ERROR if HASHES is not (OR NULL (SIMPLE-ARRAY FIXNUM (* 2)).")
      :arguments ((range "Input for the creation of the bloom filter.")
                  (:space "What is the bloom vector size?")
+                 (:hash-fn "Hashing function. SXHASH will do for strings.")
                  (:count "How many bits are used for each item?")
                  (:key "Function used to extract value for hashing.")
                  (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")
