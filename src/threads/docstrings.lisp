@@ -12,7 +12,7 @@
      :arguments-and-values ((range "The input range.")
                             (limit "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead.")
                             (:context-function "Function that will accept and call another function. Defaults to #'FUNCALL. Can be used to establish a dynamic scope bindings when traversing the internal range."))
-     :returns "An BUFFER-RANGE subclass. Depending on the class of the RANGE it may be a FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
+     :returns "Instance of BUFFER-RANGE subclass. Depending on the class of the RANGE it may be a FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
 
   (function in-parallel
     (:description "Changes how traverse and accross functions work on the inner ranges. Instead of working directly, it will first obtain a chunked range, then each chunk will be scheduled on a lparallel worker. Results are then pushed into queue and read on the caller thread. Useful in conjuction with time consuming on-each functions underneath."
@@ -24,4 +24,4 @@
      :arguments-and-values ((range "Input range.")
                             (:limit "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")
                             (:context-function "Function that should accept function and then call it. Can be used to establish a dynamic scope bindings for traversing the internal chunked range. Defaults to #'FUNCALL."))
-     :returns "IN-PARALLEL-RANGE subclass.")))
+     :returns "Instance of IN-PARALLEL-RANGE subclass.")))
