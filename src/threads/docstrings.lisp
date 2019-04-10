@@ -5,7 +5,7 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function thread-buffer
-    (:description "Creates a proxy range that will present exactly the same context as the original range. However, when calling TRAVERSE or ACROSS an internal thread with queue will created. Values from the inner range will be read on the new thread and next passed to the queue. The main thread feeds data from the queue and calls passed callback on it."
+    (:description "Creates a proxy range that will present exactly the same content as the original range. However, when calling TRAVERSE or ACROSS an internal thread with queue will created. Values from the inner range will be read on the new thread and next passed to the queue. The main thread feeds data from the queue and calls passed callback on it."
      :exceptional-situations ("Will raise a TYPE-ERROR when CONTEXT-FUNCTION is not funcallable."
                               "Will raise a TYPE-ERROR when limit is not integer."
                               "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when limit is not at least 16.")

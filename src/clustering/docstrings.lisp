@@ -5,7 +5,7 @@
   :formatter docs.ext:rich-aggregating-formatter
 
   (function k-means
-    (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional simple-arrays specialized for single-floats."
+    (:description "Clusters data set using k-means algorithm. Data points must be represented as one dimensional SIMPLE-ARRAYS specialized for SINGLE-FLOATS."
      :exceptional-situations ("Will signal a TYPE-ERROR when key does not return (SIMPLE-ARRAY 'SINGLE-FLOAT (*))."
                               "Will signal a TYPE-ERROR when KEY is not funcallable."
                               "Will signal a TYPE-ERROR when DISTORTION-EPSILON is not SINGLE-FLOAT."
