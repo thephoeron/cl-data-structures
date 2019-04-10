@@ -65,6 +65,7 @@
   @docgeneric['cl-ds:become-functional]
   @docgeneric['cl-ds:become-mutable]
   @docgeneric['cl-ds:become-transactional]
+  @docgeneric['cl-ds:replica]
   @docgeneric['cl-ds:become-lazy]
   @end{documentation})
 @end{section}
