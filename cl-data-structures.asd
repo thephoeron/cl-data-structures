@@ -185,6 +185,7 @@
                              (:file "on-each")
                              (:file "count")
                              (:file "to-vector")
+                             (:file "to-hash-table")
                              (:file "shuffled-range")
                              (:file "filtering")
                              (:file "common-range-category")

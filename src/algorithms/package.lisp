@@ -66,6 +66,7 @@
    #:cumulative-accumulate
    #:cumulative-accumulate-range
    #:distinct
+   #:to-hash-table
    #:extrema
    #:extremum
    #:filtering-proxy
