@@ -13,4 +13,7 @@
      :notes "File is opened lazily. Calling either TRAVERSE or ACROSS on the line-by-line range will automaticly close the inner file. This makes it suitable to use with the aggregation functions without additional code."))
 
   (function find
-    (:description "A function somewhat similar to the posix find tool. Depending on the filesystem content and the DESCRIPTION list, returns a forward-range containing pathnames matching the DESCRIPTION. DESCRIPTION list supports :directory, :regex-file, :regex-directory, :file, :all-directories and :all-files filters. Each of those filters selects matching nodes in the file system and handles it to the next filter.")))
+    (:description "A function somewhat similar to the posix find tool. Depending on the filesystem content and the DESCRIPTION list, returns a forward-range containing pathnames matching the DESCRIPTION. DESCRIPTION list supports :directory, :regex-file, :regex-directory, :file, :all-directories and :all-files filters. Each of those filters selects matching nodes in the file system and handles it to the next filter."
+     :notes ((:directory "This filter is used to specify directory by :PATH.")
+             (:regex-directory "This filter is used to specify directory by PPCRE in the :PATH. Matching directories will be accepted.")
+             (:file "This filter is used to specify file by name.")))))
