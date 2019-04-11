@@ -500,7 +500,7 @@ Methods. Those will just call non generic functions.
           :size (access-size container))))
 
 
-(defmethod cl-ds:replica ((container transactional-hamt-dictionary)
+(defmethod cl-ds:replica ((container hamt-dictionary)
                           &optional isolate)
   (cl-ds.common.abstract:replica container isolate))
 

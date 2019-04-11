@@ -128,6 +128,6 @@
   (declare (ignore all))
   (make 'forward-distinct-proxy
         :key key
-        :seen (cl-ds.dicts.hamt:make-mutable-hamt-dictionary hash-function
-                                                             test)
+        :seen (cl-ds.dicts.hamt:make-transactional-hamt-dictionary
+               hash-function test)
         :original-range range))
