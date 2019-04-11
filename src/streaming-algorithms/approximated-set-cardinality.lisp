@@ -40,10 +40,10 @@
   (declare (ignore all))
   (bind (((:slots %bits %registers %hash-fn) object))
     (check-type %bits integer)
-    (unless (< 3 %bits 21)
+    (unless (<= 4 %bits 20)
       (error 'cl-ds:argument-out-of-bounds
              :argument 'bits
-             :bounds (list 4 21)
+             :bounds (list 4 20)
              :value %bits
              :format-control "Bits out of range."))
     (check-type %registers (simple-array (unsigned-byte 8) (*)))
@@ -98,8 +98,7 @@
           (index (ash hash (- (- 32 %bits))))
           (hash-length (integer-length hash))
           (rank (if (zerop hash-length) 0 (1- hash-length))))
-     (when (> rank (aref %registers index))
-       (setf (aref %registers index) rank))))
+     (maxf (aref %registers index) rank)))
 
   (%data-sketch))
 
@@ -109,9 +108,10 @@
   (declare (ignore all))
   (ensure-functionf hash-fn)
   (check-type bits integer)
-  (cl-ds:check-argument-bounds bits (< 3 bits 21))
+  (cl-ds:check-argument-bounds bits (<= 4 bits 20))
   (make 'approximated-set-cardinality
         :bits bits
         :registers (make-array (ash 1 bits)
-                               :element-type '(unsigned-byte 8))
+                               :element-type '(unsigned-byte 8)
+                               :initial-element 0)
         :hash-fn hash-fn))
