@@ -142,6 +142,7 @@
    @docfun['cl-ds.alg:extrema]
    @docfun['cl-ds.alg:extremum]
    @docfun['cl-ds.alg:to-vector]
+   @docfun['cl-ds.alg:to-hash-table]
   @end{documentation}
  @end{section}
 

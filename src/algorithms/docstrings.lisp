@@ -59,8 +59,22 @@
      :arguments ((range "Object to aggregate.")
                  (:key "Key function used to extract value to the result vector.")
                  (:element-type ":ELEMENT-TYPE for the result vector.")
+                 (:vector "Initial vector.")
                  (:size "Initial size of the internal vector. Supplie to minimize memory allocations count.")
                  (:force-copy "When false, TO-VECTOR called with CL:VECTOR is allowed to return the input."))))
+
+  (function to-hash-table
+    (:description "Collects all elements into a CL:HASH-TABLE."
+     :exceptional-situations ("Will signal a TYPE-ERROR if either KEY, HASH-TABLE-VALUE, HASH-TABLE-KEY is not funcallable."
+                              "Will signal a TYPE-ERROR if TABLE is not of type CL:HASH-TABLE."
+                              "Will signal conditions just like MAKE-HASH-TABLE would if either SIZE or TEST is invalid.")
+     :arguments ((:key "Key function used to extract value to the result vector.")
+                 (:test "Test fo the MAKE-HASH-TABLE.")
+                 (:size "Size for the MAKE-HASH-TABLE.")
+                 (:table "Optional, initial HASH-TABLE.")
+                 (:hash-table-key "Function used to extract key for the HASH-TABLE. Defaults to IDENTITY.")
+                 (:hash-table-value "Function used to extract value for the HASH-TABLE. Defaults to IDENTITY."))
+     :returns "CL:HASH-TABLE with the content of the RANGE."))
 
   (function on-each
     (:description "Creates a new range by applying the FUNCTION to each element of the RANGE."
