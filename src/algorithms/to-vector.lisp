@@ -15,8 +15,8 @@
 
   (%vector)
 
-  ((&key element-type size vector &allow-other-keys)
-   (check-type vector vector)
+  ((&key vector &allow-other-keys)
+   (check-type vector cl-ds.utils:extendable-vector)
    (setf %vector vector))
   ((element)
    (vector-push-extend element %vector))

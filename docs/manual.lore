@@ -182,6 +182,11 @@
 @begin{section} @label{cl-ds file system}
 @title{File System Reference}
 @text{This section contains reference of all the functions, classes and macros in the CL-DS.FS package. Those functions act primarly as a simple bridge between files in the operating system and the algorithms package and therefore usually return ranges.}
+ @begin{documentation}
+  @pack{CL-DATA-STRUCTURES.FILE-SYSTEM}
+  @docfun['cl-ds.fs:line-by-line]
+  @docfun['cl-ds.fs:find]
+ @end{documentation}
 @end{section}
 
 @begin{section} @label{cl-ds math}
