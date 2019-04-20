@@ -1,8 +1,10 @@
 (in-package #:cl-ds.utils)
 
 
-(deftype extendable-vector ()
-  `(and vector
+(deftype extendable-vector (&optional (type nil type-p))
+  `(and ,(if type-p
+             `(vector ,type)
+             'vector)
         (not simple-array)
         (satisfies array-has-fill-pointer-p)))
 
