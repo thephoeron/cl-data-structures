@@ -241,6 +241,7 @@
                               :components ((:file "package")
                                            (:file "gamma")))
                              (:file "package")
+                             (:file "absolute-value-norm")
                              (:file "average")
                              (:file "variance")
                              (:file "mutual-information")

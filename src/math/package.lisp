@@ -7,6 +7,7 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:average
+   #:absolute-value-norm
    #:beta0
    #:beta1
    #:bootstrap
