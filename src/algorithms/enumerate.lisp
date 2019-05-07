@@ -21,7 +21,8 @@
          %hash-table-key hash-table-key))
 
   ((element)
-   (setf (gethash (funcall %hash-table-key element) %table) %number)
-   (incf %number))
+   (let ((key (funcall %hash-table-key element)))
+     (ensure (gethash key %table)
+       (prog1 %number (incf %number)))))
 
   (%table))
