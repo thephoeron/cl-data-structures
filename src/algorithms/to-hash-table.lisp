@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.algorithms)
+(cl:in-package #:cl-data-structures.algorithms)
 
 
 (cl-ds.alg.meta:define-aggregation-function
@@ -21,6 +21,7 @@
    (setf %table table
          %hash-table-key hash-table-key
          %hash-table-value hash-table-value))
+
   ((element)
    (setf (gethash (funcall %hash-table-key element) %table)
          (funcall %hash-table-value element)))

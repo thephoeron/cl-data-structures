@@ -186,6 +186,7 @@
                              (:file "count")
                              (:file "to-vector")
                              (:file "to-hash-table")
+                             (:file "enumerate")
                              (:file "shuffled-range")
                              (:file "filtering")
                              (:file "common-range-category")
