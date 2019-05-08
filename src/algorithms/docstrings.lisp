@@ -49,6 +49,16 @@
      :arguments ((range "An input range.")
                  (test "A function of two arguments used to check if elements belong to the same partition."))))
 
+  (function to-list
+    (:description "Collects all elements into a CL:LIST."
+     :returns "CL:LIST with the content of the RANGE."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable.")))
+
+  (function translation
+    (:description "Substitutes element in the range with one found in the DICT, if present. If not, leaves element unchanged."
+     :returns "ON-EACH-RANGE subclass."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable.")))
+
   (function to-vector
     (:description "Collects all elements into a CL:VECTOR."
      :returns "CL:VECTOR with the content of the RANGE."
