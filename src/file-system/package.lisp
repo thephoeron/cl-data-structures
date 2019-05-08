@@ -9,5 +9,11 @@
    #:close-inner-stream
    #:find
    #:line-by-line
+   #:file-range-mixin
+   #:close-stream
+   #:access-reached-end
+   #:access-current-position
+   #:ensure-stream
    #:tokenize
+   #:read-path
    #:with-file-ranges))

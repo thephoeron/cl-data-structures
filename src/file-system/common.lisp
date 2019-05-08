@@ -15,6 +15,8 @@
    (%stream :initarg :stream
             :initform (list nil)
             :type list)
+   (%path :initarg :path
+          :reader read-path)
    (%mutex :initform (bt:make-lock)
            :reader read-mutex)))
 

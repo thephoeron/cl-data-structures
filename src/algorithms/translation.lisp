@@ -14,4 +14,4 @@
                           :function (lambda (x)
                                       (bind (((:values result found)
                                               (cl-ds:at dict x)))
-                                        (if found result x))))))
+                                        (if found result e))))))
