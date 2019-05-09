@@ -4,9 +4,7 @@
 (defclass line-by-line-range (cl-ds:chunking-mixin
                               file-range-mixin
                               cl-ds:fundamental-forward-range)
-  ((%path :initarg :path
-          :type (or string pathname)
-          :reader read-path))
+  ()
   (:default-initargs :initial-position 0))
 
 

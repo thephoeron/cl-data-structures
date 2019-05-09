@@ -53,6 +53,9 @@
   (:shadow #:extrema #:extremum)
   (:export
    #:%summary
+   #:enumerate
+   #:translation
+   #:to-list
    #:accumulate
    #:bidirectional-chain-of-ranges
    #:bidirectional-proxy-range

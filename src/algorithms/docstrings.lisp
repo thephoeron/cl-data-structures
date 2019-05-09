@@ -49,6 +49,16 @@
      :arguments ((range "An input range.")
                  (test "A function of two arguments used to check if elements belong to the same partition."))))
 
+  (function to-list
+    (:description "Collects all elements into a CL:LIST."
+     :returns "CL:LIST with the content of the RANGE."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable.")))
+
+  (function translation
+    (:description "Substitutes element in the range with one found in the DICT, if present. If not, leaves element unchanged."
+     :returns "ON-EACH-RANGE subclass."
+     :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable.")))
+
   (function to-vector
     (:description "Collects all elements into a CL:VECTOR."
      :returns "CL:VECTOR with the content of the RANGE."
@@ -94,6 +104,18 @@
                   (prove:is 3 (cl-ds:at (cl-ds.alg:count-elements (cl-ds.alg:group-by data :key #'evenp))
                                         nil)))]
      :see-also (group-by)))
+
+  (function enumerate
+    (:description "Gathers unique elements in the RANGE and assigns a number to each (starting with zero, incrementing)."
+     :returns "CL:HASH-TABLE, unique elements used as keys, numbers stored as values."
+     :exceptional-situations ("Will signal a TYPE-ERROR if either KEY, HASH-TABLE-KEY is not funcallable."
+                              "Will signal a TYPE-ERROR if TABLE is not of type CL:HASH-TABLE."
+                              "Will signal conditions just like MAKE-HASH-TABLE would if either SIZE or TEST is invalid.")
+     :arguments ((:key "Key function used to extract value to the result vector.")
+                 (:test "Test fo the MAKE-HASH-TABLE.")
+                 (:size "Size for the MAKE-HASH-TABLE.")
+                 (:table "Optional, initial HASH-TABLE.")
+                 (:hash-table-key "Function used to extract key for the HASH-TABLE. Defaults to IDENTITY."))))
 
   (function hash-join
     (:description "Joins multiple ranges using the hash join algorithm."
