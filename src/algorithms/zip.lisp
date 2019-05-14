@@ -51,11 +51,12 @@
   (init-zipped-ranges range))
 
 
-(defun zip (function range &rest ranges)
-  (let* ((ranges (mapcar (cl-ds.utils:if-else
-                          (rcurry #'typep 'cl-ds:fundamental-forward-range)
-                          #'identity #'cl-ds:whole-range)
-                         (cons range ranges)))
+(defun zip-traversable (function ranges)
+  (let* ((ranges (~>> (cl-ds.utils:if-else
+                       (rcurry #'typep 'cl-ds:fundamental-forward-range)
+                       #'identity #'cl-ds:whole-range)
+                      (cl-ds.alg:on-each ranges)
+                      to-list))
          (type (common-fundamental-range-class ranges)))
     (assert type)
     (make (eswitch (type)
@@ -64,6 +65,10 @@
             ('fundamental-random-access-range 'random-access-zipped-ranges))
           :ranges ranges
           :function function)))
+
+
+(defun zip (function range &rest ranges)
+  (zip-traversable function (cons range ranges)))
 
 
 (defmethod cl-ds:consume-front ((range forward-zipped-ranges))

@@ -102,4 +102,5 @@
    #:transparent-to-chunking-mixin
    #:without
    #:wrap-chunk
-   #:zip))
+   #:zip
+   #:zip-traversable))
