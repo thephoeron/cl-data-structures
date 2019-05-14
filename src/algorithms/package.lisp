@@ -103,4 +103,6 @@
    #:without
    #:wrap-chunk
    #:zip
+   #:connect
+   #:connect-traversable
    #:zip-traversable))
