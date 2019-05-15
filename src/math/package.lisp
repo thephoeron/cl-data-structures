@@ -15,6 +15,7 @@
    #:harmonic-average-mutual-information
    #:hodges-lehmann-estimator
    #:gini-impurity
+   #:entropy
    #:median-absolute-deviation
    #:moments
    #:moving-average

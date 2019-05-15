@@ -2,7 +2,7 @@
 
 
 (cl-ds.alg.meta:define-aggregation-function
-    gini-impurity gini-impurity-function
+    entropy entropy-function
 
   (:range &key key test count-fn hash-table)
 
@@ -26,7 +26,7 @@
      (incf %total-count count)
      (incf (gethash element %table 0) count)))
 
-  ((iterate
-     (for (class count) in-hashtable %table)
-     (for prob = (/ count %total-count))
-     (sum (* prob (- 1.0 prob))))))
+  ((- (iterate
+        (for (class count) in-hashtable %table)
+        (for prob = (/ count %total-count))
+        (sum (* prob (log prob)))))))

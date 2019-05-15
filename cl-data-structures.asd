@@ -260,6 +260,7 @@
                              (:file "moving-average")
                              (:file "hmm")
                              (:file "gini-impurity")
+                             (:file "entropy")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "chi-squared-tests")
