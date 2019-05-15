@@ -24,4 +24,4 @@
   ((iterate
      (for (class count) in-hashtable %table)
      (for prob = (/ count %total-count))
-     (sum (* prob (- 1 prob))))))
+     (sum (* prob (- 1.0 prob))))))
