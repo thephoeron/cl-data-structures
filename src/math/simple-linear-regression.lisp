@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.math)
+(cl:in-package #:cl-data-structures.math)
 
 
 (defclass simple-linear-regression (cl-ds.alg.meta:multi-aggregation-function)

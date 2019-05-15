@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.math)
+(cl:in-package #:cl-data-structures.math)
 
 
 (defun check-probability-in-rows (argument table)

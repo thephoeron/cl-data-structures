@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.math)
+(cl:in-package #:cl-data-structures.math)
 
 
 (defclass mutual-information-fundamental-function ()
@@ -403,4 +403,3 @@
                        :type 'positive-integer)
   (:type :optional nil
          :member (:discrete :continues)))
-
