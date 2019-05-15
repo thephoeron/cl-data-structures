@@ -48,6 +48,11 @@
 
   (function entropy
     (:description "Calculates Shannon information entropy of the elements in the range (using natural logarithm)."
+     :arguments ((range "Object to aggregate.")
+                 (key "Function used to extract value from element.")
+                 (test "Test for the hash table.")
+                 (hash-table "Optional HASH-TABLE used internally by the algorithm.")
+                 (count-fn "Function used to extract count of elements from the element in the RANGE."))
      :exceptional-situations ("Will signal TYPE-ERROR when HASH-TABLE is not of the type CL:HASH-TABLE."
                               "Will signal TYPE-ERROR when KEY is not a function."
                               "Will signal TYPE-ERROR when COUNT-FN is not a function."
