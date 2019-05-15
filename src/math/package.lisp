@@ -14,6 +14,7 @@
    #:harmonic-average
    #:harmonic-average-mutual-information
    #:hodges-lehmann-estimator
+   #:gini-impurity
    #:median-absolute-deviation
    #:moments
    #:moving-average

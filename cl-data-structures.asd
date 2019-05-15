@@ -259,6 +259,7 @@
                              (:file "bootstrap")
                              (:file "moving-average")
                              (:file "hmm")
+                             (:file "gini-impurity")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "chi-squared-tests")
