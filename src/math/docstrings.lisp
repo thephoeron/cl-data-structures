@@ -33,6 +33,17 @@
      :see-also (bootstrap)
      :thread-safety "Will ues lparallel if PARALLEL is T."))
 
+  (function gini-impurity
+    (:description "Calculates Gini impurity of the content range."
+     :exceptional-situations ("Will signal TYPE-ERROR when HASH-TABLE is not of the type CL:HASH-TABLE."
+                              "Will signal exception as would CL:MAKE-HASH-TABLE function when TEST is invalid.")
+     :returns "Numerical value representing the Gini impurity."
+     :arguments ((range "Object to aggregate.")
+                 (key "Function used to extract value from element.")
+                 (test "Test for the hash table.")
+                 (hash-table "Optional HASH-TABLE used internally by the algorithm.")
+                 (count-fn "Function used to extract count of elements from the element in the RANGE."))))
+
   (function bootstrap
     (:description "Changes aggregation into bootstrapping schema using percentail method. Reduces the ammount of resources needed to obtain the value."
      :arguments ((range "Data for aggregation.")
