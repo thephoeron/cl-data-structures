@@ -4,22 +4,19 @@
 (cl-ds.alg.meta:define-aggregation-function
     gini-impurity gini-impurity-function
 
-  (:range classes &key key test)
+  (:range &key key test)
 
-  (:range classes &key (key #'identity) (test 'eql))
+  (:range &key (key #'identity) (test 'eql))
 
   (%table %total-count)
 
-  ((&key test classes)
+  ((&key test)
    (setf %table (make-hash-table :test test)
-         %total-count 0)
-   (map nil (lambda (class) (setf (gethash class %table) 0))
-        classes))
+         %total-count 0))
 
   ((element)
-   (when (gethash element %table)
-     (incf %total-count)
-     (incf (gethash element %table))))
+   (incf %total-count)
+   (incf (gethash element %table 0)))
 
   ((iterate
      (for (class count) in-hashtable %table)
