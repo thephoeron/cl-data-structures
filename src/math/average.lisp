@@ -12,6 +12,7 @@
   ((&key &allow-other-keys)
    (setf %sum 0
          %count 0))
+
   ((element)
    (incf %count)
    (incf %sum element))
@@ -31,6 +32,7 @@
    (setf %sum 0
          %count 0
          %zero nil))
+
   ((element)
    (incf %count)
    (if (zerop element)
