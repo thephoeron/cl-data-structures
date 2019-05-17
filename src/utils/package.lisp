@@ -89,6 +89,10 @@
    #:scan
    #:select-top
    #:skip-vector-without
+   #:yield
+   #:group-by
+   #:group-by-closure
+   #:make-group-by-closure
    #:sref
    #:start-execution
    #:swap-if

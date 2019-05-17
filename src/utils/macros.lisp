@@ -369,3 +369,48 @@
                           forms
                           key-symbols)
              ,@body))))
+
+
+(defun make-group-by-closure (select-key
+                              same-test
+                              on-new-key
+                              on-data)
+  (let ((previous-key nil)
+        (first-time t))
+    (lambda (&rest all)
+      (let ((key (apply select-key all)))
+        (if (or first-time
+                (not (funcall same-test previous-key key)))
+            (progn
+              (unless first-time
+                (funcall on-new-key))
+              (setf previous-key key
+                    first-time nil)
+              (apply on-data all))
+            (apply on-data all))))))
+
+
+(defmacro group-by-closure (bindings key test on-new on-data)
+  (with-gensyms (!x !y)
+    `(make-group-by-closure (lambda (,@bindings) ,key)
+                            (lambda (,!x ,!y) (,test ,!x ,!y))
+                            (lambda () ,@on-new)
+                            (lambda (,bindings) ,@on-data)
+                            )))
+
+
+(defun yield (&rest all)
+  all)
+
+
+(defmacro group-by ((variables key on-new on-data &optional (test 'eql))
+                    &body body)
+  (with-gensyms (!closure !at-least-once)
+    `(let ((,!closure (group-by-closure ,variables ,key ,test
+                                        ,on-new ,on-data))
+           (,!at-least-once nil))
+       (flet ((yield (,@variables)
+                (funcall ,!closure ,@variables)
+                (setf ,!at-least-once t)))
+         (unwind-protect (progn ,@body)
+           (when ,!at-least-once ,on-new))))))
