@@ -22,8 +22,7 @@
                  (grouped-predictions (cl-ds.alg:group-by
                                        submodel-predictions
                                        :key #'second))
-                 (summary (cl-ds.alg:summary
-                              grouped-predictions
+                 (summary (cl-ds.alg:summary grouped-predictions
                             :count (cl-ds.alg:count-elements)
                             :content (cl-ds.alg:to-vector :key #'first)
                             :gini (cl-ds.math:gini-impurity
