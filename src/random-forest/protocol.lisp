@@ -2,8 +2,8 @@
 
 
 (defgeneric make-submodel (class data arguments))
-(defgeneric make-submodel-with-model (main-model data arguments))
-(defgeneric make-node (main-model data arguments))
+(defgeneric make-submodel-with-model (main-model data))
+(defgeneric make-node (main-model data))
 (defgeneric submodel-class (main-model))
 (defgeneric train (model data))
 (defgeneric predict (model data))
@@ -13,3 +13,4 @@
 (defgeneric submodel-arguments (model))
 (defgeneric split-attempts (model))
 (defgeneric tree-minimal-size (model))
+(defgeneric make-model (class data arguments submodel-arguments))

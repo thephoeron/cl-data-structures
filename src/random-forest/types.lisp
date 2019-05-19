@@ -15,7 +15,8 @@
    (%split-attempts :initarg :split-attempts
                     :reader split-attempts)
    (%submodels :initarg :submodels
-               :reader submodels)
+               :reader submodels
+               :accessor access-submodels)
    (%submodel-class :initarg :submodel-class
                     :reader read-submodel-class)
    (%submodel-arguments :initarg :submodel-arguments
@@ -24,6 +25,7 @@
    :submodel-arguments '()
    :tree-maximum-depth 2
    :split-attempts 10
+   :submodels nil
    :tree-count 50))
 
 

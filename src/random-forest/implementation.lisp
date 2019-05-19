@@ -2,13 +2,27 @@
 
 
 (defmethod make-submodel-with-model ((main-model random-forest-classifier)
-                                     data
-                                     arguments)
-  (make-submodel (submodel-class main-model) data arguments))
+                                     data)
+  (make-submodel (submodel-class main-model) data
+                 (submodel-arguments main-model)))
+
+
+(defmethod make-model ((class (eql 'random-forest-classifier))
+                       data arguments submodel-arguments)
+  (bind ((result (apply #'make 'random-forest-classifier
+                        :submodel-arguments submodel-arguments
+                        arguments))
+         (tree-count (tree-count result))
+         (trees (make-array tree-count)))
+    (iterate
+      (for i from 0 below tree-count)
+      (setf (aref trees i) (make-node result data)))
+    (setf (access-submodels result) trees)
+    result)))
 
 
 (defmethod make-node ((main-model random-forest-classifier)
-                      data arguments)
+                      data)
   (let ((split-attempts (split-attempts main-model))
         (tree-maximum-depth (tree-maximum-depth main-model))
         (tree-minimal-size (tree-minimal-size main-model)))
@@ -33,8 +47,7 @@
                (iterate outer
                  (repeat split-attempts)
                  (for submodel = (make-submodel-with-model main-model
-                                                           data
-                                                           arguments))
+                                                           data))
                  (train submodel data)
                  (for submodel-predictions = (predict main-model data))
                  (for data-size = (length data))
