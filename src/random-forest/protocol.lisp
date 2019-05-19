@@ -12,3 +12,4 @@
 (defgeneric submodels (model))
 (defgeneric submodel-arguments (model))
 (defgeneric split-attempts (model))
+(defgeneric tree-minimal-size (model))

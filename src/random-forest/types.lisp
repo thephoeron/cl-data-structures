@@ -10,6 +10,8 @@
                 :reader tree-count)
    (%tree-maximum-depth :initarg :tree-maximum-depth
                         :reader tree-maximum-depth)
+   (%tree-minimal-size :initarg :tree-minimal-size
+                       :reader tree-minimal-size)
    (%split-attempts :initarg :split-attempts
                     :reader split-attempts)
    (%submodels :initarg :submodels
