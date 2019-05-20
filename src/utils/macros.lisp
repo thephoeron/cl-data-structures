@@ -394,8 +394,8 @@
   (with-gensyms (!x !y)
     `(make-group-by-closure (lambda (,@bindings) ,key)
                             (lambda (,!x ,!y) (,test ,!x ,!y))
-                            (lambda () ,@on-new)
-                            (lambda (,bindings) ,@on-data)
+                            (lambda () ,on-new)
+                            (lambda (,@bindings) ,on-data)
                             )))
 
 
