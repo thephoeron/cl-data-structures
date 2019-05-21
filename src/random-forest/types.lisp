@@ -33,6 +33,7 @@
   ((%submodel :initarg :submodel
               :reader read-submodel)
    (%class :initarg :class
+           :type (or null fixnum)
            :accessor access-class)
    (%children :initarg :children
               :reader read-children))
