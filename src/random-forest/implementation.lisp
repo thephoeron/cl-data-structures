@@ -18,7 +18,7 @@
       (for i from 0 below tree-count)
       (setf (aref trees i) (make-node result data)))
     (setf (access-submodels result) trees)
-    result)))
+    result))
 
 
 (defmethod make-node ((main-model random-forest-classifier)
@@ -33,7 +33,7 @@
                       (node (when (>= size tree-minimal-size)
                               (node (1- depth) group-data))))
                  (unless (null node)
-                   (setf (access-class node) group))
+                   (setf (access-class node) group-class))
                  node))
              (gini-impurity (summary data-size)
                (cl-ds.alg:accumulate summary
@@ -77,7 +77,7 @@
                     (for (values group more) = (cl-ds:consume-front summary))
                     (while more)
                     (for content = (cl-ds:at group :content))
-                    (cl-ds.utils:transform content #'first)
+                    (cl-ds.utils:transform #'first content)
                     (setf (aref children i)
                           (summary-group-to-node content depth))
                     (finally (return-from outer

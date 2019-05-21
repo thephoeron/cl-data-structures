@@ -274,6 +274,11 @@
                              (:file "approximated-counts")
                              (:file "bloom-filter")
                              (:file "docstrings")))
+               (:module "random-forest"
+                :components ((:file "package")
+                             (:file "protocol")
+                             (:file "types")
+                             (:file "implementation")))
                (:module "counting"
                 :components ((:file "package")
                              (:file "generics")
