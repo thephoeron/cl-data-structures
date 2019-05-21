@@ -72,9 +72,12 @@
                     (with size = (cl-ds:size summary))
                     (with children = (make-array size))
                     (for i from 0 below size)
-                    (for (values group more) = (cl-ds:consume-front result))
+                    (for (values group more) = (cl-ds:consume-front summary))
+                    (while more)
+                    (for content = (cl-ds:at group :content))
+                    (cl-ds.utils:transform content #'first)
                     (setf (aref children i)
-                          (summary-group-to-node group depth))
+                          (summary-group-to-node content depth))
                     (finally (return-from outer
                                (make 'tree-node
                                      :submodel submodel
