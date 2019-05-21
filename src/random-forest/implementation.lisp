@@ -29,10 +29,12 @@
     (labels ((summary-group-to-node (group depth)
                (bind (((group-class content) group)
                       (size (cl-ds:at content :count))
-                      (group-data (cl-ds:at content :content)))
-                 (cons group-class
-                       (when (>= size tree-minimal-size)
-                         (node (1- depth) group-data)))))
+                      (group-data (cl-ds:at content :content))
+                      (node (when (>= size tree-minimal-size)
+                              (node (1- depth) group-data))))
+                 (unless (null node)
+                   (setf (access-class node) group))
+                 node))
              (gini-impurity (summary data-size)
                (cl-ds.alg:accumulate summary
                                      #'+
