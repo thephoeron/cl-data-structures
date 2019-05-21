@@ -5,7 +5,7 @@
 (defgeneric make-submodel-with-model (main-model data))
 (defgeneric make-node (main-model data))
 (defgeneric submodel-class (main-model))
-(defgeneric train (model data))
+(defgeneric train (submodel data))
 (defgeneric predict (model data))
 (defgeneric tree-count (model))
 (defgeneric tree-maximum-depth (model))

@@ -85,3 +85,9 @@
                                      :submodel submodel
                                      :children children))))))))
       (node data tree-maximum-depth))))
+
+
+(defun prediction-in-tree (node value)
+  (if (~> node read-children emptyp)
+      (access-class node)
+      cl-ds.utils:todo))

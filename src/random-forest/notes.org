@@ -1,0 +1,4 @@
+# Tasks
+* TODO implement predict for the random forest.
+** TODO Implement Prediction in the individual trees.
+** TODO Predict for the submodel needs to be distinct from predict of the main model, additional context must be managed.
