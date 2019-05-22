@@ -104,7 +104,8 @@
 
 
 (defun elect-result (predictions)
-  (~> cl-ds.alg:count-elements
+  (~> predictions
+      cl-ds.alg:count-elements
       (cl-ds.alg:extremum #'> :key #'cdr)
       car))
 
