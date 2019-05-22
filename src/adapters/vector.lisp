@@ -6,15 +6,24 @@
     :type vector
     :initarg :vector
     :reader read-vector)
+   (%initial-lower-bound
+    :type fixnum
+    :reader read-initial-lower-bound
+    :initarg :lower-bound)
+   (%initial-upper-bound
+    :type fixnum
+    :reader read-initial-upper-bound
+    :initarg :upper-bound)
    (%lower-bound
     :type fixnum
     :accessor access-lower-bound
-    :initarg :lower-bound
-    :initform 0)
+    :initarg :lower-bound)
    (%upper-bound
     :type fixnum
     :initarg :upper-bound
-    :accessor access-upper-bound)))
+    :accessor access-upper-bound))
+  (:default-initargs
+   :lower-bound 0))
 
 
 (defclass offset-vector-range (vector-range)
@@ -26,9 +35,11 @@
 
 
 (defun init-vector-range (range)
-  (bind (((:slots %upper-bound %lower-bound %vector) range))
-    (setf %lower-bound 0
-          %upper-bound (length %vector)))
+  (bind (((:slots %upper-bound %lower-bound %vector
+                  %initial-lower-bound %initial-upper-bound)
+          range))
+    (setf %lower-bound %initial-lower-bound
+          %upper-bound %initial-upper-bound))
   range)
 
 
@@ -41,7 +52,8 @@
 
 
 (defmethod cl-ds:whole-range ((obj vector))
-  (make 'vector-range :vector obj))
+  (make 'vector-range :vector obj
+                      :upper-bound (length obj)))
 
 
 (defmethod cl-ds:at ((range vector-range) location &rest more)
