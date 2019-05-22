@@ -3,3 +3,4 @@
 ** TODO Implement Prediction in the individual trees.
 ** DONE Predict for the submodel needs to be distinct from predict of the main model, additional context must be managed.
    CLOSED: [2019-05-22 śro 10:02]
+* TODO Construction of submodels should be performed in parallel.
