@@ -3,7 +3,8 @@
 
 (defmethod make-submodel-with-model ((main-model random-forest-classifier)
                                      data)
-  (make-submodel (submodel-class main-model) data
+  (make-submodel (submodel-class main-model)
+                 data
                  (submodel-arguments main-model)))
 
 

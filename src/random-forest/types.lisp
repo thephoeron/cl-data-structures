@@ -18,7 +18,7 @@
                :reader submodels
                :accessor access-submodels)
    (%submodel-class :initarg :submodel-class
-                    :reader read-submodel-class)
+                    :reader submodel-class)
    (%submodel-arguments :initarg :submodel-arguments
                         :reader submodel-arguments))
   (:default-initargs
