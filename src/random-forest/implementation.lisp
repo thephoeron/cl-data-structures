@@ -30,10 +30,10 @@
                (bind (((group-class content) group)
                       (size (cl-ds:at content :count))
                       (group-data (cl-ds:at content :content))
-                      (node (when (>= size tree-minimal-size)
-                              (node (1- depth) group-data))))
-                 (unless (null node)
-                   (setf (access-class node) group-class))
+                      (node (if (>= size tree-minimal-size)
+                                (node (1- depth) group-data)
+                                (make-instance 'leaf-node))))
+                 (setf (access-class node) group-class)
                  node))
              (gini-impurity (summary data-size)
                (cl-ds.alg:accumulate summary
@@ -81,13 +81,17 @@
                     (setf (aref children i)
                           (summary-group-to-node content depth))
                     (finally (return-from outer
-                               (make 'tree-node
+                               (make 'subtree-node
                                      :submodel submodel
                                      :children children))))))))
       (node data tree-maximum-depth))))
 
 
-(defun prediction-in-tree (node value)
-  (if (~> node read-children emptyp)
+(defun prediction-in-tree (node context value)
+  (if (typep node 'leaf-node)
       (access-class node)
-      cl-ds.utils:todo))
+      (let* ((submodel (read-submodel node))
+             (children (read-children node))
+             (prediction (submodel-predict submodel value context))
+             (child (find prediction children :key #'access-class)))
+        (prediction-in-tree child context value))))

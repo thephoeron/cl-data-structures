@@ -30,13 +30,19 @@
 
 
 (defclass tree-node ()
-  ((%submodel :initarg :submodel
-              :reader read-submodel)
-   (%class :initarg :class
+  ((%class :initarg :class
            :type (or null fixnum)
-           :accessor access-class)
-   (%children :initarg :children
+           :accessor access-class))
+  (:default-initargs
+   :class nil))
+
+
+(defclass subtree-node (tree-node)
+  ((%children :initarg :children
               :reader read-children))
   (:default-initargs
    :children '()
    :class nil))
+
+(defclass leaf-node (tree-node)
+  ())
