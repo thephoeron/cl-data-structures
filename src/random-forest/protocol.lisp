@@ -7,6 +7,8 @@
 (defgeneric submodel-class (main-model))
 (defgeneric train (submodel data))
 (defgeneric predict (model data))
+(defgeneric submodel-predict (submodel data context))
+(defgeneric submodel-context (submodel context))
 (defgeneric tree-count (model))
 (defgeneric tree-maximum-depth (model))
 (defgeneric submodels (model))
