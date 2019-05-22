@@ -88,11 +88,43 @@
       (node data tree-maximum-depth))))
 
 
-(defun prediction-in-tree (node context value)
+(defun prediction-in-tree (input node context)
   (if (typep node 'leaf-node)
       (access-class node)
       (let* ((submodel (read-submodel node))
              (children (read-children node))
-             (prediction (submodel-predict submodel value context))
+             (prediction (submodel-predict submodel input context))
              (child (find prediction children :key #'access-class)))
-        (prediction-in-tree child context value))))
+        (prediction-in-tree child context prediction))))
+
+
+(defun make-contexts (model)
+  (~>> model access-submodels
+       (map 'vector #'submodel-prediction-context)))
+
+
+(defun elect-result (predictions)
+  (~> predictions
+      cl-ds.alg:group-by
+      cl-ds.alg:count-elements
+      (cl-ds.alg:extremum #'> :key #'cdr)
+      car))
+
+
+(defun prediction-function (model)
+  (let* ((contexts (make-contexts model))
+         (trees (access-submodels model))
+         (submodel-predictions (~> trees length
+                                   (make-array :element-type 'fixnum))))
+    (declare (type vector contexts)
+             (type (simple-array fixnum (*)) submodel-predictions))
+    (lambda (input)
+      (map-into submodel-predictions
+                (curry #'prediction-in-tree input)
+                trees
+                contexts)
+      (elect-result submodel-predictions))))
+
+
+(defmethod predict ((model random-forest-classifier) data)
+  (cl-ds.alg:on-each (prediction-function model) data))

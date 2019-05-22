@@ -1,5 +1,7 @@
 # Tasks
-* TODO implement predict for the random forest.
+* DONE implement predict for the random forest.
+  CLOSED: [2019-05-22 śro 14:39]
+** TODO Prediction should be performed in parallel.
 ** DONE Implement Prediction in the individual trees.
    CLOSED: [2019-05-22 śro 12:03]
 ** DONE Predict for the submodel needs to be distinct from predict of the main model, additional context must be managed.
