@@ -1,15 +1,17 @@
 (cl:in-package #:cl-ds.rf)
 
-
+(defgeneric submodel-predict (submodel context))
+(defgeneric make-submodel-prediction-context (submodel))
+(defgeneric make-submodel-prediction-contexts (model count))
 (defgeneric make-submodel (class data arguments))
+
 (defgeneric make-submodel-with-model (main-model data))
 (defgeneric make-node (main-model data))
 (defgeneric submodel-class (main-model))
 (defgeneric train (submodel data))
 (defgeneric predict (model data))
-(defgeneric submodel-predict (submodel data context))
-(defgeneric submodel-prediction-context (submodel))
-(defgeneric submodel-prediction-contexts (model count))
+(defgeneric encode-data-into-contexts (model contexts data))
+(defgeneric encode-data-into-context (submodel context data))
 (defgeneric tree-count (model))
 (defgeneric tree-maximum-depth (model))
 (defgeneric submodels (model))

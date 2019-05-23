@@ -98,8 +98,9 @@
         (prediction-in-tree child context prediction))))
 
 
-(defmethod submodel-prediction-contexts ((model random-forest-classifier) count)
-  (check-type count non-negative-fixnum)
+(defmethod make-submodel-prediction-contexts ((model random-forest-classifier)
+                                              count)
+  (check-type count positive-fixnum)
   (map-into (make-array count)
             #'submodel-prediction-context
             (access-submodels model)))
@@ -115,7 +116,7 @@
 (defun prediction-function (model)
   (let* ((trees (access-submodels model))
          (submodel-counts (length trees))
-         (contexts (submodel-prediction-contexts model submodel-counts))
+         (contexts (make-submodel-prediction-contexts model submodel-counts))
          (submodel-predictions (~> trees length
                                    (make-array :element-type 'fixnum)))
          (grouped-predictions (cl-ds.alg:group-by submodel-predictions)))
@@ -131,3 +132,13 @@
 
 (defmethod predict ((model random-forest-classifier) data)
   (~> model prediction-function (cl-ds.alg:on-each data)))
+
+
+(defmethod encode-data-into-contexts ((model random-forest-classifier)
+                                      contexts
+                                      data)
+  (map nil
+       (rcurry #'encode-data-into-context data)
+       (access-submodels model)
+       contexts)
+  contexts)
