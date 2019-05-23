@@ -9,6 +9,7 @@
 (defgeneric predict (model data))
 (defgeneric submodel-predict (submodel data context))
 (defgeneric submodel-prediction-context (submodel))
+(defgeneric submodel-prediction-contexts (model count))
 (defgeneric tree-count (model))
 (defgeneric tree-maximum-depth (model))
 (defgeneric submodels (model))
