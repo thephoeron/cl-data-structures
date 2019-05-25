@@ -29,7 +29,15 @@
    :tree-count 50))
 
 
-(defclass subtree-node ()
+(defclass tree-node ()
+  ((%class :initarg :class
+           :type (or null fixnum)
+           :accessor access-class))
+  (:default-initargs
+   :class nil))
+
+
+(defclass subtree-node (tree-node)
   ((%children :initarg :children
               :reader read-children))
   (:default-initargs
@@ -37,7 +45,5 @@
    :class nil))
 
 
-(defclass leaf-node ()
-  ((%class :initarg :class
-           :type fixnum
-           :accessor access-class)))
+(defclass leaf-node (tree-node)
+  ())

@@ -32,7 +32,7 @@
                       (size (cl-ds:at content :count))
                       (group-data (cl-ds:at content :content))
                       (node (if (>= size tree-minimal-size)
-                                (node (1- depth) group-data)
+                                (node (1- depth) group-data group-class)
                                 (make-instance 'leaf-node
                                                :class group-class))))
                  node))
@@ -44,7 +44,7 @@
                                             (* (cl-ds:at x :count)
                                                (/ (cl-ds:at x :gini)
                                                   data-size)))))
-             (node (data depth)
+             (node (data depth class)
                (when (<= depth 0)
                  (return-from node nil))
                (iterate outer
@@ -83,9 +83,10 @@
                           (summary-group-to-node content depth))
                     (finally (return-from outer
                                (make 'subtree-node
+                                     :class class
                                      :submodel submodel
                                      :children children))))))))
-      (node data tree-maximum-depth))))
+      (node data tree-maximum-depth nil))))
 
 
 (defun prediction-in-tree (input node context)
