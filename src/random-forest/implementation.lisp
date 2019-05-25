@@ -40,9 +40,9 @@
                                      #'+
                                      :initial-value 0.0
                                      :key (lambda (group &aux (x (cdr group)))
-                                            (* (cl-ds:at x :count)
-                                               (/ (cl-ds:at x :gini)
-                                                  data-size)))))
+                                            (* (/ (cl-ds:at x :count)
+                                                  data-size)
+                                               (cl-ds:at x :gini)))))
              (node (data depth class)
                (when (<= depth 0)
                  (return-from node nil))
@@ -80,8 +80,7 @@
                     (for content = (cl-ds:at group :content))
                     (cl-ds.utils:transform #'first content)
                     (setf (aref children i)
-                          (summary-group-to-node content depth
-                                                 group-class))
+                          (summary-group-to-node content depth group-class))
                     (finally (return-from outer
                                (make 'subtree-node
                                      :class class
