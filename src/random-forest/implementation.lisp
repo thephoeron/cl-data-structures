@@ -27,9 +27,8 @@
   (let ((split-attempts (split-attempts main-model))
         (tree-maximum-depth (tree-maximum-depth main-model))
         (tree-minimal-size (tree-minimal-size main-model)))
-    (labels ((summary-group-to-node (group depth)
-               (bind (((group-class content) group)
-                      (size (cl-ds:at content :count))
+    (labels ((summary-group-to-node (content depth group-class)
+               (bind ((size (cl-ds:at content :count))
                       (group-data (cl-ds:at content :content))
                       (node (if (>= size tree-minimal-size)
                                 (node (1- depth) group-data group-class)
@@ -81,7 +80,8 @@
                     (for content = (cl-ds:at group :content))
                     (cl-ds.utils:transform #'first content)
                     (setf (aref children i)
-                          (summary-group-to-node content depth))
+                          (summary-group-to-node content depth
+                                                 group-class))
                     (finally (return-from outer
                                (make 'subtree-node
                                      :class class
