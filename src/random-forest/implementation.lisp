@@ -33,8 +33,8 @@
                       (group-data (cl-ds:at content :content))
                       (node (if (>= size tree-minimal-size)
                                 (node (1- depth) group-data)
-                                (make-instance 'leaf-node))))
-                 (setf (access-class node) group-class)
+                                (make-instance 'leaf-node
+                                               :class group-class))))
                  node))
              (gini-impurity (summary data-size)
                (cl-ds.alg:accumulate summary
