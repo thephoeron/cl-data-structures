@@ -8,12 +8,14 @@
   (:export
    #:encode-data-into-context
    #:encode-data-into-contexts
+   #:random-forest-classifier
    #:make-model
    #:make-node
-   #:make-submodel
-   #:make-submodel-prediction-context
+   #:make-submodel-of-class
    #:make-submodel-prediction-contexts
-   #:make-submodel-with-model
+   #:make-submodel-creation-context
+   #:make-submodel-creation-context-of-class
+   #:make-submodel
    #:predict
    #:split-attempts
    #:submodel-arguments

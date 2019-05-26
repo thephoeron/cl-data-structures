@@ -1,11 +1,18 @@
 (cl:in-package #:cl-ds.rf)
 
 
-(defmethod make-submodel-with-model ((main-model random-forest-classifier)
-                                     data)
+(defmethod make-submodel ((main-model random-forest-classifier)
+                          data
+                          creation-context)
   (make-submodel (submodel-class main-model)
                  data
-                 (submodel-arguments main-model)))
+                 (submodel-arguments main-model)
+                 creation-context))
+
+
+(defmethod make-submodel-creation-context ((main-model random-forest-classifier))
+  (make-submodel-creation-context-of-class (submodel-class main-model)
+                                           main-model))
 
 
 (defmethod make-model ((class (eql 'random-forest-classifier))
@@ -107,9 +114,9 @@
 (defmethod make-submodel-prediction-contexts ((model random-forest-classifier)
                                               count)
   (check-type count positive-fixnum)
-  (map-into (make-array count)
-            #'submodel-prediction-context
-            (access-submodels model)))
+  (make-submodel-prediction-contexts-of-class (submodel-class model)
+                                              model
+                                              count))
 
 
 (defun elect-result (predictions)

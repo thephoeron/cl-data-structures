@@ -2,10 +2,12 @@
 
 
 (defgeneric submodel-predict (submodel context))
-(defgeneric make-submodel-prediction-context (submodel))
+(defgeneric make-submodel-prediction-contexts-of-class (class model count))
 (defgeneric make-submodel-prediction-contexts (model count))
-(defgeneric make-submodel (class data arguments))
-(defgeneric make-submodel-with-model (main-model data))
+(defgeneric make-submodel-of-class (class main-model creation-context data))
+(defgeneric make-submodel-creation-context (main-model))
+(defgeneric make-submodel-creation-context-of-class (class main-model))
+(defgeneric make-submodel (main-model data creation-context))
 (defgeneric make-node (main-model data))
 (defgeneric submodel-class (main-model))
 (defgeneric train (submodel data))
