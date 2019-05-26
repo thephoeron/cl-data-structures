@@ -39,10 +39,11 @@
 
 (defclass subtree-node (tree-node)
   ((%children :initarg :children
-              :reader read-children))
+              :reader read-children)
+   (%submodel :initarg :submodel
+              :reader read-submodel))
   (:default-initargs
-   :children '()
-   :class nil))
+   :children '()))
 
 
 (defclass leaf-node (tree-node)

@@ -143,8 +143,9 @@
 (defmethod encode-data-into-contexts ((model random-forest-classifier)
                                       contexts
                                       data)
-  (map nil
-       (rcurry #'encode-data-into-context data)
-       (access-submodels model)
-       contexts)
+  (iterate
+    (for context in-vector contexts)
+    (for node in-vector (access-submodels model))
+    (for submodel = (read-submodel model))
+    (encode-data-into-context submodel context data))
   contexts)
