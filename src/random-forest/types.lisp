@@ -18,11 +18,8 @@
                :reader submodels
                :accessor access-submodels)
    (%submodel-class :initarg :submodel-class
-                    :reader submodel-class)
-   (%submodel-arguments :initarg :submodel-arguments
-                        :reader submodel-arguments))
+                    :reader submodel-class))
   (:default-initargs
-   :submodel-arguments '()
    :tree-maximum-depth 2
    :split-attempts 10
    :submodels nil

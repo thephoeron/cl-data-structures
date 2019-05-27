@@ -4,15 +4,13 @@
 (defmethod make-submodel ((main-model random-forest-classifier)
                           data
                           creation-context)
-  (make-submodel (submodel-class main-model)
-                 data
-                 (submodel-arguments main-model)
-                 creation-context))
+  (make-submodel-of-class (submodel-class main-model)
+                          data
+                          creation-context))
 
 
 (defmethod make-submodel-creation-context ((main-model random-forest-classifier))
-  (make-submodel-creation-context-of-class (submodel-class main-model)
-                                           main-model))
+  (make-submodel-creation-context-of-class (submodel-class main-model)))
 
 
 (defmethod make-model ((class (eql 'random-forest-classifier))
@@ -34,11 +32,13 @@
   (let ((split-attempts (split-attempts main-model))
         (tree-maximum-depth (tree-maximum-depth main-model))
         (tree-minimal-size (tree-minimal-size main-model)))
-    (labels ((summary-group-to-node (content depth group-class)
+    (labels ((summary-group-to-node (content depth group-class
+                                     creation-context)
                (bind ((size (cl-ds:at content :count))
                       (group-data (cl-ds:at content :content))
                       (node (if (>= size tree-minimal-size)
-                                (node (1- depth) group-data group-class)
+                                (node (1- depth) group-data group-class
+                                      creation-context)
                                 (make-instance
                                  'leaf-node
                                  :class (~> content
@@ -55,13 +55,13 @@
                                             (* (/ (cl-ds:at x :count)
                                                   data-size)
                                                (cl-ds:at x :gini)))))
-             (node (data depth class)
+             (node (data depth class creation-context)
                (when (<= depth 0)
                  (return-from node nil))
                (iterate outer
                  (repeat split-attempts)
-                 (for submodel = (make-submodel-with-model main-model
-                                                           data))
+                 (for submodel = (make-submodel main-model data
+                                                creation-context))
                  (train submodel data)
                  (for submodel-predictions = (predict main-model data))
                  (for data-size = (length data))
@@ -92,13 +92,15 @@
                     (for content = (cl-ds:at group :content))
                     (cl-ds.utils:transform #'first content)
                     (setf (aref children i)
-                          (summary-group-to-node content depth group-class))
+                          (summary-group-to-node content depth group-class
+                                                 creation-context))
                     (finally (return-from outer
                                (make 'subtree-node
                                      :class class
                                      :submodel submodel
                                      :children children))))))))
-      (node data tree-maximum-depth nil))))
+      (node data tree-maximum-depth nil
+            (make-submodel-creation-context main-model)))))
 
 
 (defun prediction-in-tree (input node context)
