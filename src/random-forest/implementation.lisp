@@ -14,9 +14,8 @@
 
 
 (defmethod make-model ((class (eql 'random-forest-classifier))
-                       data arguments submodel-arguments)
+                       data arguments)
   (bind ((result (apply #'make 'random-forest-classifier
-                        :submodel-arguments submodel-arguments
                         arguments))
          (tree-count (tree-count result))
          (trees (make-array tree-count)))

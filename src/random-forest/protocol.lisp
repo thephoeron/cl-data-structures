@@ -17,7 +17,6 @@
 (defgeneric tree-count (model))
 (defgeneric tree-maximum-depth (model))
 (defgeneric submodels (model))
-(defgeneric submodel-arguments (model))
 (defgeneric split-attempts (model))
 (defgeneric tree-minimal-size (model))
-(defgeneric make-model (class data arguments submodel-arguments))
+(defgeneric make-model (class data arguments))

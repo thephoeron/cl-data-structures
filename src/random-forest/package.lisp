@@ -18,7 +18,6 @@
    #:make-submodel
    #:predict
    #:split-attempts
-   #:submodel-arguments
    #:submodel-class
    #:submodel-predict
    #:submodels
