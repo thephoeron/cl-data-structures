@@ -14,7 +14,9 @@
                                       &rest all
                                       &key data)
   (declare (ignore all))
-  (let ((arguments (summary-aggregation-function-value-arguments data)))
+  (let ((arguments (map 'vector
+                        #'funcall
+                        (summary-aggregation-function-value-arguments data))))
     (vector data
             (map 'vector
                  (curry #'apply #'cl-ds.alg.meta:make-state)
@@ -67,6 +69,7 @@
 
 
 (defun make-summary-aggregation-data (lambdas)
+  (declare (optimize (debug 3)))
   (iterate
     (for (id symbol function callable) in lambdas)
     (check-type id symbol)
@@ -85,8 +88,9 @@
    :function-objects (map 'vector #'third lambdas)
    :ids (map 'vector #'first lambdas)
    :arguments (map 'vector
-                   (compose (rcurry #'funcall <interceptor>)
-                            #'fourth)
+                   (lambda (tuple)
+                     (lambda ()
+                       (~> tuple fourth (funcall <interceptor>))))
                    lambdas)))
 
 
