@@ -75,7 +75,8 @@
                  (for data-size = (length data))
                  (for grouped-predictions = (cl-ds.alg:group-by
                                                 submodel-predictions
-                                              :key #'second))
+                                              :key #'second
+                                              :test 'eq))
                  (for summary = (cl-ds.alg:summary grouped-predictions
                                   :count (cl-ds.alg:count-elements)
                                   :content (cl-ds.alg:to-vector :key #'first)
@@ -93,10 +94,11 @@
                     (with size = (cl-ds:size summary))
                     (with children = (make-array size))
                     (for i from 0 below size)
-                    (for (values data more) = (cl-ds:consume-front summary))
+                    (for (values new-data more) = (cl-ds:consume-front summary))
                     (while more)
-                    (for (group-class . group) = data)
+                    (for (group-class . group) = new-data)
                     (for content = (cl-ds:at group :content))
+                    (length content)
                     (setf (aref children i)
                           (summary-group-to-node content depth
                                                  group-class context))
@@ -159,12 +161,3 @@
   (encode-data-into-contexts-of-class (submodel-class model)
                                       contexts
                                       data))
-
-(defmethod encode-data-into-contexts-of-class ((class t) submodels
-                                               contexts data)
-  (iterate
-    (for context in-vector contexts)
-    (for node in-vector submodels)
-    (for submodel = (read-submodel node))
-    (encode-data-into-context submodel context data))
-  contexts)

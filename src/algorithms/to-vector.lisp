@@ -4,20 +4,17 @@
 (cl-ds.alg.meta:define-aggregation-function
     to-vector to-vector-function
 
-  (:range &key key element-type force-copy size vector)
+  (:range &key key element-type force-copy size)
   (:range &key
           (key #'identity) (element-type t)
-          (force-copy t) (size 16)
-          (vector (make-array size
-                              :adjustable t
-                              :fill-pointer 0
-                              :element-type element-type)))
+          (force-copy t) (size 16))
 
   (%vector)
 
-  ((&key vector &allow-other-keys)
-   (check-type vector cl-ds.utils:extendable-vector)
-   (setf %vector vector))
+  ((&key element-type size &allow-other-keys)
+   (setf %vector (make-array size :element-type element-type
+                                  :adjustable t
+                                  :fill-pointer 0)))
   ((element)
    (vector-push-extend element %vector))
 
