@@ -7,7 +7,8 @@
 ** DONE Predict for the submodel needs to be distinct from predict of the main model, additional context must be managed.
    CLOSED: [2019-05-22 śro 10:02]
 * TODO Construction of submodels should be performed in parallel.
-* TODO Test random forest with tree stumps on iris dataset
+* DONE Test random forest with tree stumps on iris dataset
+  CLOSED: [2019-05-28 wto 20:58]
 * TODO Adapt parallel perceptrons to act as a submodels in the random forest.
 * TODO Add encoder for the medical episodes
 * TODO Test performance of new model with readmission rate.
