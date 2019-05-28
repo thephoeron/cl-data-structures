@@ -8,6 +8,7 @@
   (:export
    #:encode-data-into-context
    #:encode-data-into-contexts
+   #:encode-data-into-contexts-of-class
    #:random-forest-classifier
    #:make-model
    #:make-node

@@ -27,11 +27,8 @@
 
 
 (defclass tree-node ()
-  ((%class :initarg :class
-           :type (or null fixnum)
-           :accessor access-class))
-  (:default-initargs
-   :class nil))
+  ((%label :initarg :label
+           :reader read-label)))
 
 
 (defclass subtree-node (tree-node)
@@ -44,4 +41,6 @@
 
 
 (defclass leaf-node (tree-node)
-  ())
+  ((%class :initarg :class
+            :type (or null fixnum)
+            :accessor access-class)))
