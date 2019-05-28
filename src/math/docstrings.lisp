@@ -43,7 +43,6 @@
      :arguments ((range "Object to aggregate.")
                  (key "Function used to extract value from element.")
                  (test "Test for the hash table.")
-                 (hash-table "Optional HASH-TABLE used internally by the algorithm.")
                  (count-fn "Function used to extract count of elements from the element in the RANGE."))))
 
   (function entropy
