@@ -59,9 +59,9 @@
                  (return-from node nil))
                (iterate outer
                  (repeat split-attempts)
+                 (for clone = (cl-ds:clone creation-context))
                  (for submodel = (make-submodel main-model data
-                                                creation-context))
-                 (train submodel data)
+                                                clone))
                  (for submodel-predictions = (predict main-model data))
                  (for data-size = (length data))
                  (for grouped-predictions = (cl-ds.alg:group-by
@@ -75,13 +75,12 @@
                  (for classes-count = (cl-ds:size summary))
                  (for gini-impurity = (gini-impurity summary
                                                      data-size))
-                 (finding (list* summary submodel)
+                 (finding (list summary submodel clone)
                           minimizing gini-impurity
                           into result)
                  (finally
                   (iterate
-                    (with summary = (car result))
-                    (with submodel = (cdr result))
+                    (with (summary submodel creation-context) = result)
                     (with size = (cl-ds:size summary))
                     (with children = (make-array size))
                     (for i from 0 below size)
@@ -115,9 +114,7 @@
 (defmethod make-submodel-prediction-contexts ((model random-forest-classifier)
                                               count)
   (check-type count positive-fixnum)
-  (make-submodel-prediction-contexts-of-class (submodel-class model)
-                                              model
-                                              count))
+  (make-submodel-prediction-contexts-of-class (submodel-class model) count))
 
 
 (defun elect-result (predictions)

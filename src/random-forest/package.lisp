@@ -13,6 +13,7 @@
    #:make-node
    #:make-submodel-of-class
    #:make-submodel-prediction-contexts
+   #:make-submodel-prediction-contexts-of-class
    #:make-submodel-creation-context
    #:make-submodel-creation-context-of-class
    #:make-submodel
@@ -21,7 +22,6 @@
    #:submodel-class
    #:submodel-predict
    #:submodels
-   #:train
    #:tree-count
    #:tree-maximum-depth
    #:tree-minimal-size
