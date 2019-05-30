@@ -69,7 +69,6 @@
      :arguments ((range "Object to aggregate.")
                  (:key "Key function used to extract value to the result vector.")
                  (:element-type ":ELEMENT-TYPE for the result vector.")
-                 (:vector "Initial vector.")
                  (:size "Initial size of the internal vector. Supplie to minimize memory allocations count.")
                  (:force-copy "When false, TO-VECTOR called with CL:VECTOR is allowed to return the input."))))
 
