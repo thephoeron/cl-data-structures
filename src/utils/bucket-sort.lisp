@@ -8,7 +8,6 @@
                       (key #'identity)
                       (parallel t)
                       (buckets-count nil buckets-count-bound-p))
-  (declare (optimize (debug 3)))
   (ensure-functionf key)
   (ensure-functionf predicate)
   (check-type vector vector)
