@@ -88,9 +88,11 @@
 
 
 (declaim (inline swap-if))
-(defun swap-if (vector test &key (key #'identity) (start 0))
+(defun swap-if (vector test &key
+                              (key #'identity)
+                              (start 0)
+                              (end (length vector)))
   (iterate
-    (with end = (length vector))
     (with result = 0)
     (for i from (1- end) downto start)
     (for removal = (funcall test (funcall key (aref vector i))))

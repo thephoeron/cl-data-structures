@@ -8,8 +8,7 @@
                       (key #'identity)
                       (parallel t)
                       (buckets-count nil buckets-count-bound-p))
-  (ensure-functionf key)
-  (ensure-functionf predicate)
+  (ensure-functionf key predicate)
   (check-type vector vector)
   (check-type parallel boolean)
   (unless end-bound-p
@@ -29,7 +28,9 @@
          (max (funcall key max-elt))
          (bucket-span (~> (- max min) (ceiling buckets-count)))
          (element-type (array-element-type vector))
-         (buckets (map-into (make-array (1+ buckets-count))
+         (buckets (map-into (make-array buckets-count
+                                        :adjustable t
+                                        :fill-pointer buckets-count)
                             (lambda () (make-array 16
                                                    :element-type element-type
                                                    :adjustable t
@@ -44,7 +45,8 @@
                               (round bucket-span)))
       (vector-push-extend value (aref buckets bucket-index)))
     ;; some buckets could have no elements assigned. delete those
-    (setf buckets (delete-if #'emptyp buckets))
+    (decf (fill-pointer buckets)
+          (cl-ds.utils:swap-if buckets #'emptyp))
     ;; sort individual buckets
     (if parallel
         (lparallel:pmap-into buckets
