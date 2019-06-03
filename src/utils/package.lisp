@@ -14,6 +14,7 @@
    #:and*
    #:as-cons-tree
    #:binary-search
+   #:bucket-sort
    #:bind-lambda
    #:broadcast
    #:cartesian
