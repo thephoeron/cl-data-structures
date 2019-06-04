@@ -81,3 +81,10 @@
 (defun ignore-errors* (function)
   (lambda (&rest all)
     (ignore-errors (apply function all))))
+
+
+(defun generator (function initial-state)
+  (ensure-functionf function)
+  (lambda (&rest all)
+    (declare (ignore all))
+    (shiftf initial-state (funcall function initial-state))))

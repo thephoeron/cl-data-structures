@@ -90,6 +90,7 @@
    #:scan
    #:select-top
    #:skip-vector-without
+   #:generator
    #:sref
    #:start-execution
    #:swap-if
