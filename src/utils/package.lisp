@@ -94,6 +94,7 @@
    #:group-by
    #:group-by-closure
    #:make-group-by-closure
+   #:generator
    #:sref
    #:start-execution
    #:swap-if
