@@ -122,9 +122,10 @@
 
 
 (defmethod make-submodel-prediction-contexts ((model random-forest-classifier)
-                                              count)
-  (check-type count positive-fixnum)
-  (make-submodel-prediction-contexts-of-class (submodel-class model) count))
+                                              submodels)
+  (make-submodel-prediction-contexts-of-class
+   (submodel-class model)
+   (map 'vector #'read-submodel submodels)))
 
 
 (defun elect-result (predictions)
@@ -136,8 +137,9 @@
 
 (defun prediction-function (model)
   (let* ((trees (access-submodels model))
-         (submodel-counts (length trees))
-         (contexts (make-submodel-prediction-contexts model submodel-counts))
+         (contexts (make-submodel-prediction-contexts
+                    model
+                    (map 'vector #'read-submodel trees)))
          (submodel-class (submodel-class model))
          (submodel-predictions (~> trees length make-array))
          (grouped-predictions (cl-ds.alg:group-by submodel-predictions)))

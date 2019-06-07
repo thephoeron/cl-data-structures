@@ -2,7 +2,7 @@
 
 
 (defgeneric submodel-predict (submodel context))
-(defgeneric make-submodel-prediction-contexts-of-class (class count))
+(defgeneric make-submodel-prediction-contexts-of-class (class submodels))
 (defgeneric make-submodel-prediction-contexts (model count))
 (defgeneric make-submodel-of-class (class creation-context data))
 (defgeneric make-submodel-creation-context (main-model))
