@@ -144,9 +144,7 @@
 
 (defun prediction-function (model)
   (let* ((trees (access-submodels model))
-         (contexts (make-submodel-prediction-contexts
-                    model
-                    (map 'vector #'read-submodel trees)))
+         (contexts (make-submodel-prediction-contexts model trees))
          (submodel-class (submodel-class model))
          (submodel-predictions (~> trees length make-array))
          (grouped-predictions (cl-ds.alg:group-by submodel-predictions)))
