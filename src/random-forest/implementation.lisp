@@ -28,6 +28,7 @@
 
 (defmethod make-node ((main-model random-forest-classifier)
                       data)
+  (declare (optimize (debug 3)))
   (let ((split-attempts (split-attempts main-model))
         (submodel-class (submodel-class main-model))
         (tree-maximum-depth (tree-maximum-depth main-model))
@@ -59,18 +60,24 @@
                               (cl-ds:at x :gini))))))
              (node (depth data class creation-context)
                (iterate outer
-                 (with contexts = (make-submodel-prediction-contexts main-model 1))
-                 (with context = (first-elt contexts))
+                 (with contexts = nil)
                  (repeat split-attempts)
                  (for clone = (cl-ds:clone creation-context))
                  (for submodel = (make-submodel main-model clone data))
+                 (ensure contexts
+                   (~>> submodel list
+                        (make-submodel-prediction-contexts-of-class
+                         (submodel-class main-model))))
                  (for submodel-predictions =
                       (map 'vector
                            (lambda (data)
                              (encode-data-into-contexts-of-class submodel-class
-                                                                 contexts
+                                                                 (first-elt contexts)
                                                                  (first data))
-                             (list data (submodel-predict submodel context)))
+                             (~>> contexts
+                                  first-elt
+                                  (submodel-predict submodel)
+                                  (list data)))
                            data))
                  (for data-size = (length data))
                  (for grouped-predictions = (cl-ds.alg:group-by
