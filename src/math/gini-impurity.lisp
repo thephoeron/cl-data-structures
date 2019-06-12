@@ -4,12 +4,13 @@
 (cl-ds.alg.meta:define-aggregation-function
     gini-impurity gini-impurity-function
 
-  (:range &key key test count-fn)
+  (:range &key key test count-fn hash-table)
 
   (:range &key
           (key #'identity)
           (test 'eql)
-          (count-fn (constantly 1)))
+          (count-fn (constantly 1))
+          (hash-table (make-hash-table :test test)))
 
   (%table %total-count %count-fn)
 
