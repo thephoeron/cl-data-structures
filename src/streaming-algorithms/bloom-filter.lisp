@@ -130,7 +130,7 @@
   (check-type hashes (or null (simple-array fixnum (* 2))))
   (cl-ds:check-argument-bounds space (< 0 space))
   (cl-ds:check-argument-bounds count (< 0 count))
-  (make 'cl-ds.utils:cloning-information
+  (make 'bloom-filter
         :counters (make-array
                    space
                    :initial-element 0
