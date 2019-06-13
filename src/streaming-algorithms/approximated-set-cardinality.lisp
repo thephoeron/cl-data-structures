@@ -1248,8 +1248,11 @@
    (bind (((:slots %hash-fn %bits %registers) %data-sketch)
           (hash (ldb (byte 64 0) (funcall %hash-fn element)))
           (index (ash hash (- (- 64 %bits))))
-          (count (1+ (logcount hash))))
-     (assert (< 0 count 65))
+          (count (~>> hash
+                      (ldb (byte 64 %bits))
+                      integer-length
+                      1+)))
+     (assert (<= 1 count 64))
      (maxf (gethash index %registers 0) count)))
 
   (%data-sketch))
