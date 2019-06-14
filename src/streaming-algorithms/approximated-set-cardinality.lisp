@@ -97,11 +97,20 @@
 
   ((element)
    (bind (((:slots %hash-fn %bits %registers) %data-sketch)
-          (hash (ldb (byte 64 0) (funcall %hash-fn element)))
-          (index (ash hash (- (- 64 %bits))))
+          (hash-fn %hash-fn)
+          (registers %registers)
+          (bits %bits)
+          (hash (logand most-positive-fixnum (funcall hash-fn element)))
+          (index (ash hash (- (the (unsigned-byte 8)
+                                   (- 64 bits)))))
           (hash-length (integer-length hash))
           (rank (if (zerop hash-length) 0 (1- hash-length))))
-     (maxf (gethash index %registers 0) rank)))
+     (declare (optimize (speed 3) (debug 0) (safety 1) (space 0))
+              (type function hash-fn)
+              (type fixnum hash)
+              (type hash-table registers)
+              (type fixnum bits index hash-length rank))
+     (maxf (the fixnum (gethash index registers 0)) rank)))
 
   (%data-sketch))
 
