@@ -124,7 +124,7 @@
               (type function hash-fn)
               (type fixnum hash)
               (type hash-table registers)
-              (type fixnum bits index hash-length rank))
+              (type fixnum bits index rank))
      (assert (<= 4 bits 18))
      (maxf (the fixnum (gethash index registers 0)) rank)))
 
