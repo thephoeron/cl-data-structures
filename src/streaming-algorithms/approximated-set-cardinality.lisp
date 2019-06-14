@@ -44,10 +44,10 @@
   (declare (ignore all))
   (bind (((:slots %bits %registers %hash-fn) object))
     (check-type %bits integer)
-    (unless (<= 4 %bits 32)
+    (unless (<= 4 %bits 20)
       (error 'cl-ds:argument-out-of-bounds
              :argument 'bits
-             :bounds (list 4 32)
+             :bounds (list 4 20)
              :value %bits
              :format-control "Bits out of range."))
     (check-type %registers hash-table)))
@@ -78,6 +78,22 @@
     estimate))
 
 
+(declaim (inline hll-rank))
+(defun hll-rank (hash bits)
+  (declare (type fixnum hash bits)
+           (optimize (speed 3)
+                     (debug 0)
+                     (safety 0)))
+  (iterate
+    (declare (type fixnum i j))
+    (for i from 1)
+    (for j from 32 downto bits)
+    (unless (~> hash (logand 1) zerop)
+      (finish))
+    (setf hash (ash hash (- 1)))
+    (finally (return i))))
+
+
 (cl-ds.alg.meta:define-aggregation-function
     approximated-set-cardinality approximated-set-cardinality-function
 
@@ -100,16 +116,16 @@
           (hash-fn %hash-fn)
           (registers %registers)
           (bits %bits)
-          (hash (logand most-positive-fixnum (funcall hash-fn element)))
+          (hash (ldb (byte 32 0) (funcall hash-fn element)))
           (index (ash hash (- (the (unsigned-byte 8)
-                                   (- 64 bits)))))
-          (hash-length (integer-length hash))
-          (rank (if (zerop hash-length) 0 (1- hash-length))))
+                                   (- 32 bits)))))
+          (rank (hll-rank hash bits)))
      (declare (optimize (speed 3) (debug 0) (safety 1) (space 0))
               (type function hash-fn)
               (type fixnum hash)
               (type hash-table registers)
               (type fixnum bits index hash-length rank))
+     (assert (<= 4 bits 18))
      (maxf (the fixnum (gethash index registers 0)) rank)))
 
   (%data-sketch))
@@ -120,7 +136,7 @@
   (declare (ignore all))
   (ensure-functionf hash-fn)
   (check-type bits integer)
-  (cl-ds:check-argument-bounds bits (<= 4 bits 32))
+  (cl-ds:check-argument-bounds bits (<= 4 bits 20))
   (make 'approximated-set-cardinality
         :bits bits
         :registers (make-hash-table)
