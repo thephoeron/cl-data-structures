@@ -38,12 +38,9 @@
       (values nil nil)
       (let* ((stream (ensure-stream range))
              (line (read-line stream nil nil)))
-        (setf (access-current-position range) (file-position stream))
+        (call-next-method range)
         (if (null line)
-            (progn
-              (setf (access-reached-end range) t)
-              (close-stream range)
-              (values nil nil))
+            (values nil nil)
             (values line t)))))
 
 
