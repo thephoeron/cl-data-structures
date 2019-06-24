@@ -50,6 +50,7 @@
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
+   #:index
    #:lolol
    #:lower-bound
    #:lparallel-future

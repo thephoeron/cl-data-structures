@@ -13,9 +13,9 @@
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
      :exceptional-situations ("Will signal a TYPE-ERROR if BITS is not integer."
                               "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
-                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if BITS is not at least 4 and 20 at most.")
+                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if BITS is not at least 4 and 32 at most.")
      :arguments ((range "Object to aggregate.")
-                 (:bits "How many bits per register should be used? Should be at least 4, and 20 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
+                 (:bits "How many bits per register should be used? Should be at least 4, and 32 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
                  (:data-sketch "Instead of the bits and the hash-fn, the user can pass a data-sketch argument.")
                  (:key "A function used to extract value from each element."))

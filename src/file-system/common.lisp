@@ -21,6 +21,12 @@
            :reader read-mutex)))
 
 
+(defmethod cl-ds.utils:cloning-information append ((object file-range-mixin))
+  '((:reached-end access-reached-end)
+    (:initial-position access-current-position)
+    (:path read-path)))
+
+
 (defmethod cl-ds:reset! ((range file-range-mixin))
   (setf (access-current-position range) (read-initial-position range))
   (ensure-stream range)
@@ -31,6 +37,14 @@
            :format-control "Can't change position in the stream."))
   (setf (access-reached-end range) nil)
   range)
+
+
+(defmethod cl-ds:consume-front ((range file-range-mixin))
+  (let ((stream (read-stream range)))
+    (setf (access-current-position range) (file-position stream))
+    (when (eq :eof (peek-char t stream nil :eof))
+      (setf (access-reached-end range) t)
+      (close-stream range))))
 
 
 (defun read-stream (object)
