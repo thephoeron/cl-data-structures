@@ -88,3 +88,9 @@
   (lambda (&rest all)
     (declare (ignore all))
     (shiftf initial-state (funcall function initial-state))))
+
+
+(defun prevent-duplicates (&key (test 'eql))
+  (let ((table (make-hash-table :test test)))
+    (lambda (data)
+      (ensure (gethash data table) data))))
