@@ -1,8 +1,8 @@
 (in-package #:cl-ds.utils)
 
 
-(deftype extendable-vector (&optional (type nil type-p))
-  `(and ,(if type-p
+(deftype extendable-vector (&optional (type t type-bound))
+  `(and ,(if type-bound
              `(vector ,type)
              'vector)
      (not simple-array)
