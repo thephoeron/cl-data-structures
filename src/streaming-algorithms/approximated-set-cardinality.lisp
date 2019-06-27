@@ -125,7 +125,7 @@
               (type fixnum hash)
               (type hash-table registers)
               (type fixnum bits index rank))
-     (assert (<= 4 bits 18))
+     (assert (<= 4 bits 20))
      (maxf (the fixnum (gethash index registers 0)) rank)))
 
   (%data-sketch))

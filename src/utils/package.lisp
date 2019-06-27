@@ -110,4 +110,5 @@
    #:with-rebind
    #:with-slots-for
    #:with-vectors
+   #:prevent-duplicates
    ))
