@@ -20,9 +20,10 @@
          (tree-count (tree-count result))
          (trees (make-array tree-count)))
     (setf (access-submodels result) trees)
-    (iterate
-      (for i from 0 below tree-count)
-      (setf (aref trees i) (make-node result data)))
+    (lparallel:pmap-into
+     trees
+     (lambda ()
+       (make-node result data)))
     result))
 
 
