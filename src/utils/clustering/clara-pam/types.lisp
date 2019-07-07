@@ -77,7 +77,7 @@
                   :accessor access-silhouette))))
 
 
-(cl-ds.utils:define-list-of-slots pam-algorithm-state
+(cl-ds.utils:define-list-of-slots pam-algorithm-state ()
   (%input-data access-input-data)
   (%number-of-medoids access-number-of-medoids)
   (%distance-matrix access-distance-matrix)
@@ -95,24 +95,11 @@
   (%cluster-size access-cluster-size))
 
 
-(cl-ds.utils:define-list-of-slots clara-algorithm-state
-  (%input-data access-input-data)
+(cl-ds.utils:define-list-of-slots clara-algorithm-state (pam-algorithm-state)
   (%cluster-sample-size read-cluster-sample-size)
   (%minimal-cluster-size read-minimal-cluster-size)
-  (%number-of-medoids access-number-of-medoids)
-  (%distance-matrix access-distance-matrix)
-  (%split-merge-attempts-count access-split-merge-attempts-count)
-  (%split-threshold access-split-threshold)
-  (%merge-threshold access-merge-threshold)
-  (%unfinished-clusters access-unfinished-clusters)
-  (%select-medoids-attempts-count access-select-medoids-attempts-count)
-  (%silhouette-sample-size read-silhouette-sample-size)
-  (%silhouette-sample-count read-silhouette-sample-count)
-  (%indexes access-indexes)
-  (%cluster-size access-cluster-size)
   (%metric-fn access-metric-fn)
   (%sample-size access-sample-size)
-  (%cluster-contents access-cluster-contents)
   (%silhouette access-silhouette)
   (%key access-key)
   (%index-mapping access-index-mapping)

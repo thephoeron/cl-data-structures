@@ -23,7 +23,7 @@
                 :reader silhouette)))
 
 
-(cl-ds.utils:define-list-of-slots clustering-result
+(cl-ds.utils:define-list-of-slots clustering-result ()
   (%cluster-contents cluster-contents)
   (%distance-function distance-function)
   (%key-function key-function)

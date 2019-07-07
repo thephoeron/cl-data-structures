@@ -43,7 +43,7 @@
   (call-next-method))
 
 
-(cl-ds.utils:define-list-of-slots k-means-algorithm-state
+(cl-ds.utils:define-list-of-slots k-means-algorithm-state ()
   (%data read-data)
   (%clusters read-clusters)
   (%value-key read-value-key)

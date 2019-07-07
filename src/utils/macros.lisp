@@ -315,10 +315,17 @@
   (defgeneric list-of-slots (symbol)))
 
 
-(defmacro define-list-of-slots (id &body slots)
+(defmacro define-list-of-slots (id (&rest inherited) &body slots)
   `(eval-always
      (defmethod list-of-slots ((class (eql ',id)))
-       '(,@slots))))
+       '(,@slots
+         ,@(iterate
+             (with result = '())
+             (for i in (reverse inherited))
+             (iterate
+               (for slot in (list-of-slots i))
+               (push slot result))
+             (finally (return (nreverse result))))))))
 
 
 (defmacro with-slots-for ((object id) &body body)
