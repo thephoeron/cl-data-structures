@@ -9,7 +9,7 @@
 (defgeneric standard-deviation (range &key key biased)
   (:generic-function-class standard-deviation-function)
   (:method (range &key key (biased t))
-    (cl-ds.alg.meta:apply-aggregation-function range
+    (cl-ds.alg.meta:apply-range-function range
                                                #'standard-deviation
                                                :key key
                                                :biased biased)))

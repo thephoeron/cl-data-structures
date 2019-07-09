@@ -9,9 +9,9 @@
 (defgeneric median-absolute-deviation (range &key key)
   (:generic-function-class median-absolute-deviation-function)
   (:method (range &key (key #'identity))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'median-absolute-deviation
-                                               :key key)))
+    (cl-ds.alg.meta:apply-range-function range
+                                         #'median-absolute-deviation
+                                         :key key)))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages

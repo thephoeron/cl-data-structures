@@ -9,10 +9,10 @@
 (defgeneric variance (range &key key biased)
   (:generic-function-class variance-function)
   (:method (range &key key (biased t))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'variance
-                                               :key key
-                                               :biased biased)))
+    (cl-ds.alg.meta:apply-range-function range
+                                         #'variance
+                                         :key key
+                                         :biased biased)))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn variance-function)

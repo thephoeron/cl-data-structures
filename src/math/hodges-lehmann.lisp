@@ -10,10 +10,10 @@
 (defgeneric hodges-lehmann-estimator (range &key key parallel)
   (:generic-function-class hodges-lehmann-estimator-function)
   (:method (range &key (key #'identity) (parallel nil))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'hodges-lehmann-estimator
-                                               :parallel parallel
-                                               :key key)))
+    (cl-ds.alg.meta:apply-range-function range
+                                         #'hodges-lehmann-estimator
+                                         :parallel parallel
+                                         :key key)))
 
 
 (defun calculate-hodges-lehmann-estimator

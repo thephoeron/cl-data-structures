@@ -38,7 +38,7 @@
   (:method (range field &rest comparative-fields)
     (cl-ds:validate-fields #'mutual-information
                            (cons field comparative-fields))
-    (cl-ds.alg.meta:apply-aggregation-function
+    (cl-ds.alg.meta:apply-range-function
      range
      #'mutual-information
      :field field
@@ -50,7 +50,7 @@
   (:generic-function-class mutual-information-matrix-function)
   (:method (range &rest fields)
     (cl-ds:validate-fields #'mutual-information-matrix fields)
-    (cl-ds.alg.meta:apply-aggregation-function range
+    (cl-ds.alg.meta:apply-range-function range
                                                #'mutual-information-matrix
                                                :fields fields
                                                :key #'identity)))
@@ -61,7 +61,7 @@
   (:method (range field &rest fields)
     (cl-ds:validate-fields #'harmonic-average-mutual-information
                            (cons field fields))
-    (cl-ds.alg.meta:apply-aggregation-function
+    (cl-ds.alg.meta:apply-range-function
      range
      #'harmonic-average-mutual-information
      :field field
@@ -74,7 +74,7 @@
   (:method (range reference-field &rest matched-fields)
     (cl-ds:validate-field #'optimal-split-point reference-field)
     (cl-ds:validate-fields #'optimal-split-point matched-fields)
-    (cl-ds.alg.meta:apply-aggregation-function range
+    (cl-ds.alg.meta:apply-range-function range
                                                #'optimal-split-point
                                                :key #'identity
                                                :reference-field reference-field

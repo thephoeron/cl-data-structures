@@ -9,7 +9,7 @@
 (defgeneric chi-squared (range cell-value fields &key key)
   (:generic-function-class chi-squared-function)
   (:method (range cell-value fields &key (key #'identity))
-    (cl-ds.alg.meta:apply-aggregation-function range
+    (cl-ds.alg.meta:apply-range-function range
                                                #'chi-squared
                                                :cell-value cell-value
                                                :fields fields

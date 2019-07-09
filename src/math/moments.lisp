@@ -32,4 +32,5 @@
   ((map-into %moments (rcurry #'/ %count) %moments)
    (make-instance 'cl-ds.adapters:offset-vector-range
                   :vector %moments
-                  :offset %start)))
+                  :offset %start
+                  :upper-bound (length %moments))))

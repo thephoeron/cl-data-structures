@@ -9,9 +9,9 @@
 (defgeneric statistical-summary (range &key key)
   (:generic-function-class statistical-summary-function)
   (:method (range &key (key #'identity))
-    (cl-ds.alg.meta:apply-aggregation-function range
-                                               #'statistical-summary
-                                               :key key)))
+    (cl-ds.alg.meta:apply-range-function range
+                                         #'statistical-summary
+                                         :key key)))
 
 
 (flet ((final (&key average moments &allow-other-keys)

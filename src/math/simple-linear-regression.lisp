@@ -9,7 +9,7 @@
 (defgeneric simple-linear-regression (range x-key y-key)
   (:generic-function-class simple-linear-regression)
   (:method (range x-key y-key)
-    (cl-ds.alg.meta:apply-aggregation-function range
+    (cl-ds.alg.meta:apply-range-function range
                                                #'simple-linear-regression
                                                :x-key x-key
                                                :y-key y-key)))
