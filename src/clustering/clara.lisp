@@ -6,7 +6,7 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass clara-variable-number-of-medoids (cl-ds.alg.meta:multi-aggregation-function)
+(defclass clara-variable-number-of-medoids (clara-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
@@ -56,6 +56,28 @@
      :attempts attempts
      :split split
      :merge merge)))
+
+
+(defmethod cl-ds.alg.meta:multi-aggregation-stages
+    ((function clara-function)
+     &rest all
+     &key
+       sample-size sample-count metric-fn number-of-medoids
+       key select-medoids-attempts-count attempts split merge
+     &allow-other-keys)
+  (declare (ignore all))
+  (list (cl-ds.alg.meta:stage :vector (range &rest all)
+          (declare (ignore all))
+          (cl-ds.alg:to-vector range :force-copy nil))
+
+        (lambda (&key vector &allow-other-keys)
+          (declare (type vector vector))
+          (cl-ds.utils.cluster.clara/pam:clara
+           vector
+           number-of-medoids metric-fn sample-size sample-count
+           :key key
+           :select-medoids-attempts-count select-medoids-attempts-count
+           :attempts attempts :split split :merge merge))))
 
 
 (defmethod cl-ds.alg.meta:multi-aggregation-stages
