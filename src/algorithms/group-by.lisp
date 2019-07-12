@@ -31,8 +31,11 @@
 
 
 (defmethod initialize-instance :before ((instance group-by-proxy)
-                                        &key test key &allow-other-keys)
-  (setf (slot-value instance '%groups) (make-hash-table :test test)
+                                        &key test groups key &allow-other-keys)
+  (declare (optimize (debug 3)))
+  (setf (slot-value instance '%groups) (if (null test)
+                                           (copy-hash-table groups)
+                                           (make-hash-table :test test))
         (slot-value instance '%key) key))
 
 
@@ -124,7 +127,9 @@
 (defgeneric group-by (range &key test key)
   (:generic-function-class group-by-function)
   (:method (range &key (test 'eql) (key #'identity))
-    (apply-range-function range #'group-by :test test :key key)))
+    (apply-range-function range #'group-by
+                          :test test
+                          :key key)))
 
 
 (defmethod proxy-range-aggregator-outer-fn ((range group-by-proxy)

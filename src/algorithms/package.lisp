@@ -105,4 +105,5 @@
    #:zip
    #:connect
    #:connect-traversable
+   #:rate
    #:zip-traversable))
