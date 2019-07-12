@@ -11,8 +11,7 @@
 
   (%vector)
 
-  ((&key vector size element-type &allow-other-keys)
-   (check-type vector cl-ds.utils:extendable-vector)
+  ((&key size element-type &allow-other-keys)
    (setf %vector (make-array size
                              :adjustable t
                              :fill-pointer 0
