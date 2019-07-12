@@ -4,20 +4,18 @@
 (cl-ds.alg.meta:define-aggregation-function
     entropy entropy-function
 
-  (:range &key key test count-fn hash-table)
+  (:range &key key test count-fn)
 
   (:range &key
           (key #'identity)
           (test 'eql)
-          (hash-table (make-hash-table :test test))
           (count-fn (constantly 1)))
 
   (%table %total-count %count-fn)
 
-  ((&key count-fn hash-table &allow-other-keys)
-   (check-type hash-table hash-table)
+  ((&key count-fn test &allow-other-keys)
    (ensure-functionf count-fn)
-   (setf %table hash-table
+   (setf %table (make-hash-table :test test)
          %count-fn count-fn
          %total-count 0))
 
@@ -29,4 +27,5 @@
   ((- (iterate
         (for (class count) in-hashtable %table)
         (for prob = (/ count %total-count))
+        (assert (<= prob 1.0))
         (sum (* prob (log prob)))))))
