@@ -113,7 +113,7 @@
                                     (remove-if #'check-test forms))))
                   (generate-if-else (cdr conditions) r)
                   '(error "Unhalded case!")))
-          (cons 'progn (mapcar #'cadr forms)))))
+          (cons 'progn (first (mapcar #'rest forms))))))
 
   (defun every-possible-combination (count)
     (assert (>= count 0))
