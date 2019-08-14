@@ -329,9 +329,8 @@
 
 
 (defmacro with-slots-for ((object id) &body body)
-  (once-only (object)
-    (let* ((slots (list-of-slots id)))
-      `(with-accessors ,slots ,object ,@body))))
+  (let* ((slots (list-of-slots id)))
+    `(with-accessors ,slots ,object ,@body)))
 
 
 (defmacro with-rebind (variables &body body)
