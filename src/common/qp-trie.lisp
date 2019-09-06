@@ -9,6 +9,10 @@
 (cl:in-package #:cl-ds.qp-trie)
 
 
+(deftype half-byte ()
+  '(unsigned-byte 4))
+
+
 (defstruct qp-trie-node
   (children-bitmask 0 :type (unsigned-byte 16))
   (store-bitmask 0 :type (unsigned-byte 16))
@@ -108,11 +112,12 @@
              (return qp-trie))))
 
 
-(defun qp-trie-node-leaf-present (node half-byte-2)
-  (declare (type qp-trie-node node))
+(defun qp-trie-node-leaf-present (node half-byte)
+  (declare (type qp-trie-node node)
+           (type half-byte half-byte))
   (~>> node
        qp-trie-node-store-bitmask
-       (ldb-test (byte 1 half-byte-2))))
+       (ldb-test (byte 1 half-byte))))
 
 
 (defun qp-trie-find (qp-trie bytes)
@@ -120,7 +125,8 @@
            (type (simple-array (unsigned-byte 8) (*)) bytes))
   (assert (not (emptyp bytes)))
   (iterate
-    (declare (type fixnum i length))
+    (declare (type fixnum i length)
+             (type half-byte half-byte-1 half-byte-2))
     (with node = (access-root qp-trie))
     (with length = (length bytes))
     (for i from 0 below (1- length))
