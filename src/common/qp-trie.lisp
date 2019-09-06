@@ -163,9 +163,10 @@
 
 
 (defun qp-trie-delete! (qp-trie bytes)
+  (declare (type (simple-array (unsigned-byte 8) (*)) bytes))
   (assert (not (emptyp bytes)))
   (bind ((length (length bytes))
-         (last-byte-position (1- length))
+         (last-byte-position (the fixnum (1- length)))
          ((:labels impl (node i))
           (declare (type qp-trie-node node)
                    (type fixnum i))
