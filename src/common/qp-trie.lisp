@@ -82,26 +82,30 @@
       (qp-trie-node-insert-new-node node index)))
 
 
-(defun qp-trie-insert (qb-tree string)
-  (assert (not (emptyp string)))
+(defun qp-trie-insert (qp-trie bytes)
+  (declare (optimize (speed 3) (debug 0) (safety 0))
+           (type (simple-array (unsigned-byte 8) (*)) bytes))
+  (assert (not (emptyp bytes)))
   (iterate
-    (with bytes = (babel:string-to-octets string))
-    (with node = (access-root qb-tree))
+    (declare (type fixnum length i half-byte-1 half-byte-2 byte)
+             (type qp-trie-node node))
+    (with node = (access-root qp-trie))
     (with length = (length bytes))
-    (for i from 0 below (1- length))
+    (for i from 0 below (the fixnum (1- length)))
     (for byte = (aref bytes i))
     (for half-byte-1 = (ldb (byte 4 0) byte))
     (for half-byte-2 = (ldb (byte 4 4) byte))
     (setf node (~> node
                    (qp-trie-node-get-or-insert-children half-byte-1)
                    (qp-trie-node-get-or-insert-children half-byte-2)))
-    (finally (let ((last-byte (aref bytes (1- length))))
+    (finally (let ((last-byte (aref bytes (the fixnum (1- length)))))
+               (declare (type (unsigned-byte 8) last-byte))
                (~> node
                    (qp-trie-node-get-or-insert-children
                     (ldb (byte 4 0) last-byte))
                    (qp-trie-node-mark-leaf
                     (ldb (byte 4 4) last-byte))))
-             (return qb-tree))))
+             (return qp-trie))))
 
 
 (defun qp-trie-node-leaf-present (node half-byte-2)
@@ -111,19 +115,13 @@
        (ldb-test (byte 1 half-byte-2))))
 
 
-(defun qp-trie-find (qb-tree string)
-  (declare (optimize (speed 3)
-                     (debug 0)
-                     (safety 0))
-           (type qp-trie-node node)
-           (type simple-string string))
-  (assert (not (emptyp string)))
+(defun qp-trie-find (qp-trie bytes)
+  (declare (optimize (speed 3) (debug 0) (safety 0))
+           (type (simple-array (unsigned-byte 8) (*)) bytes))
+  (assert (not (emptyp bytes)))
   (iterate
-    (declare (type (simple-array (unsigned-byte 8) (*))
-                   bytes)
-             (type fixnum i length))
-    (with bytes = (babel:string-to-octets string))
-    (with node = (access-root qb-tree))
+    (declare (type fixnum i length))
+    (with node = (access-root qp-trie))
     (with length = (length bytes))
     (for i from 0 below (1- length))
     (for byte = (aref bytes i))
