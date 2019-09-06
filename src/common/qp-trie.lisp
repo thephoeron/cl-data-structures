@@ -22,29 +22,33 @@
 
 
 (defun qp-trie-node-index (node index)
+  (declare (type qp-trie-node node))
   (logcount (ldb (byte index 0)
                  (qp-trie-node-children-bitmask node))))
 
 
 (defun qp-trie-node-ref (node index)
+  (declare (type qp-trie-node node))
   (aref (qp-trie-node-content node)
         (qp-trie-node-index node index)))
 
 
 (defun qp-trie-node-size (node)
+  (declare (type qp-trie-node node))
   (~> node
       qp-trie-node-children-bitmask
       logcount))
 
 
 (defun qp-trie-node-insert-new-node (node index)
+  (declare (type qp-trie-node node))
   (let* ((new-mask (~> node qp-trie-node-children-bitmask
                        (dpb 1 (byte 1 index) _)))
          (new-index (logcount (ldb (byte index 0) new-mask)))
          (old-content (qp-trie-node-content node))
          (new-size (logcount new-mask))
          (new-content (make-array new-size))
-         (new-node (make-qb-tree-node :parent node)))
+         (new-node (make-qp-trie-node)))
     (iterate
       (for i from 0 below new-index)
       (setf (aref new-content i) (aref old-content i)))
@@ -58,18 +62,21 @@
 
 
 (defun qp-trie-node-mark-leaf (node index)
+  (declare (type qp-trie-node node))
   (let ((mask (qp-trie-node-store-bitmask node)))
     (setf (qp-trie-node-store-bitmask node)
           (dpb 1 (byte 1 index) mask))))
 
 
 (defun qp-trie-node-present (node index)
+  (declare (type qp-trie-node node))
   (~>> node
        qp-trie-node-children-bitmask
        (ldb-test (byte 1 index) _)))
 
 
 (defun qp-trie-node-get-or-insert-children (node index)
+  (declare (type qp-trie-node node))
   (if (qp-trie-node-present node index)
       (qp-trie-node-ref node index)
       (qp-trie-node-insert-new-node node index)))
@@ -98,6 +105,7 @@
 
 
 (defun qp-trie-node-leaf-present (node half-byte-2)
+  (declare (type qp-trie-node node))
   (~>> node
        qp-trie-node-store-bitmask
        (ldb-test (byte 1 half-byte-2))))
@@ -107,6 +115,7 @@
   (declare (optimize (speed 3)
                      (debug 0)
                      (safety 0))
+           (type qp-trie-node node)
            (type simple-string string))
   (assert (not (emptyp string)))
   (iterate
