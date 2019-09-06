@@ -76,8 +76,7 @@
 
 
 (defun qp-trie-insert (qb-tree string)
-  (when (emptyp string)
-    (return-from qp-trie-insert qb-tree))
+  (assert (not (emptyp string)))
   (iterate
     (with bytes = (babel:string-to-octets string))
     (with node = (access-root qb-tree))
@@ -109,8 +108,7 @@
                      (debug 0)
                      (safety 0))
            (type simple-string string))
-  (when (emptyp string)
-    (return-from qp-trie-find nil))
+  (assert (not (emptyp string)))
   (iterate
     (declare (type (simple-array (unsigned-byte 8) (*))
                    bytes)
