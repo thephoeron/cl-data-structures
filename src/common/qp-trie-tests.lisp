@@ -1,7 +1,7 @@
-(cl:in-package #:cl-data-structures.qp-trie)
+(cl:in-package #:cl-data-structures.common.qp-trie)
 
 
-(prove:plan 4)
+(prove:plan 7)
 
 (let ((tree (make 'qp-trie))
       (bytes (make-array 5
@@ -10,6 +10,10 @@
   (prove:is (qp-trie-find tree bytes) 0)
   (prove:ok (qp-trie-insert! tree bytes) )
   (prove:ok (not (qp-trie-insert! tree bytes)))
-  (prove:is (qp-trie-find tree bytes) 5))
+  (prove:is (qp-trie-find tree bytes) 5)
+  (prove:ok (qp-trie-delete! tree bytes))
+  (prove:ok (not (qp-trie-delete! tree bytes)))
+  (prove:is (qp-trie-find tree bytes) 0)
+  )
 
 (prove:finalize)

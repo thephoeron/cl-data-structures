@@ -166,6 +166,11 @@
                              (:module "2-3-tree"
                               :components ((:file "api")
                                            (:test-file "tests")))))
+               (:module "sets"
+                :components ((:file "packages")
+                             (:file "common")
+                             (:module "qp-trie"
+                                      :components ((:file "api")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")

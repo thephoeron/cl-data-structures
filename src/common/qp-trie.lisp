@@ -1,12 +1,18 @@
 (cl:in-package #:cl-user)
 
 
-(defpackage :cl-data-structures.qp-trie
+(defpackage :cl-data-structures.common.qp-trie
   (:use #:common-lisp #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.qp-trie))
+  (:nicknames #:cl-ds.common.qp-trie)
+  (:export #:qp-trie
+           #:qp-trie-find
+           #:access-root
+           #:make-qp-trie-node
+           #:qp-trie-insert!
+           #:qp-trie-delete!))
 
 
-(cl:in-package #:cl-ds.qp-trie)
+(cl:in-package #:cl-ds.common.qp-trie)
 
 
 (deftype half-byte ()
@@ -126,7 +132,7 @@
        (ldb-test (byte 1 index) _)))
 
 
-(defun qp-trie-node-get-or-insert-children! (node index)
+(defun qp-trie-node-get-or-insert-child! (node index)
   (declare (type qp-trie-node node)
            (type node-index index))
   (if (qp-trie-node-present-p node index)
@@ -157,10 +163,10 @@
     (for half-byte-1 = (ldb (byte 4 0) byte))
     (for half-byte-2 = (ldb (byte 4 4) byte))
     (setf node (~> node
-                   (qp-trie-node-get-or-insert-children! half-byte-1)
-                   (qp-trie-node-get-or-insert-children! half-byte-2)))
+                   (qp-trie-node-get-or-insert-child! half-byte-1)
+                   (qp-trie-node-get-or-insert-child! half-byte-2)))
     (finally (let* ((last-byte (aref bytes (the fixnum (1- length))))
-                    (next-node  (qp-trie-node-get-or-insert-children!
+                    (next-node  (qp-trie-node-get-or-insert-child!
                                  node (ldb (byte 4 0) last-byte)))
                     (old-mask (qp-trie-node-store-bitmask next-node))
                     (new-mask (qp-trie-node-mark-leaf!
@@ -245,5 +251,6 @@
                           (qp-trie-node-delete! node half-byte-2))
                       (return-from qp-trie-delete! deleted-p)))))))
     (setf (access-root qp-trie)
-          (impl (access-root qp-trie) 0))
+          (or (impl (access-root qp-trie) 0)
+              (make-qp-trie-node)))
     deleted-p))

@@ -160,6 +160,6 @@
   ())
 
 
-(defmethod invalid-value ((condition invalid-value) stream)
+(defmethod print-condition ((condition invalid-value) stream)
   (format stream "Invalid value: ~a.~%" (read-value condition))
   (call-next-method))
