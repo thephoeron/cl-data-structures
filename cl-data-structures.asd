@@ -107,8 +107,10 @@
                              (:file "content-tuple")
                              (:file "ranges")
                              (:file "sequence-window")
+                             (:file "qp-trie")
                              (:file "docstrings")
                              (:test-file "sequence-window-tests")
+                             (:test-file "qp-trie-tests")
                              (:module "abstract"
                               :components ((:file "package")
                                            (:file "common")))

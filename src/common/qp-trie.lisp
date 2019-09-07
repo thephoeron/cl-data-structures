@@ -126,20 +126,20 @@
        (ldb-test (byte 1 index) _)))
 
 
-(defun qp-trie-leaf-present-p (node index)
-  (declare (type qp-trie-node node)
-           (type node-index index))
-  (~>> node
-       qp-trie-node-store-bitmask
-       (ldb-test (byte 1 index))))
-
-
 (defun qp-trie-node-get-or-insert-children! (node index)
   (declare (type qp-trie-node node)
            (type node-index index))
   (if (qp-trie-node-present-p node index)
       (qp-trie-node-ref node index)
       (qp-trie-node-insert-new-node! node index)))
+
+
+(defun qp-trie-leaf-present-p (node index)
+  (declare (type qp-trie-node node)
+           (type node-index index))
+  (~>> node
+       qp-trie-node-store-bitmask
+       (ldb-test (byte 1 index))))
 
 
 (defun qp-trie-insert! (qp-trie bytes)
@@ -159,14 +159,15 @@
     (setf node (~> node
                    (qp-trie-node-get-or-insert-children! half-byte-1)
                    (qp-trie-node-get-or-insert-children! half-byte-2)))
-    (finally (let ((last-byte (aref bytes (the fixnum (1- length)))))
+    (finally (let* ((last-byte (aref bytes (the fixnum (1- length))))
+                    (next-node  (qp-trie-node-get-or-insert-children!
+                                 node (ldb (byte 4 0) last-byte)))
+                    (old-mask (qp-trie-node-store-bitmask next-node))
+                    (new-mask (qp-trie-node-mark-leaf!
+                               next-node
+                               (ldb (byte 4 4) last-byte))))
                (declare (type (unsigned-byte 8) last-byte))
-               (~> node
-                   (qp-trie-node-get-or-insert-children!
-                    (ldb (byte 4 0) last-byte))
-                   (qp-trie-node-mark-leaf!
-                    (ldb (byte 4 4) last-byte))))
-             (return qp-trie))))
+               (return (not (eql new-mask old-mask)))))))
 
 
 (defun qp-trie-node-leaf-present-p (node half-byte)
