@@ -27,10 +27,43 @@
   '(integer 0 16))
 
 
+(deftype full-mask ()
+  '(unsigned-byte 32))
+
+
 (defstruct qp-trie-node
-  (children-bitmask 0 :type node-mask)
-  (store-bitmask 0 :type node-mask)
+  (bitmask 0 :type full-mask)
   (content #() :type simple-array))
+
+
+(declaim (inline qp-trie-node-children-bitmask))
+(defun qp-trie-node-children-bitmask (node)
+  (declare (type qp-trie-node node))
+  (~>> node qp-trie-node-bitmask (ldb (byte 16 0))))
+
+
+(declaim (inline (setf qp-trie-node-children-bitmask)))
+(defun (setf qp-trie-node-children-bitmask) (new-value node)
+  (declare (type qp-trie-node node)
+           (type node-mask new-value))
+  (setf #1=(qp-trie-node-bitmask node)
+        (dpb new-value (byte 16 0) #1#))
+  new-value)
+
+
+(declaim (inline qp-trie-node-store-bitmask))
+(defun qp-trie-node-store-bitmask (node)
+  (declare (type qp-trie-node node))
+  (~>> node qp-trie-node-bitmask (ldb (byte 16 16))))
+
+
+(declaim (inline (setf qp-trie-node-store-bitmask)))
+(defun (setf qp-trie-node-store-bitmask) (new-value node)
+  (declare (type qp-trie-node node)
+           (type node-mask new-value))
+  (setf #1=(qp-trie-node-bitmask node)
+        (dpb new-value (byte 16 16) #1#))
+  new-value)
 
 
 (defclass qp-trie ()

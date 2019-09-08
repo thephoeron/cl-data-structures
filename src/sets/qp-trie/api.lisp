@@ -80,8 +80,7 @@
                                         &rest arguments)
   (declare (ignore arguments))
   (lret ((result (make 'mutable-qp-trie-set)))
-    (cl-ds:across (lambda (key)
-                    (cl-ds:put! result key))
+    (cl-ds:across (lambda (key) (cl-ds:put! result key))
                   traversable)))
 
 
@@ -100,3 +99,7 @@
         (cl-ds.common.qp-trie:access-root object)
         (cl-ds.common.qp-trie:make-qp-trie-node))
   object)
+
+
+(defmethod cl-ds:whole-range ((object fundamental-qp-trie-set))
+  cl-ds.utils:todo)

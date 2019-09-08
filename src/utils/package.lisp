@@ -16,7 +16,6 @@
    #:binary-search
    #:bucket-sort
    #:bind-lambda
-   #:broadcast
    #:cartesian
    #:cartesian-table
    #:cases
@@ -54,13 +53,6 @@
    #:lolol
    #:lower-bound
    #:lparallel-future
-   #:m*
-   #:m+
-   #:m-
-   #:m-dot
-   #:m-transpose
-   #:m/
-   #:m^
    #:make-distance-matrix-from-vector
    #:make-future-carousel
    #:make-half-matrix
