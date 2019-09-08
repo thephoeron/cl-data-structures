@@ -9,6 +9,7 @@
            #:map-qp-trie-node
            #:access-root
            #:make-qp-trie-node
+           #:qp-trie-node-clone
            #:qp-trie-insert!
            #:qp-trie-delete!))
 
@@ -35,6 +36,13 @@
 (defstruct qp-trie-node
   (bitmask 0 :type full-mask)
   (content #() :type simple-array))
+
+
+(defun qp-trie-node-clone (node)
+  (make-qp-trie-node
+   :bitmask (qp-trie-node-bitmask node)
+   :content (~>> node qp-trie-node-content
+                 (map 'vector #'qp-trie-node-clone))))
 
 
 (declaim (inline qp-trie-node-children-bitmask))

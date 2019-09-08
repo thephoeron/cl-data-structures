@@ -93,7 +93,10 @@
 
 
 (defmethod cl-ds:clone ((object fundamental-qp-trie-set))
-  cl-ds.utils:todo)
+  (make (class-of object)
+        :size (cl-ds:size object)
+        :root (~> object cl-ds.common.qp-trie:access-root
+                  cl-ds.common.qp-trie:qp-trie-node-clone)))
 
 
 (defmethod cl-ds:reset! ((object mutable-qp-trie-set))
