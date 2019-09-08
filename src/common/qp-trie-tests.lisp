@@ -4,6 +4,7 @@
 (prove:plan 7)
 
 (let ((tree (make 'qp-trie))
+      (content nil)
       (bytes (make-array 5
                          :element-type '(unsigned-byte 8)
                          :initial-contents '(5 13 53 20 10))))
@@ -11,6 +12,11 @@
   (prove:ok (qp-trie-insert! tree bytes) )
   (prove:ok (not (qp-trie-insert! tree bytes)))
   (prove:is (qp-trie-find tree bytes) 5)
+  (map-qp-trie-node (lambda (x)
+                      (prove:is content nil)
+                      (setf content x))
+                    (access-root tree))
+  (prove:is content bytes :test #'vector=)
   (prove:ok (qp-trie-delete! tree bytes))
   (prove:ok (not (qp-trie-delete! tree bytes)))
   (prove:is (qp-trie-find tree bytes) 0)

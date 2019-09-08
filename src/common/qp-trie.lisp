@@ -287,3 +287,46 @@
           (or (impl (access-root qp-trie) 0)
               (make-qp-trie-node)))
     deleted-p))
+
+
+(defun half-byte-list-to-array (list)
+  (let* ((length (length list))
+         (result-length (ceiling length 2))
+         (result (make-array result-length)))
+    (iterate
+      (declare (type fixnum i)
+               (type half-byte half-byte-1 half-byte-2)
+               (type (unsigned-byte 8) byte))
+      (for i from (1- result-length) downto 0)
+      (for half-byte-1 = (first list))
+      (for byte = (ash half-byte-1 4))
+      (setf (aref result i) byte)
+      (setf list (rest list))
+      (until (endp list))
+      (for half-byte-2 = (first list))
+      (setf byte (logior half-byte-2 byte)
+            (aref result i) byte
+            list (rest list)))
+    result))
+
+
+(defun map-qp-trie-node (function node &optional ac)
+  (iterate
+    (declare (type fixnum i))
+    (with leafs = (qp-trie-node-store-bitmask node))
+    (for i from 0 below 16)
+    (for present = (ldb-test (byte 1 i) leafs))
+    (when present
+      (funcall function (half-byte-list-to-array (cons i ac)))))
+  (iterate
+    (declare (type fixnum i j))
+    (with children = (qp-trie-node-children-bitmask node))
+    (with content = (qp-trie-node-content node))
+    (with j = 0)
+    (for i from 0 below 16)
+    (for present = (ldb-test (byte 1 i) children))
+    (unless present
+      (next-iteration))
+    (map-qp-trie-node function (aref content j) (cons i ac))
+    (incf j))
+  node)
