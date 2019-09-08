@@ -109,5 +109,38 @@
   object)
 
 
-(defmethod cl-ds:whole-range ((object fundamental-qp-trie-set))
-  cl-ds.utils:todo)
+(defun obtain-value (pull push)
+  (flet ((push-next (node position parents)
+           (if (eql position 16)
+               (iterate
+                 (for i from 0 below 16)
+                 (when (cl-ds.common.qp-trie:qp-trie-node-present-p node i)
+                   (funcall
+                    push (list (cl-ds.common.qp-trie:qp-trie-node-ref node i)
+                               i
+                               (cons i parents)))))
+               (funcall push (list node position parents)))))
+    (iterate outer
+      (for (node current-position parents) = (funcall pull))
+      (for next-position = (1+ current-position))
+      (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p
+             node
+             current-position)
+        (push-next node next-position parents)
+        (return-from obtain-value
+          (values (~>> current-position
+                       (cons parents)
+                       cl-ds.common.qp-trie:half-byte-list-to-array)
+                  t)))
+      (push-next node next-position parents))))
+
+
+(defmethod cl-ds:whole-range ((container fundamental-qp-trie-set))
+  (make 'cl-ds.common:forward-tree-range
+        :obtain-value #'obtain-value
+        :forward-stack (~> container
+                           cl-ds.common.qp-trie:access-root
+                           (list 0 nil)
+                           list)
+        :key #'identity
+        :container container))

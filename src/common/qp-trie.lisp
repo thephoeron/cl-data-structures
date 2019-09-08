@@ -10,7 +10,11 @@
            #:access-root
            #:make-qp-trie-node
            #:qp-trie-node-clone
+           #:qp-trie-node-ref
+           #:qp-trie-node-leaf-present-p
+           #:qp-trie-node-present-p
            #:qp-trie-insert!
+           #:half-byte-list-to-array
            #:qp-trie-delete!))
 
 
