@@ -52,13 +52,15 @@
 
 (declaim (inline qp-trie-node-children-bitmask))
 (defun qp-trie-node-children-bitmask (node)
-  (declare (type qp-trie-node node))
+  (declare (type qp-trie-node node)
+           (optimize (speed 3)))
   (~>> node qp-trie-node-bitmask (ldb (byte 16 0))))
 
 
 (declaim (inline (setf qp-trie-node-children-bitmask)))
 (defun (setf qp-trie-node-children-bitmask) (new-value node)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-mask new-value))
   (setf #1=(qp-trie-node-bitmask node)
         (dpb new-value (byte 16 0) #1#))
@@ -66,14 +68,17 @@
 
 
 (declaim (inline qp-trie-node-store-bitmask))
+(-> qp-trie-node-store-bitmask (qp-trie-node) node-mask)
 (defun qp-trie-node-store-bitmask (node)
-  (declare (type qp-trie-node node))
+  (declare (type qp-trie-node node)
+           (optimize (speed 3)))
   (~>> node qp-trie-node-bitmask (ldb (byte 16 16))))
 
 
 (declaim (inline (setf qp-trie-node-store-bitmask)))
 (defun (setf qp-trie-node-store-bitmask) (new-value node)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-mask new-value))
   (setf #1=(qp-trie-node-bitmask node)
         (dpb new-value (byte 16 16) #1#))
@@ -87,20 +92,25 @@
 
 
 (defun qp-trie-node-index (node index)
-  (declare (type qp-trie-node node))
+  (declare (type qp-trie-node node)
+           (type node-index index)
+           (optimize (speed 3)))
   (logcount (ldb (byte index 0)
                  (qp-trie-node-children-bitmask node))))
 
 
 (defun qp-trie-node-ref (node index)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-index index))
   (aref (qp-trie-node-content node)
         (qp-trie-node-index node index)))
 
 
+(-> qp-trie-node-size (qp-trie-node) fixnum)
 (defun qp-trie-node-size (node)
-  (declare (type qp-trie-node node))
+  (declare (optimize (speed 3))
+           (type qp-trie-node node))
   (~> node
       qp-trie-node-children-bitmask
       logcount))
@@ -108,11 +118,13 @@
 
 (-> qp-trie-node-contains-leafs-p (qp-trie-node) boolean)
 (defun qp-trie-node-contains-leafs-p (node)
+  (declare (optimize (speed 3)))
   (~> node qp-trie-node-store-bitmask zerop not))
 
 
 (-> qp-trie-node-delete! (qp-trie-node node-index) qp-trie-node)
 (defun qp-trie-node-delete! (node index)
+  (declare (optimize (speed 3)))
   (let* ((old-mask (qp-trie-node-children-bitmask node))
          (effective-index (logcount (ldb (byte index 0) old-mask)))
          (new-mask (dpb 0 (byte 1 index) old-mask))
@@ -121,10 +133,14 @@
          (new-size (logcount new-mask))
          (new-content (make-array new-size
                                   :element-type 'qp-trie-node)))
+    (declare (type fixnum old-size new-size)
+             (type node-index effective-index))
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below effective-index)
       (setf (aref new-content i) (aref old-content i)))
     (iterate
+      (declare (type fixnum i))
       (for i from (1+ effective-index) below old-size)
       (setf (aref new-content (1- i)) (aref old-content i)))
     (setf (qp-trie-node-content node) new-content
@@ -134,6 +150,7 @@
 
 (defun qp-trie-node-insert-new-node! (node index)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-index index))
   (let* ((new-mask (~> node qp-trie-node-children-bitmask
                        (dpb 1 (byte 1 index) _)))
@@ -143,11 +160,16 @@
          (new-content (make-array new-size
                                   :element-type 'qp-trie-node))
          (new-node (make-qp-trie-node)))
+    (declare (type node-mask new-mask)
+             (type fixnum new-size)
+             (type node-index new-index))
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below new-index)
       (setf (aref new-content i) (aref old-content i)))
     (setf (aref new-content new-index) new-node)
     (iterate
+      (declare (type fixnum i))
       (for i from (1+ new-index) below new-size)
       (setf (aref new-content i) (aref old-content (1- i))))
     (setf (qp-trie-node-content node) new-content
@@ -159,6 +181,7 @@
     (unsigned-byte 16))
 (defun qp-trie-node-unmark-leaf! (node index)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-index index))
   (let ((mask (qp-trie-node-store-bitmask node)))
     (setf (qp-trie-node-store-bitmask node)
@@ -167,6 +190,7 @@
 
 (defun qp-trie-node-mark-leaf! (node index)
   (declare (type qp-trie-node node)
+           (optimize (speed 3))
            (type node-index index))
   (let ((mask (qp-trie-node-store-bitmask node)))
     (setf (qp-trie-node-store-bitmask node)
@@ -175,7 +199,8 @@
 
 (defun qp-trie-node-present-p (node index)
   (declare (type qp-trie-node node)
-           (type node-index index))
+           (type node-index index)
+           (optimize (speed 3)))
   (~>> node
        qp-trie-node-children-bitmask
        (ldb-test (byte 1 index) _)))
@@ -183,7 +208,8 @@
 
 (defun qp-trie-node-get-or-insert-child! (node index)
   (declare (type qp-trie-node node)
-           (type node-index index))
+           (type node-index index)
+           (optimize (speed 3)))
   (if (qp-trie-node-present-p node index)
       (qp-trie-node-ref node index)
       (qp-trie-node-insert-new-node! node index)))
@@ -265,8 +291,12 @@
                    (return (1- length)))))))
 
 
+(-> qp-trie-delete!
+    (qp-trie-node (simple-array (unsigned-byte 8) (*)))
+    boolean)
 (defun qp-trie-delete! (qp-trie bytes)
-  (declare (type (simple-array (unsigned-byte 8) (*)) bytes))
+  (declare (type (simple-array (unsigned-byte 8) (*)) bytes)
+           (optimize (speed 3)))
   (assert (not (emptyp bytes)))
   (bind ((length (length bytes))
          (last-byte-position (the fixnum (1- length)))
@@ -274,7 +304,8 @@
          ((:flet ref (node i))
           (if (qp-trie-node-present-p node i)
             (qp-trie-node-ref node i)
-            (return-from qp-trie-delete! deleted-p)))
+            (return-from qp-trie-delete!
+              (the boolean deleted-p))))
          ((:labels impl (node i))
           (declare (type qp-trie-node node)
                    (type fixnum i))
@@ -293,16 +324,20 @@
                       node))
                 (let ((inner (impl (ref node half-byte-2)
                                    (1+ i))))
+                  (declare (type (or null qp-trie-node) inner))
                   (if (and (null inner)
                            (eql 1 (qp-trie-node-size node)))
                       (if (~> node qp-trie-node-contains-leafs-p not)
                           nil
                           (qp-trie-node-delete! node half-byte-2))
-                      (return-from qp-trie-delete! deleted-p)))))))
+                      (return-from qp-trie-delete!
+                        (the boolean deleted-p))))))))
+    (declare (ftype (-> (qp-trie-node fixnum) (or null qp-trie-node))
+                    impl))
     (setf (access-root qp-trie)
           (or (impl (access-root qp-trie) 0)
               (make-qp-trie-node)))
-    deleted-p))
+    (the boolean deleted-p)))
 
 
 (-> half-byte-list-to-array (list) (simple-array (unsigned-byte 8) (*)))
