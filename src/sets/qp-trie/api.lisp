@@ -20,6 +20,9 @@
   ())
 
 
+(defun make-mutable-qp-trie-set ()
+  (make 'mutable-qp-trie-set))
+
 
 (defmethod cl-ds.meta:position-modification
     ((function cl-ds.meta:put!-function)

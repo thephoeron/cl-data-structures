@@ -15,4 +15,7 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.sets.qp-trie)
   (:export
+   #:empty-array-key
+   #:fundamental-qp-trie-set
+   #:make-mutable-qp-trie-set
    #:mutable-qp-trie-set))
