@@ -128,9 +128,9 @@
              current-position)
         (push-next node next-position parents)
         (return-from obtain-value
-          (values (~>> current-position
-                       (cons parents)
-                       cl-ds.common.qp-trie:half-byte-list-to-array)
+          (values (~> current-position
+                      (cons parents)
+                      cl-ds.common.qp-trie:half-byte-list-to-array)
                   t)))
       (push-next node next-position parents))))
 
