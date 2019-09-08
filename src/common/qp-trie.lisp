@@ -6,6 +6,7 @@
   (:nicknames #:cl-ds.common.qp-trie)
   (:export #:qp-trie
            #:qp-trie-find
+           #:map-qp-trie-node
            #:access-root
            #:make-qp-trie-node
            #:qp-trie-insert!

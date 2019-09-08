@@ -87,7 +87,9 @@
 (defmethod cl-ds:across ((object fundamental-qp-trie-set)
                          function)
   (ensure-functionf function)
-  cl-ds.utils:todo)
+  (~>> object cl-ds.common.qp-trie:access-root
+       (cl-ds.common.qp-trie:map-qp-trie-node function))
+  object)
 
 
 (defmethod cl-ds:clone ((object fundamental-qp-trie-set))
