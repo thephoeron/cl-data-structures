@@ -39,14 +39,15 @@
 
 (defstruct qp-trie-node
   (bitmask 0 :type full-mask)
-  (content #() :type simple-array))
+  (content (make-array 0 :element-type 'qp-trie-node)
+   :type (simple-array qp-trie-node (*))))
 
 
 (defun qp-trie-node-clone (node)
   (make-qp-trie-node
    :bitmask (qp-trie-node-bitmask node)
    :content (~>> node qp-trie-node-content
-                 (map 'vector #'qp-trie-node-clone))))
+                 (map '(vector qp-trie-node) #'qp-trie-node-clone))))
 
 
 (declaim (inline qp-trie-node-children-bitmask))
@@ -118,7 +119,8 @@
          (old-content (qp-trie-node-content node))
          (old-size (logcount old-mask))
          (new-size (logcount new-mask))
-         (new-content (make-array new-size)))
+         (new-content (make-array new-size
+                                  :element-type 'qp-trie-node)))
     (iterate
       (for i from 0 below effective-index)
       (setf (aref new-content i) (aref old-content i)))
@@ -138,7 +140,8 @@
          (new-index (logcount (ldb (byte index 0) new-mask)))
          (old-content (qp-trie-node-content node))
          (new-size (logcount new-mask))
-         (new-content (make-array new-size))
+         (new-content (make-array new-size
+                                  :element-type 'qp-trie-node))
          (new-node (make-qp-trie-node)))
     (iterate
       (for i from 0 below new-index)
@@ -302,10 +305,14 @@
     deleted-p))
 
 
+(-> half-byte-list-to-array (list) (simple-array (unsigned-byte 8) (*)))
 (defun half-byte-list-to-array (list)
+  (declare (optimize (speed 3))
+           (type list list))
   (let* ((length (length list))
          (result-length (ceiling length 2))
-         (result (make-array result-length)))
+         (result (make-array result-length
+                             :element-type '(unsigned-byte 8))))
     (iterate
       (declare (type fixnum i)
                (type half-byte half-byte-1 half-byte-2)
@@ -324,6 +331,10 @@
 
 
 (defun map-qp-trie-node (function node &optional ac)
+  (declare (optimize (speed 3))
+           (type qp-trie-node node)
+           (type list ac)
+           (type function function))
   (iterate
     (declare (type fixnum i))
     (with leafs = (qp-trie-node-store-bitmask node))
