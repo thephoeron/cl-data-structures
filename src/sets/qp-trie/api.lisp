@@ -110,17 +110,25 @@
 
 
 (defun obtain-value (pull push)
+  (declare (optimize (speed 3))
+           (type function pull push))
   (flet ((push-next (node position parents)
+           (declare (type fixnum position)
+                    (type list parents)
+                    (type cl-ds.common.qp-trie:qp-trie-node node))
            (if (eql position 16)
                (iterate
+                 (declare (type fixnum i))
                  (for i from 0 below 16)
                  (when (cl-ds.common.qp-trie:qp-trie-node-present-p node i)
                    (funcall
                     push (list (cl-ds.common.qp-trie:qp-trie-node-ref node i)
                                i
                                (cons i parents)))))
-               (funcall push (list node position parents)))))
+               (funcall push (list node position parents)))
+           nil))
     (iterate outer
+      (declare (type fixnum current-position next-position))
       (for (node current-position parents) = (funcall pull))
       (for next-position = (1+ current-position))
       (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p
