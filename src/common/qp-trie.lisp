@@ -154,7 +154,7 @@
     node))
 
 
-(defun qp-trie-node-insert-new-node! (node index)
+(defun qp-trie-node-insert-new-node! (node index new-node)
   (declare (type qp-trie-node node)
            (optimize (speed 3))
            (type node-index index))
@@ -164,8 +164,7 @@
          (old-content (qp-trie-node-content node))
          (new-size (logcount new-mask))
          (new-content (make-array new-size
-                                  :element-type 'qp-trie-node))
-         (new-node (make-qp-trie-node)))
+                                  :element-type 'qp-trie-node)))
     (declare (type node-mask new-mask)
              (type fixnum new-size)
              (type node-index new-index))
@@ -218,7 +217,7 @@
            (optimize (speed 3)))
   (if (qp-trie-node-present-p node index)
       (qp-trie-node-ref node index)
-      (qp-trie-node-insert-new-node! node index)))
+      (qp-trie-node-insert-new-node! node index (make-qp-trie-node))))
 
 
 (defun qp-trie-leaf-present-p (node index)
