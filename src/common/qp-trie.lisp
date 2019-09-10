@@ -11,6 +11,7 @@
            #:make-qp-trie-node
            #:qp-trie-node-clone
            #:qp-trie-node
+           #:qp-trie-dict-node
            #:qp-trie-node-ref
            #:qp-trie-node-leaf-present-p
            #:qp-trie-node-present-p
@@ -42,6 +43,10 @@
   (bitmask 0 :type full-mask)
   (content (make-array 0 :element-type 'qp-trie-node)
    :type (simple-array qp-trie-node (*))))
+
+
+(defstruct (qp-trie-dict-node (:include qp-trie-node))
+  (values #() :type (simple-array t (*))))
 
 
 (defun qp-trie-node-clone (node)
