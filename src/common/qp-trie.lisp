@@ -211,13 +211,11 @@
        (ldb-test (byte 1 index) _)))
 
 
-(defun qp-trie-node-get-or-insert-child! (node index)
-  (declare (type qp-trie-node node)
-           (type node-index index)
-           (optimize (speed 3)))
-  (if (qp-trie-node-present-p node index)
-      (qp-trie-node-ref node index)
-      (qp-trie-node-insert-new-node! node index (make-qp-trie-node))))
+(defmacro qp-trie-node-get-or-insert-child! (node index new-node-form)
+  (once-only (node index)
+    `(if (qp-trie-node-present-p ,node ,index)
+         (qp-trie-node-ref ,node ,index)
+         (qp-trie-node-insert-new-node! ,node ,index ,new-node-form))))
 
 
 (defun qp-trie-leaf-present-p (node index)
@@ -242,12 +240,15 @@
     (for byte = (aref bytes i))
     (for half-byte-1 = (ldb (byte 4 0) byte))
     (for half-byte-2 = (ldb (byte 4 4) byte))
-    (setf node (~> node
-                   (qp-trie-node-get-or-insert-child! half-byte-1)
-                   (qp-trie-node-get-or-insert-child! half-byte-2)))
+    (setf node (qp-trie-node-get-or-insert-child! node half-byte-1
+                                                  (make-qp-trie-node))
+          node (qp-trie-node-get-or-insert-child! node half-byte-2
+                                                  (make-qp-trie-node)))
     (finally (let* ((last-byte (aref bytes (the fixnum (1- length))))
                     (next-node  (qp-trie-node-get-or-insert-child!
-                                 node (ldb (byte 4 0) last-byte)))
+                                 node
+                                 (ldb (byte 4 0) last-byte)
+                                 (make-qp-trie-node)))
                     (old-mask (qp-trie-node-store-bitmask next-node))
                     (new-mask (qp-trie-node-mark-leaf!
                                next-node
