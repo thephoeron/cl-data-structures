@@ -371,7 +371,7 @@
     result))
 
 
-(defun map-qp-trie-node (function node &optional ac)
+(defun map-qp-trie-nodes (function node &optional ac)
   (declare (optimize (speed 3))
            (type qp-trie-node node)
            (type list ac)
@@ -382,7 +382,7 @@
     (for i from 0 below 16)
     (for present = (ldb-test (byte 1 i) leafs))
     (when present
-      (funcall function (half-byte-list-to-array (cons i ac)))))
+      (funcall function node (cons i ac))))
   (iterate
     (declare (type fixnum i j))
     (with children = (qp-trie-node-children-bitmask node))
@@ -395,3 +395,13 @@
     (map-qp-trie-node function (aref content j) (cons i ac))
     (incf j))
   node)
+
+
+(defun map-qp-trie-node (function node)
+  (declare (optimize (speed 3))
+           (type qp-trie-node node)
+           (type list ac)
+           (type function function))
+  (map-qp-trie-node (lambda (node path)
+                      (funcall function (half-byte-list-to-array path)))
+                    node))
