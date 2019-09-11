@@ -34,7 +34,9 @@
   (check-type location (simple-array (unsigned-byte 8)))
   (when (emptyp location)
     (error 'empty-array-key :value location))
-  (let ((result (cl-ds.common.qp-trie:qp-trie-insert! structure location)))
+  (let ((result (cl-ds.common.qp-trie:qp-trie-insert!
+                 structure location
+                 (cl-ds.common.qp-trie:make-qp-trie-node))))
     (when result (incf (access-size structure)))
     (values structure
             (cl-ds.common:make-eager-modification-operation-status

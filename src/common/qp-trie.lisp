@@ -15,6 +15,7 @@
            #:qp-trie-node-ref
            #:qp-trie-node-leaf-present-p
            #:qp-trie-node-present-p
+           #:make-qp-trie-node
            #:qp-trie-insert!
            #:half-byte-list-to-array
            #:qp-trie-delete!))
@@ -226,35 +227,36 @@
        (ldb-test (byte 1 index))))
 
 
-(defun qp-trie-insert! (qp-trie bytes)
-  (declare (optimize (speed 3) (debug 0) (safety 0))
-           (type (simple-array (unsigned-byte 8) (*)) bytes)
-           (type qp-trie qp-trie))
-  (assert (not (emptyp bytes)))
-  (iterate
-    (declare (type fixnum length i half-byte-1 half-byte-2 byte)
-             (type qp-trie-node node))
-    (with node = (access-root qp-trie))
-    (with length = (length bytes))
-    (for i from 0 below (the fixnum (1- length)))
-    (for byte = (aref bytes i))
-    (for half-byte-1 = (ldb (byte 4 0) byte))
-    (for half-byte-2 = (ldb (byte 4 4) byte))
-    (setf node (qp-trie-node-get-or-insert-child! node half-byte-1
-                                                  (make-qp-trie-node))
-          node (qp-trie-node-get-or-insert-child! node half-byte-2
-                                                  (make-qp-trie-node)))
-    (finally (let* ((last-byte (aref bytes (the fixnum (1- length))))
-                    (next-node  (qp-trie-node-get-or-insert-child!
-                                 node
-                                 (ldb (byte 4 0) last-byte)
-                                 (make-qp-trie-node)))
-                    (old-mask (qp-trie-node-store-bitmask next-node))
-                    (new-mask (qp-trie-node-mark-leaf!
-                               next-node
-                               (ldb (byte 4 4) last-byte))))
-               (declare (type (unsigned-byte 8) last-byte))
-               (return (not (eql new-mask old-mask)))))))
+(defmacro qp-trie-insert! (qp-trie bytes new-node-form)
+  (once-only (qp-trie bytes)
+    `(locally (declare (optimize (speed 3) (debug 0) (safety 0))
+                       (type (simple-array (unsigned-byte 8) (*)) ,bytes)
+                       (type qp-trie ,qp-trie))
+       (assert (not (emptyp ,bytes)))
+       (iterate
+         (declare (type fixnum length i half-byte-1 half-byte-2 byte)
+                  (type qp-trie-node node))
+         (with node = (access-root ,qp-trie))
+         (with length = (length ,bytes))
+         (for i from 0 below (the fixnum (1- length)))
+         (for byte = (aref ,bytes i))
+         (for half-byte-1 = (ldb (byte 4 0) byte))
+         (for half-byte-2 = (ldb (byte 4 4) byte))
+         (setf node (qp-trie-node-get-or-insert-child! node half-byte-1
+                                                       ,new-node-form)
+               node (qp-trie-node-get-or-insert-child! node half-byte-2
+                                                       ,new-node-form))
+         (finally (let* ((last-byte (aref ,bytes (the fixnum (1- length))))
+                         (next-node  (qp-trie-node-get-or-insert-child!
+                                      node
+                                      (ldb (byte 4 0) last-byte)
+                                      ,new-node-form))
+                         (old-mask (qp-trie-node-store-bitmask next-node))
+                         (new-mask (qp-trie-node-mark-leaf!
+                                    next-node
+                                    (ldb (byte 4 4) last-byte))))
+                    (declare (type (unsigned-byte 8) last-byte))
+                    (return (not (eql new-mask old-mask)))))))))
 
 
 (defun qp-trie-node-leaf-present-p (node half-byte)
