@@ -290,15 +290,13 @@
     (finally (let* ((last-byte (aref bytes (1- length)))
                     (half-byte-1 (ldb (byte 4 0) last-byte))
                     (half-byte-2 (ldb (byte 4 4) last-byte))
-                    (result nil)
-                    (next-node node))
+                    (result nil))
                (unless (qp-trie-node-present-p node half-byte-1)
                  (return (1- length)))
-               (setf next-node (qp-trie-node-ref node half-byte-1))
-               (setf result (qp-trie-node-leaf-present-p next-node
-                                                         half-byte-2))
+               (setf node (qp-trie-node-ref node half-byte-1))
+               (setf result (qp-trie-node-leaf-present-p node half-byte-2))
                (if result
-                   (return (values length next-node))
+                   (return (values length node))
                    (return (values (1- length)
                                    node)))))))
 
