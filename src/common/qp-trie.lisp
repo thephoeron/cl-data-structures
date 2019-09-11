@@ -256,7 +256,8 @@
                                     next-node
                                     (ldb (byte 4 4) last-byte))))
                     (declare (type (unsigned-byte 8) last-byte))
-                    (return (not (eql new-mask old-mask)))))))))
+                    (return (values (not (eql new-mask old-mask))
+                                    next-node))))))))
 
 
 (defun qp-trie-node-leaf-present-p (node half-byte)
