@@ -38,7 +38,7 @@
 
 
 (defstruct sparse-node
-  (content #() :type simple-vector)
+  (content #() :type (or simple-vector simple-bit-vector))
   (bitmask 0 :type sparse-rrb-mask))
 
 
