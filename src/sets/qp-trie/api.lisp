@@ -71,7 +71,7 @@
   (let* ((length (length location))
          (result (cl-ds.common.qp-trie:qp-trie-find container location))
          (result-found (eql length result)))
-    (values result-found result-found)))
+    (values result-found result-found result)))
 
 
 (defmethod cl-ds:empty-clone ((container fundamental-qp-trie-set))
