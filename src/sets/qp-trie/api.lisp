@@ -28,7 +28,9 @@
     ((function cl-ds.meta:put!-function)
      (structure mutable-qp-trie-set)
      container
-     location)
+     location
+     &rest all)
+  (declare (ignore all))
   (check-type location (simple-array (unsigned-byte 8)))
   (when (emptyp location)
     (error 'empty-array-key :value location))
