@@ -10,6 +10,8 @@
    #:fundamental-ownership-tagged-object
    #:make-ownership-tag
    #:make-tagged-node
+   #:define-tagged-untagged-node
+   #:tagged-struct-node
    #:read-ownership-tag
    #:tagged-node
    #:replica

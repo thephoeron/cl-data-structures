@@ -136,23 +136,22 @@
                                    size))
                  (unless (> (decf shift) 0)
                    (finish))
-                 (cl-ds.utils:cases ((listp node))
-                   (let ((present (cl-ds.common.rrb:sparse-rrb-node-contains
-                                   node index)))
-                     (if present
-                         (shiftf p-node
-                                 node
-                                 (cl-ds.common.rrb:sparse-nref node index))
-                         (let* ((new-element
-                                  (cl-ds.common.rrb:make-sparse-rrb-node
-                                   :ownership-tag ownership-tag
-                                   :content (make-array 1))))
-                           (insert-into-node! node new-element index)
-                           (assert (eq (cl-ds.common.rrb:sparse-nref node
-                                                                     index)
-                                       new-element))
-                           (setf node new-element
-                                 p-node node)))))
+                 (let ((present (cl-ds.common.rrb:sparse-rrb-node-contains
+                                 node index)))
+                   (if present
+                       (shiftf p-node
+                               node
+                               (cl-ds.common.rrb:sparse-nref node index))
+                       (let* ((new-element
+                                (cl-ds.common.rrb:make-sparse-rrb-node
+                                 :ownership-tag ownership-tag
+                                 :content (make-array 1))))
+                         (insert-into-node! node new-element index)
+                         (assert (eq (cl-ds.common.rrb:sparse-nref node
+                                                                   index)
+                                     new-element))
+                         (setf node new-element
+                               p-node node))))
                  (decf position cl-ds.common.rrb:+bit-count+)
                  (finally
                   (insert-into-node! node new-node
