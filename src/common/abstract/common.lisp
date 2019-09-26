@@ -28,7 +28,7 @@
   (declare (optimize (speed 3)))
   (typecase node
     (list (eq (cdr node) ownership-tag))
-    (tagged-node (eq (tagged-node-ownership-tag node) ownership-tag))
+    (tagged-node (eq (read-ownership-tag node) ownership-tag))
     (t nil)))
 
 
