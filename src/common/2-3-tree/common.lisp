@@ -26,7 +26,7 @@
            :accessor access-right)))
 
 
-(defclass 3-node (2-node)
+(defclass 3-node (node)
   ((%left :initform cl-ds.meta:null-bucket
           :initarg :left
           :accessor access-left)

@@ -135,65 +135,13 @@ Tree structure of HAMT
 
 |#
 
-(defclass hash-node ()
-  ((%node-mask :type hash-mask
-               :initarg :node-mask)
-   (%content :type simple-array
-             :initarg :content)))
+(cl-ds.common.abstract:define-tagged-untagged-node hash-node
+  (node-mask 0 :type hash-mask)
+  (content #() :type simple-array))
 
 
 (defun hash-node-p (node)
   (typep node 'hash-node))
-
-
-(-> hash-node-node-mask (hash-node) hash-mask)
-(defun hash-node-node-mask (node)
-  (declare (type hash-node node)
-           (optimize (speed 3) (safety 0)))
-  (slot-value node '%node-mask))
-
-
-(-> (setf hash-node-node-mask) (hash-mask hash-node) hash-mask)
-(defun (setf hash-node-node-mask) (new-val node)
-  (declare (optimize (speed 3) (safety 0)))
-  (setf (slot-value node '%node-mask) new-val))
-
-
-(-> hash-node-content (hash-node) simple-array)
-(defun hash-node-content (node)
-  (declare (type hash-node node)
-           (optimize (speed 3) (safety 0)))
-  (slot-value node '%content))
-
-
-(-> (setf hash-node-content) (simple-array hash-node) simple-array)
-(defun (setf hash-node-content) (new-val node)
-  (declare (optimize (speed 3) (safety 0)))
-  (setf (slot-value node '%content) new-val))
-
-
-(defclass tagged-hash-node (hash-node tagged-node)
-  ())
-
-
-(defun make-hash-node (&key (node-mask 0) (content #()) (ownership-tag nil))
-  (if (null ownership-tag)
-      (make-instance 'hash-node
-                     :node-mask node-mask
-                     :content content)
-      (make-instance 'tagged-hash-node
-                     :ownership-tag ownership-tag
-                     :node-mask node-mask
-                     :content content)))
-
-
-(declaim (inline make-hash-node))
-(declaim (inline hash-node-p))
-(declaim (inline hash-node-content))
-(declaim (inline (setf hash-node-content)))
-(declaim (inline hash-node-node-mask))
-(declaim (inline (setf hash-node-node-mask)))
-
 
 #|
 
