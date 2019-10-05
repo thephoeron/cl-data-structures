@@ -40,18 +40,15 @@
   '(unsigned-byte 32))
 
 
-(defstruct qp-trie-node
+(cl-ds.common.abstract:define-tagged-untagged-node qp-trie-node
   (bitmask 0 :type full-mask)
   (content (make-array 0 :element-type 'qp-trie-node)
    :type (simple-array qp-trie-node (*))))
 
 
-(defstruct (qp-trie-dict-node (:include qp-trie-node))
-  (values #() :type (simple-array t (*))))
-
-
-(defun qp-trie-node-clone (node)
+(defun qp-trie-node-clone (node &optional ownership-tag)
   (make-qp-trie-node
+   :ownership-tag ownership-tag
    :bitmask (qp-trie-node-bitmask node)
    :content (~>> node qp-trie-node-content
                  (map '(vector qp-trie-node) #'qp-trie-node-clone))))
