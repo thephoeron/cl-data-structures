@@ -107,7 +107,6 @@
                              (:file "content-tuple")
                              (:file "ranges")
                              (:file "sequence-window")
-                             (:file "qp-trie")
                              (:file "docstrings")
                              (:test-file "sequence-window-tests")
                              (:test-file "qp-trie-tests")
@@ -131,7 +130,8 @@
                                            (:file "common")
                                            (:file "methods")
                                            (:file "docstrings")
-                                           (:test-file "tests")))))
+                                           (:test-file "tests")))
+                             (:file "qp-trie")))
                (:module "dicts"
                 :components ((:file "packages")
                              (:file "trait-classes")
