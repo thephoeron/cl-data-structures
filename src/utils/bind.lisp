@@ -16,7 +16,3 @@
     `(serapeum:nest
       (let* (,tables ,@at-arguments))
       (symbol-macrolet ,at-forms))))
-
-
-(defbinding-form (:lazy :use-values-p nil :accept-multiple-forms-p t)
-  `(cl-ds.utils:lazy-let ,(mapcar #'list variables values)))
