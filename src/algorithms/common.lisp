@@ -212,13 +212,13 @@
 
 (defmethod consume-front ((range hash-table-range))
   (bind (((:slots (begin %begin) (end %end) (ht %hash-table) (keys %keys))
-          range)
-         ((:lazy key result)
-          (prog1 (aref keys begin) (incf begin))
-          (list* key (gethash key ht))))
+          range))
     (if (eql begin end)
         (values nil nil)
-        (values result t))))
+        (let* ((key (aref keys begin))
+               (value (gethash key ht)))
+          (incf begin)
+          (values (list* key value) t)))))
 
 
 (defmethod consume-back ((range hash-table-range))
