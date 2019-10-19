@@ -6,6 +6,10 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
+(defclass summary-result-range (hash-table-range)
+  ())
+
+
 (defstruct summary-aggregation-function-value
   arguments ids function-objects)
 
@@ -51,7 +55,13 @@
                summary-aggregation-function-value-ids))
       (setf (gethash id table)
             (cl-ds.alg.meta:state-result function sub)))
-    (make-hash-table-range table)))
+    (make-instance 'summary-result-range
+                   :hash-table table
+                   :keys (~> state
+                             (aref 0)
+                             summary-aggregation-function-value-ids)
+                   :begin 0
+                   :end (hash-table-count table))))
 
 
 (defclass apply-aggregation-function-argument-interceptor ()

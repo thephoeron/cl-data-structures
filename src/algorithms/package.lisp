@@ -61,6 +61,7 @@
    #:bidirectional-proxy-range
    #:cartesian
    #:chain
+   #:read-keys
    #:chain-traversable
    #:count-elements
    #:count-elements-function
@@ -78,6 +79,9 @@
    #:forward-proxy-range
    #:gather-prior-states
    #:group-by
+   #:group-by-result-range
+   #:summary-result-range
+   #:hash-table-range
    #:group-by-function
    #:hash-join
    #:latch

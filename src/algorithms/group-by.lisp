@@ -9,6 +9,10 @@
          :reader read-key)))
 
 
+(defclass group-by-result-range (hash-table-range)
+  ())
+
+
 (defmethod cl-ds.utils:cloning-information append
     ((range group-by-proxy))
   '((:groups read-groups)
@@ -114,10 +118,6 @@
     (cl-ds.alg.meta:pass-to-aggregation group element)))
 
 
-(defclass group-by-range (hash-table-range)
-  ())
-
-
 (defmethod cl-ds.alg.meta:extract-result ((aggregator group-by-aggregator))
   (bind (((:slots %key %groups %outer-fn) aggregator)
          (groups (copy-hash-table %groups)))
@@ -125,7 +125,7 @@
                (setf (gethash key groups)
                      (cl-ds.alg.meta:extract-result aggregator)))
              %groups)
-    (make-instance 'group-by-range
+    (make-instance 'group-by-result-range
                    :hash-table groups
                    :keys (~> groups hash-table-keys (coerce 'vector))
                    :begin 0
