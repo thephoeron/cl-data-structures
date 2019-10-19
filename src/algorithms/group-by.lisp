@@ -114,6 +114,10 @@
     (cl-ds.alg.meta:pass-to-aggregation group element)))
 
 
+(defclass group-by-range (hash-table-range)
+  ())
+
+
 (defmethod cl-ds.alg.meta:extract-result ((aggregator group-by-aggregator))
   (bind (((:slots %key %groups %outer-fn) aggregator)
          (groups (copy-hash-table %groups)))
@@ -121,7 +125,11 @@
                (setf (gethash key groups)
                      (cl-ds.alg.meta:extract-result aggregator)))
              %groups)
-    (make-hash-table-range groups)))
+    (make-instance 'group-by-range
+                   :hash-table groups
+                   :keys (~> groups hash-table-keys (coerce 'vector))
+                   :begin 0
+                   :end (hash-table-count groups))))
 
 
 (defgeneric group-by (range &key test key)
