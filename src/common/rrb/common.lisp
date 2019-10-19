@@ -38,7 +38,7 @@
 
 
 (cl-ds.common.abstract:define-tagged-untagged-node sparse-rrb-node
-  (content #() :type (or simple-vector simple-bit-vector))
+  (content #() :type (simple-array * (*)))
   (bitmask 0 :type sparse-rrb-mask))
 
 
@@ -169,7 +169,7 @@
                         :element-type (array-element-type content)))))
             (declare (type rrb-index new-length)
                      (type node-size sindex)
-                     (type simple-vector new-content))
+                     (type (simple-array * (*)) new-content))
             (assert (>= length (logcount bitmask)))
             (assert (>= (length new-content) (logcount new-bitmask)))
             (setf (sparse-rrb-node-bitmask node) new-bitmask
