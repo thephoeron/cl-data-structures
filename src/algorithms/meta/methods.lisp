@@ -128,7 +128,7 @@ Top level aggregator protocol.
   (make-linear-aggregator function arguments key))
 
 
-(defmethod construct-aggregator ((range fundamental-forward-range)
+(defmethod construct-aggregator ((range cl-ds:traversable)
                                  key
                                  (function multi-aggregation-function)
                                  (outer-fn (eql nil))
@@ -137,7 +137,7 @@ Top level aggregator protocol.
    arguments key (apply #'multi-aggregation-stages function arguments)))
 
 
-(defmethod construct-aggregator ((range fundamental-forward-range)
+(defmethod construct-aggregator ((range cl-ds:traversable)
                                  key
                                  (function aggregation-function)
                                  outer-fn
@@ -283,6 +283,14 @@ Range function invokaction protocol.
                                  (function aggregation-function)
                                  &rest all)
   (apply #'apply-aggregation-function range function all))
+
+
+(defmethod apply-range-function ((range cl-ds:traversable)
+                                 (function layer-function)
+                                 &rest all)
+  (warn "Appling range function to ~a object which is not a range."
+        range)
+  (apply #'apply-layer (cl-ds:clone range) function all))
 
 
 (defmethod apply-range-function ((range cl-ds:fundamental-range)

@@ -121,7 +121,7 @@
 (defgeneric make-proxy (range class
                         &rest all
                         &key &allow-other-keys)
-  (:method ((range fundamental-range)
+  (:method ((range cl-ds:traversable)
             class &rest all &key &allow-other-keys)
     (apply #'make-instance class :original-range range all)))
 

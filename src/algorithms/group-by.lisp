@@ -166,6 +166,15 @@
                 :group-by-key (read-key range))))))
 
 
+(defmethod apply-layer ((range cl-ds:traversable)
+                        (fn group-by-function)
+                        &rest all &key test key)
+  (declare (ignore all))
+  (make-proxy range 'forward-group-by-proxy
+              :test test
+              :key key))
+
+
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn group-by-function)
                         &rest all &key test key)

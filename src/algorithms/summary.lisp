@@ -38,7 +38,10 @@
     (for function in-vector
          (~> state (aref 0)
              summary-aggregation-function-value-function-objects))
-    (cl-ds.alg.meta:aggregate function sub (funcall key element)))
+    (cl-ds.alg.meta:aggregate function sub
+                              (if (null key)
+                                  element
+                                  (funcall key element))))
   state)
 
 
