@@ -136,7 +136,7 @@
                                             function
                                             outer-fn
                                             arguments)
-  (bind ((outer-fn (call-next-method)))
+  (let ((outer-fn (call-next-method)))
     (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
         (lambda ()
           (make 'multi-partition-if-aggregator
