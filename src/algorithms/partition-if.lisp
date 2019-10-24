@@ -4,6 +4,8 @@
 (defclass partition-if-proxy (proxy-range)
   ((%chunks :initform (vect)
             :reader read-chunks)
+   (%key :initarg :key
+         :reader read-key)
    (%test :initarg :test
           :reader read-test)))
 
@@ -26,6 +28,7 @@
 (defmethod clone ((range partition-if-proxy))
   (make (type-of range)
         :original-range (~> range read-original-range clone)
+        :key (read-key range)
         :test (read-test range)))
 
 
@@ -40,6 +43,8 @@
               :reader read-outer-fn)
    (%test :initarg :test
           :reader read-test)
+   (%partition-key :initarg :partition-key
+                   :reader read-partition-key)
    (%key :initarg :key
          :reader read-key)))
 
@@ -95,25 +100,26 @@
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
                                                element)
-  (bind (((:slots %chunks %test %outer-fn %current-index) aggregator)
+  (bind (((:slots %chunks %partition-key %test %outer-fn %current-index) aggregator)
+         (key (funcall %partition-key element))
          (length (length %chunks))
          (empty (zerop length)))
     (if empty
         (let ((sub (funcall %outer-fn)))
           (begin-aggregation sub)
-          (vector-push-extend (list* element sub)
+          (vector-push-extend (list* key sub)
                               %chunks))
         (iterate
           (for (prev . chunk) = (aref %chunks %current-index))
-          (until (funcall %test prev element))
+          (until (funcall %test prev key))
           (incf %current-index)
           (when (>= %current-index (length %chunks))
             (let ((sub (funcall %outer-fn)))
               (begin-aggregation sub)
-              (vector-push-extend (list* element sub)
+              (vector-push-extend (list* key sub)
                                   %chunks)
               (leave)))))
-    (setf (car (aref %chunks %current-index)) element)
+    (setf (car (aref %chunks %current-index)) key)
     (~> %chunks (aref %current-index) cdr (pass-to-aggregation element))))
 
 
@@ -137,14 +143,16 @@
                 :outer-fn outer-fn
                 :test (read-test range)
                 :key key
+                :partition-key (read-key range)
                 :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
                                function
                                arguments)))
         (lambda ()
           (make 'linear-partition-if-aggregator
                 :outer-fn outer-fn
+                :key key
                 :test (read-test range)
-                :key key)))))
+                :partition-key (read-key range))))))
 
 
 (defclass partition-if-function (layer-function)
@@ -152,33 +160,37 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric partition-if (range test)
+(defgeneric partition-if (range test &key key)
   (:generic-function-class partition-if-function)
-  (:method (range test)
-    (ensure-functionf test)
+  (:method (range test &key (key #'identity))
+    (ensure-functionf test key)
     (apply-range-function range #'partition-if
+                          :key key
                           :test test)))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn partition-if-function)
-                        &rest all &key test)
+                        &rest all &key test key)
   (declare (ignore all))
   (make-proxy range 'forward-partition-if-proxy
+              :key key
               :test test))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn partition-if-function)
-                        &rest all &key test)
+                        &rest all &key test key)
   (declare (ignore all))
   (make-proxy range 'bidirectional-partition-if-proxy
+              :key key
               :test test))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn partition-if-function)
-                        &rest all &key test)
+                        &rest all &key test key)
   (declare (ignore all))
   (make-proxy range 'random-access-parition-if-proxy
+              :key key
               :test test))
