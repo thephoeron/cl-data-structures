@@ -90,6 +90,7 @@
    #:on-each
    #:only
    #:partition-if
+   #:partition-if-with-callback
    #:proxy-box-range
    #:proxy-range
    #:proxy-range-aggregator-outer-fn

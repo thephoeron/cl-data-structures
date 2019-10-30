@@ -1,45 +1,88 @@
 (in-package #:cl-data-structures.algorithms)
 
 
-(defclass partition-if-proxy (proxy-range)
-  ((%chunks :initform (vect)
-            :reader read-chunks)
-   (%key :initarg :key
+(defclass abstract-partition-if-proxy (proxy-range)
+  ((%key :initarg :key
          :reader read-key)
    (%test :initarg :test
           :reader read-test)))
 
 
+(defclass forward-abstract-partition-if-proxy
+    (abstract-partition-if-proxy
+     fundamental-forward-range)
+  ())
+
+
+(defclass bidirectional-abstract-partition-if-proxy
+    (forward-abstract-partition-if-proxy
+     fundamental-bidirectional-range)
+  ())
+
+
+(defclass random-access-abstract-parition-if-proxy
+    (bidirectional-abstract-partition-if-proxy
+     fundamental-random-access-range)
+  ())
+
+
+(defclass callback-partition-if-proxy ()
+  ((%callback :reader read-callback
+              :initarg :callback)))
+
+
+(defclass forward-callback-partition-if-proxy
+    (callback-partition-if-proxy forward-abstract-partition-if-proxy)
+  ())
+
+
+(defclass bidirectional-callback-partition-if-proxy
+    (callback-partition-if-proxy bidirectional-abstract-partition-if-proxy)
+  ())
+
+
+(defclass random-access-callback-parition-if-proxy
+    (callback-partition-if-proxy random-access-abstract-parition-if-proxy)
+  ())
+
+
+(defclass partition-if-proxy ()
+  ((%chunks :initform (vect)
+            :reader read-chunks)))
+
+
 (defclass forward-partition-if-proxy
-    (partition-if-proxy fundamental-forward-range)
+    (partition-if-proxy forward-abstract-partition-if-proxy)
   ())
 
 
 (defclass bidirectional-partition-if-proxy
-    (forward-partition-if-proxy fundamental-bidirectional-range)
+    (partition-if-proxy bidirectional-abstract-partition-if-proxy)
   ())
 
 
 (defclass random-access-parition-if-proxy
-    (bidirectional-partition-if-proxy fundamental-random-access-range)
+    (partition-if-proxy random-access-abstract-parition-if-proxy)
   ())
 
 
-(defmethod clone ((range partition-if-proxy))
+(defmethod clone ((range callback-partition-if-proxy))
+  (make (type-of range)
+        :callback (read-callback range)
+        :original-range (~> range read-original-range clone)
+        :key (read-key range)
+        :test (read-test range)))
+
+
+(defmethod clone ((range abstract-partition-if-proxy))
   (make (type-of range)
         :original-range (~> range read-original-range clone)
         :key (read-key range)
         :test (read-test range)))
 
 
-(defclass partition-if-aggregator (cl-ds.alg.meta:fundamental-aggregator)
-  ((%chunks :initform (vect)
-            :initarg :chunks
-            :type vector
-            :reader read-chunks)
-   (%current-index :initform 0
-                   :accessor access-current-index)
-   (%outer-fn :initarg :outer-fn
+(defclass abstract-partition-if-aggregator ()
+  ((%outer-fn :initarg :outer-fn
               :reader read-outer-fn)
    (%test :initarg :test
           :reader read-test)
@@ -49,7 +92,36 @@
          :reader read-key)))
 
 
+(defclass callback-partition-if-aggregator (abstract-partition-if-aggregator
+                                            cl-ds.alg.meta:fundamental-aggregator)
+  ((%callback :reader read-callback
+              :initarg :callback)
+   (%current-state :accessor access-current-state
+                   :initform nil)
+   (%current-key :accessor access-current-key
+                 :initform nil)
+   (%initialized :accessor access-initialized
+                 :type boolean
+                 :initform nil)))
+
+
+(defclass partition-if-aggregator (abstract-partition-if-aggregator
+                                   cl-ds.alg.meta:fundamental-aggregator)
+  ((%chunks :initform (vect)
+            :initarg :chunks
+            :type vector
+            :reader read-chunks)
+   (%current-index :initform 0
+                   :accessor access-current-index)))
+
+
 (defclass linear-partition-if-aggregator (partition-if-aggregator)
+  ((%finished :initform nil
+              :reader cl-ds.alg.meta:aggregator-finished-p
+              :accessor access-finished)))
+
+
+(defclass linear-callback-partition-if-aggregator (callback-partition-if-aggregator)
   ((%finished :initform nil
               :reader cl-ds.alg.meta:aggregator-finished-p
               :accessor access-finished)))
@@ -59,6 +131,14 @@
                                          multi-aggregator)
   ((%stages :initarg :stages
             :accessor access-stages)))
+
+
+(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator callback-partition-if-aggregator))
+  nil)
+
+
+(defmethod cl-ds.alg.meta:expects-content-p ((aggregator callback-partition-if-aggregator))
+  t)
 
 
 (defmethod cl-ds.alg.meta:begin-aggregation ((aggregator partition-if-aggregator))
@@ -83,6 +163,15 @@
 (defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-partition-if-aggregator))
   (setf (access-finished aggregator) t)
   (call-next-method))
+
+
+(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-callback-partition-if-aggregator))
+  (when (access-initialized aggregator)
+    (~> aggregator access-current-state cl-ds.alg.meta:end-aggregation)
+    (~>> aggregator access-current-state
+         cl-ds.alg.meta:extract-result
+         (funcall (read-callback aggregator))))
+  (setf (access-finished aggregator) t))
 
 
 (defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator multi-partition-if-aggregator))
@@ -123,12 +212,59 @@
     (~> %chunks (aref %current-index) cdr (pass-to-aggregation element))))
 
 
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator callback-partition-if-aggregator)
+                                               element)
+  (bind (((:slots %initialized %partition-key %test %outer-fn %callback %current-state %current-key)
+          aggregator)
+         (key (funcall %partition-key element)))
+    (cond ((not %initialized)
+           (setf %current-key key
+                 %initialized t
+                 %current-state (funcall %outer-fn))
+           (begin-aggregation %current-state)
+           (pass-to-aggregation %current-state element))
+          ((funcall %test %current-key key)
+           (setf %current-key key)
+           (pass-to-aggregation %current-state element))
+          (t
+           (cl-ds.alg.meta:end-aggregation %current-state)
+           (~>> %current-state
+                cl-ds.alg.meta:extract-result
+                (funcall %callback))
+           (setf %current-key key
+                 %current-state (funcall %outer-fn))
+             (begin-aggregation %current-state)
+             (pass-to-aggregation %current-state element)))))
+
+
+(defmethod cl-ds.alg.meta:extract-result ((aggregator callback-partition-if-aggregator))
+  nil)
+
+
 (defmethod cl-ds.alg.meta:extract-result ((aggregator partition-if-aggregator))
   (bind (((:slots %chunks) aggregator))
     (~> (map 'vector
              (compose #'cl-ds.alg.meta:extract-result #'cdr)
              %chunks)
         cl-ds:whole-range)))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range callback-partition-if-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (let ((outer-fn (call-next-method)))
+    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
+        (error 'cl-ds:operation-not-allowed
+               :format-control "Can't use callback-partition-if with multi-aggregation-function.")
+        (lambda ()
+          (make 'linear-callback-partition-if-aggregator
+                :outer-fn outer-fn
+                :key key
+                :callback (read-callback range)
+                :test (read-test range)
+                :partition-key (read-key range))))))
 
 
 (defmethod proxy-range-aggregator-outer-fn ((range partition-if-proxy)
@@ -158,6 +294,21 @@
 (defclass partition-if-function (layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defclass callback-partition-if-function (layer-function)
+  ()
+  (:metaclass closer-mop:funcallable-standard-class))
+
+
+(defgeneric partition-if-with-callback (range test callback &key key)
+  (:generic-function-class callback-partition-if-function)
+  (:method (range test callback &key (key #'identity))
+    (ensure-functionf test key callback)
+    (apply-range-function range #'partition-if-with-callback
+                          :callback callback
+                          :key key
+                          :test test)))
 
 
 (defgeneric partition-if (range test &key key)
@@ -193,4 +344,34 @@
   (declare (ignore all))
   (make-proxy range 'random-access-parition-if-proxy
               :key key
+              :test test))
+
+
+(defmethod apply-layer ((range fundamental-forward-range)
+                        (fn callback-partition-if-function)
+                        &rest all &key test callback key)
+  (declare (ignore all))
+  (make-proxy range 'forward-callback-partition-if-proxy
+              :key key
+              :callback callback
+              :test test))
+
+
+(defmethod apply-layer ((range fundamental-bidirectional-range)
+                        (fn callback-partition-if-function)
+                        &rest all &key test callback key)
+  (declare (ignore all))
+  (make-proxy range 'bidirectional-callback-partition-if-proxy
+              :key key
+              :callback callback
+              :test test))
+
+
+(defmethod apply-layer ((range fundamental-random-access-range)
+                        (fn callback-partition-if-function)
+                        &rest all &key test callback key)
+  (declare (ignore all))
+  (make-proxy range 'random-access-callback-parition-if-proxy
+              :key key
+              :callback callback
               :test test))
