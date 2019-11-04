@@ -92,8 +92,8 @@
 
 (defmacro define-aggregation-function
     (function-name function-class
-     generic-lambda-list method-lambda-list
-     function-state init-form
+     (&rest generic-lambda-list) (&rest method-lambda-list)
+     (&rest function-state) init-form
      aggregate-form result-form)
   (assert (find :range generic-lambda-list))
   (assert (find :range method-lambda-list))
