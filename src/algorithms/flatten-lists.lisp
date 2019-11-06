@@ -102,7 +102,7 @@
     (apply-range-function range #'flatten-lists :key key)))
 
 
-(defmethod apply-layer ((range fundamental-forward-range)
+(defmethod apply-layer ((range traversable)
                         (function flatten-lists-function)
                         &rest all &key key)
   (declare (ignore all))
