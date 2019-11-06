@@ -4,14 +4,14 @@
 (cl-ds.alg.meta:define-aggregation-function
     average average-function
 
-  (:range &key key)
-  (:range &key (key #'identity))
+  (:range &key key sum count)
+  (:range &key (key #'identity) (sum 0) (count 0))
 
   (%sum %count)
 
-  ((&key &allow-other-keys)
-   (setf %sum 0
-         %count 0))
+  ((&key sum count &allow-other-keys)
+   (setf %sum sum
+         %count count))
 
   ((element)
    (incf %count)
