@@ -88,3 +88,33 @@
 (defmethod cl-ds:across ((range filtering-proxy) function)
   (~> range cl-ds:clone (cl-ds:traverse function))
   range)
+
+
+(defclass filtering-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
+  ((%range :initarg :range
+           :reader read-range)))
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator filtering-aggregator)
+                                               element)
+  (unless (~> aggregator read-range (should-skip element nil))
+    (~> aggregator cl-ds.alg.meta:read-inner-aggregator
+        (cl-ds.alg.meta:pass-to-aggregation element))))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range filtering-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (lambda ()
+    (make 'filtering-aggregator
+          :key key
+          :inner-aggregator (funcall (call-next-method))
+          :range range)))
+
+
+(defmethod cl-ds.alg.meta:across-aggregate ((range filtering-proxy) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))

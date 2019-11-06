@@ -8,6 +8,7 @@
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:%key
+   #:abstract-proxy-aggregator
    #:across-aggregate
    #:aggregate
    #:aggregation-function
@@ -17,10 +18,10 @@
    #:apply-aggregation-function
    #:apply-aggregation-function-with-aggregator
    #:apply-layer
-   #:define-aggregation-function
    #:apply-range-function
    #:begin-aggregation
    #:construct-aggregator
+   #:define-aggregation-function
    #:end-aggregation
    #:expects-content-p
    #:expects-content-with-stage-p
@@ -38,6 +39,7 @@
    #:multi-aggregator
    #:pass-to-aggregation
    #:range-function
+   #:read-inner-aggregator
    #:read-key
    #:reduce-stage
    #:stage

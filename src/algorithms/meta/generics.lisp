@@ -4,19 +4,29 @@
 Top level aggregator protocol.
 |#
 
-(defgeneric expects-content-p (aggregator))
+(defgeneric expects-content-p (aggregator)
+  (:method ((aggregator abstract-proxy-aggregator))
+    (cl-ds:forward-call aggregator #'expects-content-p)))
 
 (defgeneric pass-to-aggregation (aggregator element))
 
 (defgeneric construct-aggregator (range key function outer-fn arguments))
 
-(defgeneric begin-aggregation (aggregator))
+(defgeneric begin-aggregation (aggregator)
+  (:method ((aggregator abstract-proxy-aggregator))
+    (cl-ds:forward-call aggregator #'begin-aggregation)))
 
-(defgeneric end-aggregation (aggregator))
+(defgeneric end-aggregation (aggregator)
+  (:method ((aggregator abstract-proxy-aggregator))
+    (cl-ds:forward-call aggregator #'end-aggregation)))
 
-(defgeneric extract-result (aggregator))
+(defgeneric extract-result (aggregator)
+  (:method ((aggregator abstract-proxy-aggregator))
+    (cl-ds:forward-call aggregator #'extract-result)))
 
-(defgeneric aggregator-finished-p (aggregator))
+(defgeneric aggregator-finished-p (aggregator)
+  (:method ((aggregator abstract-proxy-aggregator))
+    (cl-ds:forward-call aggregator #'aggregator-finished-p)))
 
 #|
 Stage level aggregator protocol.
@@ -71,6 +81,6 @@ Range function invokaction protocol.
   (:method ((function aggregation-function) state)
     state))
 
-(defgeneric across-aggregate (function range)
-  (:method (function (range cl-ds:traversable))
-    (cl-ds:across function range)))
+(defgeneric across-aggregate (range function)
+  (:method ((range cl-ds:traversable) function)
+    (cl-ds:across range function)))

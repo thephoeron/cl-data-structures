@@ -34,6 +34,16 @@
          :initform #'identity)))
 
 
+(defclass abstract-proxy-aggregator (fundamental-aggregator)
+  ((%inner-aggregator :initarg :inner-aggregator
+                      :reader read-inner-aggregator)))
+
+
+(defmethod cl-ds:forward-call ((object abstract-proxy-aggregator)
+                               function)
+  (funcall function (read-inner-aggregator object)))
+
+
 (defclass fundamental-aggregation-stage ()
   ((%key :initarg :key
          :initform #'identity
@@ -113,4 +123,3 @@
         :key key
         :stages stages
         :arguments arguments))
-

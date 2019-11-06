@@ -131,3 +131,42 @@
         :seen (cl-ds.dicts.hamt:make-transactional-hamt-dictionary
                hash-function test)
         :original-range range))
+
+
+(defclass distinct-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
+  ((%distinct-key :initarg :distinct-key
+                  :reader read-distinct-key)
+   (%seen :initarg :seen
+          :reader read-seen)))
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator distinct-aggregator)
+                                               element)
+  (bind (((:slots %distinct-key %seen) aggregator)
+         (selected (~>> element (funcall %distinct-key))))
+    (cl-ds:mod-bind (dict found) (cl-ds:add! %seen
+                                             selected
+                                             t)
+      (unless found
+        (~> aggregator cl-ds.alg.meta:read-inner-aggregator
+            (cl-ds.alg.meta:pass-to-aggregation element))))))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range distinct-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (bind (((:slots %key %seen) range))
+    (lambda ()
+      (make 'distinct-aggregator
+            :seen (cl-ds:replica %seen nil)
+            :key key
+            :distinct-key %key
+            :inner-aggregator (funcall (call-next-method))))))
+
+
+(defmethod cl-ds.alg.meta:across-aggregate ((range distinct-proxy) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))
