@@ -337,7 +337,7 @@
                           :test test)))
 
 
-(defmethod apply-layer ((range fundamental-forward-range)
+(defmethod apply-layer ((range traversable)
                         (fn partition-if-function)
                         &rest all &key test key on-first)
   (declare (ignore all))
@@ -367,7 +367,7 @@
               :test test))
 
 
-(defmethod apply-layer ((range fundamental-forward-range)
+(defmethod apply-layer ((range traversable)
                         (fn callback-partition-if-function)
                         &rest all &key test callback key on-first)
   (declare (ignore all))
