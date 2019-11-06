@@ -1,4 +1,4 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage distinct-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
