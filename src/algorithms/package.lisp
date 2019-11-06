@@ -8,6 +8,7 @@
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:%key
+   #:across-aggregate
    #:aggregate
    #:aggregation-function
    #:aggregation-stage

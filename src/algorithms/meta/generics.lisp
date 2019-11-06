@@ -70,3 +70,7 @@ Range function invokaction protocol.
 (defgeneric state-result (function state)
   (:method ((function aggregation-function) state)
     state))
+
+(defgeneric across-aggregate (function range)
+  (:method (function (range cl-ds:traversable))
+    (cl-ds:across function range)))
