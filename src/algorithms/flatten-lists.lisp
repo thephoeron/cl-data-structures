@@ -109,3 +109,40 @@
   (make 'forward-flatten-proxy
         :key key
         :original-range range))
+
+
+(defclass flatten-lists-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
+  ((%flatten-key :initarg :flatten-key
+                  :reader read-flatten-key)))
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator flatten-lists-aggregator)
+                                               element)
+  (bind (((:slots %flatten-key) aggregator)
+         (inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator))
+         (selected (~>> element (funcall %flatten-key)))
+         ((:labels impl (data))
+          (if (atom data)
+              (cl-ds.alg.meta:pass-to-aggregation inner-aggregator
+                                                  data)
+              (map nil #'impl data))))
+    (impl selected)))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range flatten-proxy)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (let ((flatten-key (read-key range)))
+    (lambda ()
+      (make 'flatten-lists-aggregator
+            :key key
+            :flatten-key flatten-key
+            :inner-aggregator (funcall (call-next-method))))))
+
+
+(defmethod cl-ds.alg.meta:across-aggregate ((range flatten-proxy) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))

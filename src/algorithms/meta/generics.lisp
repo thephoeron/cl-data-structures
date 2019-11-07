@@ -83,4 +83,7 @@ Range function invokaction protocol.
 
 (defgeneric across-aggregate (range function)
   (:method ((range cl-ds:traversable) function)
-    (cl-ds:across range function)))
+    (cl-ds:across range function))
+  (:method ((range sequence) function)
+    (map nil function range)
+    range))

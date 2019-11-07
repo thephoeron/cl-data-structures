@@ -157,12 +157,14 @@
                                             function
                                             outer-fn
                                             arguments)
-  (bind (((:slots %key %seen) range))
+  (bind (((:slots %key %seen) range)
+         (distinct-key %key)
+         (seen %seen))
     (lambda ()
       (make 'distinct-aggregator
-            :seen (cl-ds:replica %seen nil)
+            :seen (cl-ds:replica seen nil)
             :key key
-            :distinct-key %key
+            :distinct-key distinct-key
             :inner-aggregator (funcall (call-next-method))))))
 
 

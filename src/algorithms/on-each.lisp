@@ -152,3 +152,41 @@
 (defmethod cl-ds:drop-front ((range forward-proxy-box-range) count)
   (drop-front (read-original-range range) count)
   range)
+
+
+(defclass on-each-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
+  ((%on-each-key :initarg :on-each-key
+                 :reader read-on-each-key)
+   (%function :initarg :function
+              :reader read-function)))
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator on-each-aggregator)
+                                               element)
+  (bind (((:slots %on-each-key %function) aggregator)
+         (inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator)))
+    (~>> element
+         (funcall %on-each-key)
+         (funcall %function)
+         (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range proxy-box-range)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (let ((on-each-key (read-key range))
+        (range-function (read-function range)))
+    (lambda ()
+      (make 'on-each-aggregator
+            :key key
+            :on-each-key on-each-key
+            :function range-function
+            :inner-aggregator (funcall (call-next-method))))))
+
+
+(defmethod cl-ds.alg.meta:across-aggregate ((range proxy-box-range) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))
