@@ -97,13 +97,14 @@
 
 (defmethod cl-ds:consume-front ((range forward-distinct-proxy))
   (iterate
-    (with range = (read-original-range range))
+    (with seen = (read-seen range))
     (with key = (read-key range))
+    (with range = (read-original-range range))
     (for (values data more) = (cl-ds:consume-front range))
     (unless more
       (leave (values nil nil)))
     (for key-value = (funcall key data))
-    (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
+    (cl-ds:mod-bind (dict found) (cl-ds:add! seen
                                              key-value t)
       (unless found
         (leave (values data t))))))
