@@ -36,14 +36,14 @@
   (iterate
     (repeat count)
     (iterate
-      (with range = (read-original-range range))
       (with key = (read-key range))
+      (with seen = (read-seen range))
+      (with range = (read-original-range range))
       (for (values data more) = (cl-ds:consume-front range))
       (unless more
         (return-from drop-front (values nil nil)))
       (for key-value = (funcall key data))
-      (cl-ds:mod-bind (dict found) (cl-ds:add! (read-seen range)
-                                               key-value t)
+      (cl-ds:mod-bind (dict found) (cl-ds:add! seen key-value t)
         (unless found
           (leave (values data t))))))
   range)
@@ -84,8 +84,8 @@
 (defmethod cl-ds:peek-front ((range forward-distinct-proxy))
   (iterate
     (with seen = (cl-ds:become-transactional (read-seen range)))
-    (with range = (cl-ds:clone (read-original-range range)))
     (with key = (read-key range))
+    (with range = (cl-ds:clone (read-original-range range)))
     (for (values data more) = (cl-ds:consume-front seen))
     (unless more
       (leave (values nil nil)))
@@ -104,8 +104,7 @@
     (unless more
       (leave (values nil nil)))
     (for key-value = (funcall key data))
-    (cl-ds:mod-bind (dict found) (cl-ds:add! seen
-                                             key-value t)
+    (cl-ds:mod-bind (dict found) (cl-ds:add! seen key-value t)
       (unless found
         (leave (values data t))))))
 
