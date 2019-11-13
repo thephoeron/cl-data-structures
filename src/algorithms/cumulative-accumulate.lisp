@@ -2,31 +2,29 @@
 
 
 (defclass cumulative-state ()
-  ((%initial-state :initarg :state
-                   :reader read-initial-state)
-   (%state :initarg :state
+  ((%state :initarg :state
            :accessor access-state)
-   (%state-bound :initarg :state-bound)
    (%result :initarg :result
             :reader read-result)
    (%function :initarg :function
               :reader read-function)
-   (%key :initarg :key
-         :reader read-key)))
+   (%cumulative-key :initarg :cumulative-key
+                    :reader read-cumulative-key)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((object cumulative-state))
-  '((:state read-initial-state)
+  '((:state access-state)
     (:result read-result)
     (:function read-function)
-    (:key read-key)))
+    (:cumulative-key read-cumulative-key)))
 
 
 (defclass cumulative-accumulate-range (cl-ds.alg:proxy-range
                                        cl-ds:fundamental-forward-range
                                        cumulative-state)
-  ())
+  ((%initial-state :initarg :state
+                   :reader read-initial-state)))
 
 
 (defmethod cl-ds:clone ((range cumulative-accumulate-range))
@@ -34,7 +32,7 @@
          :original-range (read-original-range range)
          :result (read-result range)
          :function (read-function range)
-         :key (read-key range)
+         :cumulative-key (read-cumulative-key range)
          (if (slot-boundp range '%state)
              (list :state (access-state range))
              nil)))
@@ -52,7 +50,7 @@
   (bind (((:values v more) (call-next-method)))
     (if (no more)
         (values v nil)
-        (let* ((key (read-key range))
+        (let* ((key (read-cumulative-key range))
                (function (read-function range))
                (result (read-result range)))
           (values
@@ -65,7 +63,7 @@
 
 
 (defun consume-impl (range v)
-  (let* ((key (read-key range))
+  (let* ((key (read-cumulative-key range))
          (function (read-function range))
          (result (read-result range)))
     (values
@@ -100,7 +98,7 @@
   (let* ((state (apply #'make 'cumulative-state
                        :result (read-result range)
                        :function (read-function range)
-                       :key (read-key range)
+                       :cumulative-key (read-cumulative-key range)
                        (if (slot-boundp range '%state)
                            (list :state (access-state range))
                            nil))))
@@ -130,7 +128,7 @@
      :result result
      :initial-value initial-value
      :initial-value-bound initial-value-bound
-     :key key)))
+     :cumulative-key key)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
@@ -143,9 +141,44 @@
   (declare (ignore all))
   (apply #'cl-ds.alg:make-proxy
          range 'cumulative-accumulate-range
-         :key key
+         :cumulative-key key
          :function function
          :result result
          (if initial-value-bound
              (list :state initial-value)
              nil)))
+
+
+(defclass cumulative-accumulate-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator
+                                            cumulative-state)
+  ())
+
+
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator cumulative-accumulate-aggregator)
+                                               element)
+  (let ((inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator)))
+    (~>> element
+         (consume-impl aggregator)
+         (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
+
+
+(defmethod proxy-range-aggregator-outer-fn ((range cumulative-accumulate-function)
+                                            key
+                                            function
+                                            outer-fn
+                                            arguments)
+  (lambda ()
+    (apply #'make 'cumulative-accumulate-aggregator
+           :result (read-result range)
+           :function (read-function range)
+           :cumulative-key (read-cumulative-key range)
+           :key key
+           (if (slot-boundp range '%state)
+               (list :state (access-state range))
+               nil))))
+
+
+(defmethod cl-ds.alg.meta:across-aggregate ((range cumulative-accumulate-function) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))
