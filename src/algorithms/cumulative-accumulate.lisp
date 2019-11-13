@@ -128,7 +128,7 @@
      :result result
      :initial-value initial-value
      :initial-value-bound initial-value-bound
-     :cumulative-key key)))
+     :key key)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
