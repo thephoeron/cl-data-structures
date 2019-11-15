@@ -68,7 +68,7 @@
 
 
 (defgeneric on-each-proxy-range-from-range (range function key)
-  (:method ((range fundamental-forward-range) function key)
+  (:method ((range cl-ds:traversable) function key)
     (make 'forward-proxy-box-range
           :original-range range
           :function function
@@ -85,7 +85,7 @@
           :key key)))
 
 
-(defmethod apply-layer ((range fundamental-range)
+(defmethod apply-layer ((range cl-ds:traversable)
                         (fn on-each-function)
                         &rest all &key function key)
   (declare (ignore all))
