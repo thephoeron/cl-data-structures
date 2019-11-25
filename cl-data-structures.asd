@@ -217,6 +217,7 @@
                              (:file "split-into-chunks")
                              (:file "hash-join")
                              (:file "chain")
+                             (:file "frequency")
                              (:file "zip")
                              (:file "flatten-lists")
                              (:file "partition-if")

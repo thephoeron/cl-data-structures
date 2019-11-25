@@ -114,4 +114,5 @@
    #:connect
    #:connect-traversable
    #:rate
+   #:frequency
    #:zip-traversable))
