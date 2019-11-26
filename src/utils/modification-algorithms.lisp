@@ -92,7 +92,12 @@
                               (key #'identity)
                               (start 0)
                               (end (length vector)))
+  (declare (type fixnum start end)
+           (type vector vector)
+           (optimize (speed 3)))
+  (ensure-functionf test)
   (iterate
+    (declare (type fixnum i result))
     (with result = 0)
     (for i from (1- end) downto start)
     (for removal = (funcall test (funcall key (aref vector i))))
