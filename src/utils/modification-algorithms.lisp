@@ -88,6 +88,13 @@
 
 
 (declaim (inline swap-if))
+(-> swap-if (vector
+             (or function symbol)
+             &key
+             (:key (or function symbol))
+             (:start index)
+             (:end index))
+    index)
 (defun swap-if (vector test &key
                               (key #'identity)
                               (start 0)
@@ -95,7 +102,7 @@
   (declare (type fixnum start end)
            (type vector vector)
            (optimize (speed 3)))
-  (ensure-functionf test)
+  (ensure-functionf test key)
   (iterate
     (declare (type fixnum i result))
     (with result = 0)
