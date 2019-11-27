@@ -70,7 +70,7 @@
 (declaim (inline swapop))
 (-> swapop (extendable-vector index) vector)
 (defun swapop (vector index)
-  "Swaps element under INDEX with last element of VECTOR. Pops last element and returns VECTOR.
+  "Swaps element under INDEX with last element of VECTOR. Pops last element and returns removed element.
 
    @b(Values and parameters:)
    @begin(list)
@@ -81,10 +81,10 @@
    @b(Side Effects:) changes element under INDEX to last element in the vector, reduces fill-pointer."
   (unless (< index (fill-pointer vector))
     (error "Can't swapop element out of fill-pointer range."))
-  (rotatef (aref vector (1- (fill-pointer vector)))
-           (aref vector index))
-  (decf (fill-pointer vector))
-  vector)
+  (lret ((result (aref vector index)))
+    (rotatef (aref vector (1- (fill-pointer vector)))
+             (aref vector index))
+    (decf (fill-pointer vector))))
 
 
 (declaim (inline swap-if))
