@@ -61,6 +61,7 @@
    #:to-list
    #:accumulate
    #:bidirectional-chain-of-ranges
+   #:multiplex
    #:bidirectional-proxy-range
    #:cartesian
    #:chain

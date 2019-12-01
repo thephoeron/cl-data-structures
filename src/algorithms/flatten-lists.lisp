@@ -28,12 +28,14 @@
                           (funcall function x))))
              (inner x))))
   (defmethod cl-ds:traverse ((range flatten-proxy) function)
+    (ensure-functionf function)
     (cl-ds:traverse (read-original-range range)
                     (compose (curry #'impl function) (read-key range)))
     range)
 
 
   (defmethod cl-ds:across ((range flatten-proxy) function)
+    (ensure-functionf function)
     (cl-ds:across (read-original-range range)
                   (compose (curry #'impl function) (read-key range)))
     range))
@@ -41,7 +43,8 @@
 
 (defmethod cl-ds:reset! ((range flatten-proxy))
   (setf (access-current range) nil)
-  (call-next-method))
+  (call-next-method)
+  range)
 
 
 (defmethod cl-ds:peek-front ((range forward-flatten-proxy))

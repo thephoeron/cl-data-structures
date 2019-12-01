@@ -206,6 +206,7 @@
                              (:file "accumulate")
                              (:file "group-by")
                              (:file "without")
+                             (:file "multiplex")
                              (:file "only")
                              (:file "cartesian")
                              (:file "restrain-size")
