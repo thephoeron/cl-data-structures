@@ -92,7 +92,7 @@
 
 (defgeneric multiplex (range &key key function)
   (:generic-function-class multiplex-function)
-  (:method (range &key (key #'identity) (function #'identity))
+  (:method (range &key (key #'identity) (function #'cl-ds:whole-range))
     (ensure-functionf key)
     (apply-range-function range #'multiplex :key key :function function)))
 
