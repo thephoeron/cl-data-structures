@@ -24,13 +24,16 @@
 
 (defmethod cl-ds:clone ((range multiplex-proxy))
   (bind (((:slots %current) range))
-    (apply #'make
-           (class-of range)
-           :current #1=(if (null %current)
-                        nil
-                        (cl-ds:clone %current))
-           :initial-current #1#
-           (cl-ds.utils:cloning-information range))))
+    (make (class-of range)
+          :current #1=(if (null %current)
+                          nil
+                          (cl-ds:clone %current))
+          :initial-current #1#
+          :function (read-function range)
+          :key (read-key range)
+          :original-range (~> range
+                               read-original-range
+                               cl-ds:clone))))
 
 
 (defmethod cl-ds:traverse ((range multiplex-proxy) function)
