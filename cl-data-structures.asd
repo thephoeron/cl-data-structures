@@ -124,7 +124,8 @@
                               :components ((:file "package")
                                            (:file "common")))
                              (:module "skip-list"
-                              :components ((:file "package")))
+                              :components ((:file "package")
+                                           (:file "common")))
                              (:module "egnat"
                               :components ((:file "package")
                                            (:file "classes")
