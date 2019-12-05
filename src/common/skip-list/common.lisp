@@ -14,9 +14,10 @@
 (-> locate-node (simple-vector t) simple-array)
 (defun locate-node (pointers item)
   (iterate
+    (declare (type fixnum i length))
     (with length = (length pointers))
     (with result = (copy-array pointers))
-    (for i from (1- length) downto 0)
+    (for i from (the fixnum (1- length)) downto 0)
     (iterate
       )
     (finally (return result))))
