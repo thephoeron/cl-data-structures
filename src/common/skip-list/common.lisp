@@ -6,6 +6,17 @@
   (content nil :type t))
 
 
-(-> locate-node ((or null skip-list-node) t) simple-array)
-(defun locate-node (skip-list-node item)
-  cl-ds.utils:todo)
+(cl-ds.utils:define-list-of-slots skip-list-node ()
+  (rests skip-list-node-rests)
+  (content skip-list-node-content))
+
+
+(-> locate-node (simple-vector t) simple-array)
+(defun locate-node (pointers item)
+  (iterate
+    (with length = (length pointers))
+    (with result = (copy-array pointers))
+    (for i from (1- length) downto 0)
+    (iterate
+      )
+    (finally (return result))))
