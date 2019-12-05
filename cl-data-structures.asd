@@ -123,6 +123,8 @@
                              (:module "rrb"
                               :components ((:file "package")
                                            (:file "common")))
+                             (:module "skip-list"
+                              :components ((:file "package")))
                              (:module "egnat"
                               :components ((:file "package")
                                            (:file "classes")
