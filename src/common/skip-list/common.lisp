@@ -11,8 +11,8 @@
   (content skip-list-node-content))
 
 
-(-> locate-node (simple-vector t) simple-array)
-(defun locate-node (pointers item)
+(-> locate-node (simple-vector t function) simple-array)
+(defun locate-node (pointers item test)
   (iterate
     (declare (type fixnum i length))
     (with length = (length pointers))
