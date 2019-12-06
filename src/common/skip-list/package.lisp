@@ -7,4 +7,8 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.common.skip-list)
   (:export
-   ))
+   #:skip-list-node
+   #:make-skip-list-node
+   #:skip-list-node-pointers
+   #:skip-list-node-content
+   #:locate-node))

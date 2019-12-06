@@ -125,7 +125,8 @@
                                            (:file "common")))
                              (:module "skip-list"
                               :components ((:file "package")
-                                           (:file "common")))
+                                           (:file "common")
+                                           (:test-file "tests.lisp")))
                              (:module "egnat"
                               :components ((:file "package")
                                            (:file "classes")

@@ -11,18 +11,20 @@
   (content skip-list-node-content))
 
 
-(-> locate-node (simple-vector t function) simple-array)
+(-> locate-node (simple-vector t function) (or null skip-list-node))
 (defun locate-node (pointers item test)
-  (iterate outer
+  (iterate
     (declare (type fixnum i)
              (type simple-vector result))
     (with result = pointers)
     (with i = (~> pointers length 1-))
     (for node = (aref result i))
     (if (and node
-             (funcall test item (skip-list-node-content node)))
+             (funcall test
+                      (skip-list-node-content node)
+                      item))
         (setf result (skip-list-node-pointers node)
               i (~> result length 1-))
         (decf i))
-    (until (> 0 i))
-    (finally (return-from outer result))))
+    (while (>= i 0))
+    (finally (return node))))
