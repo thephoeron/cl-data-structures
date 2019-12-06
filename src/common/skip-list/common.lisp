@@ -22,9 +22,8 @@
     (with i = last)
     (iterate
       (with node = (aref result i))
-      (when (null node)
-        (in outer (finish)))
-      (unless (funcall test item (skip-list-node-content node))
+      (unless (and node
+                   (funcall test item (skip-list-node-content node)))
         (decf i)
         (leave))
       (setf result (skip-list-node-pointers node)))
