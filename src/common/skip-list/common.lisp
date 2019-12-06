@@ -2,22 +2,31 @@
 
 
 (defstruct skip-list-node
-  (rests #() :type simple-vector)
+  (pointers #() :type simple-vector)
   (content nil :type t))
 
 
 (cl-ds.utils:define-list-of-slots skip-list-node ()
-  (rests skip-list-node-rests)
+  (pointers skip-list-node-rests)
   (content skip-list-node-content))
 
 
 (-> locate-node (simple-vector t function) simple-array)
 (defun locate-node (pointers item test)
-  (iterate
-    (declare (type fixnum i length))
+  (iterate outer
+    (declare (type fixnum i length last)
+             (type simple-vector result))
     (with length = (length pointers))
-    (with result = (copy-array pointers))
-    (for i from (the fixnum (1- length)) downto 0)
+    (with result = pointers)
+    (with last = (1- length))
+    (with i = last)
     (iterate
-      )
-    (finally (return result))))
+      (with node = (aref result i))
+      (when (null node)
+        (in outer (finish)))
+      (unless (funcall test item (skip-list-node-content node))
+        (decf i)
+        (leave))
+      (setf result (skip-list-node-pointers node)))
+    (until (> 0 i))
+    (finally (return-from outer result))))
