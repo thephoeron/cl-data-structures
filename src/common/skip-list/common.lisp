@@ -17,6 +17,7 @@
     (declare (type fixnum i)
              (type simple-vector result))
     (with result = pointers)
+    (with result-node = nil)
     (with i = (~> pointers length 1-))
     (for node = (aref result i))
     (if (and node
@@ -24,7 +25,8 @@
                       (skip-list-node-content node)
                       item))
         (setf result (skip-list-node-pointers node)
-              i (~> result length 1-))
+              i (~> result length 1-)
+              result-node (aref result i))
         (decf i))
     (while (>= i 0))
-    (finally (return node))))
+    (finally (return result-node))))
