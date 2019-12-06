@@ -20,12 +20,10 @@
     (with result = pointers)
     (with last = (1- length))
     (with i = last)
-    (iterate
-      (with node = (aref result i))
-      (unless (and node
-                   (funcall test item (skip-list-node-content node)))
-        (decf i)
-        (leave))
-      (setf result (skip-list-node-pointers node)))
+    (for node = (aref result i))
+    (if (and node
+             (funcall test item (skip-list-node-content node)))
+        (setf result (skip-list-node-pointers node))
+        (decf i))
     (until (> 0 i))
     (finally (return-from outer result))))
