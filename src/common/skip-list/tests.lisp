@@ -2,7 +2,7 @@
 (defpackage skip-list-tests (:use :cl :cl-data-structures.aux-package))
 (in-package #:skip-list-tests)
 
-(prove:plan 5)
+(prove:plan 6)
 
 (let* ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
@@ -19,7 +19,7 @@
                #'<)))
   (prove:is found node2))
 
-(let* ((node1 (cl-ds.common.skip-list:make-skip-list-node
+(bind ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
                :content 3))
        (node2 (cl-ds.common.skip-list:make-skip-list-node
@@ -28,11 +28,12 @@
        (node3 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector node2)
                :content 1))
-       (found (cl-ds.common.skip-list:locate-node
-               (vector node3)
-               5
-               #'<)))
-  (prove:is found nil))
+       ((:values found prev) (cl-ds.common.skip-list:locate-node
+                              (vector node3)
+                              5
+                              #'<)))
+  (prove:is found nil)
+  (prove:is prev node1))
 
 (let* ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
