@@ -11,7 +11,8 @@
   (content skip-list-node-content))
 
 
-(-> locate-node (simple-vector t function) (or null skip-list-node))
+(-> locate-node (simple-vector t function) (values (or null skip-list-node)
+                                                   (or null skip-list-node)))
 (defun locate-node (pointers item test)
   (let* ((pointers-length (~> pointers length))
          (last (1- pointers-length)))
@@ -23,12 +24,13 @@
         (next-iteration))
       (for content = (skip-list-node-content node))
       (when (funcall test item content)
-        (return-from locate-node node)))
+        (return-from locate-node (values node nil))))
     (iterate
       (declare (type fixnum i)
                (type simple-vector result))
       (with result = pointers)
       (with result-node = nil)
+      (with prev-result-node = nil)
       (with i = last)
       (for node = (aref result i))
       (if (and node
@@ -37,10 +39,11 @@
                         item))
           (setf result (skip-list-node-pointers node)
                 i (~> result length 1-)
+                prev-result-node result-node
                 result-node (aref result i))
           (decf i))
       (while (>= i 0))
-      (finally (return result-node)))))
+      (finally (return (values result-node prev-result-node))))))
 
 
 (defclass fundamental-skip-list ()
