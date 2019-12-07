@@ -17,7 +17,7 @@
                (vector node3)
                2
                #'<)))
-  (prove:is found node2))
+  (prove:is (aref found 0) node2))
 
 (bind ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
@@ -32,8 +32,8 @@
                               (vector node3)
                               5
                               #'<)))
-  (prove:is found nil)
-  (prove:is prev node1))
+  (prove:is (aref found 0) nil)
+  (prove:is (aref prev 0) node1))
 
 (let* ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
@@ -48,7 +48,7 @@
                (vector node3)
                0
                #'<)))
-  (prove:is found node3))
+  (prove:is (aref found 0) node3))
 
 
 (bind ((node1 (cl-ds.common.skip-list:make-skip-list-node
@@ -65,8 +65,8 @@
          (vector node3)
          3
          #'<)))
-  (prove:is found node1)
-  (prove:is prev node2))
+  (prove:is (aref found 0) node1)
+  (prove:is (aref prev 0) node2))
 
 
 (prove:finalize)
