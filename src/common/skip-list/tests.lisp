@@ -50,7 +50,6 @@
                #'<)))
   (prove:is (aref found 0) node3))
 
-
 (bind ((node1 (cl-ds.common.skip-list:make-skip-list-node
                :pointers (vector nil)
                :content 5))

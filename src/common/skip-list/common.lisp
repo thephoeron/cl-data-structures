@@ -60,16 +60,19 @@
   skip-list-node)
 
 
-(defun make-skip-list-node-of-level (level)
-  (make-skip-list-node :pointers (make-array level :initial-element nil)))
-
-
-(defun make-skip-list-node-of-random-level (maximum-level)
-  (make-skip-list-node-of-level (random-level maximum-level)))
+(-> new-node-update-pointers! (simple-vector skip-list-node) skip-list-node)
+(defun new-node-update-pointers! (pointers spliced-node)
+  (iterate
+    (declare (type fixnum i))
+    (for i from (~> spliced-node skip-list-node-level 1-) downto 0)
+    (for rest = (aref pointers i))
+    (setf (aref pointers i) spliced-node)
+    (finally (return spliced-node))))
 
 
 (-> random-level (positive-fixnum) positive-fixnum)
 (defun random-level (maximum-level)
+  (declare (optimize (speed 3) (safety 0)))
   (iterate
     (declare (type fixnum i))
     (for i from 1 to maximum-level)
@@ -77,14 +80,28 @@
     (finally (return i))))
 
 
+(-> make-skip-list-node-of-level (fixnum) skip-list-node)
+(defun make-skip-list-node-of-level (level)
+  (declare (optimize (speed 3) (safety 0)))
+  (make-skip-list-node :pointers (make-array level :initial-element nil)))
+
+
+(-> make-skip-list-node-of-random-level (fixnum) skip-list-node)
+(defun make-skip-list-node-of-random-level (maximum-level)
+  (declare (optimize (speed 3) (safety 0)))
+  (make-skip-list-node-of-level (random-level maximum-level)))
+
+
 (declaim (notinline locate-node))
-(-> locate-node (simple-vector t function) (values simple-vector
-                                                   (or null simple-vector)))
+(-> locate-node (simple-vector t function) (values simple-vector simple-vector))
 (defun locate-node (pointers item test)
   (declare (optimize (speed 0) (safety 3) (debug 3)
                      (compilation-speed 0) (space 0)))
-  (let* ((pointers-length (~> pointers length))
+  (let* ((pointers-length (length pointers))
+         (prev-result (make-array pointers-length
+                                  :initial-element nil))
          (last (1- pointers-length)))
+    (declare (type fixnum last pointers-length))
     (iterate
       (declare (type fixnum i))
       (for i from last downto 0)
@@ -93,13 +110,11 @@
         (next-iteration))
       (for content = (skip-list-node-content node))
       (when (funcall test item content)
-        (return-from locate-node (values pointers nil))))
+        (return-from locate-node (values pointers prev-result))))
     (iterate
       (declare (type fixnum i)
                (type simple-vector result))
       (with result = (copy-array pointers))
-      (with prev-result = (make-array (length pointers)
-                                      :initial-element nil))
       (with i = last)
       (for node = (aref result i))
       (cl-ds.utils:with-slots-for (node skip-list-node)
@@ -122,9 +137,11 @@
           :reader cl-ds:size
           :type fixnum
           :accessor access-size)
+   (%ordering-function :initarg :ordering-function
+                       :reader read-ordering-function)
    (%pointers :initarg :pointers
-             :reader read-pointers
-             :type simple-vector)
+              :reader read-pointers
+              :type simple-vector)
    (%maximum-level :initarg :maximum-level
                    :accessor access-maximum-level))
   (:initial-values
@@ -133,6 +150,7 @@
 
 (cl-ds.utils:define-list-of-slots fundamental-skip-list ()
   (size access-size)
+  (ordering-function read-ordering-function)
   (pointers read-pointers)
   (maximum-level access-maximum-level))
 
@@ -140,4 +158,5 @@
 (defmethod cl-ds.utils:cloning-information append ((object fundamental-skip-list))
   '((:pointers read-pointers)
     (:size cl-ds:size)
+    (:ordering-function read-ordering-function)
     (:maximum-level access-maximum-level)))
