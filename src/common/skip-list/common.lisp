@@ -38,9 +38,24 @@
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (iterate
     (declare (type fixnum i))
-    (for i from 0 below (length source))
+    (for i from 0 below (min (length destination)
+                             (length source)))
     (setf (aref destination i) (aref source i))
     (finally (return destination))))
+
+
+(defun skip-list-node-update-pointers! (skip-list-node new-pointers)
+  (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
+    (copy-into pointers new-pointers)))
+
+
+(-> random-level (positive-fixnum) positive-fixnum)
+(defun random-level (maximum-level)
+  (iterate
+    (declare (type fixnum i))
+    (for i from 1 to maximum-level)
+    (until (zerop (random 2)))
+    (finally (return i))))
 
 
 (declaim (notinline locate-node))

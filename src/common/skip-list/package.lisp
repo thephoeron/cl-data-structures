@@ -12,6 +12,7 @@
    #:maximum-level
    #:make-skip-list-node
    #:level
+   #:random-level
    #:skip-list-node
    #:make-skip-list-node
    #:skip-list-node-pointers
