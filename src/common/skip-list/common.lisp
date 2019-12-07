@@ -19,6 +19,15 @@
   (~> skip-list-node skip-list-node-pointers (aref index)))
 
 
+(-> (setf skip-list-node-at)
+    ((or null skip-list-node) skip-list-node cl-ds.utils:index)
+    (or null skip-list-node))
+(defun (setf skip-list-node-at) (new-value skip-list-node index)
+  (declare (optimize (speed 3)))
+  (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
+    (setf (aref pointers index) new-value)))
+
+
 (cl-ds.utils:define-list-of-slots skip-list-node ()
   (pointers skip-list-node-pointers)
   (level skip-list-node-level)
