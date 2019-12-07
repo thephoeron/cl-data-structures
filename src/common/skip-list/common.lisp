@@ -33,8 +33,8 @@
                          :content content)))
 
 
-(-> copy-into (simple-vector simple-vector) simple-vector)
-(defun copy-into (destination source)
+(-> copy-into! (simple-vector simple-vector) simple-vector)
+(defun copy-into! (destination source)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
   (iterate
     (declare (type fixnum i))
@@ -44,9 +44,19 @@
     (finally (return destination))))
 
 
+(-> skip-list-node-update-pointers! (skip-list-node simple-vector) skip-list-node)
 (defun skip-list-node-update-pointers! (skip-list-node new-pointers)
   (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
-    (copy-into pointers new-pointers)))
+    (copy-into! pointers new-pointers))
+  skip-list-node)
+
+
+(defun make-skip-list-node-of-level (level)
+  (make-skip-list-node :pointers (make-array level :initial-element nil)))
+
+
+(defun make-skip-list-node-of-random-level (maximum-level)
+  (make-skip-list-node-of-level (random-level maximum-level)))
 
 
 (-> random-level (positive-fixnum) positive-fixnum)
@@ -89,8 +99,8 @@
                           content
                           item))
             (progn
-              (copy-into prev-result result)
-              (copy-into result pointers)
+              (copy-into! prev-result result)
+              (copy-into! result pointers)
               (setf i (1- level)))
             (decf i)))
       (while (>= i 0))
