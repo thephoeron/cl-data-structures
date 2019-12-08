@@ -169,7 +169,7 @@
   skip-list-node)
 
 
-(defclass fundamental-skip-list ()
+(defclass fundamental-skip-list (cl-ds:mutable cl-ds:fundamental-container)
   ((%size :initarg :size
           :reader cl-ds:size
           :type fixnum
