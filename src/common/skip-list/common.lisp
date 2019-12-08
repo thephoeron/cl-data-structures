@@ -36,9 +36,29 @@
 (-> skip-list-node-clone (skip-list-node) skip-list-node)
 (defun skip-list-node-clone (skip-list-node)
   (declare (optimize (speed 0) (debug 3) (safety 3)))
-  (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
-    (make-skip-list-node :pointers (copy-array pointers)
-                         :content content)))
+  (bind ((table (make-hash-table :test 'eq))
+         (stack (vect))
+         ((:labels impl (skip-list-node))
+          (if (null skip-list-node)
+              nil
+              (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
+                (if-let ((existing-node #1=(gethash skip-list-node table)))
+                  existing-node
+                  (lret ((result (make-skip-list-node
+                                  :pointers (copy-array pointers)
+                                  :content content)))
+                    (setf #1# result
+                          (gethash result table) result)
+                    (vector-push-extend (skip-list-node-pointers result)
+                                        stack)))))))
+    (iterate
+      (with result = (impl skip-list-node))
+      (for fill-pointer = (fill-pointer stack))
+      (until (zerop fill-pointer))
+      (for pointers = (aref stack (1- fill-pointer)))
+      (decf (fill-pointer stack))
+      (cl-ds.utils:transform #'impl pointers)
+      (finally (return result)))))
 
 
 (-> copy-into! (simple-vector simple-vector &optional fixnum) simple-vector)
