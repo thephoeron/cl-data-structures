@@ -6,15 +6,21 @@
   (content nil :type t))
 
 
+(cl-ds.utils:define-list-of-slots skip-list-node ()
+  (pointers skip-list-node-pointers)
+  (level skip-list-node-level)
+  (content skip-list-node-content))
+
+
 (-> skip-list-node-level (skip-list-node) fixnum)
 (defun skip-list-node-level (skip-list-node)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (~> skip-list-node skip-list-node-pointers length))
 
 
 (-> skip-list-node-at (skip-list-node cl-ds.utils:index) t)
 (defun skip-list-node-at (skip-list-node index)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (~> skip-list-node skip-list-node-pointers (aref index)))
 
 
@@ -22,20 +28,14 @@
     ((or null skip-list-node) skip-list-node cl-ds.utils:index)
     (or null skip-list-node))
 (defun (setf skip-list-node-at) (new-value skip-list-node index)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
     (setf (aref pointers index) new-value)))
 
 
-(cl-ds.utils:define-list-of-slots skip-list-node ()
-  (pointers skip-list-node-pointers)
-  (level skip-list-node-level)
-  (content skip-list-node-content))
-
-
 (-> skip-list-node-clone (skip-list-node) skip-list-node)
 (defun skip-list-node-clone (skip-list-node)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
     (make-skip-list-node :pointers (copy-array pointers)
                          :content content)))
@@ -66,24 +66,25 @@
 
 (-> new-node-update-pointers! (skip-list-node simple-vector) skip-list-node)
 (defun new-node-update-pointers! (spliced-node pointers)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (iterate
     (declare (type fixnum i))
+    (with spliced-level = (skip-list-node-level spliced-node))
     (for i from 0 below (length pointers))
     (for rest = (aref pointers i))
     (when (null rest)
       (next-iteration))
-    (cl-ds.utils:with-slots-for (spliced-node skip-list-node)
+    (cl-ds.utils:with-slots-for (rest skip-list-node)
       (iterate
         (declare (type fixnum j))
-        (for j from 0 below level)
+        (for j from 0 below (min level spliced-level))
         (setf (aref pointers j) spliced-node)))
     (finally (return spliced-node))))
 
 
 (-> random-level (positive-fixnum) positive-fixnum)
 (defun random-level (maximum-level)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 0) (safety 3) (debug 3)))
   (iterate
     (declare (type fixnum i))
     (for i from 1 to maximum-level)
@@ -93,13 +94,13 @@
 
 (-> make-skip-list-node-of-level (fixnum) skip-list-node)
 (defun make-skip-list-node-of-level (level)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 0) (safety 3) (debug 3)))
   (make-skip-list-node :pointers (make-array level :initial-element nil)))
 
 
 (-> make-skip-list-node-of-random-level (fixnum) skip-list-node)
 (defun make-skip-list-node-of-random-level (maximum-level)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 0) (safety 3) (debug 3)))
   (make-skip-list-node-of-level (random-level maximum-level)))
 
 
@@ -141,9 +142,9 @@
 
 (-> insert-node-between! (simple-vector simple-vector skip-list-node) skip-list-node)
 (defun insert-node-between! (pointers previous-pointers skip-list-node)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (skip-list-node-update-pointers! skip-list-node pointers)
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (new-node-update-pointers! skip-list-node previous-pointers)
+  (skip-list-node-update-pointers! skip-list-node pointers)
   skip-list-node)
 
 
