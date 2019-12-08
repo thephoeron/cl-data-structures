@@ -41,13 +41,13 @@
          ((:labels impl (skip-list-node))
           (if (null skip-list-node)
               nil
-              (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
-                (if-let ((existing-node #1=(gethash skip-list-node table)))
-                  existing-node
+              (if-let ((existing-node (gethash skip-list-node table)))
+                existing-node
+                (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
                   (lret ((result (make-skip-list-node
                                   :pointers (copy-array pointers)
                                   :content content)))
-                    (setf #1# result
+                    (setf (gethash skip-list-node table) result
                           (gethash result table) result)
                     (vector-push-extend (skip-list-node-pointers result)
                                         stack)))))))
