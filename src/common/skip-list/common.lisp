@@ -12,7 +12,6 @@
   (~> skip-list-node skip-list-node-pointers length))
 
 
-
 (-> skip-list-node-at (skip-list-node cl-ds.utils:index) t)
 (defun skip-list-node-at (skip-list-node index)
   (declare (optimize (speed 3)))
@@ -64,7 +63,8 @@
 (defun new-node-update-pointers! (pointers spliced-node)
   (iterate
     (declare (type fixnum i))
-    (for i from (~> spliced-node skip-list-node-level 1-) downto 0)
+    (for i from 0 below (min (~> spliced-node skip-list-node-level)
+                             (length pointers)))
     (for rest = (aref pointers i))
     (setf (aref pointers i) spliced-node)
     (finally (return spliced-node))))
@@ -118,18 +118,14 @@
       (with i = last)
       (for node = (aref result i))
       (cl-ds.utils:with-slots-for (node skip-list-node)
-        (if (and node
-                 (funcall test
-                          content
-                          item))
+        (if (and node (funcall test content item))
             (progn
               (copy-into! prev-result result)
               (copy-into! result pointers)
-              (setf i (1- level)))
+              (setf i (the fixnum (1- level))))
             (decf i)))
       (while (>= i 0))
-      (finally
-       (return (values result prev-result))))))
+      (finally (return (values result prev-result))))))
 
 
 (defclass fundamental-skip-list ()
@@ -144,8 +140,7 @@
               :type simple-vector)
    (%maximum-level :initarg :maximum-level
                    :accessor access-maximum-level))
-  (:initial-values
-   :size 0))
+  (:default-initargs :size 0))
 
 
 (cl-ds.utils:define-list-of-slots fundamental-skip-list ()
