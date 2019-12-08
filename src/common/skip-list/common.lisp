@@ -181,7 +181,9 @@
               :type simple-vector)
    (%maximum-level :initarg :maximum-level
                    :accessor access-maximum-level))
-  (:default-initargs :size 0))
+  (:default-initargs
+   :size 0
+   :maximum-level 32))
 
 
 (cl-ds.utils:define-list-of-slots fundamental-skip-list ()
