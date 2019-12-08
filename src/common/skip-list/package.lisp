@@ -8,7 +8,9 @@
   (:nicknames #:cl-ds.common.skip-list)
   (:export
    #:access-size
+   #:access-size
    #:fundamental-skip-list
+   #:fundamental-skip-list-range
    #:insert-node-between!
    #:level
    #:locate-node

@@ -33,11 +33,13 @@
     (setf (aref pointers index) new-value)))
 
 
-(-> skip-list-node-clone (skip-list-node) skip-list-node)
-(defun skip-list-node-clone (skip-list-node)
+(-> skip-list-node-clone ((or null skip-list-node)) (values (or null skip-list-node)
+                                                            hash-table))
+(defun skip-list-node-clone (skip-list-node &aux (table (make-hash-table :test 'eq)))
   (declare (optimize (speed 0) (debug 3) (safety 3)))
-  (bind ((table (make-hash-table :test 'eq))
-         (stack (vect))
+  (when (null skip-list-node)
+    (return-from skip-list-node-clone (values nil table)))
+  (bind ((stack (vect))
          ((:labels impl (skip-list-node))
           (if (null skip-list-node)
               nil
@@ -58,7 +60,7 @@
       (for pointers = (aref stack (1- fill-pointer)))
       (decf (fill-pointer stack))
       (cl-ds.utils:transform #'impl pointers)
-      (finally (return result)))))
+      (finally (return (values result table))))))
 
 
 (-> copy-into! (simple-vector simple-vector &optional fixnum) simple-vector)
@@ -194,3 +196,95 @@
     (:size cl-ds:size)
     (:ordering-function read-ordering-function)
     (:maximum-level access-maximum-level)))
+
+
+(defclass fundamental-skip-list-range (cl-ds:fundamental-forward-range)
+  ((%current-node :initarg :current-node
+                  :reader cl-ds:peek-front
+                  :accessor access-current-node)
+   (%initial-current-node :initarg :current-node
+                          :reader read-initial-current-node)))
+
+
+(defmethod cl-ds.utils:cloning-information append ((object fundamental-skip-list-range))
+  '((:current-node access-current-node)))
+
+
+(defmethod cl-ds:reset! ((object fundamental-skip-list-range))
+  (setf (access-current-node object) (read-initial-current-node object))
+  object)
+
+
+(defmethod cl-ds:consume-front ((object fundamental-skip-list-range))
+  (if-let ((result (cl-ds:peek-front object)))
+    (progn (setf (access-current-node object) (skip-list-node-at result 0))
+           result)
+    nil))
+
+
+(defmethod cl-ds:drop-front ((object fundamental-skip-list-range) count)
+  (check-type count non-negative-integer)
+  (iterate
+    (for result
+         initially (cl-ds:peek-front object)
+         then (skip-list-node-at result 0))
+    (until (null result))
+    (repeat count)
+    (finally (setf (access-current-node object) result)))
+  object)
+
+
+(defmethod cl-ds:traverse ((object fundamental-skip-list-range) function)
+  (ensure-functionf function)
+  (iterate
+    (with result = (access-current-node object))
+    (until (null result))
+    (funcall function result)
+    (setf result (skip-list-node-at result 0)
+          (access-current-node object) result))
+  object)
+
+
+(defmethod cl-ds:across ((object fundamental-skip-list-range) function)
+  (ensure-functionf function)
+  (iterate
+    (for result
+         initially (access-current-node object)
+         then (skip-list-node-at result 0))
+    (until (null result))
+    (funcall function result))
+  object)
+
+
+(defmethod cl-ds:clone ((range fundamental-skip-list-range))
+  (cl-ds.utils:clone range))
+
+
+(defmethod cl-ds:clone ((container fundamental-skip-list))
+  (cl-ds.utils:with-slots-for (container fundamental-skip-list)
+    (make (class-of container)
+          :size size
+          :ordering-function ordering-function
+          :pointers (map 'vector
+                         (rcurry #'gethash
+                                 (nth-value 1 (~> pointers
+                                                  (aref 0)
+                                                  skip-list-node-clone)))
+                         pointers)
+          :maximum-level maximum-level)))
+
+
+(defmethod cl-ds:empty-clone ((container fundamental-skip-list))
+  (cl-ds.utils:with-slots-for (container fundamental-skip-list)
+    (make (class-of container)
+          :size 0
+          :ordering-function ordering-function
+          :pointers (make-array maximum-level :initial-element nil)
+          :maximum-level maximum-level)))
+
+
+(defmethod cl-ds:reset! ((container fundamental-skip-list))
+  (cl-ds.utils:with-slots-for (container fundamental-skip-list)
+    (setf size 0)
+    (cl-ds.utils:transform (constantly nil) pointers)
+    container))
