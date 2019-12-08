@@ -130,12 +130,12 @@
       (with i = last)
       (for node = (aref result i))
       (cl-ds.utils:with-slots-for (node skip-list-node)
-        (if (and node (funcall test content item))
-            (progn
-              (copy-into! prev-result result level)
-              (copy-into! result pointers)
-              (setf i (the fixnum (1- level))))
-            (decf i)))
+        (when (and node (funcall test content item))
+          (copy-into! prev-result result level)
+          (copy-into! result pointers)
+          (setf i (the fixnum (1- level)))
+          (next-iteration)))
+      (decf i)
       (while (>= i 0))
       (finally (return (values result prev-result))))))
 
