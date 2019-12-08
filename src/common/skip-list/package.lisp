@@ -7,19 +7,24 @@
         #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.common.skip-list)
   (:export
-   #:pointers
-   #:size
-   #:maximum-level
-   #:make-skip-list-node
-   #:level
-   #:random-level
-   #:skip-list-node
-   #:make-skip-list-node
-   #:skip-list-node-pointers
-   #:fundamental-skip-list
    #:access-size
+   #:fundamental-skip-list
+   #:insert-node-between!
+   #:level
+   #:locate-node
+   #:make-skip-list-node
+   #:make-skip-list-node-of-level
+   #:make-skip-list-node-of-random-level
+   #:maximum-level
+   #:new-node-update-pointers!
+   #:pointers
+   #:random-level
    #:read-pointers
+   #:size
+   #:skip-list-node
+   #:skip-list-node-at
+   #:skip-list-node-clone
    #:skip-list-node-content
    #:skip-list-node-level
-   #:skip-list-node-at
-   #:locate-node))
+   #:skip-list-node-pointers
+   #:skip-list-node-update-pointers!))

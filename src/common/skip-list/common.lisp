@@ -41,32 +41,43 @@
                          :content content)))
 
 
-(-> copy-into! (simple-vector simple-vector) simple-vector)
-(defun copy-into! (destination source)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+(-> copy-into! (simple-vector simple-vector &optional fixnum) simple-vector)
+(declaim (inline copy-into!))
+(defun copy-into! (destination source
+                   &optional
+                     (limit (min (length (the simple-vector destination))
+                                 (length (the simple-vector source)))))
+  (declare (optimize (speed 3) (debug 0) (safety 0))
+           (type fixnum limit))
   (iterate
     (declare (type fixnum i))
-    (for i from 0 below (min (length destination)
-                             (length source)))
+    (for i from 0 below limit)
     (setf (aref destination i) (aref source i))
     (finally (return destination))))
 
 
 (-> skip-list-node-update-pointers! (skip-list-node simple-vector) skip-list-node)
 (defun skip-list-node-update-pointers! (skip-list-node new-pointers)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
     (copy-into! pointers new-pointers))
   skip-list-node)
 
 
-(-> new-node-update-pointers! (simple-vector skip-list-node) skip-list-node)
-(defun new-node-update-pointers! (pointers spliced-node)
+(-> new-node-update-pointers! (skip-list-node simple-vector) skip-list-node)
+(defun new-node-update-pointers! (spliced-node pointers)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (iterate
     (declare (type fixnum i))
-    (for i from 0 below (min (~> spliced-node skip-list-node-level)
-                             (length pointers)))
+    (for i from 0 below (length pointers))
     (for rest = (aref pointers i))
-    (setf (aref pointers i) spliced-node)
+    (when (null rest)
+      (next-iteration))
+    (cl-ds.utils:with-slots-for (spliced-node skip-list-node)
+      (iterate
+        (declare (type fixnum j))
+        (for j from 0 below level)
+        (setf (aref pointers j) spliced-node)))
     (finally (return spliced-node))))
 
 
@@ -120,12 +131,20 @@
       (cl-ds.utils:with-slots-for (node skip-list-node)
         (if (and node (funcall test content item))
             (progn
-              (copy-into! prev-result result)
+              (copy-into! prev-result result level)
               (copy-into! result pointers)
               (setf i (the fixnum (1- level))))
             (decf i)))
       (while (>= i 0))
       (finally (return (values result prev-result))))))
+
+
+(-> insert-node-between! (simple-vector simple-vector skip-list-node) skip-list-node)
+(defun insert-node-between! (pointers previous-pointers skip-list-node)
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (skip-list-node-update-pointers! skip-list-node pointers)
+  (new-node-update-pointers! skip-list-node previous-pointers)
+  skip-list-node)
 
 
 (defclass fundamental-skip-list ()
