@@ -27,5 +27,4 @@
   (:nicknames #:cl-ds.sets.skip-list)
   (:export
    #:mutable-skip-list-set
-   #:fundamental-skip-list-set
    #:make-mutable-skip-list-set))

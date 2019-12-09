@@ -127,7 +127,8 @@
 
 
 (declaim (notinline locate-node))
-(-> locate-node (simple-vector t function) (values simple-vector simple-vector))
+(-> locate-node (simple-vector t function) (values simple-vector
+                                                   simple-vector))
 (defun locate-node (pointers item test)
   (declare (optimize (speed 0) (safety 3) (debug 3)
                      (compilation-speed 0) (space 0)))
@@ -159,6 +160,13 @@
       (decf i)
       (while (>= i 0))
       (finally (return (values result prev-result))))))
+
+
+(-> skip-list-locate-node (fundamental-skip-list t) (values simple-vector
+                                                            simple-vector))
+(defun skip-list-locate-node (skip-list item)
+  (cl-ds.utils:with-slots-for (skip-list fundamental-skip-list)
+    (locate-node pointers item ordering-function)))
 
 
 (-> insert-node-between! (simple-vector simple-vector skip-list-node) skip-list-node)
