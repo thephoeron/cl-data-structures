@@ -105,3 +105,21 @@
       (if (~> container read-test-function (funcall content))
           (values t t)
           (values nil nil)))))
+
+
+(defun make-mutable-skip-list-set (ordering test
+                                   &key (maximum-level 32))
+  (check-type maximum-level positive-fixnum)
+  (make-instance 'mutable-skip-list-set
+                 :ordering-function ordering
+                 :maximum-level maximum-level
+                 :test-function test
+                 :pointers (make-array maximum-level
+                                       :initial-element nil)))
+
+
+(defmethod cl-ds:make-from-traversable (traversable
+                                        (class (eql 'mutable-skip-list-set))
+                                        &rest arguments)
+  (lret ((result (apply #'make-mutable-skip-list-set arguments)))
+    cl-ds.utils:todo))
