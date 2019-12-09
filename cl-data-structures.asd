@@ -174,7 +174,9 @@
                 :components ((:file "packages")
                              (:file "common")
                              (:module "qp-trie"
-                                      :components ((:file "api")))))
+                              :components ((:file "api")))
+                             (:module "skip-list"
+                              :components ((:file "api")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
