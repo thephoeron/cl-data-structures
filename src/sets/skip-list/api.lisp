@@ -122,4 +122,5 @@
                                         (class (eql 'mutable-skip-list-set))
                                         &rest arguments)
   (lret ((result (apply #'make-mutable-skip-list-set arguments)))
-    cl-ds.utils:todo))
+    (cl-ds:traverse traversable
+                    (lambda (x) (cl-ds:put! result x)))))
