@@ -78,7 +78,7 @@
      container
      location
      &rest all)
-  (declare (ignore all))
+  (declare (ignore all container))
   cl-ds.utils:todo)
 
 
@@ -88,7 +88,7 @@
      container
      location
      &rest all)
-  (declare (ignore all))
+  (declare (ignore all container))
   cl-ds.utils:todo)
 
 
