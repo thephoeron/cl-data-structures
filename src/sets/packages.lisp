@@ -19,3 +19,13 @@
    #:fundamental-qp-trie-set
    #:make-mutable-qp-trie-set
    #:mutable-qp-trie-set))
+
+
+(defpackage cl-data-structures.sets.skip-list
+  (:use #:common-lisp
+        #:cl-data-structures.aux-package)
+  (:nicknames #:cl-ds.sets.skip-list)
+  (:export
+   #:mutable-skip-list-set
+   #:fundamental-skip-list-set
+   #:make-mutable-skip-list-set))
