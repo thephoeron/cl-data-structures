@@ -96,9 +96,9 @@
                      location
                      &rest more-locations)
   (cl-ds:assert-one-dimension more-locations)
-  (let* ((at (cl-ds.common.skip-list:skip-list-locate-node container
-                                                           location))
-         (result (aref at 0)))
+  (let ((result (~> container
+                    (cl-ds.common.skip-list:skip-list-locate-node location)
+                    (aref 0))))
     (when (null result)
       (return-from cl-ds:at (values nil nil)))
     (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))
