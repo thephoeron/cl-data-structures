@@ -19,6 +19,7 @@
    #:make-skip-list-node-of-level
    #:make-skip-list-node-of-random-level
    #:skip-list-locate-node
+   #:update-head-pointers!
    #:maximum-level
    #:new-node-update-pointers!
    #:pointers

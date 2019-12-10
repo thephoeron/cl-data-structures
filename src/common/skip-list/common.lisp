@@ -209,6 +209,27 @@
    :maximum-level 32))
 
 
+(defun update-head-pointers! (skip-list skip-list-node)
+  (declare (type skip-list-node skip-list-node)
+           (type fundamental-skip-list skip-list))
+  (iterate
+    (declare (type fixnum i)
+             (type simple-vector head))
+    (with head = (read-pointers skip-list))
+    (with content = (skip-list-node-content skip-list-node))
+    (with ordering-function = (read-ordering-function skip-list))
+    (for i from 0 below (length head))
+    (for node = (aref head i))
+    (when (null node)
+      (when (<= i (skip-list-node-level skip-list-node))
+          (setf (aref head i) skip-list-node))
+      (next-iteration))
+    (for old-content = (skip-list-node-content node))
+    (if (funcall ordering-function content old-content)
+        (setf (aref head i) skip-list-node)
+        (finish))))
+
+
 (cl-ds.utils:define-list-of-slots fundamental-skip-list ()
   (size access-size)
   (ordering-function read-ordering-function)

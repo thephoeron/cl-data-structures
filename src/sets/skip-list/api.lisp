@@ -79,7 +79,13 @@
      location
      &rest all)
   (declare (ignore all container))
-  cl-ds.utils:todo)
+  (bind (((:values current prev)
+          (cl-ds.common.skip-list:skip-list-locate-node structure location))
+         (result (aref current 0)))
+    (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
+      (if (~> structure read-test-function (funcall content))
+          cl-ds.utils:todo
+          cl-ds.utils:todo))))
 
 
 (defmethod cl-ds.meta:position-modification
