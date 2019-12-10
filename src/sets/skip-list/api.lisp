@@ -90,16 +90,13 @@
      &rest all)
   (declare (ignore all container))
   (bind (((:values current prev)
-          (cl-ds.common.skip-list:skip-list-locate-node container location))
+          (cl-ds.common.skip-list:skip-list-locate-node structure location))
          (result (aref current 0)))
     (when (null result)
       cl-ds.utils:todo)
-    (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> container read-test-function (funcall content))
-          (iterate
-            (declare (type fixnum i))
-            (for i from 0 below (length current))
-            cl-ds.utils:todo)
+    (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
+      (if (~> structure read-test-function (funcall content))
+          cl-ds.utils:todo
           cl-ds.utils:todo))))
 
 

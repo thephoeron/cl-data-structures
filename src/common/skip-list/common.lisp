@@ -231,7 +231,8 @@
                           :reader read-initial-current-node)))
 
 
-(defmethod cl-ds.utils:cloning-information append ((object fundamental-skip-list-range))
+(defmethod cl-ds.utils:cloning-information
+    append ((object fundamental-skip-list-range))
   '((:current-node access-current-node)))
 
 
