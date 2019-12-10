@@ -222,7 +222,7 @@
     (for node = (aref head i))
     (when (null node)
       (when (<= i (skip-list-node-level skip-list-node))
-          (setf (aref head i) skip-list-node))
+        (setf (aref head i) skip-list-node))
       (next-iteration))
     (for old-content = (skip-list-node-content node))
     (if (funcall ordering-function content old-content)
