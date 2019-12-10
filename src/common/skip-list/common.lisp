@@ -177,15 +177,19 @@
   skip-list-node)
 
 
-(-> delete-node-between! (simple-vector simple-vector) (or null skip-list-node))
+(-> delete-node-between! (simple-vector simple-vector) skip-list-node)
 (defun delete-node-between! (pointers prev-pointers)
   (declare (optimize (speed 0) (debug 3) (safety 3)))
   (lret ((result (aref pointers 0)))
+    (assert (not (null result)))
     (iterate
-      (declare (type fixnum i))
-      (for i from 0 below (length pointers))
-
-      )))
+      (declare (type fixnum i next-size))
+      (with next = (skip-list-node-pointers result))
+      (with next-size = (length next))
+      (for i from 0 below next-size)
+      (for node = (aref prev-pointers i))
+      (copy-into! (skip-list-node-pointers node)
+                  next))))
 
 
 (defclass fundamental-skip-list (cl-ds:mutable cl-ds:fundamental-container)
