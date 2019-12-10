@@ -9,6 +9,7 @@
   (:export
    #:access-size
    #:access-size
+   #:delete-node-between!
    #:fundamental-skip-list
    #:fundamental-skip-list-range
    #:insert-node-between!
