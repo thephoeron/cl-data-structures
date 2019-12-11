@@ -162,13 +162,6 @@
       (finally (return (values result prev-result))))))
 
 
-(-> skip-list-locate-node (fundamental-skip-list t) (values simple-vector
-                                                            simple-vector))
-(defun skip-list-locate-node (skip-list item)
-  (cl-ds.utils:with-slots-for (skip-list fundamental-skip-list)
-    (locate-node pointers item ordering-function)))
-
-
 (-> insert-node-between! (simple-vector simple-vector skip-list-node) skip-list-node)
 (defun insert-node-between! (pointers previous-pointers skip-list-node)
   (declare (optimize (speed 0) (debug 3) (safety 3)))
@@ -209,6 +202,20 @@
    :maximum-level 32))
 
 
+(cl-ds.utils:define-list-of-slots fundamental-skip-list ()
+  (size access-size)
+  (ordering-function read-ordering-function)
+  (pointers read-pointers)
+  (maximum-level access-maximum-level))
+
+
+(-> skip-list-locate-node (fundamental-skip-list t) (values simple-vector
+                                                            simple-vector))
+(defun skip-list-locate-node (skip-list item)
+  (cl-ds.utils:with-slots-for (skip-list fundamental-skip-list)
+    (locate-node pointers item ordering-function)))
+
+
 (defun update-head-pointers! (skip-list skip-list-node)
   (declare (type skip-list-node skip-list-node)
            (type fundamental-skip-list skip-list))
@@ -228,13 +235,6 @@
     (if (funcall ordering-function content old-content)
         (setf (aref head i) skip-list-node)
         (finish))))
-
-
-(cl-ds.utils:define-list-of-slots fundamental-skip-list ()
-  (size access-size)
-  (ordering-function read-ordering-function)
-  (pointers read-pointers)
-  (maximum-level access-maximum-level))
 
 
 (defmethod cl-ds.utils:cloning-information append ((object fundamental-skip-list))
