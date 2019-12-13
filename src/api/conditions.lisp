@@ -100,7 +100,7 @@
 
 (defmethod print-condition ((condition file-releated-error) stream)
   (unless (null (path condition))
-    (format stream "Error when processing file ~a:" (path condition)))
+    (format stream "Error when processing file ~a:~%" (path condition)))
   (call-next-method))
 
 
