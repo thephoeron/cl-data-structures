@@ -95,7 +95,7 @@
                   (cl-ds.common:make-eager-modification-operation-status
                    nil nil t)))))
     (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> structure access-test-function (funcall content))
+      (if (~> structure access-test-function (funcall content location))
           (values structure
                   (cl-ds.common:make-eager-modification-operation-status
                    t content nil))
@@ -129,7 +129,7 @@
         (values structure
                 cl-ds.common:empty-eager-modification-operation-status)))
     (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> structure access-test-function (funcall content))
+      (if (~> structure access-test-function (funcall content location))
           (let ((rests (cl-ds.common.skip-list:skip-list-node-pointers
                         result))
                 (level (cl-ds.common.skip-list:skip-list-node-level
