@@ -210,13 +210,18 @@
   (maximum-level access-maximum-level))
 
 
-(-> skip-list-node-compare (function skip-list-node skip-list-node) boolean)
+(-> skip-list-node-compare (function (or null skip-list-node) (or null skip-list-node)) boolean)
 (declaim (inline skip-list-node-compare))
 (defun skip-list-node-compare (test node1 node2)
   (declare (optimize (speed 3) (debug 0) (safety 0)))
-  (funcall test
-           (skip-list-node-content node1)
-           (skip-list-node-content node2)))
+  (cl-ds.utils:cond+ ((null node1) (null node2))
+    ((t t) nil)
+    ((nil t) t)
+    ((t nil) nil)
+    ((nil nil)
+     (funcall test
+              (skip-list-node-content node1)
+              (skip-list-node-content node2)))))
 
 
 (-> skip-list-locate-node (fundamental-skip-list t) (values simple-vector

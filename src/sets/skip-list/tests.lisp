@@ -4,7 +4,7 @@
 (in-package :skip-list-set-tests)
 
 
-(prove:plan 365)
+(prove:plan 500)
 
 (let ((set (cl-ds.sets.skip-list:make-mutable-skip-list-set #'< #'=)))
   (prove:ok (not (cl-ds:at set 1)))
@@ -40,17 +40,25 @@
   (cl-ds:put! set (first d))
   )
 
-(iterate
-  (with set = (cl-ds.sets.skip-list:make-mutable-skip-list-set #'< #'=))
-  (with data = (shuffle (iota 15)))
-  (for i from 0)
-  (for d on data)
+(let ((set (cl-ds.sets.skip-list:make-mutable-skip-list-set #'< #'=))
+      (data (shuffle (iota 15))))
   (iterate
-    (for k on data)
-    (until (eq d k))
-    (prove:ok (cl-ds:at set (first k))))
-  (prove:is (cl-ds:size set) i)
-  (cl-ds:put! set (first d))
-  )
+    (for i from 0)
+    (for d on data)
+    (iterate
+      (for k on data)
+      (until (eq d k))
+      (prove:ok (cl-ds:at set (first k))))
+    (prove:is (cl-ds:size set) i)
+    (cl-ds:put! set (first d)))
+  (iterate
+    (for i from 15 downto 0)
+    (for d on data)
+    (prove:is (cl-ds:size set) i)
+    (prove:ok (cl-ds:at set (first d)))
+    (cl-ds:erase! set (first d))
+    (iterate
+      (for elt in (rest d))
+      (prove:ok (cl-ds:at set elt)))))
 
 (prove:finalize)

@@ -149,13 +149,22 @@
                             (aref rests i)
                             nil))
                   (finish)))
-            (when-let ((previous (aref prev 0)))
+            (when-let ((not-max (< level (length pointers)))
+                       (previous (~>> result
+                                      cl-ds.common.skip-list:skip-list-node-level
+                                      (aref prev))))
+              (assert (not (eq previous result)))
               (iterate
                 (declare (type fixnum i))
                 (for i from 0
-                     below (cl-ds.common.skip-list:skip-list-node-level previous))
-                (setf (cl-ds.common.skip-list:skip-list-node-at previous i)
-                      (aref rests i))))
+                     below (min (cl-ds.common.skip-list:skip-list-node-level previous)
+                                level))
+                (for node-at = (cl-ds.common.skip-list:skip-list-node-at previous i))
+                (for rest = (aref rests i))
+                (if (cl-ds.common.skip-list:skip-list-node-compare
+                     test (aref rests i) node-at)
+                    (setf (cl-ds.common.skip-list:skip-list-node-at previous i)
+                          (aref rests i)))))
             (decf (cl-ds.common.skip-list:access-size structure))
             (values
              structure
