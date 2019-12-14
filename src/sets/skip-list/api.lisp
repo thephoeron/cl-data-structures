@@ -97,6 +97,7 @@
             (setf (cl-ds.common.skip-list:skip-list-node-content new-node)
                   location)
             (cl-ds.common.skip-list:update-head-pointers! structure new-node)
+            (incf (cl-ds.common.skip-list:access-size structure))
             (values structure
                     (cl-ds.common:make-eager-modification-operation-status
                      nil nil t)))))))
