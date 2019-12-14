@@ -176,7 +176,8 @@
                              (:module "qp-trie"
                               :components ((:file "api")))
                              (:module "skip-list"
-                              :components ((:file "api")))))
+                              :components ((:file "api")
+                                           (:test-file "tests")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")

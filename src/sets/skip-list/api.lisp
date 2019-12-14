@@ -1,7 +1,7 @@
 (cl:in-package #:cl-ds.sets.skip-list)
 
 
-(defclass mutable-skip-list-set (cl-ds.sets:fundamental-set
+(defclass mutable-skip-list-set (cl-ds.sets:mutable-set
                                  cl-ds.common.skip-list:fundamental-skip-list)
   ((%test-function :initarg :test-function
                    :accessor access-test-function)))
@@ -84,6 +84,16 @@
          ((:values current prev)
           (cl-ds.common.skip-list:locate-node pointers location test))
          (result (aref current 0)))
+    (when (null result)
+      (let ((new-node (cl-ds.common.skip-list:make-skip-list-node-of-random-level
+                       (length pointers))))
+        (cl-ds.common.skip-list:update-head-pointers! structure new-node)
+        (setf (cl-ds.common.skip-list:skip-list-node-content new-node) location)
+        (incf (cl-ds.common.skip-list:access-size structure))
+        (return-from cl-ds.meta:position-modification
+          (values structure
+                  (cl-ds.common:make-eager-modification-operation-status
+                   nil nil t)))))
     (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
       (if (~> structure access-test-function (funcall content))
           (values structure
@@ -159,7 +169,7 @@
     (when (null result)
       (return-from cl-ds:at (values nil nil)))
     (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> container read-test-function (funcall content))
+      (if (~> container access-test-function (funcall content location))
           (values t t)
           (values nil nil)))))
 

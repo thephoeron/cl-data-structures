@@ -18,20 +18,20 @@
    #:make-skip-list-node
    #:make-skip-list-node-of-level
    #:make-skip-list-node-of-random-level
-   #:skip-list-locate-node
-   #:update-head-pointers!
-   #:read-ordering-function
    #:maximum-level
    #:new-node-update-pointers!
-   #:skip-list-node-compare
    #:pointers
    #:random-level
+   #:read-ordering-function
    #:read-pointers
    #:size
+   #:skip-list-locate-node
    #:skip-list-node
    #:skip-list-node-at
    #:skip-list-node-clone
+   #:skip-list-node-compare
    #:skip-list-node-content
    #:skip-list-node-level
    #:skip-list-node-pointers
-   #:skip-list-node-update-pointers!))
+   #:skip-list-node-update-pointers!
+   #:update-head-pointers!))
