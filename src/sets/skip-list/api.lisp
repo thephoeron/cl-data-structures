@@ -87,8 +87,12 @@
     (when (null result)
       (let ((new-node (cl-ds.common.skip-list:make-skip-list-node-of-random-level
                        (length pointers))))
-        (cl-ds.common.skip-list:update-head-pointers! structure new-node)
         (setf (cl-ds.common.skip-list:skip-list-node-content new-node) location)
+        (cl-ds.common.skip-list:insert-node-between!
+         current prev
+         (cl-ds.common.skip-list:read-ordering-function structure)
+         new-node)
+        (cl-ds.common.skip-list:update-head-pointers! structure new-node)
         (incf (cl-ds.common.skip-list:access-size structure))
         (return-from cl-ds.meta:position-modification
           (values structure
@@ -101,10 +105,12 @@
                    t content nil))
           (let ((new-node (cl-ds.common.skip-list:make-skip-list-node-of-random-level
                            (array-dimension pointers 0))))
-            (cl-ds.common.skip-list:insert-node-between! current prev
-                                                         new-node)
             (setf (cl-ds.common.skip-list:skip-list-node-content new-node)
                   location)
+            (cl-ds.common.skip-list:insert-node-between!
+             current prev
+             (cl-ds.common.skip-list:read-ordering-function structure)
+             new-node)
             (cl-ds.common.skip-list:update-head-pointers! structure new-node)
             (incf (cl-ds.common.skip-list:access-size structure))
             (values structure
@@ -162,10 +168,11 @@
 (defmethod cl-ds:at ((container mutable-skip-list-set)
                      location
                      &rest more-locations)
+  (declare (optimize (speed 0) (debug 3) (safety 3)))
   (cl-ds:assert-one-dimension more-locations)
-  (let ((result (~> container
-                    (cl-ds.common.skip-list:skip-list-locate-node location)
-                    (aref 0))))
+  (let* ((pointers (cl-ds.common.skip-list:skip-list-locate-node container
+                                                                 location))
+         (result (aref pointers 0)))
     (when (null result)
       (return-from cl-ds:at (values nil nil)))
     (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))

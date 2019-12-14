@@ -6,6 +6,12 @@
   (content nil :type t))
 
 
+(defmethod print-object ((object skip-list-node) stream)
+  (print-unreadable-object (object stream :type nil :identity nil)
+    (format stream "[~a]" (skip-list-node-content object))
+    (print-object (skip-list-node-at object 0) stream)))
+
+
 (cl-ds.utils:define-list-of-slots skip-list-node ()
   (pointers skip-list-node-pointers)
   (level skip-list-node-level)
@@ -63,17 +69,18 @@
       (finally (return (values result table))))))
 
 
-(-> copy-into! (simple-vector simple-vector &optional fixnum) simple-vector)
+(-> copy-into! (simple-vector simple-vector &optional fixnum fixnum) simple-vector)
 (declaim (inline copy-into!))
 (defun copy-into! (destination source
                    &optional
                      (limit (min (length (the simple-vector destination))
-                                 (length (the simple-vector source)))))
+                                 (length (the simple-vector source))))
+                     (start 0))
   (declare (optimize (speed 3) (debug 0) (safety 0))
            (type fixnum limit))
   (iterate
     (declare (type fixnum i))
-    (for i from 0 below limit)
+    (for i from start below limit)
     (setf (aref destination i) (aref source i))
     (finally (return destination))))
 
@@ -86,8 +93,8 @@
   skip-list-node)
 
 
-(-> new-node-update-pointers! (skip-list-node simple-vector) skip-list-node)
-(defun new-node-update-pointers! (spliced-node pointers)
+(-> new-node-update-pointers! (function skip-list-node simple-vector) skip-list-node)
+(defun new-node-update-pointers! (test spliced-node pointers)
   (declare (optimize (speed 0) (debug 3) (safety 3)))
   (iterate
     (declare (type fixnum i))
@@ -99,8 +106,12 @@
     (cl-ds.utils:with-slots-for (rest skip-list-node)
       (iterate
         (declare (type fixnum j))
-        (for j from 0 below (min level spliced-level))
-        (setf (aref pointers j) spliced-node)))
+        (for j from (the fixnum (1- (min level spliced-level))) downto 0)
+        (if (or (null (aref pointers j))
+                (skip-list-node-compare test spliced-node
+                                        (aref pointers j)))
+            (setf (aref pointers j) spliced-node)
+            (finish))))
     (finally (return spliced-node))))
 
 
@@ -136,16 +147,6 @@
          (prev-result (make-array pointers-length
                                   :initial-element nil))
          (last (1- pointers-length)))
-    (declare (type fixnum last pointers-length))
-    (iterate
-      (declare (type fixnum i))
-      (for i from last downto 0)
-      (for node = (aref pointers i))
-      (when (null node)
-        (next-iteration))
-      (for content = (skip-list-node-content node))
-      (when (funcall test item content)
-        (return-from locate-node (values pointers prev-result))))
     (iterate
       (declare (type fixnum i)
                (type simple-vector result))
@@ -162,10 +163,10 @@
       (finally (return (values result prev-result))))))
 
 
-(-> insert-node-between! (simple-vector simple-vector skip-list-node) skip-list-node)
-(defun insert-node-between! (pointers previous-pointers skip-list-node)
+(-> insert-node-between! (simple-vector simple-vector function skip-list-node) skip-list-node)
+(defun insert-node-between! (pointers previous-pointers test skip-list-node)
   (declare (optimize (speed 0) (debug 3) (safety 3)))
-  (new-node-update-pointers! skip-list-node previous-pointers)
+  (new-node-update-pointers! test skip-list-node previous-pointers)
   (skip-list-node-update-pointers! skip-list-node pointers)
   skip-list-node)
 
@@ -227,21 +228,22 @@
 
 (defun update-head-pointers! (skip-list skip-list-node)
   (declare (type skip-list-node skip-list-node)
-           (type fundamental-skip-list skip-list))
+           (type fundamental-skip-list skip-list)
+           (optimize (speed 0) (debug 3) (safety 3)))
   (iterate
     (declare (type fixnum i)
              (type simple-vector head))
     (with head = (read-pointers skip-list))
     (with content = (skip-list-node-content skip-list-node))
     (with ordering-function = (read-ordering-function skip-list))
-    (for i from 0 below (length head))
+    (for i from (~> skip-list-node skip-list-node-level 1-) downto 0)
     (for node = (aref head i))
     (when (null node)
-      (when (<= i (skip-list-node-level skip-list-node))
-        (setf (aref head i) skip-list-node))
+      (setf (aref head i) skip-list-node)
       (next-iteration))
     (for old-content = (skip-list-node-content node))
-    (if (funcall ordering-function content old-content)
+    (for should-go-before = (funcall ordering-function content old-content))
+    (if should-go-before
         (setf (aref head i) skip-list-node)
         (finish))))
 
