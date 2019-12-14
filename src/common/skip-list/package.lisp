@@ -20,6 +20,7 @@
    #:make-skip-list-node-of-random-level
    #:skip-list-locate-node
    #:update-head-pointers!
+   #:read-ordering-function
    #:maximum-level
    #:new-node-update-pointers!
    #:pointers

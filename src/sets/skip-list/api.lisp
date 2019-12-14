@@ -79,13 +79,27 @@
      location
      &rest all)
   (declare (ignore all container))
-  (bind (((:values current prev)
-          (cl-ds.common.skip-list:skip-list-locate-node structure location))
+  (bind ((pointers (cl-ds.common.skip-list:read-pointers structure))
+         (test (cl-ds.common.skip-list:read-ordering-function structure))
+         ((:values current prev)
+          (cl-ds.common.skip-list:locate-node pointers location
+                                              test))
          (result (aref current 0)))
     (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> structure read-test-function (funcall content))
-          cl-ds.utils:todo
-          cl-ds.utils:todo))))
+      (if (~> structure access-test-function (funcall content))
+          (values structure
+                  (cl-ds.common:make-eager-modification-operation-status
+                   t content nil))
+          (let ((new-node (cl-ds.common.skip-list:make-skip-list-node-of-random-level
+                           (array-dimension pointers 0))))
+            (cl-ds.common.skip-list:insert-node-between! current prev
+                                                         new-node)
+            (setf (cl-ds.common.skip-list:skip-list-node-content new-node)
+                  location)
+            (cl-ds.common.skip-list:update-head-pointers! structure new-node)
+            (values structure
+                    (cl-ds.common:make-eager-modification-operation-status
+                     nil nil t)))))))
 
 
 (defmethod cl-ds.meta:position-modification
