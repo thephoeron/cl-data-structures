@@ -23,6 +23,7 @@
    #:read-ordering-function
    #:maximum-level
    #:new-node-update-pointers!
+   #:skip-list-node-compare
    #:pointers
    #:random-level
    #:read-pointers

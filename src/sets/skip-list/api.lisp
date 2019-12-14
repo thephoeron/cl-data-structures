@@ -82,8 +82,7 @@
   (bind ((pointers (cl-ds.common.skip-list:read-pointers structure))
          (test (cl-ds.common.skip-list:read-ordering-function structure))
          ((:values current prev)
-          (cl-ds.common.skip-list:locate-node pointers location
-                                              test))
+          (cl-ds.common.skip-list:locate-node pointers location test))
          (result (aref current 0)))
     (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
       (if (~> structure access-test-function (funcall content))
@@ -110,15 +109,44 @@
      location
      &rest all)
   (declare (ignore all container))
-  (bind (((:values current prev)
-          (cl-ds.common.skip-list:skip-list-locate-node structure location))
+  (bind ((pointers (cl-ds.common.skip-list:read-pointers structure))
+         (test (cl-ds.common.skip-list:read-ordering-function structure))
+         ((:values current prev)
+          (cl-ds.common.skip-list:locate-node pointers location test))
          (result (aref current 0)))
     (when (null result)
-      cl-ds.utils:todo)
-    (bind ((content (cl-ds.common.skip-list:skip-list-node-content result)))
-      (if (~> structure read-test-function (funcall content))
-          cl-ds.utils:todo
-          cl-ds.utils:todo))))
+      (return-from cl-ds.meta:position-modification
+        (values structure
+                cl-ds.common:empty-eager-modification-operation-status)))
+    (let ((content (cl-ds.common.skip-list:skip-list-node-content result)))
+      (if (~> structure access-test-function (funcall content))
+          (let ((rests (cl-ds.common.skip-list:skip-list-node-pointers
+                        result))
+                (level (cl-ds.common.skip-list:skip-list-node-level
+                        result)))
+            (iterate
+              (declare (type fixnum i))
+              (for i from (1- level) downto 0)
+              (if (eq (aref pointers i) result)
+                  (setf (aref pointers i)
+                        (if (< i level)
+                            (aref rests i)
+                            nil))
+                  (finish)))
+            (when-let ((previous (aref prev 0)))
+              (iterate
+                (declare (type fixnum i))
+                (for i from 0
+                     below (cl-ds.common.skip-list:skip-list-node-level previous))
+                (setf (cl-ds.common.skip-list:skip-list-node-at previous i)
+                      (aref rests i))))
+            (decf (cl-ds.common.skip-list:access-size structure))
+            (values
+             structure
+             (cl-ds.common:make-eager-modification-operation-status
+              t content t)))
+          (values structure
+                  cl-ds.common:empty-eager-modification-operation-status)))))
 
 
 (defmethod cl-ds:at ((container mutable-skip-list-set)
