@@ -19,7 +19,7 @@
     (:range k &key (key #'identity))
     (%table %k)
     ((&key k &allow-other-keys)
-     (check-type k non-negative-fixnum)
+     (check-type k positive-fixnum)
      (setf %table (make-hash-table :test 'equal)
            %k k))
     ((element)
@@ -38,12 +38,6 @@
        (finally (return (make-instance 'minhash-corpus
                                        :k %k
                                        :table %table))))))
-
-
-(defun minhash (corpus elements)
-  (check-type elements list)
-  (check-type corpus minhash-corpus)
-  (minhash* corpus elements))
 
 
 (-> minhash* (minhash-corpus list) (simple-array fixnum (*)))
@@ -68,3 +62,9 @@
         (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
                                    i)))
       (finally (return minis)))))
+
+
+(defun minhash (corpus elements)
+  (check-type elements list)
+  (check-type corpus minhash-corpus)
+  (minhash* corpus elements))
