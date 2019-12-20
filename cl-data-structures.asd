@@ -174,7 +174,8 @@
                 :components ((:file "packages")
                              (:file "common")
                              (:module "qp-trie"
-                              :components ((:file "api")))
+                              :components ((:file "api")
+                                           (:file "docstrings")))
                              (:module "skip-list"
                               :components ((:file "api")
                                            (:test-file "tests")))))
