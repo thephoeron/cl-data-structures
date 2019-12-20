@@ -1,29 +1,26 @@
 (cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
-(cl-ds.utils:define-list-of-slots minhash-corpus ()
-  (table read-table)
-  (key read-key)
-  (k read-k))
-
-
 (defclass minhash-corpus ()
   ((%table :initarg :table
            :reader read-table)
-   (%key :initarg :key
-         :reader read-key)
    (%k :initarg :k
        :reader read-k)))
+
+
+(cl-ds.utils:define-list-of-slots minhash-corpus ()
+  (table read-table)
+  (k read-k))
 
 
 (cl-ds.alg.meta:define-aggregation-function gather-minhash-corpus
     gather-corpus-function
     (:range k &key key)
     (:range k &key (key #'identity))
-    (%table %k %key)
-    ((&key k key &allow-other-keys)
+    (%table %k)
+    ((&key k &allow-other-keys)
+     (check-type k non-negative-fixnum)
      (setf %table (make-hash-table :test 'equal)
-           %key key
            %k k))
     ((element)
      (ensure (gethash element %table) (make-array %k :element-type 'fixnum)))
@@ -40,7 +37,6 @@
          (incf (gethash value pointers 0)))
        (finally (return (make-instance 'minhash-corpus
                                        :k %k
-                                       :key %key
                                        :table %table))))))
 
 
@@ -62,7 +58,6 @@
       (with count = k)
       (with minis = (make-array count :element-type 'fixnum
                                       :initial-element most-positive-fixnum))
-      (with elements = (mapcar (the function key) elements))
       (for element in elements)
       (for sub = (gethash element hash-table))
       (when (null sub)
