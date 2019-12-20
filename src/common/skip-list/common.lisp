@@ -218,10 +218,9 @@
     ((t t) nil)
     ((nil t) t)
     ((t nil) nil)
-    ((nil nil)
-     (funcall test
-              (skip-list-node-content node1)
-              (skip-list-node-content node2)))))
+    ((nil nil) (funcall test
+                        (skip-list-node-content node1)
+                        (skip-list-node-content node2)))))
 
 
 (-> skip-list-locate-node (fundamental-skip-list t) (values simple-vector
