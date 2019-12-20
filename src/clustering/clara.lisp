@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.clustering)
+(cl:in-package #:cl-data-structures.clustering)
 
 
 (defclass clara-function (cl-ds.alg.meta:multi-aggregation-function)
