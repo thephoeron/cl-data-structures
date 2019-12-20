@@ -12,4 +12,6 @@
    #:fundamental-data-sketch
    #:make-hash-array
    #:union
+   #:gather-minhash-corpus
+   #:minhash
    #:approximated-set-cardinality))

@@ -9,6 +9,27 @@
   (function union
     (:description "Creates new data-sketch from the provided. Can be used to join sketches built on different data chunks."))
 
+  (function minhash
+    (:description "Calculates minhash for the ELEMENTS with the use of the CORPUS"
+     :arguments ((corpus "Object constructed with the GATHER-MINHASH-CORPUS function.")
+                 (elements "List of objects that need are being hashed."))
+     :exceptional-situations ("Objects in the ELEMENTS that can't be find in the CORPUS are ignored."
+                              "Will signal TYPE-ERROR when CORPUS is not of the type MINHASH-CORPUS or ELEMENTS is not of the type CL:LIST.")
+     :notes ("Returned minhash vector can be used to quickly calculate approximated Jaccard distance."
+             "Can be used for near duplicate detection."
+             "Empty set will be hashed to array of most-positive-fixnums.")
+     :returns "An one dimensional SIMPLE-ARRAY specialized for FIXNUM of the size equal to the K parameter passed to the GATHER-MINHASH-CORPUS function."))
+
+  (function gather-minhash-corpus
+    (:description "Constructs the MINHASH-CORPUS by gathering all objects in the input range. Corpus can be then used  in the MINHASH function to calculate minhash vectors."
+     :arguments ((range "Object to aggregate.")
+                 (k "What is the length of the minhash vectors? Should be the positive-fixnum.")
+                 (key "Function used to extract value for aggregation."))
+     :exceptional-situations (("Will signal TYPE-ERROR wthen K is not of the type POSITIVE-FIXNUM."))
+     :notes ("Larger K values usually allow for higher precision of the Jaccard distance estimation."
+             "Uses HASH-TABLE with EQUAL :TEST underneath to gather elements. Therefore it is required fore elements in the RANGE to be comparable with EQUAL function.")
+     :returns "Instance of the MINHASH-CORPUS class."))
+
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
      :exceptional-situations ("Will signal a TYPE-ERROR if BITS is not integer."

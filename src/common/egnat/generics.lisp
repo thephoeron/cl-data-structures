@@ -38,8 +38,10 @@
     (when (< index (length data))
       (cons (aref data index) (1+ index))))
   (:method ((range egnat-range-around) data index)
+    (declare (optimize (speed 3) (safety 0) (debug 0)))
     (bind (((:slots %container %near %margin) range)
            (result (iterate
+                     (declare (type fixnum i))
                      (for i from index below (length data))
                      (for content = (aref data i))
                      (for distance = (distance %container %near content))
