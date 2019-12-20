@@ -292,6 +292,7 @@
                              (:file "approximated-set-cardinality")
                              (:file "approximated-counts")
                              (:file "bloom-filter")
+                             (:file "minhash")
                              (:file "docstrings")))
                (:module "counting"
                 :components ((:file "package")
