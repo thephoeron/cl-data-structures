@@ -68,3 +68,45 @@
   (check-type elements list)
   (check-type corpus minhash-corpus)
   (minhash* corpus elements))
+
+
+(-> minhash-jaccard/fixnum ((simple-array fixnum (*)) (simple-array fixnum (*)))
+    non-negative-fixnum)
+(defun minhash-jaccard/fixnum (a b)
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (cl-ds.utils:lolol (a b)
+    (check-type a (simple-array fixnum (*)))
+    (check-type b (simple-array fixnum (*)))
+    (unless (= (length a) (length b))
+      (error 'cl-ds:incompatible-arguments
+             :parameters '(a b)
+             :values (list a b)
+             :format-control "Lengths of input vectors must be equal."))
+    (iterate
+      (declare (type fixnum i len result))
+      (with len = (length a))
+      (with result = len)
+      (for i from 0 below len)
+      (when (= (aref a i) (aref b i))
+        (decf result))
+      (finally (return result)))))
+
+
+(-> minhash-jaccard/single-float ((simple-array fixnum (*)) (simple-array fixnum (*)))
+    single-float)
+(defun minhash-jaccard/single-float (a b)
+  (declare (optimize (speed 3)))
+  (let ((result (minhash-jaccard/fixnum a b))
+        (length (length a)))
+    (/ (coerce result 'single-float)
+       length)))
+
+
+(-> minhash-jaccard/double-float ((simple-array fixnum (*)) (simple-array fixnum (*)))
+    double-float)
+(defun minhash-jaccard/double-float (a b)
+  (declare (optimize (speed 3)))
+  (let ((result (minhash-jaccard/fixnum a b))
+        (length (length a)))
+    (/ (coerce result 'double-float)
+       length)))

@@ -7,6 +7,9 @@
   (:shadow cl:union)
   (:export
    #:approximated-counts
+   #:minhash-jaccard/fixnum
+   #:minhash-jaccard/single-float
+   #:minhash-jaccard/double-float
    #:bloom-filter
    #:clean-sketch
    #:fundamental-data-sketch
