@@ -421,6 +421,9 @@
            %cluster-contents))))
 
 
+;; Should be replaced by ESTIMATED (or expected) distance, estimator should be a callback
+;; passed to the clustering function and it should default to mean.
+;; Median can be also useful, though.
 (defgeneric mean-distance-to-cluster (state element cluster)
   (:method ((state clara-algorithm-state) element cluster)
     (cl-ds.utils:with-slots-for (state clara-algorithm-state)
