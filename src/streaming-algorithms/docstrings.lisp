@@ -18,7 +18,7 @@
      :notes ("Think about minhash as a fingerprint function."
              "Returned minhash vector can be used to quickly calculate approximated Jaccard distance."
              "Can be used for near duplicate detection."
-             "Empty set will be hashed to array of most-positive-fixnums.")
+             "Empty set will be hashed to array of MOST-POSITIVE-FIXNUMs.")
      :returns "An one dimensional SIMPLE-ARRAY specialized for FIXNUM of the size equal to the K parameter passed to the GATHER-MINHASH-CORPUS function."))
 
   (function gather-minhash-corpus
