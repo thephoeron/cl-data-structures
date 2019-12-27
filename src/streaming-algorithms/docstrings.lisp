@@ -35,21 +35,21 @@
     (:description "Calculates distance between two minhash vectors."
      :notes ("Although function is called Jaccard, technically it does not calculate the Jaccard distance because Jaccard distance is bound between 0 and 1."
              "Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
-     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of a different lengths."
                               "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
      :returns "Number of positions in the vectors that hold different values (as a FIXNUM)."))
 
   (function minhash-jaccard/double-float
     (:description "Calculates Jaccard distance as a double-float between two minhash vectors."
      :notes ("Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
-     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of a different lengths."
                               "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
      :returns "Jaccard distance between two minhash vectors (as a DOUBLE-FLOAT)."))
 
   (function minhash-jaccard/single-float
     (:description "Calculates Jaccard distance as a single-float between two minhash vectors."
      :notes ("Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
-     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of a different lengths."
                               "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
      :returns "Jaccard distance between two minhash vectorsa (as a SINGLE-FLOAT)."))
 
