@@ -15,7 +15,8 @@
                  (elements "List of objects that need are being hashed."))
      :exceptional-situations ("Objects in the ELEMENTS that can't be find in the CORPUS are ignored."
                               "Will signal TYPE-ERROR when CORPUS is not of the type MINHASH-CORPUS or ELEMENTS is not of the type CL:LIST.")
-     :notes ("Returned minhash vector can be used to quickly calculate approximated Jaccard distance."
+     :notes ("Think about minhash as a fingerprint function."
+             "Returned minhash vector can be used to quickly calculate approximated Jaccard distance."
              "Can be used for near duplicate detection."
              "Empty set will be hashed to array of most-positive-fixnums.")
      :returns "An one dimensional SIMPLE-ARRAY specialized for FIXNUM of the size equal to the K parameter passed to the GATHER-MINHASH-CORPUS function."))
@@ -25,10 +26,32 @@
      :arguments ((range "Object to aggregate.")
                  (k "What is the length of the minhash vectors? Should be the positive-fixnum.")
                  (key "Function used to extract value for aggregation."))
-     :exceptional-situations (("Will signal TYPE-ERROR wthen K is not of the type POSITIVE-FIXNUM."))
+     :exceptional-situations ("Will signal TYPE-ERROR wthen K is not of the type POSITIVE-FIXNUM.")
      :notes ("Larger K values usually allow for higher precision of the Jaccard distance estimation."
              "Uses HASH-TABLE with EQUAL :TEST underneath to gather elements. Therefore it is required fore elements in the RANGE to be comparable with EQUAL function.")
      :returns "Instance of the MINHASH-CORPUS class."))
+
+  (function minhash-jaccard/fixnum
+    (:description "Calculates distance between two minhash vectors."
+     :notes ("Although function is called Jaccard, technically it does not calculate the Jaccard distance because Jaccard distance is bound between 0 and 1."
+             "Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+                              "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
+     :returns "Number of positions in the vectors that hold different values (as a FIXNUM)."))
+
+  (function minhash-jaccard/double-float
+    (:description "Calculates Jaccard distance as a double-float between two minhash vectors."
+     :notes ("Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+                              "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
+     :returns "Jaccard distance between two minhash vectors (as a DOUBLE-FLOAT)."))
+
+  (function minhash-jaccard/single-float
+    (:description "Calculates Jaccard distance as a single-float between two minhash vectors."
+     :notes ("Minhashes by it's very nature are just efficient approximation of the sets, and so the Jaccard distance calculated between minhashes may differ from the precise Jaccard distance between sets.")
+     :exceptional-situations ("Will signal INCOMPATIBLE-ARGUMENTS when input vectors are of the different lengths."
+                              "Will signal TYPE-ERROR if either A or B is not of the type (SIMPLE-ARRAY FIXNUM (*)).")
+     :returns "Jaccard distance between two minhash vectorsa (as a SINGLE-FLOAT)."))
 
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
