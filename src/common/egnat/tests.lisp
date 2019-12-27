@@ -6,7 +6,7 @@
 (defmethod cl-ds.meta:make-bucket (operation container content
                                    &rest all)
   (declare (ignore all))
-  (serapeum:vect content))
+  content)
 
 
 (defmethod cl-ds.meta:make-bucket-from-multiple (operation container data

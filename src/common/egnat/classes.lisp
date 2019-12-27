@@ -31,23 +31,31 @@
 
 
 (defclass egnat-node ()
+  ((%content
+    :initarg :content
+    :reader read-content)))
+
+
+(defclass egnat-subtree (egnat-node)
   ((%close-range
     :initform nil
     :initarg :close-range
+    :accessor access-close-range
     :reader read-close-range)
    (%distant-range
     :initarg :distant-range
     :initform nil
+    :accessor access-distant-range
     :reader read-distant-range)
-   (%content
-    :type vector
-    :initarg :content
-    :reader read-content)
    (%children
     :type vector
     :initform nil
     :initarg :children
     :reader read-children)))
+
+
+(defclass egnat-leaf (egnat-node)
+  ())
 
 
 (defclass egnat-range (cl-ds:fundamental-forward-range)

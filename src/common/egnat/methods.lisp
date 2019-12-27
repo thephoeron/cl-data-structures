@@ -10,15 +10,16 @@
                (unless (null content)
                  (next-position ,range content index))))
          (if (null value.index)
-             (bind ((children (read-children node))
-                    (children-mask (select-children ,range node)))
-               (iterate
-                 (for child in-vector children)
-                 (for present-bit in-vector children-mask)
-                 (for present = (eql 1 present-bit))
-                 (when present
-                   (push (cons child 0) stack))
-                 (finally (return (cl-ds:consume-front ,range)))))
+             (when (typep node 'egnat-subtree)
+               (bind ((children (read-children node))
+                      (children-mask (select-children ,range node)))
+                 (iterate
+                   (for child in-vector children)
+                   (for present-bit in-vector children-mask)
+                   (for present = (eql 1 present-bit))
+                   (when present
+                     (push (cons child 0) stack))
+                   (finally (return (cl-ds:consume-front ,range))))))
              (progn
                (push (cons node (cdr value.index)) ,stack)
                (values (car value.index) t))))))
@@ -31,14 +32,15 @@
      (for content = (read-content node))
      (for value.index = (next-position ,range content index))
      (if (null value.index)
-         (bind ((children (read-children node))
-                (children-mask (select-children ,range node)))
-           (iterate
-             (for child in-vector children)
-             (for present-bit in-vector children-mask)
-             (for present = (eql 1 present-bit))
-             (when present
-               (push (cons child 0) stack))))
+         (when (typep node 'egnat-subtree)
+           (bind ((children (read-children node))
+                  (children-mask (select-children ,range node)))
+             (iterate
+               (for child in-vector children)
+               (for present-bit in-vector children-mask)
+               (for present = (eql 1 present-bit))
+               (when present
+                 (push (cons child 0) stack)))))
          (progn
            (push (cons node (cdr value.index)) ,stack)
            (funcall ,function (car value.index))))))
