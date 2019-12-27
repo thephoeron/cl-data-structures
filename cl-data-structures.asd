@@ -281,6 +281,7 @@
                              (:file "hmm")
                              (:file "gini-impurity")
                              (:file "entropy")
+                             (:file "z-score")
                              (:file "docstrings")
                              (:test-file "moments-tests")
                              (:test-file "chi-squared-tests")

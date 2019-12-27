@@ -28,4 +28,6 @@
    #:standard-deviation
    #:statistical-summary
    #:hidden-markov-model-generator
-   #:variance))
+   #:variance
+   #:z-score
+   #:gather-z-score))
