@@ -9,10 +9,10 @@
 (defgeneric simple-linear-regression (range x-key y-key)
   (:generic-function-class simple-linear-regression)
   (:method (range x-key y-key)
-    (cl-ds.alg.meta:apply-range-function range
-                                               #'simple-linear-regression
-                                               :x-key x-key
-                                               :y-key y-key)))
+    (cl-ds.alg.meta:apply-range-function
+     range #'simple-linear-regression
+     :x-key x-key
+     :y-key y-key)))
 
 
 (defstruct linear-regression-state
@@ -39,26 +39,28 @@
                                                     &key x-key y-key
                                                     &allow-other-keys)
   (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :average-y (range &rest all)
+  (list (cl-ds.alg.meta:stage :averages (range &rest all)
           (declare (ignore all))
-          (average range :key y-key))
-
-        (cl-ds.alg.meta:stage :average-x (range &rest all)
-          (declare (ignore all))
-          (average range :key x-key))
+          (cl-ds.alg:summary range
+            :average-x (average :key x-key)
+            :average-y (average :key y-key)))
 
         (cl-ds.alg.meta:reduce-stage :stats (make-linear-regression-state)
-            (state element &key average-x average-y &allow-other-keys)
+            (state element &key averages &allow-other-keys)
           (bind (((:slots xx yy xy) state)
                  (x (funcall x-key element))
-                 (y (funcall y-key element)))
+                 (y (funcall y-key element))
+                 (average-x (cl-ds:at averages :average-x))
+                 (average-y (cl-ds:at averages :average-y)))
             (incf yy (expt (- y average-y) 2))
             (incf xy (* (- y average-y) (- x average-x)))
             (incf xx (expt (- x average-x) 2))
             state))
 
-        (lambda (&key stats average-y average-x &allow-other-keys)
+        (lambda (&key stats averages &allow-other-keys)
           (bind (((:slots xx yy xy) stats)
                  (beta1 (/ xy xx))
+                 (average-x (cl-ds:at averages :average-x))
+                 (average-y (cl-ds:at averages :average-y))
                  (beta0 (- average-y (* beta1 average-x))))
             (make 'linear-regression-fit :beta0 beta0 :beta1 beta1)))))

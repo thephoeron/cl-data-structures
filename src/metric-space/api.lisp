@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.metric-space)
+(cl:in-package #:cl-data-structures.metric-space)
 
 
 (defmethod cl-ds:put! ((container mutable-metric-space-set) item)

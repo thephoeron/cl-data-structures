@@ -120,6 +120,15 @@ Top level aggregator protocol.
   (make-linear-aggregator function arguments key))
 
 
+(defmethod construct-aggregator ((range fundamental-forward-range)
+                                 key
+                                 (function multi-aggregation-function)
+                                 (outer-fn (eql nil))
+                                 (arguments list))
+  (make-multi-stage-linear-aggregator
+   arguments key (apply #'multi-aggregation-stages function arguments)))
+
+
 (defmethod construct-aggregator ((range cl:sequence)
                                  key
                                  (function aggregation-function)
