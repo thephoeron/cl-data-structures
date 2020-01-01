@@ -16,28 +16,31 @@
 
 
 (defun select-best-seeds (container data &optional (start 0))
-  (declare (type vector data))
+  (declare (type vector data)
+           (optimize (speed 3)))
   (let ((samples-count (read-samples-count container))
         (data-count (length data))
         (branching-factor (read-branching-factor container)))
     (~> (map-into (make-array samples-count)
                   (lambda ()
-                    (let ((seeds (select-seeds branching-factor
-                                               data-count
-                                               start)))
-                      (iterate outer
-                        (with length = (length seeds))
-                        (for i from 0 below length)
-                        (iterate
-                          (for j from 0 below i)
-                          (in outer (sum (distance container
-                                                   (~>> (aref seeds i)
-                                                        (aref data))
-                                                   (~>> (aref seeds j)
-                                                        (aref data)))
-                                         into final)))
-                        (finally (return-from outer
-                                   (cons final seeds)))))))
+                    (iterate
+                      (declare (type number final)
+                               (type fixnum length i)
+                               (type (simple-array fixnum (*)) seeds))
+                      (with final = 0)
+                      (with seeds = (select-seeds branching-factor
+                                                  data-count
+                                                  start))
+                      (with length = (length seeds))
+                      (for i from 0 below length)
+                      (for first-seed = (~>> (aref seeds i) (aref data)))
+                      (iterate
+                        (declare (type fixnum j))
+                        (for j from 0 below i)
+                        (for second-seed = (~>> (aref seeds j) (aref data)))
+                        (for distance = (distance container first-seed second-seed))
+                        (incf final distance))
+                      (finally (return (cons final seeds))))))
         (extremum #'> :key #'car)
         cdr)))
 
@@ -440,7 +443,8 @@
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-grow! (structure container operation item additional-arguments)
-  (recursive-egnat-grow!* #1# container operation item
+  (recursive-egnat-grow!* (access-root container)
+                          container operation item
                           additional-arguments)
   (incf (access-size structure))
   (values structure (cl-ds.common:make-eager-modification-operation-status
