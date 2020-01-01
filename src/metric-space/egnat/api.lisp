@@ -11,25 +11,20 @@
   ())
 
 
-(defmethod cl-ds.common.egnat:same ((container egnat-metric-set)
-                                    bucket item)
-  (cl-ds.ms:same container bucket item))
-
-
 (defmethod cl-ds.common.egnat:distance ((container egnat-metric-set)
                                         bucket item)
   (cl-ds.ms:distance container bucket item))
 
 
-(defun make-mutable-egnat-metric-set (same-function distance-function distance-type
-                                      &key (branching-factor 20) (node-size 50)
+(defun make-mutable-egnat-metric-set (distance-function distance-type
+                                      &key (branching-factor 20) (node-size 50) (samples-count 5)
                                       &allow-other-keys)
-  (ensure-functionf same-function distance-function)
+  (ensure-functionf distance-function)
   (make 'egnat-metric-set
         :metric-fn distance-function
-        :same-fn same-function
         :metric-type distance-type
         :branching-factor branching-factor
+        :samples-count samples-count
         :content-count-in-node node-size))
 
 
@@ -39,7 +34,7 @@
   (bind ((container (apply #'make-mutable-egnat-metric-set arguments))
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
-                                                   (second (member :parallel arguments))
+                                                   arguments
                                                    sequence)))
     (setf (cl-ds.common.egnat:access-root container) root
           (cl-ds.common.egnat:access-size container) (cl-ds:size sequence))
@@ -53,6 +48,7 @@
          (root (cl-ds.common.egnat:make-egnat-tree container
                                                    #'cl-ds:put!
                                                    (second (member :parallel arguments))
+                                                   arguments
                                                    sequence)))
     (setf (cl-ds.common.egnat:access-root container) root
           (cl-ds.common.egnat:access-size container) (cl-ds:size sequence))

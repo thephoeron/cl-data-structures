@@ -10,8 +10,7 @@
    #:metric-space-dictionary
    #:metric-space-set
    #:mutable-metric-space-dictionary
-   #:mutable-metric-space-set
-   #:same))
+   #:mutable-metric-space-set))
 
 
 (defpackage :cl-data-structures.metric-space.egnat

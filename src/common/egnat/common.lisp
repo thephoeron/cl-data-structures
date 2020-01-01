@@ -1,37 +1,45 @@
 (in-package #:cl-data-structures.common.egnat)
 
 
-(defun splice-content (data count)
-  "Divides DATA into CONTENT (for this node)
-   and everything else (for children nodes)"
-  (let* ((size (cl-ds:size data))
-         (content (unless (zerop count)
-                    (cl-ds.common:sequence-window data 0 count)))
-         (new-data (unless (eql count (cl-ds:size data))
-                     (cl-ds.common:sequence-window data
-                                                   count
-                                                   (cl-ds:size data)))))
-    (assert (> size count))
-    (assert (eql count (cl-ds:size content)))
-    (values content new-data)))
-
-
-(defun select-seeds (branching-factor data-count)
+(defun select-seeds (branching-factor end &optional (start 0))
   (iterate
-    (with generator = (cl-ds.utils:lazy-shuffle 0 data-count))
+    (with generator = (cl-ds.utils:lazy-shuffle start end))
     (with result = (make-array branching-factor
-                               :element-type 'fixnum
-                               :fill-pointer 0
-                               :adjustable t))
+                               :element-type 'fixnum))
     ;; map index of seed to index of children
-    (with reverse-mapping = (make-hash-table :size branching-factor))
+    (for k from 0 below branching-factor)
     (for i = (funcall generator))
-    (repeat branching-factor)
     (while i)
-    (vector-push-extend i result)
+    (setf (aref result k) i)
     (for j from 0)
-    (setf (gethash i reverse-mapping) j)
-    (finally (return (values result reverse-mapping)))))
+    (finally (return (adjust-array result k)))))
+
+
+(defun select-best-seeds (container data &optional (start 0))
+  (declare (type vector data))
+  (let ((samples-count (read-samples-count container))
+        (data-count (length data))
+        (branching-factor (read-branching-factor container)))
+    (~> (map-into (make-array samples-count)
+                  (lambda ()
+                    (let ((seeds (select-seeds branching-factor
+                                               data-count
+                                               start)))
+                      (iterate outer
+                        (with length = (length seeds))
+                        (for i from 0 below length)
+                        (iterate
+                          (for j from 0 below i)
+                          (in outer (sum (distance container
+                                                   (~>> (aref seeds i)
+                                                        (aref data))
+                                                   (~>> (aref seeds j)
+                                                        (aref data)))
+                                         into final)))
+                        (finally (return-from outer
+                                   (cons final seeds)))))))
+        (extremum #'> :key #'car)
+        cdr)))
 
 
 (defun make-partitions (container seeds-indexes data)
@@ -54,26 +62,6 @@
     result))
 
 
-(defun make-contents (operation container seeds-indexes
-                      data data-partitions reverse-mapping)
-  (assert (eql (cl-ds:size data) (cl-ds:size data-partitions)))
-  (let ((result (make-array (length seeds-indexes))))
-    (map-into result (compose #'vect (curry #'cl-ds:at data)) seeds-indexes)
-    (iterate
-      (for d in-vector data-partitions)
-      (for i from 0)
-      (when (position i seeds-indexes :test #'eql)
-        (next-iteration))
-      (for element = (cl-ds:at data i))
-      (for partition = (gethash d reverse-mapping))
-      (vector-push-extend element (aref result partition)))
-    (map-into result
-              (lambda (x)
-                (cl-ds.meta:make-bucket-from-multiple operation container x))
-              result)
-    result))
-
-
 (defun make-ranges (container contents)
   (bind ((branching-factor (read-branching-factor container))
          (range-size `(,branching-factor ,branching-factor))
@@ -84,164 +72,125 @@
                                     :element-type metric-type)))
     (iterate
       (for child from 0 below (length contents))
-      (for head = (~> contents (aref child) (aref 0)))
+      (for head = (~> (aref contents child) (aref 0)))
       (iterate
+        (declare (type fixnum data))
         (for data from 0 below (length contents))
-        (for init = (distance container head (~> contents
-                                                 (aref data)
-                                                 (aref 0))))
-        (unless (eql child data)
-          (multiple-value-bind (min max)
-              (cl-ds.utils:optimize-value ((mini < init)
-                                           (maxi > init))
-                (map nil (lambda (x)
-                           (let ((distance (distance container x head)))
-                             (mini distance)
-                             (maxi distance)))
-                     (aref contents data)))
-            (setf (aref close-range child data) min
-                  (aref distant-range child data) max)))))
+        (when (= child data)
+          (next-iteration))
+        (for init = (distance container head
+                              (~> contents
+                                  (aref data)
+                                  (aref 0))))
+        (for (values min max) =
+             (cl-ds.utils:optimize-value ((mini < init) (maxi > init))
+               (map nil (lambda (x)
+                          (let ((distance (distance container x head)))
+                            (mini distance)
+                            (maxi distance)))
+                    (aref contents data))))
+        (setf (aref close-range child data) min
+              (aref distant-range child data) max)))
     (values close-range distant-range)))
 
 
-(defmacro maybe-async (async &body body)
-  `(if ,async
-       (lparallel:future ,@body)
-       (progn
-         ,@body)))
+(defun average-pairwise-distance (container seeds content)
+  (declare (type vector content)
+           (type vector seeds)
+           (type fundamental-egnat-container container))
+  (iterate outer
+    (with length = (length seeds))
+    (for i from 0 below length)
+    (iterate
+      (for j from 0 below i)
+      (in outer (sum (distance container
+                               (~>> (aref seeds i)
+                                    (aref content))
+                               (~>> (aref seeds j)
+                                    (aref content))))))))
 
 
-(defun make-future-egnat-subtrees (container operation
-                                   extra-arguments data
-                                   &key (multithread t) bucket-function)
-  (bind (((:slots %branching-factor)
-          container)
-         ((:values this-content this-data)
-          (splice-content data 1))
-         ((:values seeds-indexes reverse-mapping)
-          (select-seeds %branching-factor (cl-ds:size this-data)))
-         (bucket-function (or bucket-function
-                              (lambda (x)
-                                (apply #'cl-ds.meta:make-bucket
-                                       operation
-                                       container
-                                       x
-                                       extra-arguments))))
-         (data-partitions (make-partitions container
-                                           seeds-indexes
-                                           this-data))
-         (contents (make-contents operation container seeds-indexes this-data
-                                  data-partitions reverse-mapping))
-         (children (map-into
-                    (make-array (length contents)
-                                :adjustable t
-                                :fill-pointer (length contents))
-                    (lambda (content)
-                      (maybe-async multithread
-                        (make-future-egnat-nodes container
-                                                 operation
-                                                 extra-arguments
-                                                 content
-                                                 :multithread multithread
-                                                 :bucket-function bucket-function)))
-                    contents))
-         ((:values close-range distant-range) (make-ranges container contents))
-         (content (cl-ds.meta:make-bucket-from-multiple operation
-                                                        container
-                                                        this-content)))
-    (assert (= (+ (cl-ds:size this-data) (cl-ds:size this-content))
-               (cl-ds:size data)))
-    (assert (= (reduce #'+ contents :key #'length)
-               (cl-ds:size this-data)))
-    (make 'egnat-subtree
-          :content (cl-ds.meta:make-bucket operation container
-                                           (first-elt content))
-          :close-range close-range
-          :distant-range distant-range
-          :children children)))
+(defgeneric become-subtree* (container node))
 
 
-(defun make-future-egnat-nodes (container operation
-                                extra-arguments data
-                                &key (multithread t) bucket-function)
-  (if (<= (cl-ds:size data) (read-content-count-in-node container))
-      (let ((content (cl-ds.meta:make-bucket-from-multiple operation container data)))
-        (make 'egnat-leaf :content content))
-      (make-future-egnat-subtrees container operation
-                                  extra-arguments data
-                                  :multithread multithread
-                                  :bucket-function bucket-function)))
+(defun become-subtree (container node)
+  (become-subtree* container node))
 
 
-(defun make-egnat-tree (container operation extra-arguments data
-                        &key (multithread t) bucket-function)
-  (let ((root (make-future-egnat-nodes container
-                                       operation
-                                       extra-arguments
-                                       data
-                                       :multithread multithread
-                                       :bucket-function bucket-function)))
-    (when multithread
-      (let ((sync-thread (cl-ds.utils:make-pipe-fragment
-                          (lambda (node sync-thread
-                              &aux (children (read-children node)))
-                            (map-into children #'lparallel:force children)
-                            (map nil sync-thread children))
-                          :end-on-empty t)))
-        (funcall sync-thread root)
-        (cl-ds.utils:start-execution sync-thread)
-        (cl-ds.utils:end-execution sync-thread)))
-    root))
+(defmethod become-subtree* (container (node egnat-subtree))
+  node)
+
+
+(defmethod become-subtree* (container (node egnat-node))
+  (bind ((content (read-content node))
+         (new-content (aref content 0))
+         (seeds (select-best-seeds container content 1))
+         (split (assign-children container seeds content 1))
+         ((:values close-range distant-range) (make-ranges container
+                                                           split))
+         (subtree (change-class
+                   node 'egnat-subtree
+                   :content new-content
+                   :children (map-into (make-children-vector container)
+                                       (lambda (new-content)
+                                         (assert (vectorp new-content))
+                                         (lret ((result (make 'egnat-node
+                                                              :content new-content)))
+                                           (when (node-full-p container result)
+                                             (become-subtree container result))))
+                                       split)
+                   :close-range close-range
+                   :distant-range distant-range)))
+    subtree))
+
+
+(defun make-egnat-tree (container operation extra-arguments data)
+  (bind ((result (make 'egnat-node :content (vect))))
+    (map nil (lambda (x) (recursive-egnat-grow!* result container operation
+                                                 x extra-arguments))
+         data)
+    result))
 
 
 (defun prune-subtrees (container trees
                        close-range distant-range
-                       value margin
-                       &optional (result (make-array (length trees)
-                                                     :element-type 'bit
-                                                     :initial-element 1)))
-  (declare (optimize (speed 3) (safety 0) (debug 0))
-           (type (or null simple-array) close-range distant-range)
-           (type (or null (array t (*))) trees)
-           (type simple-bit-vector result))
-  (when (null trees)
+                       value margin)
+  (declare (type (or null simple-array) close-range distant-range)
+           (type (array t (*)) trees))
+  (iterate
+    (declare (type fixnum i)
+             (type simple-bit-vector result))
+    (with length = (length trees))
+    (with result = (make-array length
+                               :element-type 'bit
+                               :initial-element 1))
+    (for i from 0 below length)
+    (for tree = (aref trees i))
+    (for head = (node-head tree))
+    (for distance = (distance container head value))
     (iterate
-      (declare (type fixnum i))
-      (for i from 0 below (length result))
-      (setf (aref result i) 0))
-    (return-from prune-subtrees result))
-  (let ((length (length trees)))
-    (iterate
-      (declare (type fixnum i))
-      (for i from 0 below length)
-      (for tree = (aref trees i))
-      (for content = (read-content tree))
-      (for distance = (distance container value content))
-      (iterate
-        (declare (type fixnum j))
-        (for j from 0 below length)
-        (unless (or (eql i j) (zerop (aref result j)))
-          (let ((in-range (<= (- (aref close-range i j)
-                                 margin)
-                              distance
-                              (+ (aref distant-range i j)
-                                 margin))))
-            (setf (aref result j) (if in-range 1 0))))))
-    result))
+      (declare (type fixnum j))
+      (for j from 0 below length)
+      (unless (or (eql i j) (zerop (aref result j)))
+        (let ((in-range (<= (- (aref close-range i j)
+                               margin)
+                            distance
+                            (+ (aref distant-range i j)
+                               margin))))
+          (setf (aref result j) (if in-range 1 0)))))
+    (finally (return result))))
 
 
-(defun insert-into-node (operation container node item extra-arguments)
-  (bind (((:slots %content) node))
-    (apply #'cl-ds.meta:grow-bucket!
-           operation
-           container
-           node
-           item
-           extra-arguments)))
+(defun node-full-p (container node)
+  (assert (typep node 'egnat-node))
+  (>= (~> node read-content length)
+      (read-content-count-in-node container)))
 
-
-(defun node-full (container node)
-  (cl-ds.meta:full-bucket-p container (read-content node)))
+(defun node-children-full-p (container node)
+  (bind ((children (read-children node))
+         (children-count (fill-pointer children))
+         (branching-factor (read-branching-factor container)))
+    (= children-count branching-factor)))
 
 
 (defun closest-node (container nodes item)
@@ -259,29 +208,6 @@
     (finally (return result))))
 
 
-(defun find-destination-node (container item)
-  (let ((root (access-root container)))
-    (if (null root)
-        (values (make-hash-table :test 'eq)
-                nil
-                nil)
-        (bind ((root (access-root container))
-               (stack (list (cons root 0)))
-               (range (make 'egnat-grow-range
-                            :near item
-                            :stack stack
-                            :initial-stack stack
-                            :container container))
-               (existing-item (iterate
-                                (for (values item more) =
-                                     (cl-ds:consume-front range))
-                                (while more)
-                                (finding item such-that item))))
-          (values (read-possible-paths range)
-                  (if (null existing-item) nil t)
-                  (access-last-node range))))))
-
-
 (defun visit-every-bucket (function parent &optional (stack (vect)))
   (setf (fill-pointer stack) 0)
   (vector-push-extend parent stack)
@@ -290,12 +216,13 @@
     (for node = (aref stack (~> stack fill-pointer 1-)))
     (decf (fill-pointer stack))
     (for content = (read-content node))
-    (if (vectorp content)
+    (if (typep node 'egnat-node)
         (map nil function content)
-        (funcall function content))
-    (map nil
-         (rcurry #'vector-push-extend stack)
-         (read-children node))))
+        (progn
+          (funcall function content)
+          (map nil
+               (rcurry #'vector-push-extend stack)
+               (read-children node))))))
 
 
 (-> calculate-distances (fundamental-egnat-container t egnat-node
@@ -317,58 +244,9 @@
                         parent)))
 
 
-(-> reinitialize-ranges! (mutable-egnat-container egnat-subtree fixnum
-                                                  &optional vector)
-    t)
-(defun reinitialize-ranges! (container node changed-one &optional (stack (vect)))
-  "Updates existing ranges for new node (changed-one children)."
-  (bind ((children (read-children node))
-         (full nil)
-         (length (length children))
-         (maximum-children (read-branching-factor container))
-         (new-node (aref children changed-one))
-         (item (~> new-node read-content (aref 0)))
-         (close-range (read-close-range node))
-         (distant-range (read-distant-range node)))
-    (when (null close-range)
-      (setf close-range #1=(make-array `(,maximum-children ,maximum-children)
-                                       :element-type (read-metric-type container))
-            full t
-            (access-close-range node) close-range))
-    (when (null distant-range)
-      (setf distant-range #1#
-            full t
-            (access-distant-range node) distant-range))
-    (if full
-        (iterate
-          (for i from 0 below length)
-          (iterate
-            (for j from 0 below length)
-            (when (eql i j) (next-iteration))
-            (for (values mini maxi) = (calculate-distances container
-                                                           (aref children j)
-                                                           (aref children i)
-                                                           stack))
-            (setf (aref distant-range i j) maxi
-                  (aref close-range i j) mini)))
-        (iterate
-          (for i from 0 below length)
-          (when (eql i changed-one) (next-iteration))
-          (for (values mini maxi) = (calculate-distances container
-                                                         item
-                                                         (aref children i)
-                                                         stack))
-          (setf (aref distant-range changed-one i) maxi
-                (aref close-range changed-one i) mini)))))
-
-
-(defun node-full (node size)
-  (~> node read-content length (= size)))
-
-
 (defun node-head (node)
   (let ((content (read-content node)))
-    (if (vectorp content)
+    (if (typep node 'egnat-node)
         (aref content 0)
         content)))
 
@@ -395,400 +273,178 @@
     container))
 
 
-(-> initialize-root! (mutable-egnat-container cl-ds.meta:grow-function t list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun initialize-root! (container operation item additional-arguments)
-  (bind (((:slots %root %branching-factor %metric-type %size) container)
-         (bucket (apply #'cl-ds.meta:make-bucket
-                        operation
-                        container
-                        item
-                        additional-arguments)))
-    (assert (null %root))
-    (setf %root (make-instance 'egnat-leaf :content bucket)
-          %size 1)
-    (values container
-            cl-ds.common:empty-eager-modification-operation-status)))
+(declaim (inline make-content-vector))
+(defun make-content-vector (container &rest initial-content)
+  (~> (make-array (read-content-count-in-node container)
+                  :element-type t
+                  :adjustable t
+                  :fill-pointer 0)
+      (map-into #'identity initial-content)))
 
 
-(defgeneric push-children! (node child))
+(declaim (inline make-children-vector))
+(defun make-children-vector (container &rest initial-content)
+(~> (make-array (read-branching-factor container)
+                :element-type t
+                :adjustable t
+                :fill-pointer 0)
+    (map-into #'identity initial-content)))
 
 
-(defmethod push-children! ((node egnat-subtree) child)
-  (bind (((:slots %children) node))
-    (vector-push-extend child %children))
-  node)
+(defun assign-children (container seeds data &optional (start 0))
+  (declare (type vector data)
+           (type (simple-array fixnum (*)) seeds)
+           (type fixnum start))
+  (assert (array-has-fill-pointer-p data))
+  (let ((result (map 'vector
+                     (lambda (i)
+                       (make-content-vector container (aref data i)))
+                     seeds)))
+    (iterate
+      (declare (type fixnum length i))
+      (with length = (length data))
+      (for i from start below length)
+      (when (find i seeds :test 'eql)
+        (next-iteration))
+      (for point = (aref data i))
+      (for target = (extremum result #'< :key
+                              (lambda (x)
+                                (distance container
+                                          (aref x 0)
+                                          point))))
+      (vector-push-extend point target))
+    (iterate
+      (for children in-vector result)
+      (for count = (length children))
+      (when (< count 2) (next-iteration))
+      (for distance-matrix = (cl-ds.utils:make-distance-matrix-from-vector
+                              t
+                              (curry #'distance container)
+                              children))
+      (iterate
+        (for i from 0 below count)
+        (for total-distance = (iterate
+                                (for j from 0 below count)
+                                (unless (eql i j)
+                                  (sum (cl-ds.utils:mref distance-matrix
+                                                         i j)))))
+        (finding i minimizing total-distance into result)
+        (finally (rotatef (aref children 0) (aref children result)))))
+    (assert (= (- (length data) start)
+               (reduce #'+ result :key #'length)))
+    result))
 
 
-(defmethod push-children! ((node egnat-leaf) child)
-  (let* ((old-content (read-content node))
-         (new-object (change-class node 'egnat-subtree
-                                   :content (aref old-content 0)
-                                   :children (vect child (make 'egnat-leaf
-                                                               :content old-content)))))
-    (cl-ds.utils:swapop old-content 0)
-    new-object))
+(defgeneric recursive-egnat-grow!* (node container operation
+                                    item additional-arguments))
 
 
-(-> splitting-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun splitting-grow! (structure container operation item additional-arguments)
-  (fbind ((distance (curry #'distance container)))
-    (bind (((:slots %root %branching-factor %size %metric-type %content-count-in-node)
-            structure)
-           ((:dflet closest-index (array))
-            (let ((result 0))
-              (cl-ds.utils:optimize-value ((mini <))
-                (iterate
-                  (for i from 0 below (length array))
-                  (for child = (aref array i))
-                  (for head = (node-head child))
-                  (for distance = (distance head item))
-                  (mini distance)
-                  (when (= mini distance)
-                    (setf result i))))
-              result))
-           ((:labels impl (node))
-            (cond ((typep node 'egnat-subtree)
-                   (let ((children (read-children node)))
-                     (if (= (length children) %branching-factor)
-                         (bind ((close-index (closest-index children))
-                                (next-node (aref children close-index)))
-                           (impl next-node)
-                           (update-ranges! container node item close-index))
-                         (let ((new-bucket (apply #'cl-ds.meta:make-bucket
+(defun recursive-egnat-grow! (node container operation item
+                              additional-arguments)
+  (recursive-egnat-grow!* node
+                          container
+                          operation
+                          item
+                          additional-arguments))
+
+
+(defmethod recursive-egnat-grow!* ((node (eql nil))
+                                   container operation
+                                   item additional-arguments)
+  (make 'egnat-node
+        :content (vector (apply #'cl-ds.meta:make-bucket
+                                operation
+                                container
+                                item
+                                additional-arguments))))
+
+
+(defmethod recursive-egnat-grow!* ((node egnat-subtree)
+                                   container operation
+                                   item additional-arguments)
+  (declare (type list additional-arguments))
+  (let* ((children (read-children node))
+         (children-count (fill-pointer children))
+         (distant-range (read-distant-range node))
+         (close-range (read-close-range node)))
+    (if (node-children-full-p container node)
+        (let ((distances (make-array children-count)))
+          (iterate
+            (declare (type fixnum i))
+            (for i from 0 below children-count)
+            (for subnode = (aref children i))
+            (for head = (node-head subnode))
+            (for distance = (distance container head item))
+            (setf (aref distances i) distance))
+          (bind ((target-node (iterate
+                                (for d in-vector distances)
+                                (for i from 0)
+                                (finding i minimizing d))))
+            (recursive-egnat-grow!* (aref children target-node)
+                                    container operation
+                                    item additional-arguments)
+            (iterate
+              (declare (type fixnum i))
+              (for i from 0 below children-count)
+              (for distance = (aref distances i))
+              (maxf (aref distant-range i target-node) distance)
+              (minf (aref close-range i target-node) distance))))
+        (iterate
+          (declare (type fixnum i))
+          (for i from 0 below children-count)
+          (for subnode = (aref children i))
+          (for head = (node-head subnode))
+          (for distance = (distance container head item))
+          (setf (aref distant-range i children-count) distance
+                (aref close-range i children-count) distance)
+          (for (values close distant) =
+               (cl-ds.utils:optimize-value ((mini <) (maxi >))
+                 (visit-every-bucket (lambda (x)
+                                       (let ((distance (distance container x item)))
+                                         (mini distance)
+                                         (maxi distance)))
+                                     subnode)))
+          (setf (aref distant-range children-count i) distant
+                (aref close-range children-count i) close)
+          (finally
+           (vector-push-extend (make 'egnat-node :content
+                                     (vect (apply #'cl-ds.meta:make-bucket
                                                   operation
                                                   container
                                                   item
-                                                  additional-arguments))
-                               (last (~> node read-content length)))
-                           (push-children! node
-                                           (make-instance 'egnat-leaf
-                                                          :content (vector new-bucket)))
-                           (reinitialize-ranges! container node last)))))
-                  ((node-full node %content-count-in-node)
-                   (bind ((new-bucket (apply #'cl-ds.meta:make-bucket
-                                             operation
-                                             container
-                                             item
-                                             additional-arguments))
-                          (new-node (make-instance 'egnat-leaf
-                                                   :content (vector new-bucket))))
-                     (push-children! node new-node)
-                     (reinitialize-ranges! container node 0)))
-                  (t
-                   (~>> node read-content
-                        (vector-push-extend (apply #'cl-ds.meta:make-bucket
-                                                   operation
-                                                   container
-                                                   item
-                                                   additional-arguments)))))))
-      (impl (access-root container))
-      (incf %size)))
-  (values structure
-          cl-ds.common:empty-eager-modification-operation-status))
+                                                  additional-arguments)))
+                               (read-children node))))))
+  node)
 
 
-(defun optimize-parents-partial! (container node paths index item)
-  (update-ranges! container node item index)
-  (iterate
-    (for (parent . index)
-         initially (gethash node paths)
-         then (gethash parent paths))
-    (until (null parent))
-    (update-ranges! container parent item index)))
+(defun push-content (node container operation item additional-arguments)
+  (vector-push-extend (apply #'cl-ds.meta:make-bucket operation container
+                             item additional-arguments)
+                      (read-content node))
+  t)
 
 
-(-> egnat-replace! (mutable-egnat-container
-                    t
-                    cl-ds.meta:grow-function
-                    t
-                    egnat-node
-                    hash-table
-                    list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun egnat-replace! (structure container operation
-                       item last-node
-                       paths
-                       additional-arguments)
-  (bind ((old-head (node-head last-node))
-         (content (read-content last-node))
-         ((:values new-bucket status) (apply #'cl-ds.meta:grow-bucket!
-                                             operation
-                                             container
-                                             content
-                                             item
-                                             additional-arguments))
-         (new-head (node-head last-node))
-         (head-changed (not (same container old-head new-head)))
-         (parent.index (gethash last-node paths)))
-    (when (cl-ds:changed status)
-      (setf (slot-value last-node '%content) new-bucket)
-      (unless (null parent.index)
-        (bind (((parent . index) parent.index))
-          (if head-changed
-              (progn
-                (reinitialize-ranges! container parent index)
-                (optimize-parents-partial! container parent paths index item))
-              (optimize-parents-partial! container parent paths index item)))))
-    (values container status)))
-
-
-(-> egnat-push! (mutable-egnat-container t
-                 cl-ds.meta:grow-function t
-                 egnat-node hash-table list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun egnat-push! (structure container operation
-                    item node paths
-                    additional-arguments)
-  (bind ((content (read-content node))
-         (new-bucket (apply #'cl-ds.meta:grow-bucket!
-                            operation
-                            container
-                            content
-                            item
-                            additional-arguments))
-         (parent.index (gethash node paths)))
-    (setf (slot-value node '%content) new-bucket)
-    (incf (access-size container))
-    (unless (null parent.index)
-      (optimize-parents-partial! container (car parent.index)
-                                 paths (cdr parent.index) item))
-    (values structure
-            cl-ds.common:empty-eager-modification-operation-status)))
+(defmethod recursive-egnat-grow!* ((node egnat-node)
+                                   container operation
+                                   item additional-arguments)
+  (declare (type list additional-arguments))
+  (if (node-full-p container node)
+      (recursive-egnat-grow!* (become-subtree container node)
+                              container operation
+                              item additional-arguments)
+      (push-content node container operation item
+                    additional-arguments)))
 
 
 (-> egnat-grow! (mutable-egnat-container t cl-ds.meta:grow-function t list)
     (values mutable-egnat-container
             cl-ds.common:eager-modification-operation-status))
 (defun egnat-grow! (structure container operation item additional-arguments)
-  (if (~> container access-root null) ; border case. nil is valid value for root
-      (initialize-root! container operation item additional-arguments)
-      (bind (((:slots %metric-f %same-fn %content-count-in-node
-                      %size %root %branching-factor)
-              structure)
-             ((:values paths found last-node) (find-destination-node structure
-                                                                     item)))
-        #|
-following cases need to be considered:
-1) item already present in the egnat.
-   Simply attempt to change bucket, and roll with result
-2) item not present in the egnat, but there is a node that we can
-   stick it in, without updating ranges. Do it and be happy.
-3) item not present in the egnat, and every node in path is already full.
-   Find first node (from the root) that can hold another children. Create node
-   by spliting content of parent in two. Update ranges of parent since new
-   children has been added. Then update ranges of whole path because new item
-   has been added.
-        |#
-        (if found ; case number 1, easy to handle
-            (egnat-replace! structure container operation
-                            item last-node
-                            paths
-                            additional-arguments)
-            (iterate
-              (for (node parent) in-hashtable paths)
-              (for content = (read-content node))
-              (finding node
-                       such-that (< (fill-pointer content)
-                                    %content-count-in-node)
-                       into result)
-              (finally
-               ;; checking if it is the case number 2
-               (if (null result)
-                   ;; case 3, it will be messy...
-                   (return (splitting-grow! structure container operation item
-                                            additional-arguments))
-                   ;; the case number 2, just one push-extend and we are done
-                   (return (egnat-push! structure container operation item result
-                                        paths additional-arguments)))))))))
-
-
-(-> remove-children! (egnat-node fixnum) t)
-(defun remove-children! (node index)
-  (bind (((:slots %children %close-range %distant-range) node)
-         (length (length %children))
-         (last (1- length)))
-    (cl-ds.utils:swapop %children index)
-    (unless (eql last index)
-      (iterate
-        (for i from 0 below last)
-        (setf (aref %close-range i index)
-              (aref %close-range i last)
-
-              (aref %close-range index i)
-              (aref %close-range last i)
-
-              (aref %distant-range i index)
-              (aref %distant-range i last)
-
-              (aref %distant-range index i)
-              (aref %distant-range last i))))))
-
-
-(-> rebuild-ranges-after-subtree-replace! (mutable-egnat-container
-                                           egnat-node
-                                           fixnum &optional vector)
-    t)
-(defun rebuild-ranges-after-subtree-replace! (container parent index
-                                              &optional (stack (vect)))
-  (reinitialize-ranges! container parent index stack)
-  (iterate
-    (with children = (read-children parent))
-    (with length = (length children))
-    (with close-range = (read-close-range parent))
-    (with distant-range = (read-distant-range parent))
-    (with item = (~> children (aref index) read-content (aref 0)))
-    (for i from 0 below length)
-    (for child = (aref children i))
-    (for (values mini maxi) = (calculate-distances container
-                                                   item
-                                                   child
-                                                   stack))
-    (setf (aref close-range index i) mini
-          (aref distant-range index i) maxi)))
-
-
-(defun optimize-parents-complete! (container node paths &optional (stack (vect)))
-  (iterate
-    (for parent.index
-         initially (gethash node paths)
-         then (gethash parent paths))
-    (until (null parent.index))
-    (for (parent . index) = parent.index)
-    (reinitialize-ranges! container parent index stack)))
-
-
-(defun reorginize-tree (container parent)
-  (make-egnat-tree container
-                   nil
-                   nil
-                   (collect-buckets parent)
-                   :multithread nil
-                   :bucket-function #'identity))
-
-
-(defun replace-bucket (container node paths position new-bucket)
-  (if (zerop position)
-      cl-ds.utils:todo ; this may fuck up whole structure, it should be rebuild
-      (progn
-        (setf (~> node read-content (aref position))
-              new-bucket)
-        (optimize-parents-complete! container node paths))))
-
-
-(defun remove-head-bucket (container node paths)
-  (bind ((parent (car (gethash node paths))))
-    (if (null parent)
-        (setf (access-root container) (reorginize-tree container node))
-        (bind ((p-parent.p-index (gethash parent paths))
-               (new-tree (reorginize-tree container parent)))
-          (if (null p-parent.p-index)
-              (setf (access-root container) new-tree)
-              (bind ((stack (vect))
-                     ((p-parent . p-index) p-parent.p-index))
-                (setf (~> p-parent read-children (aref p-index))
-                      new-tree)
-                (rebuild-ranges-after-subtree-replace! container
-                                                       p-parent
-                                                       p-index
-                                                       stack)
-                (optimize-parents-complete! container parent paths stack)))))))
-
-
-(defun remove-whole-node (container node paths)
-  (declare (optimize (debug 3)))
-  (bind ((parent.index (gethash node paths))
-         (is-leaf (emptyp (read-children node)))
-         (is-root (null parent.index)))
-    (cl-ds.utils:cond+ (is-leaf is-root)
-      ((t t) (setf (access-root container) nil))
-      ((t nil)
-       (remove-children! (car parent.index) (cdr parent.index))
-       (optimize-parents-complete! container (car parent.index) paths))
-      ((nil t) (setf (access-root container) (reorginize-tree container node)))
-      ((nil nil) (bind (((parent . index) parent.index)
-                    (children (read-children parent))
-                    (stack (vect)))
-               (setf (~> node read-content fill-pointer) 0
-                     (aref children index) (reorginize-tree container node))
-               (rebuild-ranges-after-subtree-replace! container
-                                                      parent
-                                                      index
-                                                      stack)
-               (optimize-parents-complete! container node paths stack))))))
-
-
-(-> merging-shrink! (mutable-egnat-container
-                     egnat-node
-                     hash-table
-                     boolean
-                     t)
-    t)
-(defun merging-shrink! (container node paths head-was-changed new-bucket)
-  "Removes element from node. Takes in account potential head change, updates ranges."
-  (cond ((cl-ds.meta:null-bucket-p new-bucket)
-         (remove-whole-node container node paths))
-
-        (head-was-changed
-         (remove-head-bucket container node paths))
-
-        (t (optimize-parents-complete! container node paths))))
-
-
-(-> remove-from-node! (mutable-egnat-container
-                       t
-                       cl-ds.meta:shrink-function
-                       egnat-node t
-                       hash-table list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun remove-from-node! (structure container
-                          operation node item paths
+  (recursive-egnat-grow!* #1# container operation item
                           additional-arguments)
-  (bind ((content (read-content node))
-         (old-head (aref content 0))
-         ((:values new-bucket status) (apply #'cl-ds.meta:shrink-bucket!
-                                             operation
-                                             container
-                                             content
-                                             item
-                                             additional-arguments))
-         (new-head (or (cl-ds.meta:null-bucket-p new-bucket) (aref new-bucket 0)))
-         (head-was-changed (or (cl-ds.meta:null-bucket-p new-bucket)
-                               (not (same structure new-head old-head)))))
-    (setf (slot-value node '%content) new-bucket)
-    (when (cl-ds:changed status)
-      ;; remove from node, update paths, sometimes reinitialize paths...
-      (merging-shrink! container node paths head-was-changed new-bucket))
-    (values structure status)))
-
-
-(-> egnat-shrink! (mutable-egnat-container t cl-ds.meta:shrink-function t list)
-    (values mutable-egnat-container
-            cl-ds.common:eager-modification-operation-status))
-(defun egnat-shrink! (structure container operation
-                      item additional-arguments)
-  (if (~> container access-root null)
-      (values structure
-              cl-ds.common:empty-eager-modification-operation-status)
-      (bind (((:slots %metric-fn %same-fn %content-count-in-node %size
-                      %root %branching-factor)
-              structure)
-             ((:values paths found last-node) (find-destination-node structure
-                                                                     item)))
-        (if found
-            (progn
-              (decf (access-size container))
-              (remove-from-node! structure container operation
-                                 last-node item paths
-                                 additional-arguments))
-            (values structure
-                    cl-ds.common:empty-eager-modification-operation-status)))))
+  (incf (access-size structure))
+  (values structure (cl-ds.common:make-eager-modification-operation-status
+                     nil item t)))
 
 
 (defun traverse-impl (container function)

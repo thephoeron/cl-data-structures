@@ -256,8 +256,7 @@
 
 
 (defgeneric make-bucket (operation container location
-                         &rest all
-                         &key &allow-other-keys)
+                         &rest all)
   (:method (operation container location &rest all)
     (apply #'pass-bucket-operation container operation location all)))
 

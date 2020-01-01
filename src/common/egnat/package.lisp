@@ -15,6 +15,5 @@
    #:prune-subtrees
    #:read-margin
    #:read-near
-   #:same
    #:select-children
    #:traverse-impl))

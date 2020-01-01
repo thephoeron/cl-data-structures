@@ -287,6 +287,14 @@ Stage level aggregator protocol.
 Range function invokaction protocol.
 |#
 
+(defmethod apply-range-function ((object cl-ds:fundamental-container)
+                                 (function aggregation-function)
+                                 &rest all)
+  (apply #'apply-aggregation-function
+         (cl-ds:whole-range object)
+         function
+         all))
+
 
 (defmethod apply-range-function (range
                                  (function aggregation-function)
