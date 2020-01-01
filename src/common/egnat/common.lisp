@@ -144,12 +144,29 @@
     subtree))
 
 
-(defun make-egnat-tree (container operation extra-arguments data)
-  (bind ((result (make 'egnat-node :content (vect))))
-    (map nil (lambda (x) (recursive-egnat-grow!* result container operation
-                                                 x extra-arguments))
-         data)
-    result))
+(defun make-egnat-tree (container operation extra-arguments data &optional (parallel nil))
+  (if parallel
+      (bind ((seeds (select-best-seeds container data 1))
+             (subtree-contents (assign-children container seeds data 1))
+             (this-content (first-elt data))
+             ((:values close distant) (make-ranges container subtree-contents))
+             (children (lparallel:pmap-into (make-children-vector container)
+                                            (lambda (x)
+                                              (make-egnat-tree container operation
+                                                               extra-arguments
+                                                               x nil))
+                                            subtree-contents)))
+        (make 'egnat-subtree :close-range close
+                             :distant-range distant
+                             :content this-content
+                             :children children))
+      (bind ((result (make 'egnat-node :content (make-content-vector container))))
+        (map nil
+             (lambda (x)
+               (recursive-egnat-grow!* result container operation
+                                       x extra-arguments))
+             data)
+        result)))
 
 
 (defun prune-subtrees (container trees
@@ -313,23 +330,6 @@
                                           (aref x 0)
                                           point))))
       (vector-push-extend point target))
-    (iterate
-      (for children in-vector result)
-      (for count = (length children))
-      (when (< count 2) (next-iteration))
-      (for distance-matrix = (cl-ds.utils:make-distance-matrix-from-vector
-                              t
-                              (curry #'distance container)
-                              children))
-      (iterate
-        (for i from 0 below count)
-        (for total-distance = (iterate
-                                (for j from 0 below count)
-                                (unless (eql i j)
-                                  (sum (cl-ds.utils:mref distance-matrix
-                                                         i j)))))
-        (finding i minimizing total-distance into result)
-        (finally (rotatef (aref children 0) (aref children result)))))
     (assert (= (- (length data) start)
                (reduce #'+ result :key #'length)))
     result))

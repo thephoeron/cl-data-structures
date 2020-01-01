@@ -21,7 +21,8 @@
                  (cl-ds.utils.metric:levenshtein-metric a b))
                'non-negative-fixnum
                :branching-factor 50
-               :samples-count 1))
+               :parallel t
+               :samples-count 5))
          (whole-content (cl-ds.alg:to-vector (cl-ds:whole-range set))))
     (is (length whole-content) (length data))
     (is (sort whole-content #'string<) (sort data #'string<)
