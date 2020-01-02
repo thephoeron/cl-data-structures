@@ -11,5 +11,4 @@
 (defgeneric needs-resampling-p (cf-tree node))
 (defgeneric resample (cf-tree subtree))
 (defgeneric clusteroid (cf-tree node))
-(defgeneric position-of-clusteroid (cf-tree vector))
 (defgeneric average-inter-cluster-distance (cf-tree first-leaf second-leaf-or-item))

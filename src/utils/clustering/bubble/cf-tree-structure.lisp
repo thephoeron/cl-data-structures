@@ -10,10 +10,10 @@
                    :type positive-fixnum
                    :reader read-sampling-rate
                    :documentation "Number of inserts in the subtree that can be performed BEFORE triggering resampling.")
-   (%sample-size :initarg :sample-size
-                 :type positive-fixnum
-                 :reader read-sample-size
-                 :documentation "Maximal size of the sample in the subtree.")
+   (%subtree-sample-size :initarg :subtree-sample-size
+                         :type positive-fixnum
+                         :reader read-subtree-sample-size
+                         :documentation "Maximal size of the sample in the subtree.")
    (%subtree-maximum-arity :initarg :subtree-maximum-arity
                            :documentation "Maximum number of children possible in the subtree node. Larger subtrees will be splitted."
                            :reader read-subtree-maximum-arity)
@@ -36,9 +36,10 @@
    (%row-sums :initarg :row-sums
               :reader read-row-sums
               :type vector)
-   (%radius :initarg :radious
-            :accessor access-radius
-            :type number)))
+   (%radius :initarg :radius
+            :accessor access-radius))
+  (:default-initargs
+   :radius nil))
 
 
 (defclass cf-subtree (fundamental-cf-node)

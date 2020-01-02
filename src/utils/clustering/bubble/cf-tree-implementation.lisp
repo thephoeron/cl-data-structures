@@ -80,6 +80,7 @@
         (/ (length content))
         sqrt)))
 
+
 (defun average-inter-cluster-distance* (distance-function
                                         first-leaf
                                         second-leaf)
@@ -132,19 +133,6 @@
             item))
 
 
-(defmethod position-of-clusteroid ((tree cf-tree) (vector vector))
-  (iterate
-    (with length = (length vector))
-    (for i from 0 below length)
-    (for first = (aref vector i))
-    (for distance-sum
-         = (iterate
-             (for j from 0 below length)
-             (when (= i j) (next-iteration))
-             (sum (distance tree first (aref vector j)))))
-    (finding i minimizing distance-sum)))
-
-
 (defmethod needs-resampling-p ((tree cf-tree) (leaf cf-leaf))
   nil)
 
@@ -170,3 +158,49 @@
                                            (second-leaf cf-leaf))
   (average-inter-cluster-distance* (read-distance-function tree)
                                    first-leaf second-leaf))
+
+
+(defmethod split ((tree cf-tree)
+                  (node cf-leaf))
+  cl-ds.utils:todo)
+
+
+(defmethod split ((tree cf-tree)
+                  (node cf-subtree))
+  cl-ds.utils:todo)
+
+
+(defmethod resample ((tree cf-tree)
+                     (node cf-subtree))
+  cl-ds.utils:todo)
+
+
+(defmethod absorb-nodes ((tree cf-tree)
+                         (parent cf-subtree)
+                         (children vector))
+  cl-ds.utils:todo)
+
+
+(defmethod absorb-nodes ((tree cf-tree)
+                         (parent cf-leaf)
+                         (children vector))
+  cl-ds.utils:todo)
+
+
+(defmethod make-leaf ((tree cf-tree))
+  (let ((leaf-maximum-size (read-leaf-maximum-size tree)))
+    (make 'cf-leaf
+          :content #1=(make-array leaf-maximum-size
+                                  :fill-pointer 0
+                                  :adjustable t)
+          :row-sums #1#)))
+
+
+(defmethod make-subtree ((tree cf-tree))
+  (make 'cf-subtree
+        :children (make-array (read-subtree-maximum-arity tree)
+                              :fill-pointer 0
+                              :adjustable t)
+        :sample (make-array (read-subtree-sample-size tree)
+                            :fill-pointer 0
+                            :adjustable t)))
