@@ -5,7 +5,6 @@
   `(and ,(if type-bound
              `(vector ,type)
              'vector)
-     (not simple-array)
      (satisfies adjustable-array-p)
      (satisfies array-has-fill-pointer-p)))
 

@@ -76,8 +76,11 @@
                                                          (:test-file "tests")))
                                            (:module "bubble"
                                             :components ((:file "package")
-                                                         (:file "cf-tree"))
-                                                    )))
+                                                         (:file "cf-tree-structure")
+                                                         (:file "cf-tree-protocol")
+                                                         (:file "cf-tree-implementation")
+                                                         (:file "cf-tree-algorithm")
+                                                         (:file "api")))))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
