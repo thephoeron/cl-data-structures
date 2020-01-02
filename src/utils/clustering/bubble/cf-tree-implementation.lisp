@@ -5,6 +5,53 @@
   (funcall (read-distance-function tree) first-item second-item))
 
 
+(defun update-row-sums (tree leaf)
+  (declare (optimize (speed 3)))
+  (let* ((distance-function (read-distance-function tree))
+         (content (read-content leaf))
+         (row-sums (read-row-sums tree))
+         (length (length content))
+         (new-row-sum 0)
+         (last-index (1- length))
+         (new-element (aref content last-index)))
+    (declare (type (cl-ds.utils:extendable-vector t) content row-sums)
+             (type fixnum length last-index)
+             (type function distance-function))
+    (iterate
+      (declare (type fixnum i))
+      (for i from 0 below (1- length))
+      (for distance = (funcall distance-function
+                               (aref content i)
+                               new-element))
+      (incf new-row-sum distance)
+      (incf (aref row-sums i) distance))
+    (vector-push-extend row-sums row-sums)
+    nil))
+
+
+(defun update-leaf-clusteroid (tree leaf)
+  (declare (optimize (speed 3)))
+  (let* ((content (read-content leaf))
+         (row-sums (read-row-sums tree))
+         (length (length content))
+         (new-clusteroid (iterate
+                           (declare (type fixnum i))
+                           (for i from 0 below length)
+                           (for row-sum = (aref row-sums i))
+                           (finding i minimizing row-sum))))
+    (declare (type cl-ds.utils:extendable-vector content row-sums)
+             (type fixnum length))
+    (rotatef (aref content new-clusteroid)
+             (aref content 0))
+    (rotatef (aref row-sums new-clusteroid)
+             (aref row-sums 0))
+    nil))
+
+
+(defun update-subtree-clusteroid (tree leaf)
+  cl-ds.utils:todo)
+
+
 (defun average-inter-cluster-distance* (distance-function
                                         first-leaf
                                         second-leaf)

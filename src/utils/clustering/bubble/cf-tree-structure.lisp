@@ -33,6 +33,9 @@
   ((%content :initarg :content
              :reader read-content
              :type vector)
+   (%row-sums :initarg :row-sums
+              :reader read-row-sums
+              :type vector)
    (%radius :initarg :radious
             :accessor access-radius
             :type number)))
