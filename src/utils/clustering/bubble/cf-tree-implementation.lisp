@@ -8,24 +8,26 @@
 (defun average-inter-cluster-distance* (distance-function
                                         first-leaf
                                         second-leaf)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (ensure-functionf distance-function)
-  (iterate outer
+  (iterate
     (declare (type (cl-ds.utils:extendable-vector t)
                    first-content second-content)
+             (type number result)
              (type fixnum i first-length second-length))
     (with first-content = (read-content first-leaf))
     (with second-content = (read-content second-leaf))
     (with first-length = (length first-content))
     (with second-length = (length second-content))
+    (with result = 0)
     (for i from 0 below first-length)
     (for first-elt = (aref first-content i))
     (iterate
       (declare (type fixnum j))
       (for j from 0 below second-length)
       (for second-elt = (aref second-content j))
-      (in outer (sum (funcall distance-function first-elt second-elt) into result)))
-    (finally (return-from outer
+      (incf result (funcall distance-function first-elt second-elt)))
+    (finally (return
                (~> result
                    (/ (* first-length second-length))
                    (/ 2))))))
