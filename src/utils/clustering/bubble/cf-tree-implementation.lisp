@@ -5,7 +5,7 @@
   (funcall (read-distance-function tree) first-item second-item))
 
 
-(defun update-row-sums (tree leaf)
+(defun cf-leaf-update-row-sums (tree leaf)
   (declare (optimize (speed 3)))
   (let* ((distance-function (read-distance-function tree))
          (content (read-content leaf))
@@ -29,7 +29,7 @@
     nil))
 
 
-(defun update-leaf-clusteroid (tree leaf)
+(defun cf-leaf-update-clusteroid (tree leaf)
   (declare (optimize (speed 3)))
   (let* ((content (read-content leaf))
          (row-sums (read-row-sums tree))
@@ -48,8 +48,37 @@
     nil))
 
 
-(defun update-subtree-clusteroid (tree leaf)
-  cl-ds.utils:todo)
+(defun cf-subtree-update-clusteroid (tree subtree)
+  (iterate
+    (with sample = (access-sample subtree))
+    (with length = (length sample))
+    (with distance-function = (read-distance-function tree))
+    (for i from 0 below length)
+    (for first-elt = (aref sample i))
+    (for row-sum = (+ (iterate
+                        (for j from 0 below i)
+                        (sum (funcall distance-function
+                                      first-elt
+                                      (aref sample j))))
+                      (iterate
+                        (for j from i below length)
+                        (sum (funcall distance-function
+                                      first-elt
+                                      (aref sample j))))))
+    (finding i minimizing row-sum into position)
+    (finally (rotatef (aref sample position) (aref sample 0)))))
+
+
+(defun cf-leaf-calculate-radius (tree leaf)
+  (let* ((distance-function (read-distance-function tree))
+         (content (read-content leaf))
+         (clusteroid (aref content 0)))
+    (declare (type (cl-ds.utils:extendable-vector t) content)
+             (type function distance-function))
+    (~> (reduce #'+ content :start 1 :key
+                (lambda (x) (funcall distance-function clusteroid x)))
+        (/ (length content))
+        sqrt)))
 
 
 (defun average-inter-cluster-distance* (distance-function
