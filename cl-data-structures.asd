@@ -73,7 +73,11 @@
                                                          (:file "internal")
                                                          (:file "external")
                                                          (:file "docstrings")
-                                                         (:test-file "tests")))))
+                                                         (:test-file "tests")))
+                                           (:module "bubble"
+                                            :components ((:file "package")
+                                                         (:file "cf-tree"))
+                                                    )))
                              (:test-file "distances-tests")
                              (:test-file "ordered-algorithms-tests")
                              (:test-file "lazy-shuffle-tests")))
