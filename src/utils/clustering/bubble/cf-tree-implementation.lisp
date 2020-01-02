@@ -80,7 +80,6 @@
         (/ (length content))
         sqrt)))
 
-
 (defun average-inter-cluster-distance* (distance-function
                                         first-leaf
                                         second-leaf)
