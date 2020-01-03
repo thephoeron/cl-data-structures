@@ -5,6 +5,51 @@
   (funcall (read-distance-function tree) first-item second-item))
 
 
+(defun vector-average-distance (distance-function vector item)
+  (/ (reduce #'+ vector
+             :key (lambda (x) (funcall distance-function x item)))
+     (length vector)))
+
+
+(defun split* (matrix vector)
+  (bind ((length (length vector))
+         ((first . second)
+          (iterate outer
+            (declare (type fixnum i))
+            (for i from 0 below length)
+            (iterate
+              (declare (type fixnum j))
+              (for j from i below length)
+              (iterate
+                (for k from 0 below length)
+                (for i-distance = (cl-ds.utils:mref matrix i k))
+                (for j-distance = (cl-ds.utils:mref matrix j k))
+                (sum (abs (- i-distance j-distance)) into total)
+                (finally
+                 (in outer (finding (cons i j) maximizing total)))))))
+         (first-content (vect first))
+         (second-content (vect second))
+         ((:flet vector-average-distance (vector index))
+          (/ (reduce #'+ vector
+                     :key (lambda (i) (cl-ds.utils:mref matrix index i)))
+             (length vector))))
+    (iterate
+      (for i from 0 below length)
+      (when (or (eql i first)
+                (eql i second))
+        (next-iteration))
+      (for first-distance = (vector-average-distance first-content
+                                                     i))
+      (for second-distance = (vector-average-distance second-content
+                                                      i))
+      (vector-push-extend i (if (< first-distance second-distance)
+                                first-content
+                                second-content)))
+    (cl-ds.utils:transform (lambda (i) (aref content i)) first-content)
+    (cl-ds.utils:transform (lambda (i) (aref content i)) second-content)
+    (cons first-content second-content)))
+
+
 (defun cf-leaf-update-row-sums (tree leaf)
   (declare (optimize (speed 3)))
   (let* ((distance-function (read-distance-function tree))
@@ -163,30 +208,54 @@
 (defmethod average-distance ((tree cf-tree)
                              (leaf cf-leaf)
                              item)
-  (let* ((distance-function (read-distance-function tree))
-         (content (read-content leaf))
-         (length (fill-pointer content)))
-    (/ (reduce #'+ content
-               :key (lambda (x) (funcall distance-function x item)))
-       length)))
+  (vector-average-distance (read-distance-function tree)
+                           (read-content leaf)
+                           item))
+
+
+(defmethod average-distance ((tree cf-tree)
+                             first-item
+                             second-item)
+  (distance tree first-item second-item))
 
 
 (defmethod average-distance ((tree cf-tree)
                              (node cf-subtree)
                              item)
-  (distance tree
-            (~> node access-sample (aref 0))
-            item))
+  (vector-average-distance (read-distance-function tree)
+                           (access-sample node)
+                           item))
 
 
 (defmethod split ((tree cf-tree)
                   (node cf-leaf))
-  cl-ds.utils:todo)
+  (bind ((content (read-content node))
+         (result (vector (make-leaf tree) (make-leaf tree)))
+         (distance-function (read-distance-function tree))
+         ((first-content . second-content)
+          (split* (cl-ds.utils:make-distance-matrix-from-vector
+                   t distance-function
+                   content)
+                  content)))
+    (absorb-nodes tree (aref result 0) first-content)
+    (absorb-nodes tree (aref result 1) second-content)
+    result))
 
 
 (defmethod split ((tree cf-tree)
                   (node cf-subtree))
-  cl-ds.utils:todo)
+  (bind ((children (read-children node))
+         (result (vector (make-subtree tree) (make-subtree tree)))
+         ((first-content . second-content)
+          (split* (cl-ds.utils:make-distance-matrix-from-vector
+                   t (lambda (a b) (average-distance tree a b))
+                   children)
+                  children)))
+    (absorb-nodes tree (aref result 0) first-content)
+    (absorb-nodes tree (aref result 1) second-content)
+    (resample tree (aref result 0))
+    (resample tree (aref result 1))
+    result))
 
 
 (defmethod resample ((tree cf-tree)
@@ -203,7 +272,8 @@
     (for i from 0 below length)
     (for child = (aref children i))
     (for distance = (average-distance tree child item))
-    (finding child minimizing distance)))
+    (finding i minimizing distance into position)
+    (finally (return (cons (aref children i) i)))))
 
 
 (defmethod cf-insert ((tree cf-tree)
@@ -217,14 +287,15 @@
 
 (defmethod absorb-nodes ((tree cf-tree)
                          (parent cf-subtree)
-                         (original fundamental-cf-node)
-                         children)
+                         children
+                         &optional (position nil position-bound))
+  (assert position-bound)
   (bind ((old-children (read-children parent))
-         (position (position original old-children :test 'eq))
          (length (fill-pointer old-children))
          (size (array-dimension old-children 0))
          (new-size (+ length (length children) -1)))
     (declare (type fixnum length size new-size))
+    (assert (not (null position)))
     (cl-ds.utils:swapop old-children position)
     (when (> new-size size)
       (adjust-array old-children new-size))
@@ -236,23 +307,27 @@
     parent))
 
 
-;; (defmethod absorb-nodes ((tree cf-tree)
-;;                          (parent cf-leaf)
-;;                          (content vector))
-;;   (let* ((old-content (read-content parent))
-;;          (length (fill-pointer old-content))
-;;          (size (array-dimension old-content 0))
-;;          (new-size (+ length (length content))))
-;;     (declare (type fixnum length size new-size))
-;;     (when (> new-size size)
-;;       (adjust-array old-content new-size))
-;;     (iterate
-;;       (for child in-vector content)
-;;       (vector-push-extend child old-content))
-;;     (cf-leaf-update-row-sums tree parent)
-;;     (cf-leaf-update-clusteroid tree parent)
-;;     (setf (access-radius parent) (cf-leaf-calculate-radius tree parent))
-;;     parent))
+(defmethod absorb-nodes ((tree cf-tree)
+                         (parent cf-leaf)
+                         (content vector)
+                         &optional (position nil position-bound))
+  (let* ((old-content (read-content parent))
+         (length (fill-pointer old-content))
+         (size (array-dimension old-content 0))
+         (new-size (+ length (length content))))
+    (declare (type fixnum length size new-size))
+    (when position-bound
+      (cl-ds.utils:swapop old-content position)
+      (cl-ds.utils:swapop (read-row-sums parent) position))
+    (when (> new-size size)
+      (adjust-array old-content new-size))
+    (iterate
+      (for child in-vector content)
+      (vector-push-extend child old-content))
+    (cf-leaf-update-row-sums tree parent)
+    (cf-leaf-update-clusteroid tree parent)
+    (setf (access-radius parent) (cf-leaf-calculate-radius tree parent))
+    parent))
 
 
 (defmethod make-leaf ((tree cf-tree))
