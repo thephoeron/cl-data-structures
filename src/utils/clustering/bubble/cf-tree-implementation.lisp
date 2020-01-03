@@ -153,11 +153,30 @@
           (read-leaf-maximum-radius tree))))
 
 
-(defmethod average-inter-cluster-distance ((tree cf-tree)
-                                           (first-leaf cf-leaf)
-                                           (second-leaf cf-leaf))
+(defmethod average-distance ((tree cf-tree)
+                             (first-leaf cf-leaf)
+                             (second-leaf cf-leaf))
   (average-inter-cluster-distance* (read-distance-function tree)
                                    first-leaf second-leaf))
+
+
+(defmethod average-distance ((tree cf-tree)
+                             (leaf cf-leaf)
+                             item)
+  (let* ((distance-function (read-distance-function tree))
+         (content (read-content leaf))
+         (length (fill-pointer content)))
+    (/ (reduce #'+ content
+               :key (lambda (x) (funcall distance-function x item)))
+       length)))
+
+
+(defmethod average-distance ((tree cf-tree)
+                             (node cf-subtree)
+                             item)
+  (distance tree
+            (~> node access-sample (aref 0))
+            item))
 
 
 (defmethod split ((tree cf-tree)
@@ -175,16 +194,65 @@
   cl-ds.utils:todo)
 
 
+(defmethod cf-insert ((tree cf-tree)
+                      (node cf-subtree)
+                      item)
+  (iterate
+    (with children = (read-children node))
+    (with length = (length children))
+    (for i from 0 below length)
+    (for child = (aref children i))
+    (for distance = (average-distance tree child item))
+    (finding child minimizing distance)))
+
+
+(defmethod cf-insert ((tree cf-tree)
+                      (node cf-leaf)
+                      item)
+  (vector-push-extend item (read-content node))
+  (cf-leaf-update-row-sums tree node)
+  (cf-leaf-calculate-radius tree node)
+  nil)
+
+
 (defmethod absorb-nodes ((tree cf-tree)
                          (parent cf-subtree)
-                         (children vector))
-  cl-ds.utils:todo)
+                         (original fundamental-cf-node)
+                         children)
+  (bind ((old-children (read-children parent))
+         (position (position original old-children :test 'eq))
+         (length (fill-pointer old-children))
+         (size (array-dimension old-children 0))
+         (new-size (+ length (length children) -1)))
+    (declare (type fixnum length size new-size))
+    (cl-ds.utils:swapop old-children position)
+    (when (> new-size size)
+      (adjust-array old-children new-size))
+    (iterate
+      (for child in-vector children)
+      (vector-push-extend child old-children))
+    (when (zerop position)
+      (cf-subtree-update-clusteroid tree parent))
+    parent))
 
 
-(defmethod absorb-nodes ((tree cf-tree)
-                         (parent cf-leaf)
-                         (children vector))
-  cl-ds.utils:todo)
+;; (defmethod absorb-nodes ((tree cf-tree)
+;;                          (parent cf-leaf)
+;;                          (content vector))
+;;   (let* ((old-content (read-content parent))
+;;          (length (fill-pointer old-content))
+;;          (size (array-dimension old-content 0))
+;;          (new-size (+ length (length content))))
+;;     (declare (type fixnum length size new-size))
+;;     (when (> new-size size)
+;;       (adjust-array old-content new-size))
+;;     (iterate
+;;       (for child in-vector content)
+;;       (vector-push-extend child old-content))
+;;     (cf-leaf-update-row-sums tree parent)
+;;     (cf-leaf-update-clusteroid tree parent)
+;;     (setf (access-radius parent) (cf-leaf-calculate-radius tree parent))
+;;     parent))
 
 
 (defmethod make-leaf ((tree cf-tree))
