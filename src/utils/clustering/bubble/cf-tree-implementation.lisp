@@ -307,6 +307,8 @@
       (vector-push-extend child old-children))
     (when (zerop position)
       (cf-subtree-update-clusteroid tree parent))
+    (unless position-bound
+      (resample tree parent))
     parent))
 
 
