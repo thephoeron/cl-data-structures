@@ -292,14 +292,13 @@
                          (parent cf-subtree)
                          children
                          &optional (position nil position-bound))
-  (assert position-bound)
   (bind ((old-children (read-children parent))
          (length (fill-pointer old-children))
          (size (array-dimension old-children 0))
          (new-size (+ length (length children) -1)))
     (declare (type fixnum length size new-size))
-    (assert (not (null position)))
-    (cl-ds.utils:swapop old-children position)
+    (when position-bound
+      (cl-ds.utils:swapop old-children position))
     (when (> new-size size)
       (adjust-array old-children new-size))
     (iterate
