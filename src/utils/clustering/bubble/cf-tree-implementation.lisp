@@ -5,6 +5,20 @@
   (funcall (read-distance-function tree) first-item second-item))
 
 
+(defun grab-sample (tree family-size vector result)
+  (let* ((node-size (length vector))
+         (sample-size (read-sample-size tree))
+         (contribution-size (max 1 (/ (* node-size sample-size)
+                                      family-size))))
+    (iterate
+      (with shuffled = (cl-ds.utils:lazy-shuffle 0 node-size))
+      (repeat contribution-size)
+      (~> (funcall shuffled)
+          (aref vector _)
+          (vector-push-extend result)))
+    result))
+
+
 (defun vector-average-distance (distance-function vector item)
   (/ (reduce #'+ vector
              :key (lambda (x) (funcall distance-function x item)))
@@ -252,18 +266,51 @@
                    t (lambda (a b) (average-distance tree a b))
                    children)
                   children)))
+    (absorb-nodes tree (aref result 0) first-content)
+    (absorb-nodes tree (aref result 1) second-content)
     (when (needs-resampling-p tree (aref result 0))
       (resample tree (aref result 0)))
     (when (needs-resampling-p tree (aref result 1))
       (resample tree (aref result 1)))
-    (absorb-nodes tree (aref result 0) first-content)
-    (absorb-nodes tree (aref result 1) second-content)
     result))
+
+
+(defmethod node-size ((tree cf-tree)
+                      (node cf-subtree))
+  (~> node access-sample length))
+
+
+(defmethod node-size ((tree cf-tree)
+                      (node cf-leaf))
+  (~> node read-content length))
+
+
+(defmethod contribute-sample ((tree cf-tree)
+                              (node cf-leaf)
+                              result
+                              family-size)
+  (grab-sample tree family-size (read-content node) result))
+
+
+(defmethod contribute-sample ((tree cf-tree)
+                              (node cf-subtree)
+                              result
+                              family-size)
+  (grab-sample tree family-size (read-children node) result))
 
 
 (defmethod resample ((tree cf-tree)
                      (node cf-subtree))
-  cl-ds.utils:todo)
+  (let ((sample (or (access-sample node) (vect))))
+    (setf (fill-pointer sample) 0)
+    (iterate
+      (with children = (read-children node))
+      (with family-size = (reduce #'+ children
+                                  :key (curry #'node-size tree)))
+      (for child in-vector children)
+      (contribute-sample tree child sample family-size))
+    (setf (access-sample node) sample
+          (access-inserts node) 0)))
 
 
 (defmethod cf-insert ((tree cf-tree)

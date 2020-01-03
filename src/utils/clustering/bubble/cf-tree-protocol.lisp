@@ -11,5 +11,7 @@
 (defgeneric clusteroid-distance (cf-tree first-node second-node-or-item))
 (defgeneric needs-resampling-p (cf-tree node))
 (defgeneric resample (cf-tree subtree))
+(defgeneric contribute-sample (cf-tree node result family-size))
+(defgeneric node-size (cf-tree node))
 (defgeneric clusteroid (cf-tree node))
 (defgeneric average-distance (cf-tree first-node-or-item second-node-or-item))
