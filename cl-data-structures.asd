@@ -76,8 +76,8 @@
                                                          (:test-file "tests")))
                                            (:module "bubble"
                                             :components ((:file "package")
-                                                         (:file "cf-tree-structure")
                                                          (:file "cf-tree-protocol")
+                                                         (:file "cf-tree-structure")
                                                          (:file "cf-tree-implementation")
                                                          (:file "cf-tree-algorithm")
                                                          (:file "api")))))

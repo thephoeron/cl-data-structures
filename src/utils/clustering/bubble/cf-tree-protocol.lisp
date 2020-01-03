@@ -13,5 +13,7 @@
 (defgeneric resample (cf-tree subtree))
 (defgeneric contribute-sample (cf-tree node result family-size))
 (defgeneric node-size (cf-tree node))
+(defgeneric leaf-content (cf-tree node))
+(defgeneric visit-leafs (cf-tree node callback &key key))
 (defgeneric clusteroid (cf-tree node))
 (defgeneric average-distance (cf-tree first-node-or-item second-node-or-item))

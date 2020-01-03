@@ -20,7 +20,7 @@
    (%leaf-maximum-size :initarg :leaf-maximum-size
                        :reader read-leaf-maximum-size
                        :documentation "Maximum length of the %content vector in the cf-leaf.")
-   (%leaf-maximum-radius :initarg :leaf-maximum-radious
+   (%leaf-maximum-radius :initarg :leaf-maximum-radius
                          :reader read-leaf-maximum-radius
                          :documentation "Maximum radius of the leaf allowed. Larger leafs will be splitted.")))
 

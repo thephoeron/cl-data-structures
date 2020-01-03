@@ -257,15 +257,36 @@
     result))
 
 
+(defmethod leaf-content ((tree cf-tree)
+                         (node cf-leaf))
+  (read-content node))
+
+
+(defmethod visit-leafs ((tree cf-tree)
+                        (node cf-subtree)
+                        callback
+                        &key (key #'identity))
+  (iterate
+    (for child in-vector (read-children node))
+    (visit-leafs tree child callback :key key)))
+
+
+(defmethod visit-leafs ((tree cf-tree)
+                        (node cf-leaf)
+                        callback
+                        &key (key #'identity))
+  (~>> (funcall key node)
+       (funcall callback)))
+
+
 (defmethod split ((tree cf-tree)
                   (node cf-subtree))
   (bind ((children (read-children node))
          (result (vector (make-subtree tree) (make-subtree tree)))
          ((first-content . second-content)
-          (split* (cl-ds.utils:make-distance-matrix-from-vector
-                   t (lambda (a b) (average-distance tree a b))
-                   children)
-                  children)))
+          (~> (lambda (a b) (average-distance tree a b))
+              (cl-ds.utils:make-distance-matrix-from-vector t _ children)
+              (split* children))))
     (absorb-nodes tree (aref result 0) first-content)
     (absorb-nodes tree (aref result 1) second-content)
     (when (needs-resampling-p tree (aref result 0))
