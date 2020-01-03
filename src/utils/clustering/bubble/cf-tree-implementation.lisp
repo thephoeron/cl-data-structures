@@ -269,6 +269,7 @@
 (defmethod cf-insert ((tree cf-tree)
                       (node cf-subtree)
                       item)
+  (incf (access-inserts node))
   (iterate
     (with children = (read-children node))
     (with length = (length children))
