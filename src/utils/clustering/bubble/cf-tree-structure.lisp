@@ -52,4 +52,5 @@
    (%sample :initarg :sample
             :accessor access-sample))
   (:default-initargs
+   :sample nil
    :inserts 0))
