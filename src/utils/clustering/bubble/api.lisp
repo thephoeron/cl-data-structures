@@ -30,11 +30,11 @@
 
 
 (defun single-thread-bubble-grouping (tree data)
-  (let ((root (make-leaf data)))
-    (iterate
-      (for d in-vector data)
-      (setf root (insert-into-tree tree root d))
-      (finally (return root)))))
+  (iterate
+    (with root = (make-leaf data))
+    (for d in-vector data)
+    (setf root (insert-into-tree tree root d))
+    (finally (return root))))
 
 
 (defun gather-leafs (tree root &key (key #'identity))
