@@ -48,6 +48,13 @@
   cl-ds.utils:todo)
 
 
+(defun make-bubble-fn (tree)
+  (lambda (leaf)
+    (make 'bubble
+          :content (leaf-content tree leaf)
+          :clusteroid (clusteroid tree leaf))))
+
+
 (defun bubble-grouping (data
                         distance-function
                         sampling-rate
@@ -66,6 +73,4 @@
             (parallel-bubble-grouping data tree)
             (single-thread-bubble-grouping data tree))
         (gather-leafs tree _
-                      :key (lambda (x)
-                             (make 'bubble
-                                   :content (leaf-content tree x)))))))
+                      :key (make-bubble-fn tree)))))

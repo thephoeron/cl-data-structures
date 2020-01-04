@@ -32,11 +32,17 @@
 (defclass bubble ()
   ((%content :initarg :content
              :reader read-content
-             :type vector)))
+             :type vector)
+   (%clusteroid :initarg :clusteroid
+                :reader read-clusteroid
+                :type vector)))
 
 
-(defclass cf-leaf (bubble fundamental-cf-node)
-  ((%row-sums :initarg :row-sums
+(defclass cf-leaf (fundamental-cf-node)
+  ((%content :initarg :content
+             :reader read-content
+             :type vector)
+   (%row-sums :initarg :row-sums
               :reader read-row-sums
               :type vector)
    (%radius :initarg :radius
