@@ -22,7 +22,13 @@
                        :documentation "Maximum length of the %content vector in the cf-leaf.")
    (%leaf-maximum-radius :initarg :leaf-maximum-radius
                          :reader read-leaf-maximum-radius
-                         :documentation "Maximum radius of the leaf allowed. Larger leafs will be splitted.")))
+                         :documentation "Maximum radius of the leaf allowed. Larger leafs will be splitted.")
+   (%parallel-samples-count :initarg :parallel-samples-count
+                            :reader read-parallel-samples-count)
+   (%parallel-sample-size :initarg :parallel-sample-size
+                          :reader read-parallel-sample-size))
+  (:default-initargs
+   :parallel-samples-count nil))
 
 
 (defclass fundamental-cf-node ()

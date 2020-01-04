@@ -29,7 +29,7 @@
           (leave root)))))
 
 
-(defun single-thread-bubble-grouping (data tree)
+(defun single-thread-bubble-grouping (tree data)
   (let ((root (make-leaf data)))
     (iterate
       (for d in-vector data)
@@ -44,8 +44,72 @@
                  :key key)))
 
 
-(defun parallel-bubble-grouping (data tree)
-  cl-ds.utils:todo)
+(defun draw-sample (tree data)
+  (let* ((length (length data))
+         (sample-size (min length
+                           (read-parallel-sample-size tree)))
+         (distance-function (read-distance-function tree))
+         (sample (make-array sample-size))
+         (distances (make-array sample-size)))
+    (declare (type fixnum sample-size length))
+    (map-into sample (cl-ds.utils:lazy-shuffle 0 length))
+    (cl-ds.utils:transform (lambda (i) (aref data i)) sample)
+    (iterate outer
+      (declare (type fixnum i))
+      (for i from 0 below length)
+      (for elt = (aref data i))
+      (map-into distances
+                (lambda (sample)
+                  (funcall distance-function
+                           sample
+                           elt))
+                sample)
+      (iterate
+        (for i from 0 below sample-size)
+        (iterate
+          (for j from 0 below i)
+          (in outer (sum (abs (- (aref distances i)
+                                 (aref distances j)))
+                         into total))))
+      (finally (return-from outer (cons total sample))))))
+
+
+(defun select-parallel-samples (tree data)
+  (~> tree
+      read-parallel-samples-count
+      make-array
+      (lparallel:pmap-into (lambda () (draw-sample tree data)))
+      (extremum #'> :key #'car)
+      cdr))
+
+
+(defun select-parallel-global-partitions (tree data samples)
+  (let* ((distance-function (read-distance-function tree))
+         (samples-count (length samples))
+         (result (map-into (make-array samples-count) #'vect))
+         (locks (map-into (make-array samples-count) #'bt:make-lock)))
+    (lparallel:pmap nil
+                    (lambda (x)
+                      (iterate
+                        (for i from 0 below samples-count)
+                        (for sample = (aref sample i))
+                        (for distance = (vector-average-distance distance-function
+                                                                 sample
+                                                                 x))
+                        (finding i minimizing distance into destination)
+                        (finally (bt:with-lock-held ((aref locks destination))
+                                   (vector-push-extend x (aref result destination))))))
+                    data)
+    result))
+
+
+(defun parallel-bubble-grouping (tree data)
+  (lret ((result (make-subtree tree)))
+    (~>> (select-parallel-samples tree data)
+         (select-parallel-global-partitions tree data)
+         (lparallel:pmap 'vector
+                         (curry #'single-thread-bubble-grouping tree))
+         (absorb-nodes tree result))))
 
 
 (defun make-bubble-fn (tree)
@@ -62,15 +126,20 @@
                         subtree-maximum-arity
                         leaf-maximum-size
                         leaf-maximum-radius
-                        &key (parallel nil))
+                        &key
+                          (parallel nil)
+                          (parallel-sample-size 100)
+                          (parallel-samples-count 500))
   (let ((tree (make 'cf-tree :distance-function distance-function
                              :sampling-rate sampling-rate
                              :subtree-maximum-arity subtree-maximum-arity
                              :leaf-maximum-size leaf-maximum-size
                              :leaf-maximum-radius leaf-maximum-radius
-                             :sample-size sample-size)))
+                             :sample-size sample-size
+                             :parallel-sample-size parallel-sample-size
+                             :parallel-samples-count parallel-samples-count)))
     (~> (if parallel
-            (parallel-bubble-grouping data tree)
-            (single-thread-bubble-grouping data tree))
+            (parallel-bubble-grouping tree data)
+            (single-thread-bubble-grouping tree data))
         (gather-leafs tree _
                       :key (make-bubble-fn tree)))))
