@@ -29,11 +29,14 @@
   ())
 
 
-(defclass cf-leaf (fundamental-cf-node)
+(defclass bubble ()
   ((%content :initarg :content
              :reader read-content
-             :type vector)
-   (%row-sums :initarg :row-sums
+             :type vector)))
+
+
+(defclass cf-leaf (bubble fundamental-cf-node)
+  ((%row-sums :initarg :row-sums
               :reader read-row-sums
               :type vector)
    (%radius :initarg :radius

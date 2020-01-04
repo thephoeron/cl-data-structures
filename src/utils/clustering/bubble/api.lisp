@@ -1,12 +1,40 @@
 (cl:in-package #:cl-data-structures.utils.clustering.bubble)
 
 
-(defun parallel-bubble-grouping (data tree)
-  cl-ds.utils:todo)
+(defun insert-into-tree (tree root element)
+  (let ((stack (list (cons root nil))))
+    (iterate
+      (with node = root)
+      (for next = (cf-insert tree node element))
+      (while (consp next))
+      (push next stack)
+      (setf node (car node)))
+    (iterate
+      (for cell on stack)
+      (for p-cell previous cell)
+      (for p-node = (caar p-cell))
+      (for ((node . position) . rest) = cell)
+      (unless (or (null p-node)
+                  (typep p-node 'fundamental-cf-node))
+        (assert (vectorp p-node))
+        (absorb-nodes tree node p-node position))
+      (for at-root = (endp rest))
+      (if (needs-split-p tree node)
+          (let ((splitted (split tree node)))
+            (if at-root
+                (let ((new-root (make-subtree tree)))
+                  (absorb-nodes tree new-root splitted)
+                  (leave new-root))
+                (setf (caar cell) splitted)))
+          (leave root)))))
 
 
 (defun single-thread-bubble-grouping (data tree)
-  cl-ds.utils:todo)
+  (let ((root (make-leaf data)))
+    (iterate
+      (for d in-vector data)
+      (setf root (insert-into-tree tree root d))
+      (finally (return root)))))
 
 
 (defun gather-leafs (tree root &key (key #'identity))
@@ -14,6 +42,10 @@
     (visit-leafs tree root
                  (rcurry #'vector-push-extend result)
                  :key key)))
+
+
+(defun parallel-bubble-grouping (data tree)
+  cl-ds.utils:todo)
 
 
 (defun bubble-grouping (data
@@ -34,4 +66,6 @@
             (parallel-bubble-grouping data tree)
             (single-thread-bubble-grouping data tree))
         (gather-leafs tree _
-                      :key (lambda (node) (leaf-content tree node))))))
+                      :key (lambda (x)
+                             (make 'bubble
+                                   :content (leaf-content tree x)))))))
