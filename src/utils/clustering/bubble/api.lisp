@@ -93,9 +93,7 @@
                       (iterate
                         (for i from 0 below samples-count)
                         (for sample = (aref sample i))
-                        (for distance = (vector-average-distance distance-function
-                                                                 sample
-                                                                 x))
+                        (for distance = (funcall distance-function sample x))
                         (finding i minimizing distance into destination)
                         (finally (bt:with-lock-held ((aref locks destination))
                                    (vector-push-extend x (aref result destination))))))
