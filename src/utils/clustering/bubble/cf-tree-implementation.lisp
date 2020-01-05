@@ -258,6 +258,10 @@
                   content)))
     (absorb-nodes tree (aref result 0) first-content)
     (absorb-nodes tree (aref result 1) second-content)
+    (assert (not (some (lambda (x) (typep x 'fundamental-cf-node))
+                       first-content)))
+    (assert (not (some (lambda (x) (typep x 'fundamental-cf-node))
+                       second-content)))
     result))
 
 
@@ -297,6 +301,8 @@
       (resample tree (aref result 0)))
     (when (needs-resampling-p tree (aref result 1))
       (resample tree (aref result 1)))
+    (assert (every (lambda (x) (typep x 'fundamental-cf-node))
+                   result))
     result))
 
 
