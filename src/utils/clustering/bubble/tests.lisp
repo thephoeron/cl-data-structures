@@ -18,7 +18,7 @@
                  10
                  10
                  10
-                 3)))
+                 10)))
   (prove:ok (every (lambda (bubble)
                      (let* ((clusteroid (bubble-clusteroid bubble))
                             (content (bubble-content bubble))
@@ -27,8 +27,7 @@
                                                   :key (lambda (x)
                                                          (metric x clusteroid))))
                             (radius (sqrt (/ distance-sum (length content)))))
-
-                       (<= radius 3)))
+                       (<= radius 10)))
                    bubbles))
   (prove:is (length data) (reduce #'+ bubbles
                                   :key (compose #'length #'bubble-content))))
