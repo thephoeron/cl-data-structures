@@ -6,4 +6,6 @@
   (:nicknames #:cl-ds.utils.cluster.bubble)
   (:export
    #:bubble
+   #:bubble-clusteroid
+   #:bubble-content
    #:bubble-grouping))

@@ -36,8 +36,12 @@
               (for j from i below length)
               (iterate
                 (for k from 0 below length)
-                (for i-distance = (cl-ds.utils:mref matrix i k))
-                (for j-distance = (cl-ds.utils:mref matrix j k))
+                (for i-distance = (if (= i k)
+                                      0
+                                      (cl-ds.utils:mref matrix i k)))
+                (for j-distance = (if (= j k)
+                                      0
+                                      (cl-ds.utils:mref matrix j k)))
                 (sum (abs (- i-distance j-distance)) into total)
                 (finally
                  (in outer (finding (cons i j) maximizing total)))))))
@@ -59,8 +63,8 @@
       (vector-push-extend i (if (< first-distance second-distance)
                                 first-content
                                 second-content)))
-    (cl-ds.utils:transform (lambda (i) (aref content i)) first-content)
-    (cl-ds.utils:transform (lambda (i) (aref content i)) second-content)
+    (cl-ds.utils:transform (lambda (i) (aref vector i)) first-content)
+    (cl-ds.utils:transform (lambda (i) (aref vector i)) second-content)
     (cons first-content second-content)))
 
 
@@ -68,7 +72,7 @@
   (declare (optimize (speed 3)))
   (let* ((distance-function (read-distance-function tree))
          (content (read-content leaf))
-         (row-sums (read-row-sums tree))
+         (row-sums (read-row-sums leaf))
          (length (length content))
          (new-row-sum 0)
          (last-index (1- length))
@@ -84,14 +88,15 @@
                                new-element))
       (incf new-row-sum distance)
       (incf (aref row-sums i) distance))
-    (vector-push-extend row-sums row-sums)
+    (vector-push-extend new-row-sum row-sums)
     nil))
 
 
 (defun cf-leaf-update-clusteroid (tree leaf)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3))
+           (ignore tree))
   (let* ((content (read-content leaf))
-         (row-sums (read-row-sums tree))
+         (row-sums (read-row-sums leaf))
          (length (length content))
          (new-clusteroid (iterate
                            (declare (type fixnum i))
@@ -129,13 +134,12 @@
 
 
 (defun cf-leaf-calculate-radius (tree leaf)
-  (let* ((distance-function (read-distance-function tree))
-         (content (read-content leaf))
-         (clusteroid (aref content 0)))
-    (declare (type (cl-ds.utils:extendable-vector t) content)
-             (type function distance-function))
-    (~> (reduce #'+ content :start 1 :key
-                (lambda (x) (funcall distance-function clusteroid x)))
+  (declare (ignore tree))
+  (let* ((content (read-content leaf)))
+    (declare (type (cl-ds.utils:extendable-vector t) content))
+    (~> leaf
+        read-row-sums
+        (aref 0)
         (/ (length content))
         sqrt)))
 
@@ -345,7 +349,7 @@
     (for child = (aref children i))
     (for distance = (average-distance tree child item))
     (finding i minimizing distance into position)
-    (finally (return (cons (aref children i) i)))))
+    (finally (return (cons (aref children position) i)))))
 
 
 (defmethod cf-insert ((tree cf-tree)
@@ -353,7 +357,7 @@
                       item)
   (vector-push-extend item (read-content node))
   (cf-leaf-update-row-sums tree node)
-  (cf-leaf-calculate-radius tree node)
+  (setf (access-radius node) (cf-leaf-calculate-radius tree node))
   nil)
 
 
@@ -373,10 +377,6 @@
     (iterate
       (for child in-vector children)
       (vector-push-extend child old-children))
-    (when (zerop position)
-      (cf-subtree-update-clusteroid tree parent))
-    (unless position-bound
-      (resample tree parent))
     parent))
 
 
