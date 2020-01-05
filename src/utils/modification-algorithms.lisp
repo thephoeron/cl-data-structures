@@ -68,7 +68,7 @@
 
 
 (declaim (inline swapop))
-(-> swapop (extendable-vector index) vector)
+(-> swapop (extendable-vector index) t)
 (defun swapop (vector index)
   "Swaps element under INDEX with last element of VECTOR. Pops last element and returns removed element.
 

@@ -2,32 +2,36 @@
 
 
 (defun insert-into-tree (tree root element)
-  (declare (optimize (debug 3)))
-  (let ((stack (list (cons root nil))))
+  (let ((stack (vect (cons root nil))))
     (iterate
-      (with node = root)
+      (for node = (car (aref stack (1- (length stack)))))
       (for next = (cf-insert tree node element))
       (while (consp next))
-      (push next stack)
-      (setf node (car next)))
+      (vector-push-extend next stack))
     (iterate
-      (for cell on stack)
-      (for p-cell previous cell)
-      (for p-node = (caar p-cell))
-      (for ((node . position) . rest) = cell)
-      (unless (or (null p-node)
-                  (typep p-node 'fundamental-cf-node))
-        (assert (vectorp p-node))
+      (for i from (1- (length stack)) downto 0)
+      (for p-i previous i)
+      (for cell = (aref stack i))
+      (for (node . s-position) = cell)
+      (for position = (if (null p-i)
+                          nil
+                          (~> stack (aref p-i) cdr)))
+      (unless (or (null p-i)
+                  (~> stack (aref p-i) car
+                      (typep 'fundamental-cf-node)))
+        (assert (~> stack (aref p-i) car vectorp))
         (assert position)
-        (absorb-nodes tree node p-node position))
-      (for at-root = (endp rest))
+        (~> stack (aref p-i) car
+            (absorb-nodes tree node _ position)))
+      (for at-root = (zerop i))
       (if (needs-split-p tree node)
           (let ((splitted (split tree node)))
+            (assert (vectorp splitted))
             (if at-root
                 (let ((new-root (make-subtree tree)))
                   (absorb-nodes tree new-root splitted)
                   (leave new-root))
-                (setf (caar cell) splitted)))
+                (setf (car (aref stack i)) splitted)))
           (leave root)))))
 
 

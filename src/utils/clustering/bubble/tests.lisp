@@ -8,8 +8,9 @@
 (defun metric (a b)
   (abs (- a b)))
 
+(prove:plan 2)
 
-(let* ((data (coerce (shuffle (iota 10000)) 'vector))
+(let* ((data (coerce (shuffle (iota 1000)) 'vector))
        (bubbles (bubble-grouping
                  data
                  #'metric
@@ -18,13 +19,18 @@
                  10
                  10
                  3)))
-  (prove:is (every (lambda (bubble)
+  (prove:ok (every (lambda (bubble)
                      (let* ((clusteroid (bubble-clusteroid bubble))
                             (content (bubble-content bubble))
                             (distance-sum (reduce #'+
+                                                  content
                                                   :key (lambda (x)
                                                          (metric x clusteroid))))
                             (radius (sqrt (/ distance-sum (length content)))))
+
                        (<= radius 3)))
                    bubbles))
-  )
+  (prove:is (length data) (reduce #'+ bubbles
+                                  :key (compose #'length #'bubble-content))))
+
+(prove:finalize)
