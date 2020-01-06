@@ -30,8 +30,7 @@
     (~> (if parallel
             (parallel-bubble-grouping tree data)
             (single-thread-bubble-grouping tree data))
-        (gather-leafs tree _
-                      :key (make-bubble-fn tree)))))
+        (gather-leafs tree _ :key (make-bubble-fn tree)))))
 
 
 (defun bubble-clusteroid (bubble)
