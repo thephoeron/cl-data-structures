@@ -102,13 +102,19 @@
 
 
 (defun select-parallel-global-partitions (tree data samples)
+  (declare (optimize (speed 3))
+           (type simple-vector samples))
   (let* ((distance-function (read-distance-function tree))
          (samples-count (length samples))
          (result (map-into (make-array samples-count) #'vect))
          (locks (map-into (make-array samples-count) #'bt:make-lock)))
+    (declare (type fixnum samples-count)
+             (type simple-vector result locks)
+             (type function distance-function))
     (lparallel:pmap nil
                     (lambda (x)
                       (iterate
+                        (declare (type fixnum i))
                         (for i from 0 below samples-count)
                         (for sample = (aref sample i))
                         (for distance = (funcall distance-function sample x))
