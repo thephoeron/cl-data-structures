@@ -1,6 +1,7 @@
 (in-package #:cl-data-structures.utils)
 
 
+(-> lazy-shuffle (integer integer) function)
 (defun lazy-shuffle (from to)
   (let ((table (make-hash-table))
         (index from))

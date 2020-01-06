@@ -2,7 +2,9 @@
 
 
 (defun insert-into-tree (tree root element)
+  (declare (optimize (speed 3)))
   (let ((stack (vect (cons root nil))))
+    (assert (array-has-fill-pointer-p stack))
     (iterate
       (for node = (car (aref stack (1- (length stack)))))
       (for next = (cf-insert tree node element))
@@ -36,9 +38,14 @@
 
 
 (defun single-thread-bubble-grouping (tree data)
+  (declare (optimize (speed 3))
+           (vector data))
   (iterate
+    (declare (type fixnum i))
+    (with length = (length data))
     (with root = (make-leaf tree))
-    (for d in-vector data)
+    (for i from 0 below length)
+    (for d = (aref data i))
     (setf root (insert-into-tree tree root d))
     (finally (return root))))
 
@@ -51,13 +58,16 @@
 
 
 (defun draw-sample (tree data)
+  (declare (optimize (speed 3))
+           (type vector data))
   (let* ((length (length data))
          (sample-size (min length
                            (read-parallel-sample-size tree)))
          (distance-function (read-distance-function tree))
          (sample (make-array sample-size))
          (distances (make-array sample-size)))
-    (declare (type fixnum sample-size length))
+    (declare (type fixnum sample-size length)
+             (type function distance-function))
     (map-into sample (cl-ds.utils:lazy-shuffle 0 length))
     (cl-ds.utils:transform (lambda (i) (aref data i)) sample)
     (iterate outer
@@ -71,8 +81,10 @@
                            elt))
                 sample)
       (iterate
+        (declare (type fixnum i))
         (for i from 0 below sample-size)
         (iterate
+          (declare (type fixnum j))
           (for j from 0 below i)
           (in outer (sum (abs (- (aref distances i)
                                  (aref distances j)))
