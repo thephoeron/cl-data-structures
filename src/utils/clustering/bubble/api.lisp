@@ -8,17 +8,10 @@
           :clusteroid (clusteroid tree leaf))))
 
 
-(defun bubble-grouping (data
-                        distance-function
-                        sampling-rate
-                        sample-size
-                        subtree-maximum-arity
-                        leaf-maximum-size
-                        leaf-maximum-radius
-                        &key
-                          (parallel nil)
-                          (parallel-sample-size 100)
-                          (parallel-samples-count 500))
+(defun build-tree (data distance-function sampling-rate
+                   sample-size subtree-maximum-arity
+                   leaf-maximum-size leaf-maximum-radius parallel
+                   parallel-sample-size parallel-samples-count)
   (ensure-functionf distance-function)
   (check-type data vector)
   (check-type parallel-samples-count positive-fixnum)
@@ -37,10 +30,28 @@
                              :subtree-sample-size sample-size
                              :parallel-sample-size parallel-sample-size
                              :parallel-samples-count parallel-samples-count)))
-    (~> (if parallel
-            (parallel-bubble-grouping tree data)
-            (single-thread-bubble-grouping tree data))
-        (gather-leafs tree _ :key (make-bubble-fn tree)))))
+    (values tree
+            (if parallel
+                (parallel-bubble-grouping tree data)
+                (single-thread-bubble-grouping tree data)))))
+
+
+(defun bubble-grouping (data
+                        distance-function
+                        sampling-rate
+                        sample-size
+                        subtree-maximum-arity
+                        leaf-maximum-size
+                        leaf-maximum-radius
+                        &key
+                          (parallel nil)
+                          (parallel-sample-size 100)
+                          (parallel-samples-count 500))
+  (bind (((:values tree root)
+          (build-tree data distance-function sampling-rate sample-size
+                      subtree-maximum-arity leaf-maximum-size leaf-maximum-radius
+                      parallel parallel-sample-size parallel-samples-count)))
+    (gather-leafs tree root :key (make-bubble-fn tree))))
 
 
 (defun bubble-clusteroid (bubble)
