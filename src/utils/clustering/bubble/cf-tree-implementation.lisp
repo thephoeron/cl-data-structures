@@ -1,16 +1,27 @@
 (cl:in-package #:cl-data-structures.utils.clustering.bubble)
 
 
+(declaim (inline distance))
 (defun distance (tree first-item second-item)
-  (funcall (read-distance-function tree) first-item second-item))
+  (declare (optimize (speed 3)))
+  (let ((distance (read-distance-function tree)))
+    (declare (function distance))
+    (funcall distance first-item second-item)))
 
 
 (defun grab-sample (tree family-size vector result)
+  (declare (optimize (speed 3))
+           (type vector vector)
+           (type (vector t) result))
+  (assert (array-has-fill-pointer-p result))
   (let* ((node-size (length vector))
          (sample-size (read-sample-size tree))
          (contribution-size (max 1 (/ (* node-size sample-size)
                                       family-size))))
+    (declare (type integer sample-size)
+             (type fixnum node-size family-size))
     (iterate
+      (declare (type function shuffled))
       (with shuffled = (cl-ds.utils:lazy-shuffle 0 node-size))
       (repeat contribution-size)
       (~> (funcall shuffled)
@@ -20,6 +31,9 @@
 
 
 (defun vector-average-distance (distance-function vector item)
+  (declare (optimize (speed 3))
+           (type vector vector)
+           (type function distance-function))
   (let ((length (length vector)))
     (if (zerop length)
         0
@@ -29,7 +43,11 @@
 
 
 (defun split* (matrix vector)
-  (bind ((length (length vector))
+  (declare (optimize (speed 3))
+           (type (vector t) vector)
+           (type cl-ds.utils:half-matrix matrix))
+  (assert (array-has-fill-pointer-p vector))
+  (bind ((length (the fixnum (length vector)))
          ((first . second)
           (iterate outer
             (declare (type fixnum i))
@@ -38,6 +56,7 @@
               (declare (type fixnum j))
               (for j from (1+ i) below length)
               (iterate
+                (declare (type fixnum k))
                 (for k from 0 below length)
                 (for i-distance = (if (= i k)
                                       0
@@ -51,10 +70,16 @@
          (first-content (vect first))
          (second-content (vect second))
          ((:flet vector-average-distance (vector index))
+          (declare (type fixnum index)
+                   (type (vector t) vector))
+          (assert (array-has-fill-pointer-p vector))
           (/ (reduce #'+ vector
                      :key (lambda (i) (cl-ds.utils:mref matrix index i)))
              (length vector))))
+    (assert (non-negative-fixnum-p first))
+    (assert (non-negative-fixnum-p second))
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below length)
       (when (or (eql i first)
                 (eql i second))
@@ -63,13 +88,16 @@
                                                      i))
       (for second-distance = (vector-average-distance second-content
                                                       i))
-      (vector-push-extend i (if (< first-distance second-distance)
-                                first-content
-                                second-content)))
-    (cl-ds.utils:transform #1=(lambda (i) (aref vector i)) first-content)
+      (for destination-vector = (if (< first-distance second-distance)
+                                    first-content
+                                    second-content))
+      (vector-push-extend i destination-vector))
+    (cl-ds.utils:transform #1=(lambda (i) (declare (type fixnum i))
+                                (aref vector i))
+                           first-content)
     (cl-ds.utils:transform #1# second-content)
     (assert (= (+ (length first-content) (length second-content))
-               (length vector)))
+               length))
     (cons first-content second-content)))
 
 
@@ -103,6 +131,8 @@
     (declare (type (cl-ds.utils:extendable-vector t) content row-sums)
              (type fixnum length last-index)
              (type function distance-function))
+    (assert (array-has-fill-pointer-p content))
+    (assert (array-has-fill-pointer-p row-sums))
     (iterate
       (declare (type fixnum i))
       (for i from 0 below (1- length))
@@ -118,36 +148,44 @@
 (defun cf-leaf-update-clusteroid (tree leaf)
   (declare (optimize (speed 3))
            (ignore tree))
-  (let* ((content (read-content leaf))
-         (row-sums (read-row-sums leaf))
-         (length (length content))
-         (new-clusteroid (iterate
-                           (declare (type fixnum i))
-                           (for i from 0 below length)
-                           (for row-sum = (aref row-sums i))
-                           (finding i minimizing row-sum))))
-    (declare (type cl-ds.utils:extendable-vector content row-sums)
-             (type fixnum length))
-    (rotatef (aref content new-clusteroid)
-             (aref content 0))
-    (rotatef (aref row-sums new-clusteroid)
-             (aref row-sums 0))
-    nil))
+  (let ((content (read-content leaf))
+        (row-sums (read-row-sums leaf)))
+    (declare (type (cl-ds.utils:extendable-vector t)
+                   content row-sums))
+    (assert (array-has-fill-pointer-p content))
+    (assert (array-has-fill-pointer-p row-sums))
+    (let* ((length (length content))
+           (new-clusteroid (iterate
+                             (declare (type fixnum i))
+                             (for i from 0 below length)
+                             (for row-sum = (aref row-sums i))
+                             (finding i minimizing row-sum))))
+      (declare (type fixnum new-clusteroid))
+      (rotatef (aref content new-clusteroid)
+               (aref content 0))
+      (rotatef (aref row-sums new-clusteroid)
+               (aref row-sums 0))
+      nil)))
 
 
 (defun cf-subtree-update-clusteroid (tree subtree)
+  (declare (optimize (speed 3)))
   (iterate
+    (declare (type fixnum i))
     (with sample = (access-sample subtree))
-    (with length = (length sample))
-    (with distance-function = (read-distance-function tree))
+    (with length = (fill-pointer sample))
+    (with distance-function = (the function
+                                   (read-distance-function tree)))
     (for i from 0 below length)
     (for first-elt = (aref sample i))
     (for row-sum = (+ (iterate
+                        (declare (type fixnum j))
                         (for j from 0 below i)
                         (sum (funcall distance-function
                                       first-elt
                                       (aref sample j))))
                       (iterate
+                        (declare (type fixnum j))
                         (for j from i below length)
                         (sum (funcall distance-function
                                       first-elt
@@ -157,13 +195,14 @@
 
 
 (defun cf-leaf-calculate-radius (tree leaf)
-  (declare (ignore tree))
+  (declare (ignore tree)
+           (optimize (speed 3)))
   (let* ((content (read-content leaf)))
     (declare (type (cl-ds.utils:extendable-vector t) content))
     (~> leaf
         read-row-sums
         (aref 0)
-        (/ (length content))
+        (/ (fill-pointer content))
         sqrt)))
 
 
@@ -174,18 +213,15 @@
   (ensure-functionf distance-function)
   (let* ((first-content (read-content first-leaf))
          (second-content (read-content second-leaf))
-         (first-length (length first-content))
-         (second-length (length second-content)))
+         (first-length (fill-pointer first-content))
+         (second-length (fill-pointer second-content)))
     (declare (type (cl-ds.utils:extendable-vector t)
                    first-content second-content)
              (type fixnum first-length second-length))
     (when (or (zerop first-length) (zerop second-length))
       (return-from average-inter-cluster-distance* 0))
     (iterate
-      (declare
-               (type fixnum first-length second-length))
-      (with first-length = (length first-content))
-      (with second-length = (length second-content))
+      (declare (type fixnum i first-length second-length))
       (with result = 0)
       (for i from 0 below first-length)
       (for first-elt = (aref first-content i))
