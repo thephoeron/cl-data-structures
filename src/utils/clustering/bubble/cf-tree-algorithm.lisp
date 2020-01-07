@@ -67,6 +67,7 @@
          (sample (make-array sample-size))
          (distances (make-array sample-size)))
     (declare (type fixnum sample-size length)
+             (type simple-vector sample distances)
              (type function distance-function))
     (map-into sample (cl-ds.utils:lazy-shuffle 0 length))
     (cl-ds.utils:transform (lambda (i) (aref data i)) sample)
@@ -129,6 +130,6 @@
   (lret ((result (make-subtree tree)))
     (~>> (select-parallel-samples tree data)
          (select-parallel-global-partitions tree data)
-         (lparallel:pmap 'vector
-                         (curry #'single-thread-bubble-grouping tree))
+         (lparallel:pmap 'vector (curry #'single-thread-bubble-grouping
+                                        tree))
          (absorb-nodes tree result))))
