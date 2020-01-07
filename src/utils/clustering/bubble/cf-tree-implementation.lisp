@@ -218,6 +218,8 @@
     (declare (type (cl-ds.utils:extendable-vector t)
                    first-content second-content)
              (type fixnum first-length second-length))
+    (assert (adjustable-array-p first-content))
+    (assert (adjustable-array-p second-content))
     (when (or (zerop first-length) (zerop second-length))
       (return-from average-inter-cluster-distance* 0))
     (iterate
