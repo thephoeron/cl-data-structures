@@ -268,12 +268,13 @@
 
 (defmethod needs-resampling-p ((tree cf-tree) (subtree cf-subtree))
   (or (null (access-sample subtree))
-      (>= (access-inserts subtree) (read-sampling-rate tree))))
+      (>= (the fixnum (access-inserts subtree))
+          (the fixnum (read-sampling-rate tree)))))
 
 
 (defmethod needs-split-p ((tree cf-tree) (subtree cf-subtree))
-  (>= (~> subtree read-children length)
-      (read-subtree-maximum-arity tree)))
+  (>= (the fixnum (~> subtree read-children length))
+      (the fixnum (read-subtree-maximum-arity tree))))
 
 
 (defmethod needs-split-p ((tree cf-tree) (leaf cf-leaf))
