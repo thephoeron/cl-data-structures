@@ -20,4 +20,4 @@
        (for (key value) in-hashtable %sub-counts)
        (setf (gethash key %sub-counts)
              (coerce (/ value %total-count) 'single-float))
-       (finally (return %sub-counts)))))
+       (finally (return (make-hash-table-range %sub-counts))))))
