@@ -70,6 +70,7 @@
            (function-object (gensym)))
       `(defmethod cl-ds.alg.meta:aggregate ((,function-object ,function-class)
                                             ,state ,@lambda-list)
+         (declare (type (simple-vector ,length) ,state))
          (symbol-macrolet ,(mapcar
                             (lambda (i x) `(,x (aref ,state ,i)))
                             (iota length)
@@ -83,6 +84,7 @@
            (function-object (gensym)))
       `(defmethod cl-ds.alg.meta:state-result ((,function-object ,function-class)
                                                ,state)
+         (declare (type (simple-vector ,length) ,state))
          (symbol-macrolet ,(mapcar
                             (lambda (i x) `(,x (aref ,state ,i)))
                             (iota length)
