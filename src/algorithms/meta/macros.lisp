@@ -78,6 +78,33 @@
            ,@body
            ,state))))
 
+  (defun aggregation-function-apply-aggregation-function-form (function-class function-state
+                                                               init-form aggregate-form result-form)
+    (bind (((aggregate-lambda-list . aggregate-body) aggregate-form)
+           ((init-lambda-list . init-body) init-form)
+           (range (gensym))
+           (init (gensym))
+           (function (gensym))
+           (aggregator (gensym)))
+      `(defmethod cl-ds.alg.meta:apply-aggregation-function-with-aggregator
+           ((,aggregator linear-aggregator)
+            ,range
+            (,function ,function-class)
+            &rest all &key (key #'identity) &allow-other-keys)
+         (let ,(mapcar (lambda (x) (list x nil)) function-state)
+           (flet ((,init (,@init-lambda-list)
+                    ,@init-body))
+             (apply #',init all))
+           (if (eq key #'identity)
+               (cl-ds:across ,range
+                             (lambda (,@aggregate-lambda-list)
+                               ,@aggregate-body))
+               (cl-ds:across ,range
+                             (lambda (element)
+                               (let ((,@aggregate-lambda-list (funcall key element)))
+                                 ,@aggregate-body))))
+           ,@result-form))))
+
   (defun aggregation-function-result-form (function-class function-state result-form)
     (bind ((length (length function-state))
            (state (gensym))
@@ -115,6 +142,11 @@
                                               generic-lambda-list
                                               method-lambda-list
                                               rest-argument)
+       ,(aggregation-function-apply-aggregation-function-form function-class
+                                                              function-state
+                                                              init-form
+                                                              aggregate-form
+                                                              result-form)
        ,(aggregation-function-make-state-form function-class
                                               function-state
                                               init-form)
