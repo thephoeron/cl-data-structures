@@ -291,7 +291,7 @@ Range function invokaction protocol.
                                  (function aggregation-function)
                                  &rest all)
   (apply #'apply-aggregation-function
-         (cl-ds:whole-range object)
+         object
          function
          all))
 

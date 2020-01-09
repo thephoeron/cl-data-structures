@@ -56,6 +56,7 @@
    #:access-tree
    #:access-tree-size
    #:access-tail-mask
+   #:access-tail
    #:access-tree-index-bound
    #:functional-sparse-rrb-vector
    #:functional-sparse-rrb-vector-grow
