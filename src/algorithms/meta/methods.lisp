@@ -151,8 +151,7 @@ Top level aggregator protocol.
                                  (function aggregation-function)
                                  outer-fn
                                  (arguments list))
-  (lret ((result (funcall outer-fn)))
-    (setf (slot-value result '%key) key)))
+  (make-linear-aggregator function arguments key))
 
 
 (defmethod construct-aggregator ((range cl:sequence)
