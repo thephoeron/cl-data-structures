@@ -7,7 +7,7 @@
   :license "BSD simplified"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
-  :depends-on (:prove-asdf :prove)
+  :depends-on (:prove-asdf :prove :cl-data-structures)
   :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
