@@ -8,8 +8,7 @@
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
   :depends-on ( :iterate          :alexandria
-                :serapeum         :prove
-                :prove-asdf       :documentation-utils-extensions
+                :serapeum         :documentation-utils-extensions
                 :more-conditions  :closer-mop
                 :lparallel        :flexichain
                 :metabang-bind    :bordeaux-threads
