@@ -1,4 +1,4 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 
 
 (asdf:defsystem cl-data-structures
@@ -66,14 +66,14 @@
                                                          (:file "types")
                                                          (:file "internal")
                                                          (:file "external")
-                                                         (:test-file "tests")))
+                                                         ))
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")
                                                          (:file "internal")
                                                          (:file "external")
                                                          (:file "docstrings")
-                                                         (:test-file "tests")))
+                                                         ))
                                            (:module "bubble"
                                             :components ((:file "package")
                                                          (:file "cf-tree-protocol")
@@ -81,10 +81,8 @@
                                                          (:file "cf-tree-implementation")
                                                          (:file "cf-tree-algorithm")
                                                          (:file "api")
-                                                         (:test-file "tests")))))
-                             (:test-file "distances-tests")
-                             (:test-file "ordered-algorithms-tests")
-                             (:test-file "lazy-shuffle-tests")))
+                                                         ))))
+                             ))
                (:module "api"
                 :components ((:file "meta")
                              (:file "meta-docstrings")
@@ -99,13 +97,13 @@
                              (:file "field")
                              (:file "aux")
                              (:file "docstrings")
-                             (:test-file "expression-tests")))
+                             ))
                (:module "adapters"
                 :components ((:file "package")
                              (:file "hash-table")
                              (:file "vector")
                              (:file "list")
-                             (:test-file "vector-tests")))
+                             ))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
@@ -116,15 +114,13 @@
                              (:file "ranges")
                              (:file "sequence-window")
                              (:file "docstrings")
-                             (:test-file "sequence-window-tests")
-                             (:test-file "qp-trie-tests")
                              (:module "abstract"
                               :components ((:file "package")
                                            (:file "common")))
                              (:module "2-3-tree"
                               :components ((:file "package")
                                            (:file "common")
-                                           (:test-file "tests.lisp")))
+                                           ))
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))
@@ -134,7 +130,7 @@
                              (:module "skip-list"
                               :components ((:file "package")
                                            (:file "common")
-                                           (:test-file "tests.lisp")))
+                                           ))
                              (:module "egnat"
                               :components ((:file "package")
                                            (:file "classes")
@@ -142,7 +138,7 @@
                                            (:file "common")
                                            (:file "methods")
                                            (:file "docstrings")
-                                           (:test-file "tests")))
+                                           ))
                              (:file "qp-trie")))
                (:module "dicts"
                 :components ((:file "packages")
@@ -153,31 +149,27 @@
                              (:module "hamt"
                               :components ((:file "api")
                                            (:file "docstrings")
-                                           (:test-file "transactions-tests")
-                                           (:test-file "range-test")
-                                           (:test-file "lazy-tests")))
+                                           ))
                              (:module "srrb"
                               :components ((:file "types")
                                            (:file "internal")
                                            (:file "api")
-                                           (:test-file "tests")))
-                             (:test-file "functional-dictionary-test-suite")
-                             (:test-file "mutable-dictionary-test-suite")
-                             (:test-file "transactional-dictionary-test-suite")))
+                                           ))
+                             ))
                (:module "sequences"
                 :components ((:file "packages")
                              (:file "common")
                              (:module "rrb"
                               :components ((:file "api")
                                            (:file "docstrings")
-                                           (:test-file "tests")))))
+                                           ))))
                (:module "queues"
                 :components ((:file "packages")
                              (:file "common")
                              (:file "docstrings")
                              (:module "2-3-tree"
                               :components ((:file "api")
-                                           (:test-file "tests")))))
+                                           ))))
                (:module "sets"
                 :components ((:file "packages")
                              (:file "common")
@@ -186,7 +178,7 @@
                                            (:file "docstrings")))
                              (:module "skip-list"
                               :components ((:file "api")
-                                           (:test-file "tests")))))
+                                           ))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
@@ -195,7 +187,7 @@
                              (:file "docstrings")
                              (:module "egnat"
                               :components ((:file "api")
-                                           (:test-file "tests")))))
+                                           ))))
                (:module "algorithms"
                 :components ((:file "package")
                              (:module "meta"
@@ -204,7 +196,7 @@
                                            (:file "generics")
                                            (:file "methods")
                                            (:file "docstrings")
-                                           (:test-file "meta-tests")))
+                                           ))
                              (:file "common")
                              (:file "on-each")
                              (:file "translation")
@@ -240,16 +232,7 @@
                              (:file "partition-if")
                              (:file "distinct")
                              (:file "docstrings")
-                             (:test-file "split-into-chunks-test")
-                             (:test-file "partition-if-test")
-                             (:test-file "hash-join-test")
-                             (:test-file "without-test")
-                             (:test-file "distinct-test")
-                             (:test-file "extrema-test")
-                             (:test-file "summary-test")
-                             (:test-file "chain-test")
-                             (:test-file "on-each-test")
-                             (:test-file "zip-test")))
+                             ))
                (:module "file-system"
                 :components ((:file "package")
                              (:file "common")
@@ -291,11 +274,7 @@
                              (:file "entropy")
                              (:file "z-score")
                              (:file "docstrings")
-                             (:test-file "moments-tests")
-                             (:test-file "chi-squared-tests")
-                             (:test-file "mutual-information-tests")
-                             (:test-file "statistical-summary-tests")
-                             (:test-file "simple-linear-regression-tests")))
+                             ))
                (:module "streaming-algorithms"
                 :components ((:file "package")
                              (:file "common")
@@ -312,4 +291,4 @@
                              (:file "apriori")
                              (:file "methods")
                              (:file "docstrings")
-                             (:test-file "tests")))))
+                             ))))
