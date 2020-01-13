@@ -11,7 +11,7 @@
 (defun build-tree (data distance-function sampling-rate
                    sample-size subtree-maximum-arity
                    leaf-maximum-size leaf-maximum-radius parallel
-                   parallel-sample-size parallel-samples-count)
+                   parallel-sample-size parallel-samples-count parallel-reference-size)
   (ensure-functionf distance-function)
   (check-type data vector)
   (check-type parallel-samples-count positive-fixnum)
@@ -29,6 +29,7 @@
                              :leaf-maximum-radius leaf-maximum-radius
                              :subtree-sample-size sample-size
                              :parallel-sample-size parallel-sample-size
+                             :parallel-reference-size parallel-reference-size
                              :parallel-samples-count parallel-samples-count)))
     (values tree
             (if parallel
@@ -46,11 +47,13 @@
                         &key
                           (parallel nil)
                           (parallel-sample-size 100)
-                          (parallel-samples-count 500))
+                          (parallel-samples-count 500)
+                          (parallel-reference-size 10000))
   (bind (((:values tree root)
           (build-tree data distance-function sampling-rate sample-size
                       subtree-maximum-arity leaf-maximum-size leaf-maximum-radius
-                      parallel parallel-sample-size parallel-samples-count)))
+                      parallel parallel-sample-size parallel-samples-count
+                      parallel-reference-size)))
     (gather-leafs tree root :key (make-bubble-fn tree))))
 
 

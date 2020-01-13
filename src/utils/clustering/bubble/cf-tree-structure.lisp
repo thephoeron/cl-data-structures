@@ -26,7 +26,9 @@
    (%parallel-samples-count :initarg :parallel-samples-count
                             :reader read-parallel-samples-count)
    (%parallel-sample-size :initarg :parallel-sample-size
-                          :reader read-parallel-sample-size))
+                          :reader read-parallel-sample-size)
+   (%parallel-reference-size :initarg :parallel-reference-size
+                             :reader read-parallel-reference-size))
   (:default-initargs
    :parallel-samples-count nil))
 

@@ -61,6 +61,9 @@
   (declare (optimize (speed 3))
            (type vector data))
   (let* ((length (length data))
+         (parallel-reference-size (min length
+                                       (read-parallel-reference-size tree)))
+         (reference-data (make-array parallel-reference-size))
          (sample-size (min length
                            (read-parallel-sample-size tree)))
          (distance-function (read-distance-function tree))
@@ -70,11 +73,13 @@
              (type simple-vector sample distances)
              (type function distance-function))
     (map-into sample (cl-ds.utils:lazy-shuffle 0 length))
-    (cl-ds.utils:transform (lambda (i) (aref data i)) sample)
+    (map-into reference-data (cl-ds.utils:lazy-shuffle 0 length))
+    (cl-ds.utils:transform #1=(lambda (i) (aref data i)) sample)
+    (cl-ds.utils:transform #1# reference-data)
     (iterate outer
       (declare (type fixnum i))
-      (for i from 0 below length)
-      (for elt = (aref data i))
+      (for i from 0 below parallel-reference-size)
+      (for elt = (aref reference-data i))
       (map-into distances
                 (lambda (sample)
                   (funcall distance-function
@@ -117,7 +122,7 @@
                       (iterate
                         (declare (type fixnum i))
                         (for i from 0 below samples-count)
-                        (for sample = (aref sample i))
+                        (for sample = (aref samples i))
                         (for distance = (funcall distance-function sample x))
                         (finding i minimizing distance into destination)
                         (finally (bt:with-lock-held ((aref locks destination))
