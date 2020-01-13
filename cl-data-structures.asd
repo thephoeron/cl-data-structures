@@ -15,7 +15,6 @@
                 :scribble         :osicat
                 :cl-fad           :cl-progress-bar
                 :trivial-garbage  :cl-ppcre)
-  :defsystem-depends-on (:prove-asdf)
   :serial T
   :pathname "src"
   :components ((:file "aux-package")
