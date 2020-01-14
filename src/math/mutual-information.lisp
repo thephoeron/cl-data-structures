@@ -1,10 +1,6 @@
 (cl:in-package #:cl-data-structures.math)
 
 
-(defclass mutual-information-fundamental-function ()
-  ())
-
-
 (defun initialize-fields (fields data)
   (mapcar (curry #'initialize-field data) fields))
 
