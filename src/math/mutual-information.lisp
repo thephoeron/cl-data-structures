@@ -26,13 +26,6 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass optimal-split-point-function
-    (cl-ds.alg.meta:multi-aggregation-function
-     mutual-information-fundamental-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
 (defgeneric mutual-information (range field &rest comparative-fields)
   (:generic-function-class mutual-information-function)
   (:method (range field &rest comparative-fields)
@@ -367,30 +360,35 @@
      (return result))))
 
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function optimal-split-point-function)
-     &rest all
-     &key reference-field matched-fields key
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :force-copy nil))
+(cl-ds.alg.meta:define-aggregation-function
+    optimal-split-point optimal-split-point-function
 
-        (lambda (&key vector &allow-other-keys)
-          (declare (type vector vector))
-          (iterate
-            (with reference-field =
-                  (initialize-field vector reference-field))
-            (with result = (make-hash-table :test 'eq))
-            (for matched-field in matched-fields)
-            (for initialized-field =
-                 (initialize-split-point-field vector matched-field))
-            (for (value . mi)  = (calculate-split-point reference-field
-                                                        initialized-field))
-            (setf (gethash (read-name initialized-field) result)
-                  (cons value mi))
-            (finally (return (cl-ds.alg:make-hash-table-range result)))))))
+    (:range &key key reference-field matched-fields)
+    (:range &key (key #'identity) reference-field matched-fields)
+
+    (%data %matched-fields %reference-field)
+
+    ((&key matched-fields reference-field &allow-other-keys)
+     (setf %data (vect)
+           %matched-fields matched-fields
+           %reference-field reference-field))
+
+    ((element)
+     (vector-push-extend element %data))
+
+    ((let ((vector %data))
+       (declare (type (cl-ds.utils:extendable-vector t) vector))
+       (iterate
+         (with reference-field = (initialize-field vector %reference-field))
+         (with result = (make-hash-table :test 'eq))
+         (for matched-field in %matched-fields)
+         (for initialized-field =
+              (initialize-split-point-field vector matched-field))
+         (for (value . mi)  = (calculate-split-point reference-field
+                                                     initialized-field))
+         (setf (gethash (read-name initialized-field) result)
+               (cons value mi))
+         (finally (return (cl-ds.alg:make-hash-table-range result)))))))
 
 
 (cl-ds:define-validation-for-fields
