@@ -1,24 +1,8 @@
-(in-package #:cl-data-structures.math)
+(cl:in-package #:cl-data-structures.math)
 
 
-(defclass hodges-lehmann-estimator-function
-    (cl-ds.alg.meta:multi-aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defgeneric hodges-lehmann-estimator (range &key key parallel)
-  (:generic-function-class hodges-lehmann-estimator-function)
-  (:method (range &key (key #'identity) (parallel nil))
-    (cl-ds.alg.meta:apply-range-function range
-                                         #'hodges-lehmann-estimator
-                                         :parallel parallel
-                                         :key key)))
-
-
-(defun calculate-hodges-lehmann-estimator
-    (parallel &key vector &allow-other-keys)
-  (declare (type (vector real) vector))
+(defun calculate-hodges-lehmann-estimator (parallel vector)
+  (declare (type (cl-ds.utils:extendable-vector t) vector))
   (bind ((length (length vector))
          ((:dflet index (i j))
           (+ (- (* length i)
@@ -49,15 +33,19 @@
            2))))
 
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function hodges-lehmann-estimator-function)
-     &rest all
-     &key parallel key
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key
-                                     :element-type 'real
-                                     :force-copy nil))
-        (curry #'calculate-hodges-lehmann-estimator parallel)))
+(cl-ds.alg.meta:define-aggregation-function
+    hodges-lehmann-estimator hodges-lehmann-estimator-function
+
+    (:range &key key parallel)
+    (:range &key (key #'identity) (parallel nil))
+
+    (%data %parallel)
+
+    ((&key parallel &allow-other-keys)
+     (setf %data (vect)
+           %parallel parallel))
+
+    ((element)
+     (vector-push-extend element %data))
+
+    ((calculate-hodges-lehmann-estimator %parallel %data)))
