@@ -5,113 +5,8 @@
   ())
 
 
-(defclass mutual-information-matrix-function
-    (cl-ds.alg.meta:multi-aggregation-function
-     mutual-information-fundamental-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defclass mutual-information-function
-    (cl-ds.alg.meta:multi-aggregation-function
-     mutual-information-fundamental-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defgeneric mutual-information (range field &rest comparative-fields)
-  (:generic-function-class mutual-information-function)
-  (:method (range field &rest comparative-fields)
-    (cl-ds:validate-fields #'mutual-information
-                           (cons field comparative-fields))
-    (cl-ds.alg.meta:apply-range-function
-     range
-     #'mutual-information
-     :field field
-     :comparative-fields comparative-fields
-     :key #'identity)))
-
-
-(defgeneric mutual-information-matrix (range &rest fields)
-  (:generic-function-class mutual-information-matrix-function)
-  (:method (range &rest fields)
-    (cl-ds:validate-fields #'mutual-information-matrix fields)
-    (cl-ds.alg.meta:apply-range-function range
-                                               #'mutual-information-matrix
-                                               :fields fields
-                                               :key #'identity)))
-
-
-(defgeneric optimal-split-point (range reference-field &rest matched-fields)
-  (:generic-function-class optimal-split-point-function)
-  (:method (range reference-field &rest matched-fields)
-    (cl-ds:validate-field #'optimal-split-point reference-field)
-    (cl-ds:validate-fields #'optimal-split-point matched-fields)
-    (cl-ds.alg.meta:apply-range-function range
-                                               #'optimal-split-point
-                                               :key #'identity
-                                               :reference-field reference-field
-                                               :matched-fields matched-fields)))
-
-
-(defclass info-field ()
-  ((%name :initarg :name
-          :reader read-name)
-   (%data :initarg :data
-          :reader read-data)
-   (%original-data :initarg :original-data
-                   :reader read-original-data)
-   (%discrete :initarg :discrete
-              :reader read-discrete)
-   (%split-point-count :initarg :split-point-count
-                       :reader read-split-point-count)
-   (%test :initarg :test
-          :reader read-test)
-   (%selector-function :initarg :selector-function
-                       :reader read-selector-function
-                       :initform #'identity)))
-
-
-(defclass split-point-field (info-field)
-  ((%split-point :initarg :split-point
-                 :accessor access-split-point)
-   (%original-selector-function :initarg :original-selector-function
-                                :reader read-original-selector-function)
-   (%discrete-values-set :initarg :discrete-values-set
-                         :reader read-discrete-values-set)))
-
-
-(defun continuesp (field)
-  (eq (cl-ds:at field :type)
-      :continues))
-
-
-(defun initialize-mutual-information-hash-tables (field1 field2)
-  (bind ((table1 (make-hash-table :test (read-test field1)))
-         (table2 (make-hash-table :test (read-test field2)))
-         (table3 (make-hash-table :test 'equal))
-         (vector1 (read-data field1))
-         (vector2 (read-data field2))
-         (length (length vector1))
-         ((:dflet normalize-table (table))
-          (iterate
-            (for (key value) in-hashtable table)
-            (setf (gethash key table) (/ value length)))))
-    (assert (eql length (length vector2)))
-    (iterate
-      (with function1 = (read-selector-function field1))
-      (with function2 = (read-selector-function field2))
-      (for v1 in-vector vector1)
-      (for v2 in-vector vector2)
-      (for value1 = (funcall function1 v1))
-      (for value2 = (funcall function2 v2))
-      (incf (gethash value1 table1 0))
-      (incf (gethash value2 table2 0))
-      (incf (gethash (cons value1 value2) table3 0)))
-    (normalize-table table1)
-    (normalize-table table2)
-    (normalize-table table3)
-    (values table1 table2 table3)))
+(defun initialize-fields (fields data)
+  (mapcar (curry #'initialize-field data) fields))
 
 
 (defun calculate-mutual-information-between (field1 field2)
@@ -184,6 +79,117 @@
                  data)
             (length partition-points))))
 
+(defun mutual-information-hash-table (field fields)
+  (let ((result (make-hash-table :test 'eq)))
+    (iterate
+      (for f in fields)
+      (setf (gethash (read-name f) result)
+            (calculate-mutual-information-between field f))
+      (assert (>= (gethash (read-name f) result) 0)))
+    result))
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    mutual-information mutual-information-function
+
+    (:range fields &key key)
+    (:range fields &key (key #'identity))
+
+    (%data %fields)
+
+    ((&key fields &allow-other-keys)
+     (cl-ds:validate-fields #'mutual-information fields)
+     (setf %data (vect)
+           %fields fields))
+
+    ((element)
+     (vector-push-extend element %data))
+
+    ((~> (mutual-information-hash-table
+          (initialize-field %data (first %fields))
+          (initialize-fields (rest %fields) %data))
+         cl-ds.alg:make-hash-table-range)))
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    mutual-information-matrix mutual-information-matrix-function
+
+    (:range fields &key key)
+    (:range fields &key (key #'identity))
+
+    (%data %fields)
+
+    ((&key fields &allow-other-keys)
+     (cl-ds:validate-fields #'mutual-information-matrix fields)
+     (setf %data (vect)
+           %fields fields))
+
+    ((element)
+     (vector-push-extend element %data))
+
+    ((~> (initialize-fields %fields %data)
+         calculate-mutual-information)))
+
+
+(defclass info-field ()
+  ((%name :initarg :name
+          :reader read-name)
+   (%data :initarg :data
+          :reader read-data)
+   (%original-data :initarg :original-data
+                   :reader read-original-data)
+   (%discrete :initarg :discrete
+              :reader read-discrete)
+   (%split-point-count :initarg :split-point-count
+                       :reader read-split-point-count)
+   (%test :initarg :test
+          :reader read-test)
+   (%selector-function :initarg :selector-function
+                       :reader read-selector-function
+                       :initform #'identity)))
+
+
+(defclass split-point-field (info-field)
+  ((%split-point :initarg :split-point
+                 :accessor access-split-point)
+   (%original-selector-function :initarg :original-selector-function
+                                :reader read-original-selector-function)
+   (%discrete-values-set :initarg :discrete-values-set
+                         :reader read-discrete-values-set)))
+
+
+(defun continuesp (field)
+  (eq (cl-ds:at field :type)
+      :continues))
+
+
+(defun initialize-mutual-information-hash-tables (field1 field2)
+  (bind ((table1 (make-hash-table :test (read-test field1)))
+         (table2 (make-hash-table :test (read-test field2)))
+         (table3 (make-hash-table :test 'equal))
+         (vector1 (read-data field1))
+         (vector2 (read-data field2))
+         (length (length vector1))
+         ((:dflet normalize-table (table))
+          (iterate
+            (for (key value) in-hashtable table)
+            (setf (gethash key table) (/ value length)))))
+    (assert (eql length (length vector2)))
+    (iterate
+      (with function1 = (read-selector-function field1))
+      (with function2 = (read-selector-function field2))
+      (for v1 in-vector vector1)
+      (for v2 in-vector vector2)
+      (for value1 = (funcall function1 v1))
+      (for value2 = (funcall function2 v2))
+      (incf (gethash value1 table1 0))
+      (incf (gethash value2 table2 0))
+      (incf (gethash (cons value1 value2) table3 0)))
+    (normalize-table table1)
+    (normalize-table table2)
+    (normalize-table table3)
+    (values table1 table2 table3)))
+
 
 (defun initialize-field (data field)
   (bind ((original-data data)
@@ -206,7 +212,6 @@
 
 
 (defun initialize-split-point-field (data field)
-  (declare (optimize (debug 3)))
   (bind ((original-data data)
          ((:values data split-points-count)
           (if (continuesp field)
@@ -240,54 +245,6 @@
           (slot-value result '%split-point-count)
           (length (read-discrete-values-set result)))
     result))
-
-
-(defun initialize-fields (fields data)
-  (mapcar (curry #'initialize-field data) fields))
-
-
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function mutual-information-matrix-function)
-     &rest all
-     &key key fields
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :force-copy nil))
-
-        (lambda (&key vector &allow-other-keys)
-          (declare (type vector vector))
-          (~> (initialize-fields fields vector)
-              calculate-mutual-information))))
-
-
-(defun mutual-information-hash-table (field fields)
-  (let ((result (make-hash-table :test 'eq)))
-    (iterate
-      (for f in fields)
-      (setf (gethash (read-name f) result)
-            (calculate-mutual-information-between field f))
-      (assert (>= (gethash (read-name f) result) 0)))
-    result))
-
-
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function mutual-information-function)
-     &rest all
-     &key key field comparative-fields
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :force-copy nil))
-
-        (lambda (&key vector &allow-other-keys)
-          (declare (type vector vector))
-          (~> (mutual-information-hash-table
-               (initialize-field vector field)
-               (initialize-fields comparative-fields vector))
-              cl-ds.alg:make-hash-table-range))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
@@ -352,15 +309,17 @@
 (cl-ds.alg.meta:define-aggregation-function
     optimal-split-point optimal-split-point-function
 
-    (:range &key key reference-field matched-fields)
-    (:range &key (key #'identity) reference-field matched-fields)
+    (:range  fields &key key)
+    (:range fields &key (key #'identity))
 
     (%data %matched-fields %reference-field)
 
-    ((&key matched-fields reference-field &allow-other-keys)
+    ((&key fields &allow-other-keys)
      (setf %data (vect)
-           %matched-fields matched-fields
-           %reference-field reference-field))
+           %matched-fields (rest fields)
+           %reference-field (first fields))
+     (cl-ds:validate-fields #'optimal-split-point %matched-fields)
+     (cl-ds:validate-field #'optimal-split-point %reference-field))
 
     ((element)
      (vector-push-extend element %data))
@@ -380,13 +339,24 @@
          (finally (return (cl-ds.alg:make-hash-table-range result)))))))
 
 
-(cl-ds:define-validation-for-fields
-    (mutual-information-fundamental-function (:name :type :key :split-points-count))
-  (:name :optional nil)
-  (:key :optional t
-        :default #'identity)
-  (:split-points-count :optional t
-                       :default 10
-                       :type 'positive-integer)
-  (:type :optional nil
-         :member (:discrete :continues)))
+(defmacro define-all-validation-for-fields (&rest class-list)
+  `(progn
+     ,@(mapcar (lambda (class)
+                 `(cl-ds:define-validation-for-fields
+                      (,class (:name :type :key :split-points-count))
+                    (:name :optional nil)
+                    (:key :optional t
+                          :default #'identity)
+                    (:split-points-count :optional t
+                                         :default 10
+                                         :type 'positive-integer)
+                    (:type :optional nil
+                           :member (:discrete :continues))))
+               class-list)))
+
+
+(define-all-validation-for-fields
+    optimal-split-point-function
+    mutual-information-function
+    mutual-information-matrix-function
+    harmonic-average-mutual-information-function)
