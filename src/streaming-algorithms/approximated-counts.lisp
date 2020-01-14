@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.streaming-algorithms)
+(cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
 (defclass approximated-counts (fundamental-data-sketch)
