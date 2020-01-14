@@ -291,7 +291,8 @@
 
 
 (cl-ds.alg.meta:define-aggregation-function
-    harmonic-average-mutual-information harmonic-average-mutual-information-function
+    harmonic-average-mutual-information
+    harmonic-average-mutual-information-function
 
     (:range fields &key key)
     (:range fields &key (key #'identity))
