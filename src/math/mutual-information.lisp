@@ -19,13 +19,6 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass harmonic-average-mutual-information-function
-    (cl-ds.alg.meta:multi-aggregation-function
-     mutual-information-fundamental-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
 (defgeneric mutual-information (range field &rest comparative-fields)
   (:generic-function-class mutual-information-function)
   (:method (range field &rest comparative-fields)
@@ -47,19 +40,6 @@
                                                #'mutual-information-matrix
                                                :fields fields
                                                :key #'identity)))
-
-
-(defgeneric harmonic-average-mutual-information (range field &rest fields)
-  (:generic-function-class harmonic-average-mutual-information-function)
-  (:method (range field &rest fields)
-    (cl-ds:validate-fields #'harmonic-average-mutual-information
-                           (cons field fields))
-    (cl-ds.alg.meta:apply-range-function
-     range
-     #'harmonic-average-mutual-information
-     :field field
-     :comparative-fields fields
-     :key #'identity)))
 
 
 (defgeneric optimal-split-point (range reference-field &rest matched-fields)
@@ -310,30 +290,38 @@
               cl-ds.alg:make-hash-table-range))))
 
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function harmonic-average-mutual-information-function)
-     &rest all
-     &key key field comparative-fields
-     &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :vector (range &rest all)
-          (declare (ignore all))
-          (cl-ds.alg:to-vector range :key key :force-copy nil))
+(cl-ds.alg.meta:define-aggregation-function
+    harmonic-average-mutual-information harmonic-average-mutual-information-function
 
-        (lambda (&key vector &allow-other-keys)
-          (declare (type vector vector))
-          (let ((result (mutual-information-hash-table
-                         (initialize-field vector field)
-                         (initialize-fields comparative-fields vector)))
-                (sum 0)
-                (count 0))
-            (maphash (lambda (key value)
-                       (declare (ignore key))
-                       (unless (zerop value)
-                         (incf sum (/ 1 value))
-                         (incf count)))
-                     result)
-            (/ count sum)))))
+    (:range fields &key key)
+    (:range fields &key (key #'identity))
+
+    (%data %field %comparative-fields)
+
+    ((&key fields &allow-other-keys)
+     (cl-ds:validate-fields #'harmonic-average-mutual-information
+                            fields)
+     (setf %data (vect)
+           %field (first fields)
+           %comparative-fields (rest fields)))
+
+    ((element)
+     (vector-push-extend element %data))
+
+    ((let* ((vector %data)
+            (result (mutual-information-hash-table
+                     (initialize-field vector %field)
+                     (initialize-fields %comparative-fields vector)))
+            (sum 0)
+            (count 0))
+       (declare (type (cl-ds.utils:extendable-vector t) vector))
+       (maphash (lambda (key value)
+                  (declare (ignore key))
+                  (unless (zerop value)
+                    (incf sum (/ 1 value))
+                    (incf count)))
+                result)
+       (/ count sum))))
 
 
 (defun calculate-split-point (reference-field matched-field)
