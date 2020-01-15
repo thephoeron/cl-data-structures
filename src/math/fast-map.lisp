@@ -51,11 +51,10 @@
             (iterate
               (for i from 0 below length)
               (setf (aref result i axis)
-                    (cond ((= i first-distant)
-                           0.0f0)
-                          ((= i second-distant)
-                           distance)
-                          (t (project i first-distant second-distant axis distance))))
+                    (cond ((= i first-distant) 0.0f0)
+                          ((= i second-distant) distance)
+                          (t (project i first-distant
+                                      second-distant axis distance))))
               (finally (impl (1+ axis)))))))
     (impl 0)
     result))
