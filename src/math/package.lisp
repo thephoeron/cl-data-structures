@@ -16,6 +16,7 @@
    #:hodges-lehmann-estimator
    #:gini-impurity
    #:entropy
+   #:fast-map
    #:median-absolute-deviation
    #:moments
    #:moving-average
