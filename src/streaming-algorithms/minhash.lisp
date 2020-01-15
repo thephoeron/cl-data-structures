@@ -99,7 +99,8 @@
   (let ((result (minhash-jaccard/fixnum a b))
         (length (length a)))
     (declare (type fixnum result length))
-    (- 1.0f0 (/ result length))))
+    (coerce (/ result length)
+            'single-float)))
 
 
 (-> minhash-jaccard/double-float ((simple-array fixnum (*)) (simple-array fixnum (*)))
@@ -109,4 +110,5 @@
   (let ((result (minhash-jaccard/fixnum a b))
         (length (length a)))
     (declare (type fixnum result length))
-    (- 1.0d0 (/ result length))))
+    (coerce (/ result length)
+            'double-float)))
