@@ -15,7 +15,9 @@
        (result (cl-ds.math::simple-linear-regression
                 xpr
                 #'first
-                #'second)))
+                (cl-ds.math:average xpr :key #'first)
+                #'second
+                (cl-ds.math:average xpr :key #'second))))
   (is (cl-ds.math:beta1 result) 2 :test #'=)
   (is (cl-ds.math:beta0 result) 1 :test #'=))
 
