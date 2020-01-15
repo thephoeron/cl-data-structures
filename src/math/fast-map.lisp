@@ -22,9 +22,7 @@
          ((:flet furthest (o axis))
           (iterate
             (for i from 0 below length)
-            (for distance = (distance i o axis))
-            (finding i maximizing distance into result)
-            (finally (print i) (print o) (return result))))
+            (finding i maximizing (distance i o axis))))
          ((:flet select-pivots (axis))
           (iterate
             (with o1 = (random length))
