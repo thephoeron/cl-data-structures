@@ -1,37 +1,20 @@
 (cl:in-package #:cl-data-structures.math)
 
 
-(defclass variance-function (cl-ds.alg.meta:multi-aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
+(cl-ds.alg.meta:define-aggregation-function variance variance-function
+    (:range around &key key biased)
+    (:range around &key (key #'identity) (biased t))
 
+    (%count %sum %biased %average)
 
-(defgeneric variance (range &key key biased)
-  (:generic-function-class variance-function)
-  (:method (range &key key (biased t))
-    (cl-ds.alg.meta:apply-range-function range
-                                         #'variance
-                                         :key key
-                                         :biased biased)))
+    ((&key biased average &allow-other-keys)
+     (setf %count 0
+           %average average
+           %sum 0
+           %biased biased))
 
+    ((element)
+     (incf %count)
+     (incf %sum (expt (- element %average) 2)))
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn variance-function)
-                                                    &rest all
-                                                    &key key biased
-                                                    &allow-other-keys)
-  (declare (ignore all))
-  (list (cl-ds.alg.meta:stage :average (range &rest all)
-          (declare (ignore all))
-          (average range :key key))
-
-        (cl-ds.alg.meta:reduce-stage :variance (list* (if biased 0 -1) 0)
-            (prev next &key average &allow-other-keys)
-          (symbol-macrolet ((count (car prev))
-                            (sum (cdr prev)))
-            (incf count)
-            (incf sum (expt (- (funcall key next) average) 2))
-            prev))
-
-        (lambda (&key variance &allow-other-keys)
-          (/ (cdr variance)
-             (car variance)))))
+    ((/ %sum %count)))
