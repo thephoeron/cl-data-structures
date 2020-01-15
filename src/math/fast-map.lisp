@@ -1,14 +1,16 @@
 (cl:in-package #:cl-data-structures.math)
 
 
-(defun fast-map-embeddings (data metric-function dimensions iterations)
+(defun fast-map-embeddings (data metric-function dimensions iterations parallel)
   (bind ((length (length data))
-         (distance-matrix (cl-ds.utils:make-distance-matrix-from-vector
-                           'single-float
-                           (lambda (a b)
-                             (coerce (funcall metric-function a b)
-                                     'single-float))
-                           data))
+         (distance-matrix (if parallel
+                              (cl-ds.utils:parallel-make-distance-matrix-from-vector
+                               'single-float
+                               #1=(lambda (a b)
+                                    (coerce (funcall metric-function a b)
+                                            'single-float))
+                               data)
+                              (cl-ds.utils:make-distance-matrix-from-vector 'single-float #1# data)))
          (result (make-array `(,length ,dimensions)
                              :element-type 'single-float
                              :initial-element 0.0f0))
@@ -65,18 +67,19 @@
 (cl-ds.alg.meta:define-aggregation-function
     fast-map fast-map-function
 
-    (:range metric-function dimensions iterations &key key)
-    (:range metric-function dimensions iterations &key (key #'identity))
+    (:range metric-function dimensions iterations &key key parallel)
+    (:range metric-function dimensions iterations &key (key #'identity) parallel)
 
-    (%data %distance-function %dimensions %iterations)
+    (%data %distance-function %dimensions %iterations %parallel)
 
-    ((&key metric-function dimensions iterations &allow-other-keys)
+    ((&key metric-function dimensions iterations parallel &allow-other-keys)
      (setf %data (vect)
            %distance-function metric-function
+           %parallel parallel
            %iterations iterations
            %dimensions dimensions))
 
     ((element)
      (vector-push-extend element %data))
 
-    ((fast-map-embeddings %data %distance-function %dimensions %iterations)))
+    ((fast-map-embeddings %data %distance-function %dimensions %iterations %parallel)))
