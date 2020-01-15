@@ -4,7 +4,11 @@
 (defun fast-map-embeddings (data metric-function dimensions iterations)
   (bind ((length (length data))
          (distance-matrix (cl-ds.utils:make-distance-matrix-from-vector
-                           t metric-function data))
+                           'single-float
+                           (lambda (a b)
+                             (coerce (funcall metric-function a b)
+                                     'single-float))
+                           data))
          (result (make-array `(,length ,dimensions)
                              :element-type 'single-float
                              :initial-element 0.0f0))
