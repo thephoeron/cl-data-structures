@@ -42,6 +42,7 @@
   CLOSED: [2020-01-14 wto 10:31]
 * closure compilation
 ** TODO Rewrite all multistage aggregations into single stage aggregations so the whole concept can be scrapped
-*** started today, finished with mat <2020-01-14 wto>h
+*** started today, finished with math <2020-01-14 wto>
+*** finished with clara <2020-01-15 śro>
 ** TODO Add additional argument: element-type to the aggregation functions.
 ** TODO remove aggregator protocol, design the new protocol based around closures.
