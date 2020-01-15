@@ -263,7 +263,6 @@
                              (:file "co-occurence-table")
                              (:file "standard-deviation")
                              (:file "moments")
-                             (:file "statistical-summary")
                              (:file "chi-squared")
                              (:file "bootstrap")
                              (:file "moving-average")
