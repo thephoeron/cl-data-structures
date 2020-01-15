@@ -1,28 +1,23 @@
 (cl:in-package #:cl-data-structures.math)
 
 
-(defclass standard-deviation-function (cl-ds.alg.meta:multi-aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
+(cl-ds.alg.meta:define-aggregation-function
+    standard-deviation
+    standard-deviation-function
 
+    (:range around &key key biased)
+    (:range around &key (key #'identity) (biased t))
 
-(defgeneric standard-deviation (range &key key biased)
-  (:generic-function-class standard-deviation-function)
-  (:method (range &key key (biased t))
-    (cl-ds.alg.meta:apply-range-function range
-                                         #'standard-deviation
-                                         :key key
-                                         :biased biased)))
+    (%count %sum %biased %average)
 
+    ((&key biased average &allow-other-keys)
+     (setf %count 0
+           %average average
+           %sum 0
+           %biased biased))
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages ((fn standard-deviation-function)
-                                                    &rest all
-                                                    &key
-                                                    &allow-other-keys)
-  (let ((variance-stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                                #'variance
-                                all)))
-    (setf (rest (last variance-stages))
-          (list (lambda (x &key &allow-other-keys)
-                  (sqrt x))))
-    variance-stages))
+    ((element)
+     (incf %count)
+     (incf %sum (expt (- element %average) 2)))
+
+    ((sqrt (/ %sum %count))))
