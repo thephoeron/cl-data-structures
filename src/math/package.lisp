@@ -28,6 +28,4 @@
    #:chi-squared
    #:standard-deviation
    #:hidden-markov-model-generator
-   #:variance
-   #:z-score
-   #:gather-z-score))
+   #:variance))

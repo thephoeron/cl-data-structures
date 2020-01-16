@@ -269,7 +269,6 @@
                              (:file "hmm")
                              (:file "gini-impurity")
                              (:file "entropy")
-                             (:file "z-score")
                              (:file "fast-map")
                              (:file "docstrings")
                              ))

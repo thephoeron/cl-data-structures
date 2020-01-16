@@ -84,10 +84,6 @@
                  (biased "Boolean. Should result be biased?"))
      :notes "Name conflict with alexandria:variance."))
 
-  (function statistical-summary
-    (:description "Calculates classical statistical values (average, variance, skewness, kurtosis)."
-     :returns "Range. use :AVERAGE :VARIANCE :SKEWNESS :KURTOSIS as locations in the cl-ds:at to obtain (in order) average, variance, skewness and kurtosis."))
-
   (function mutual-information
     (:description "Calculates mutual-information between FIELD and COMPARATIVE-FIELDS. Elements in each FIELD should be EQUAL comparable."
      :returns "Range. Provides access to values for each field by quering cl-ds:at with label of field."))
@@ -95,16 +91,6 @@
   (function chi-squared
     (:description "Performs chi-squared test on range. Programmer is expected to provide information about expected classes as fields passed to the algorithm. The combination of classes is then passed to the KEY function with each element of the range. Returned value is expected to be the count of elements of class. This, in practice allows to use this function with classes being integers and input being cooccurrence table."
      :returns "P-Value of chi-squared test."))
-
-  (function gather-z-score
-    (:description "Constructs Z-SCORE class instance that can be then used to calculate z-score of population element."
-     :returns "Instance of Z-SCORE class."))
-
-  (function z-score
-    (:description "Calculates Z-SCORE of the ELEMENT based on the state of the Z-SCORE instance (passed as the first argument)."
-     :exceptional-situations ("Will signal TYPE-ERROR if the ELEMENT is not of the type REAL"
-                              "Will signal TYPE-ERROR if the Z-SCORE is not of the type Z-SCORE.")
-     :returns "REAL number representing z-score of the element in the population."))
 
   (function moments
     (:description "Calculate statistical moments in the range."
