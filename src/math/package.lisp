@@ -25,7 +25,7 @@
    #:optimal-split-point
    #:simple-linear-regression
    #:co-occurence-table
-   #:chi-squared
+   ;; #:chi-squared
    #:standard-deviation
    #:hidden-markov-model-generator
    #:variance))

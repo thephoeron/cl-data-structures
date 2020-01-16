@@ -72,7 +72,7 @@
                              (:test-file "zip-test")))
                (:module "math"
                 :components ((:test-file "moments-tests")
-                             (:test-file "chi-squared-tests")
+                             ;; (:test-file "chi-squared-tests")
                              (:test-file "mutual-information-tests")
                              (:test-file "simple-linear-regression-tests")))
                (:module "counting"
