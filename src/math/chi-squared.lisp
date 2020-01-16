@@ -1,21 +1,6 @@
 (cl:in-package #:cl-data-structures.math)
 
 
-(defclass chi-squared-function (cl-ds.alg.meta:multi-aggregation-function)
-  ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
-
-(defgeneric chi-squared (range cell-value fields &key key)
-  (:generic-function-class chi-squared-function)
-  (:method (range cell-value fields &key (key #'identity))
-    (cl-ds.alg.meta:apply-range-function range
-                                               #'chi-squared
-                                               :cell-value cell-value
-                                               :fields fields
-                                               :key key)))
-
-
 (cl-ds:define-validation-for-fields
     (chi-squared-function (:test :classes))
   (:test :optional t
@@ -132,44 +117,50 @@
                 result))))))
 
 
-(defmethod cl-ds.alg.meta:multi-aggregation-stages
-    ((function chi-squared-function)
-     &rest all
-     &key key fields cell-value)
-  (declare (ignore key)
-           (optimize (debug 3)))
-  (let* ((field-counts (mapcar (compose #'length (rcurry #'cl-ds:at :classes))
+(cl-ds.alg.meta:define-aggregation-function
+    chi-squared
+    chi-squared-function
+
+    (:range cell-value fields &key key)
+    (:range cell-value fields &key (key #'identity))
+
+    (%fields-counts %fields %field-mapping %full-path-vector %full-address-vector %state
+     %cell-value)
+
+    ((&key key fields cell-value &allow-other-keys)
+     (setf %field-mapping (map 'vector
+                               (lambda (x)
+                                 (make-hash-table :test (cl-ds:at x :test)
+                                                  :size (~> x (cl-ds:at :classes) length)))
                                fields))
-         (field-mapping (map '(vector hash-table)
-                             (lambda (x)
-                               (make-hash-table :test (cl-ds:at x :test)
-                                                :size (~> x (cl-ds:at :classes) length)))
-                             fields))
-         (full-path-vector (path-list fields)))
-    (iterate
-      (for f in fields)
-      (for mapping in-vector field-mapping)
-      (iterate
-        (for class in-sequence (cl-ds:at f :classes))
-        (for class-number from 0)
-        (setf (gethash class mapping) class-number)))
-    (let ((full-address-vector (map 'vector
-                                    (curry #'map
-                                           'list
-                                           (flip #'gethash)
-                                           field-mapping)
-                                    full-path-vector)))
-      (list (cl-ds.alg.meta:reduce-stage :class-counts
-                (make-array field-counts :element-type 'fixnum
-                                         :initial-element 0)
-                (state element &rest all)
-              (iterate
-                (for path in-vector full-path-vector)
-                (for address in-vector full-address-vector)
-                (for old-value = (apply #'aref state address))
-                (apply #'(setf aref)
-                       (+ old-value (apply cell-value element path))
-                       state
-                       address))
-              state)
-          #'chi-squared-on-table))))
+     (iterate
+       (for f in fields)
+       (for mapping in-vector %field-mapping)
+       (iterate
+         (for class in-sequence (cl-ds:at f :classes))
+         (for class-number from 0)
+         (setf (gethash class mapping) class-number)))
+     (setf %fields-counts (mapcar (compose #'length
+                                           (rcurry #'cl-ds:at :classes))
+                                  fields)
+           %cell-value cell-value
+           %fields fields
+           %full-path-vector (path-list fields)
+           %state (make-array %fields-counts :element-type 'fixnum
+                                            :initial-element 0)
+           %full-address-vector (map 'vector
+                                     (lambda (x)
+                                       (map 'list (flip #'gethash) %field-mapping x))
+                                     %full-path-vector)))
+
+    ((element)
+     (iterate
+       (for path in-vector %full-path-vector)
+       (for address in-vector %full-address-vector)
+       (for old-value = (apply #'aref %state address))
+       (apply #'(setf aref)
+              (+ old-value (apply %cell-value element path))
+              %state
+              address)))
+
+    ((chi-squared-on-table :fields %fields :class-counts %state)))
