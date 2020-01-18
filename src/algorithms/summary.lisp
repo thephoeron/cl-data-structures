@@ -29,11 +29,11 @@
     ((let ((result (make-hash-table :test 'eq :size (length %aggregators))))
        (iterate
          (for aggregator in %aggregators)
-         (for id in %ids)
+         (for id in-vector %ids)
          (setf (gethash id result) (cl-ds.alg.meta:extract-result aggregator)))
        (make-instance 'summary-result-range
                       :hash-table result
-                      :keys (coerce %ids 'vector)
+                      :keys %ids
                       :begin 0
                       :end (hash-table-count result)))))
 
@@ -48,4 +48,4 @@
                           '() nil (function ,function) (list ,range ,@body)))
       (collect aggregator into forms)
       (collect id into ids)
-      (finally (return `(%summary ,range ',ids (list ,@forms)))))))
+      (finally (return `(%summary ,range (vector ,@ids) (list ,@forms)))))))
