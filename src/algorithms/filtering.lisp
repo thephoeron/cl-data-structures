@@ -107,22 +107,16 @@
                                                   (function aggregation-function)
                                                   key
                                                   (arguments list))
-  (bind ((on-first (read-on-first range))
-         (test (read-test range))
-         (partition-key (read-key range))
-         (outer-fn (call-next-method)))
-    (cl-ds.alg.meta:aggregator-constructor
-     (read-original-range range)
-     (lambda ()
-       (make 'linear-partition-if-aggregator
-             :outer-fn outer-fn
-             :key key
-             :on-first on-first
-             :test test
-             :partition-key partition-key))
-     function
-     key
-     arguments)))
+  (cl-ds.alg.meta:aggregator-constructor
+   (read-original-range range)
+   (lambda ()
+     (make 'filtering-aggregator
+           :key key
+           :inner-aggregator (funcall (call-next-method))
+           :range range))
+   function
+   key
+   arguments))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range filtering-proxy) function)

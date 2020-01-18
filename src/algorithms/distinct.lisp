@@ -152,7 +152,7 @@
             (cl-ds.alg.meta:pass-to-aggregation element))))))
 
 
-(defmethod cl-ds.alg.meta:aggregator-constructor ((range filtering-proxy)
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range distinct-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   key
