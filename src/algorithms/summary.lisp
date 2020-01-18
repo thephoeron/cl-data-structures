@@ -45,10 +45,7 @@
       (check-type id symbol)
       (check-type function symbol)
       (for aggregator = `(cl-ds.alg.meta:aggregator-constructor
-                          '()
-                          nil
-                          (function ,function)
-                          (list ,range ,@body)))
+                          '() nil (function ,function) (list ,range ,@body)))
       (collect aggregator into forms)
       (collect id into ids)
       (finally (return `(%summary ,range ',ids (list ,@forms)))))))
