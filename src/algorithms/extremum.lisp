@@ -9,8 +9,7 @@
 
   (%value %fn %first-iteration %value-key)
 
-  ((&key fn value-key)
-   (ensure-functionf value-key fn)
+  ((ensure-functionf value-key fn)
    (setf %fn fn
          %value-key value-key
          %first-iteration t))

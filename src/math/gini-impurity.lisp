@@ -14,8 +14,7 @@
 
   (%table %total-count %count-fn)
 
-  ((&key count-fn hash-table &allow-other-keys)
-   (ensure-functionf count-fn)
+  ((ensure-functionf count-fn)
    (check-type hash-table hash-table)
    (setf %table hash-table
          %count-fn count-fn

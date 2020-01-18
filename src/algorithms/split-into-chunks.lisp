@@ -36,66 +36,29 @@
                  :count-in-chunk (access-count-in-chunk range)))
 
 
-(defclass split-into-chunks-aggregator (cl-ds.alg.meta:fundamental-aggregator)
-  ((%chunks :initform (vect)
-            :initarg :chunks
-            :type vector
-            :reader read-chunks)
-   (%outer-fn :initarg :outer-fn
-              :reader read-outer-fn)
-   (%maximal-count-in-chunk :initarg :maximal-count-in-chunk
-                            :reader read-maximal-count-in-chunk)
-   (%current-index :initform 0
-                   :accessor access-current-index)
-   (%count-in-chunk :initarg :count-in-chunk
-                    :initform 0
-                    :accessor access-count-in-chunk)))
-
-
-(defclass linear-split-into-chunks-aggregator (split-into-chunks-aggregator)
-  ())
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator split-into-chunks-aggregator)
-                                               element)
-  (bind (((:slots %chunks %maximal-count-in-chunk
-                  %outer-fn %current-index %count-in-chunk)
-          aggregator))
-    (if (emptyp %chunks)
-        (progn (vector-push-extend (funcall %outer-fn) %chunks)
-               (begin-aggregation (last-elt %chunks)))
-        (when (>= %count-in-chunk %maximal-count-in-chunk)
-          (incf %current-index)
-          (when (>= %current-index (length %chunks))
-            (vector-push-extend (funcall %outer-fn) %chunks)
-            (begin-aggregation (last-elt %chunks)))
-          (setf %count-in-chunk 0)))
-    (~> (aref %chunks %current-index) (pass-to-aggregation element))
-    (incf %count-in-chunk)))
-
-
-(defmethod cl-ds.alg.meta:extract-result ((aggregator split-into-chunks-aggregator))
-  (bind (((:slots %chunks) aggregator))
-    (~> (map 'vector #'cl-ds.alg.meta:extract-result %chunks)
-        cl-ds:whole-range)))
-
-
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range split-into-chunks-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
   (let ((outer-fn (call-next-method))
         (maximal-count-in-chunk (access-count-in-chunk range)))
+    (declare (type fixnum maximal-count-in-chunk))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'linear-split-into-chunks-aggregator
-             :outer-fn outer-fn
-             :key key
-             :maximal-count-in-chunk maximal-count-in-chunk))
+     (cl-ds.alg.meta:let-aggregator ((chunks (vect))
+                                     (count-in-chunk 0))
+
+         ((element)
+           (when (>= (the fixnum count-in-chunk) maximal-count-in-chunk)
+             (vector-push-extend (funcall outer-fn) chunks)
+             (setf count-in-chunk 0))
+           (cl-ds.alg.meta:pass-to-aggregation (aref chunks (1- (fill-pointer chunks)))
+                                               element))
+
+         ((~> #'cl-ds.alg.meta:extract-result
+              (cl-ds.utils:transform chunks)
+              cl-ds:whole-range)))
      function
-     key
      arguments)))
 
 
@@ -107,28 +70,26 @@
 (defgeneric split-into-chunks (range chunk-size)
   (:generic-function-class split-into-chunks-function)
   (:method (range chunk-size)
-    (apply-range-function range #'split-into-chunks :chunk-size chunk-size)))
+    (apply-range-function range #'split-into-chunks
+                          (range chunk-size))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn split-into-chunks-function)
-                        &rest all &key chunk-size)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'forward-split-into-chunks-proxy
-              :count-in-chunk chunk-size))
+              :count-in-chunk (second all)))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn split-into-chunks-function)
-                        &rest all &key chunk-size)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'bidirectional-split-into-chunks-proxy
-              :count-in-chunk chunk-size))
+              :count-in-chunk (second all)))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn split-into-chunks-function)
-                        &rest all &key chunk-size)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'random-access-split-into-chunks-proxy
-              :count-in-chunk chunk-size))
+              :count-in-chunk (second all)))

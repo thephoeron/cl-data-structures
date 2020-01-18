@@ -41,8 +41,7 @@
 
     (%data %parallel)
 
-    ((&key parallel &allow-other-keys)
-     (setf %data (vect)
+    ((setf %data (vect)
            %parallel parallel))
 
     ((element)

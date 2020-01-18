@@ -102,52 +102,39 @@
   (:generic-function-class flatten-lists-function)
   (:method (range &key (key #'identity))
     (ensure-functionf key)
-    (apply-range-function range #'flatten-lists :key key)))
+    (apply-range-function range #'flatten-lists
+                          (list range :key key))))
 
 
 (defmethod apply-layer ((range traversable)
                         (function flatten-lists-function)
-                        &rest all &key key)
-  (declare (ignore all))
+                        all)
   (make 'forward-flatten-proxy
-        :key key
+        :key (cl-ds.utils:at-list all :key)
         :original-range range))
-
-
-(defclass flatten-lists-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
-  ((%flatten-key :initarg :flatten-key
-                  :reader read-flatten-key)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator flatten-lists-aggregator)
-                                               element)
-  (bind (((:slots %flatten-key) aggregator)
-         (inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator))
-         (selected (~>> element (funcall %flatten-key)))
-         ((:labels impl (data))
-          (if (atom data)
-              (cl-ds.alg.meta:pass-to-aggregation inner-aggregator
-                                                  data)
-              (map nil #'impl data))))
-    (impl selected)))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range flatten-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
   (let ((flatten-key (read-key range))
         (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'flatten-lists-aggregator
-             :key key
-             :flatten-key flatten-key
-             :inner-aggregator (funcall outer-fn)))
+     (cl-ds.utils:cases ((:variant (eq flatten-key 'identity)
+                                   (eq flatten-key #'identity)))
+       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn)))
+           ((element)
+             (labels ((impl (x)
+                        (if (atom x)
+                            (cl-ds.alg.meta:pass-to-aggregation inner x)
+                            (map nil #'impl x))))
+               (~>> element (funcall flatten-key) impl)))
+
+           ((cl-ds.alg.meta:extract-result inner))))
      function
-     key
      arguments)))
 
 

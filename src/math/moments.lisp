@@ -10,8 +10,7 @@
 
   (%moments %start %count %lambdas)
 
-  ((&key count about from &allow-other-keys)
-   (setf %lambdas (make-array count)
+  ((setf %lambdas (make-array count)
          %moments (make-array count :initial-element 0.0
                                     :element-type 'single-float)
          %count 0

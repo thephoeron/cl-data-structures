@@ -15,9 +15,7 @@
      %silhouette-sample-size %iterations %silhouette-sample-count
      %data)
 
-    ((&key number-of-medoids distortion-epsilon silhouette silhouette-sample-size
-           iterations silhouette-sample-count &allow-other-keys)
-     (cl-ds:check-argument-bounds distortion-epsilon
+    ((cl-ds:check-argument-bounds distortion-epsilon
                                   (< 0.0 distortion-epsilon))
      (cl-ds:check-argument-bounds silhouette-sample-size
                                   (< 0 silhouette-sample-size))

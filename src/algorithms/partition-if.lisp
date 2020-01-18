@@ -85,117 +85,9 @@
         :test (read-test range)))
 
 
-(defclass abstract-partition-if-aggregator ()
-  ((%outer-fn :initarg :outer-fn
-              :reader read-outer-fn)
-   (%on-first :initarg :on-first
-              :reader read-on-first)
-   (%test :initarg :test
-          :reader read-test)
-   (%partition-key :initarg :partition-key
-                   :reader read-partition-key)
-   (%key :initarg :key
-         :reader read-key)))
-
-
-(defclass callback-partition-if-aggregator (abstract-partition-if-aggregator
-                                            cl-ds.alg.meta:fundamental-aggregator)
-  ((%callback :reader read-callback
-              :initarg :callback)
-   (%current-state :accessor access-current-state
-                   :initform nil)
-   (%current-key :accessor access-current-key
-                 :initform nil)
-   (%initialized :accessor access-initialized
-                 :type boolean
-                 :initform nil)))
-
-
-(defclass partition-if-aggregator (abstract-partition-if-aggregator
-                                   cl-ds.alg.meta:fundamental-aggregator)
-  ((%chunks :initform (vect)
-            :initarg :chunks
-            :type vector
-            :reader read-chunks)
-   (%current-index :initform 0
-                   :accessor access-current-index)))
-
-
-(defclass linear-partition-if-aggregator (partition-if-aggregator)
-  ())
-
-
-(defclass linear-callback-partition-if-aggregator (callback-partition-if-aggregator)
-  ())
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
-                                               element)
-  (bind (((:slots %chunks %partition-key %test %outer-fn %current-index
-                  %on-first)
-          aggregator)
-         (key (funcall %partition-key element))
-         (length (length %chunks))
-         (empty (zerop length)))
-    (if empty
-        (let ((sub (funcall %outer-fn)))
-          (vector-push-extend (list* key sub)
-                              %chunks))
-        (iterate
-          (for (prev . chunk) = (aref %chunks %current-index))
-          (until (funcall %test prev key))
-          (incf %current-index)
-          (when (>= %current-index (length %chunks))
-            (let ((sub (funcall %outer-fn)))
-              (vector-push-extend (list* key sub)
-                                  %chunks)
-              (leave)))))
-    (unless %on-first
-      (setf (car (aref %chunks %current-index)) key))
-    (~> %chunks (aref %current-index) cdr (pass-to-aggregation element))))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator callback-partition-if-aggregator)
-                                               element)
-  (bind (((:slots %initialized %partition-key %test %outer-fn %callback
-                  %current-state %current-key
-                  %on-first)
-          aggregator)
-         (key (funcall %partition-key element)))
-    (cond ((not %initialized)
-           (setf %current-key key
-                 %initialized t
-                 %current-state (funcall %outer-fn))
-           (pass-to-aggregation %current-state element))
-          ((funcall %test %current-key key)
-           (unless %on-first
-             (setf %current-key key))
-           (pass-to-aggregation %current-state element))
-          (t
-           (~>> %current-state
-                cl-ds.alg.meta:extract-result
-                (funcall %callback))
-           (setf %current-key key
-                 %current-state (funcall %outer-fn))
-           (pass-to-aggregation %current-state element)))))
-
-
-(defmethod cl-ds.alg.meta:extract-result ((aggregator callback-partition-if-aggregator))
-  nil)
-
-
-(defmethod cl-ds.alg.meta:extract-result ((aggregator partition-if-aggregator))
-  (bind (((:slots %chunks) aggregator))
-    (~> (map 'vector
-             (compose #'cl-ds.alg.meta:extract-result #'cdr)
-             %chunks)
-        cl-ds:whole-range)))
-
-
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range callback-partition-if-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
   (bind ((on-first (read-on-first range))
          (test (read-test range))
@@ -204,39 +96,87 @@
          (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'linear-callback-partition-if-aggregator
-             :outer-fn outer-fn
-             :key key
-             :on-first on-first
-             :callback callback
-             :test test
-             :partition-key partition-key))
+     (cl-ds.alg.meta:let-aggregator ((initialized nil)
+                                     (current-key nil)
+                                     (current-state nil))
+         ((element)
+           (bind ((key (~>> element (funcall partition-key))))
+             (cond ((not initialized)
+                    (setf current-key key
+                          initialized t
+                          current-state (funcall outer-fn))
+                    (pass-to-aggregation current-state element))
+                   ((funcall test current-key key)
+                    (unless on-first
+                      (setf current-key key))
+                    (pass-to-aggregation current-state element))
+                   (t
+                    (~>> current-state
+                         cl-ds.alg.meta:extract-result
+                         (funcall callback))
+                    (setf current-key key
+                          current-state (funcall outer-fn))
+                    (pass-to-aggregation current-state element)))))
+
+         (nil))
      function
-     key
      arguments)))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range partition-if-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
+  (declare (optimize (speed 3)))
   (bind ((on-first (read-on-first range))
          (test (read-test range))
          (partition-key (read-key range))
          (outer-fn (call-next-method)))
+    (assert (functionp outer-fn))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'linear-partition-if-aggregator
-             :outer-fn outer-fn
-             :key key
-             :on-first on-first
-             :test test
-             :partition-key partition-key))
+     (cl-ds.utils:cases ((:variant (eq partition-key #'identity)
+                                   (eq partition-key 'identity))
+                         (:variant (eq test #'eq)
+                                   (eq test #'eql)
+                                   (eq test #'equal)
+                                   (eq test #'string=)
+                                   (eq test #'=)
+                                   (eq test #'equalp)
+                                   (eq test 'eq)
+                                   (eq test 'eql)
+                                   (eq test 'equal)
+                                   (eq test 'string=)
+                                   (eq test '=)
+                                   (eq test 'equalp)))
+       (cl-ds.alg.meta:let-aggregator
+           ((chunks (the (cl-ds.utils:extendable-vector t) (vect))))
+
+           ((element)
+             (let* ((chunks-length (fill-pointer chunks))
+                    (last-chunk (the fixnum (1- chunks-length)))
+                    (key (funcall partition-key element))
+                    (empty (zerop chunks-length)))
+               (if empty
+                   (let ((new (funcall outer-fn)))
+                     (vector-push-extend (list* key new)
+                                         chunks)
+                     (cl-ds.alg.meta:pass-to-aggregation new element))
+                   (bind (((prev . chunk) (aref chunks last-chunk)))
+                     (if (funcall test prev key)
+                         (pass-to-aggregation chunk element)
+                         (let ((new (funcall outer-fn)))
+                           (vector-push-extend (list* key new)
+                                               chunks)
+                           (cl-ds.alg.meta:pass-to-aggregation new element)))
+                     (unless on-first
+                       (setf (car (aref chunks (1- (fill-pointer chunks)))) key))))))
+
+           ((~> (cl-ds.utils:transform (compose #'cl-ds.alg.meta:extract-result #'cdr)
+                                       chunks)
+                cl-ds:whole-range))))
+
      function
-     key
      arguments)))
 
 
@@ -255,10 +195,9 @@
   (:method (range test callback &key (key #'identity) (on-first nil))
     (ensure-functionf test key callback)
     (apply-range-function range #'partition-if-with-callback
-                          :callback callback
-                          :on-first on-first
-                          :key key
-                          :test test)))
+                          (list range test callback
+                                :key key
+                                :on-first on-first))))
 
 
 (defgeneric partition-if (range test &key key on-first)
@@ -266,69 +205,63 @@
   (:method (range test &key (key #'identity) (on-first nil))
     (ensure-functionf test key)
     (apply-range-function range #'partition-if
-                          :key key
-                          :on-first on-first
-                          :test test)))
+                          (list range test
+                                :key key
+                                :on-first on-first))))
 
 
 (defmethod apply-layer ((range traversable)
                         (fn partition-if-function)
-                        &rest all &key test key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'forward-partition-if-proxy
-              :key key
-              :on-first on-first
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :test (second all)))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn partition-if-function)
-                        &rest all &key test key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'bidirectional-partition-if-proxy
-              :key key
-              :on-first on-first
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :test (second all)))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn partition-if-function)
-                        &rest all &key test key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'random-access-parition-if-proxy
-              :key key
-              :on-first on-first
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :test (second all)))
 
 
 (defmethod apply-layer ((range traversable)
                         (fn callback-partition-if-function)
-                        &rest all &key test callback key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'forward-callback-partition-if-proxy
-              :key key
-              :on-first on-first
-              :callback callback
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :callback (third all)
+              :test (second all)))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn callback-partition-if-function)
-                        &rest all &key test callback key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'bidirectional-callback-partition-if-proxy
-              :key key
-              :on-first on-first
-              :callback callback
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :callback (third all)
+              :test (second all)))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn callback-partition-if-function)
-                        &rest all &key test callback key on-first)
-  (declare (ignore all))
+                        all)
   (make-proxy range 'random-access-callback-parition-if-proxy
-              :key key
-              :on-first on-first
-              :callback callback
-              :test test))
+              :key (cl-ds.utils:at-list all :key)
+              :on-first (cl-ds.utils:at-list all :on-first)
+              :callback (third all)
+              :test (second all)))

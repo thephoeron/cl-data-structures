@@ -9,8 +9,7 @@
 
     (%data)
 
-    ((&key &allow-other-keys)
-     (setf %data (vect)))
+    ((setf %data (vect)))
 
     ((element)
      (vector-push-extend element %data))

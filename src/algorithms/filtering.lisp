@@ -90,34 +90,25 @@
   range)
 
 
-(defclass filtering-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
-  ((%range :initarg :range
-           :reader read-range)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator filtering-aggregator)
-                                               element)
-  (unless (~> aggregator read-range (should-skip element nil))
-    (~> aggregator cl-ds.alg.meta:read-inner-aggregator
-        (cl-ds.alg.meta:pass-to-aggregation element))))
-
-
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range filtering-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
-  (let ((outer-fn (call-next-method)))
-    (cl-ds.alg.meta:aggregator-constructor
-     (read-original-range range)
-     (lambda ()
-       (make 'filtering-aggregator
-             :key key
-             :inner-aggregator (funcall outer-fn)
-             :range range))
-     function
-     key
-     arguments)))
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((outer-fn (call-next-method))
+        (key (read-key range)))
+    (cl-ds.utils:cases ((:variant (eq key #'identity)
+                                  (eq key 'identity)))
+      (cl-ds.alg.meta:aggregator-constructor
+       (read-original-range range)
+       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn)))
+           ((element)
+             (unless (should-skip range range (funcall key element))
+               (cl-ds.alg.meta:pass-to-aggregation inner element)))
+
+           ((cl-ds.alg.meta:extract-result inner)))
+       function
+       arguments))))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range filtering-proxy) function)

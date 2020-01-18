@@ -310,8 +310,7 @@
 
     (%data %matched-fields %reference-field)
 
-    ((&key fields &allow-other-keys)
-     (setf %data (vect)
+    ((setf %data (vect)
            %matched-fields (rest fields)
            %reference-field (first fields))
      (cl-ds:validate-fields #'optimal-split-point %matched-fields)

@@ -42,24 +42,25 @@
 (defgeneric only (range predicate &key key)
   (:generic-function-class only-function)
   (:method (range predicate &key (key #'identity))
-    (apply-range-function range #'only :key key :predicate predicate)))
+    (apply-range-function range #'only
+                          (list range predicate
+                                :key key))))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (function only-function)
-                        &rest all &key predicate key)
-  (declare (ignore all))
+                        all)
   (make 'bidirectional-only-proxy
-        :predicate predicate
-        :key key
+        :predicate (second all)
+        :key (cl-ds.utils:at-list all :key)
         :original-range range))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (function only-function)
-                        &rest all &key predicate key)
-  (declare (ignore all))
+                        all)
   (make 'forward-only-proxy
-        :predicate predicate
-        :key key
-        :original-range range))
+        :predicate (second all)
+        :key (cl-ds.utils:at-list all :key)
+        :original-range range
+        ))

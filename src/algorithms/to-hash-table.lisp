@@ -14,8 +14,7 @@
 
   (%table %hash-table-key %hash-table-value)
 
-  ((&key size test hash-table-key hash-table-value &allow-other-keys)
-   (ensure-functionf hash-table-key hash-table-value)
+  ((ensure-functionf hash-table-key hash-table-value)
    (setf %table (make-hash-table :test test :size size)
          %hash-table-key hash-table-key
          %hash-table-value hash-table-value))

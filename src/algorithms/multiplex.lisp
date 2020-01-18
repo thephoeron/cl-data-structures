@@ -94,7 +94,8 @@
   (:generic-function-class multiplex-function)
   (:method (range &key (key #'identity) (function #'cl-ds:whole-range))
     (ensure-functionf key)
-    (apply-range-function range #'multiplex :key key :function function)))
+    (apply-range-function range #'multiplex
+                          (list range :key key :function function))))
 
 
 (defclass forward-multiplex-proxy (multiplex-proxy
@@ -104,49 +105,36 @@
 
 (defmethod apply-layer ((range traversable)
                         (fn multiplex-function)
-                        &rest all &key key function)
-  (declare (ignore all))
+                        all)
   (make 'forward-multiplex-proxy
         :original-range range
-        :key key
-        :function function))
-
-
-(defclass multiplex-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
-  ((%range :initarg :range
-           :reader read-range)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator multiplex-aggregator)
-                                               element)
-  (bind ((range (read-range aggregator))
-         (function (read-function range))
-         (inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator))
-         (key (read-key range)))
-    (~> element
-        (funcall key _)
-        (funcall function _)
-        (cl-ds:traverse (lambda (x)
-                          (cl-ds.alg.meta:pass-to-aggregation
-                           inner-aggregator
-                           x))))))
+        :key (cl-ds.utils:at-list all :key)
+        :function (cl-ds.utils:at-list all :function)))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range multiplex-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
-  (bind ((outer-fn (call-next-method)))
+  (declare (optimize (speed 3) (safety 0)))
+  (bind ((outer-fn (call-next-method))
+         (function (read-function range))
+         (key (read-key range)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'multiplex-aggregator
-             :key key
-             :range range
-             :inner-aggregator (funcall outer-fn)))
+     (cl-ds.utils:cases ((:variant (eq key #'identity)
+                                   (eq key 'identity)))
+       (cl-ds.alg.meta:let-aggregator
+           ((inner (funcall outer-fn)))
+
+           ((element)
+             (~>> element (funcall key) (funcall function)
+                  (cl-ds:traverse _
+                                  (lambda (x)
+                                    (cl-ds.alg.meta:pass-to-aggregation inner x)))))
+
+           ((cl-ds.alg.meta:extract-result inner))))
      function
-     key
      arguments)))
 
 

@@ -122,65 +122,64 @@
               (initial-value nil initial-value-bound))
     (ensure-functionf key result function)
     (cl-ds.alg.meta:apply-range-function
-     range
-     #'cumulative-accumulate
-     :function function
-     :result result
-     :initial-value initial-value
-     :initial-value-bound initial-value-bound
-     :key key)))
+     range #'cumulative-accumulate
+     (if initial-value-bound
+         (list range function
+               :result result
+               :key key)
+         (list range function
+               :result result
+               :initial-value initial-value
+               :key key)))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn cumulative-accumulate-function)
-                                       &rest all
-                                       &key
-                                         key function result
-                                         initial-value
-                                         initial-value-bound)
-  (declare (ignore all))
-  (apply #'cl-ds.alg:make-proxy
-         range 'cumulative-accumulate-range
-         :cumulative-key key
-         :function function
-         :result result
-         (if initial-value-bound
-             (list :state initial-value)
-             nil)))
-
-
-(defclass cumulative-accumulate-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator
-                                            cumulative-state)
-  ())
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator cumulative-accumulate-aggregator)
-                                               element)
-  (let ((inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator)))
-    (~>> element
-         (consume-impl aggregator)
-         (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
+                                       all)
+  (let* ((key (cl-ds.utils:at-list all :key))
+         (result (cl-ds.utils:at-list all :result))
+         (function (second all))
+         (initial-value-cell (member :initial-value all))
+         (initial-value (second initial-value-cell))
+         (initial-value-bound (not (endp initial-value-cell))))
+    (apply #'cl-ds.alg:make-proxy
+           range 'cumulative-accumulate-range
+           :cumulative-key key
+           :function function
+           :result result
+           (if initial-value-bound
+               (list :state initial-value)
+               nil))))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range cumulative-accumulate-range)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
-  (cl-ds.alg.meta:aggregator-constructor
-   (read-original-range range)
-   (lambda ()
-     (apply #'make 'cumulative-accumulate-aggregator
-            :result (read-result range)
-            :function (read-function range)
-            :cumulative-key (read-cumulative-key range)
-            :key key
-            (if (slot-boundp range '%state)
-                (list :state (access-state range))
-                nil)))
-   function
-   key
-   arguments))
+  (let ((function (read-function range))
+        (outer-fn (call-next-method))
+        (key (read-cumulative-key range)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (cl-ds.utils:cases ((:variant (eq 'identity key)
+                                   (eq #'identity key)))
+       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn))
+                                       (state (access-state range))
+                                       (initialized (slot-boundp range '%state)))
+           ((element)
+             (if initialized
+                 (let* ((next-state
+                          (~>> (funcall key element)
+                               (funcall function state))))
+                   (setf state next-state)
+                   (cl-ds.alg.meta:pass-to-aggregation inner next-state))
+                 (let ((r (funcall key element)))
+                   (setf state r initialized t)
+                   (cl-ds.alg.meta:pass-to-aggregation inner state))))
+
+           ((cl-ds.alg.meta:extract-result inner))))
+     function
+     arguments)))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range cumulative-accumulate-function) function)

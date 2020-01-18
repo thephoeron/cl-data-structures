@@ -1,4 +1,4 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage partition-if-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 

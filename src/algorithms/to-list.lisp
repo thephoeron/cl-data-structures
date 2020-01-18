@@ -9,8 +9,8 @@
 
   (%list)
 
-  ((&key &allow-other-keys)
-   (setf %list '()))
+  ((setf %list '()))
+
   ((element)
    (push element %list))
 

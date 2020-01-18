@@ -10,8 +10,9 @@
   (:generic-function-class translation-function)
   (:method (range dict &key (key #'identity))
     (apply-range-function range #'translation
-                          :key key
-                          :function (lambda (x)
-                                      (bind (((:values result found)
-                                              (cl-ds:at dict x)))
-                                        (if found result e))))))
+                          (list range
+                                :key key
+                                :function (lambda (x)
+                                            (bind (((:values result found)
+                                                    (cl-ds:at dict x)))
+                                              (if found result nil)))))))

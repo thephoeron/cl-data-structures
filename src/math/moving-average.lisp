@@ -89,12 +89,12 @@
   (:generic-function-class moving-average-function)
   (:method (range &key (key #'identity))
     (ensure-functionf key)
-    (cl-ds.alg.meta:apply-range-function range #'moving-average-range
-                                         :key key)))
+    (cl-ds.alg.meta:apply-range-function range #'moving-average
+                                         (list range :key key))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn moving-average-function)
-                                       &rest all &key key)
-  (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'moving-average-range :key key))
+                                       all)
+  (cl-ds.alg:make-proxy range 'moving-average-range
+                        :key (cl-ds.utils:at-list all :key)))

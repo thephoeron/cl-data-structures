@@ -10,9 +10,8 @@
 
     (%count %sum %biased %average)
 
-    ((&key biased average &allow-other-keys)
-     (setf %count 0
-           %average average
+    ((setf %count 0
+           %average around
            %sum 0
            %biased biased))
 

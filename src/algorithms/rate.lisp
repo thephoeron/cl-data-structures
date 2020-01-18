@@ -8,8 +8,7 @@
 
     (%positive %total %test)
 
-    ((&key test positive total &allow-other-keys)
-     (ensure-functionf test)
+    ((ensure-functionf test)
      (setf %positive positive
            %test test
            %total total))

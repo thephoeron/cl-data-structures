@@ -111,64 +111,60 @@
     (cl-ds:check-argument-bounds samples-count (< 8 samples-count))
     (cl-ds:check-argument-bounds samples-count (< 8 sample-size))
     (cl-ds.alg.meta:apply-range-function range #'bootstrap
-                                         :confidence confidence
-                                         :key key
-                                         :compare compare
-                                         :parallel parallel
-                                         :sample-size sample-size
-                                         :context-function context-function
-                                         :samples-count samples-count)))
+                                         (list range sample-size samples-count
+                                               :confidence confidence
+                                               :key key
+                                               :compare compare
+                                               :parallel parallel
+                                               :context-function context-function))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn bootstrap-function)
-                                       &rest all
-                                       &key
-                                         confidence sample-size samples-count
-                                         context-function key compare parallel)
-  (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'forward-bootstrap-proxy
-                        :sample-size sample-size
-                        :confidence confidence
-                        :key key
-                        :compare compare
-                        :parallel parallel
-                        :context-function context-function
-                        :samples-count samples-count))
+                                       all)
+  (flet ((destruct (range sample-size samples-count
+                    &key confidence key compare parallel context-function)
+           (cl-ds.alg:make-proxy range 'forward-bootstrap-proxy
+                                 :sample-size sample-size
+                                 :confidence confidence
+                                 :key key
+                                 :compare compare
+                                 :parallel parallel
+                                 :context-function context-function
+                                 :samples-count samples-count)))
+    (apply #'destruct all)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-bidirectional-range)
                                        (fn bootstrap-function)
-                                       &rest all
-                                       &key
-                                         confidence sample-size parallel
-                                         context-function samples-count key compare)
-  (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'bidirectional-bootstrap-proxy
-                        :sample-size sample-size
-                        :confidence confidence
-                        :key key
-                        :compare compare
-                        :parallel parallel
-                        :context-function context-function
-                        :samples-count samples-count))
+                                       all)
+  (flet ((destruct (range sample-size samples-count
+                    &key confidence key compare parallel context-function)
+           (cl-ds.alg:make-proxy range 'bidirectional-bootstrap-proxy
+                                 :sample-size sample-size
+                                 :confidence confidence
+                                 :key key
+                                 :compare compare
+                                 :parallel parallel
+                                 :context-function context-function
+                                 :samples-count samples-count)))
+    (apply #'destruct all)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
                                        (fn bootstrap-function)
-                                       &rest all
-                                       &key
-                                         confidence sample-size parallel
-                                         context-function samples-count key compare)
-  (declare (ignore all))
-  (cl-ds.alg:make-proxy range 'random-access-bootstrap-proxy
-                        :sample-size sample-size
-                        :confidence confidence
-                        :key key
-                        :compare compare
-                        :context-function context-function
-                        :parallel parallel
-                        :samples-count samples-count))
+                                       all)
+  (flet ((destruct (range sample-size samples-count
+                    &key confidence key compare parallel context-function)
+           (cl-ds.alg:make-proxy range 'random-access-bootstrap-proxy
+                                 :sample-size sample-size
+                                 :confidence confidence
+                                 :key key
+                                 :compare compare
+                                 :parallel parallel
+                                 :context-function context-function
+                                 :samples-count samples-count)))
+    (apply #'destruct all)))
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator bootstrap-aggregator) element)

@@ -9,8 +9,7 @@
 
   (%sum %count)
 
-  ((&key sum count &allow-other-keys)
-   (setf %sum sum
+  ((setf %sum sum
          %count count))
 
   ((element)
@@ -28,8 +27,7 @@
 
   (%sum %count %zero)
 
-  ((&key &allow-other-keys)
-   (setf %sum 0
+  ((setf %sum 0
          %count 0
          %zero nil))
 

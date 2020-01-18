@@ -9,7 +9,8 @@
 (defgeneric on-each (range function &key key)
   (:generic-function-class on-each-function)
   (:method (range function &key (key #'identity))
-    (apply-range-function range #'on-each :function function :key key)))
+    (apply-range-function range #'on-each
+                          (list range function :key key))))
 
 
 (defclass proxy-box-range (proxy-range)
@@ -87,10 +88,8 @@
 
 (defmethod apply-layer ((range cl-ds:traversable)
                         (fn on-each-function)
-                        &rest all &key function key)
-  (declare (ignore all))
-  (ensure-functionf function key)
-  (on-each-proxy-range-from-range range function key))
+                        all)
+  (on-each-proxy-range-from-range range (second all) (cl-ds.utils:at-list all :key)))
 
 
 (defmethod cl-ds:consume-front ((range forward-proxy-box-range))
@@ -154,42 +153,27 @@
   range)
 
 
-(defclass on-each-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
-  ((%on-each-key :initarg :on-each-key
-                 :reader read-on-each-key)
-   (%function :initarg :function
-              :reader read-function)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator on-each-aggregator)
-                                               element)
-  (bind (((:slots %on-each-key %function) aggregator)
-         (inner-aggregator (cl-ds.alg.meta:read-inner-aggregator aggregator)))
-    (~>> element
-         (funcall %on-each-key)
-         (funcall %function)
-         (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
-
-
-
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range proxy-box-range)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
+  (declare (optimize (speed 3)))
   (let ((on-each-key (read-key range))
         (outer-fn (call-next-method))
         (range-function (read-function range)))
+    (assert (functionp outer-fn))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'on-each-aggregator
-             :key key
-             :on-each-key on-each-key
-             :function range-function
-             :inner-aggregator (funcall outer-fn)))
+     (cl-ds.utils:cases ((:variant (eq on-each-key #'identity)
+                                   (eq on-each-key 'identity)))
+       (cl-ds.alg.meta:let-aggregator
+           ((inner (funcall outer-fn)))
+
+           ((element) (~>> element (funcall on-each-key) (funcall range-function)
+                           (cl-ds.alg.meta:pass-to-aggregation inner)))
+
+           ((cl-ds.alg.meta:extract-result inner))))
      function
-     key
      arguments)))
 
 

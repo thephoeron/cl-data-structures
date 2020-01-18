@@ -8,8 +8,7 @@
 
     (%total-count %sub-counts)
 
-    ((&key test &allow-other-keys)
-     (setf %total-count 0
+    ((setf %total-count 0
            %sub-counts (make-hash-table :test test)))
 
     ((element)

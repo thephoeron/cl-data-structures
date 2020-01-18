@@ -34,26 +34,26 @@
 (defgeneric without (range predicate &key key)
   (:generic-function-class without-function)
   (:method (range predicate &key (key #'identity))
-    (apply-range-function range #'without :key key :predicate predicate)))
+    (apply-range-function range #'without
+                          (list range predicate
+                                :key key))))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (function without-function)
-                        &rest all &key predicate key)
-  (declare (ignore all))
+                        all)
   (make 'bidirectional-without-proxy
-        :predicate predicate
-        :key key
+        :predicate (second all)
+        :key (cl-ds.utils:at-list all :key)
         :original-range range))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (function without-function)
-                        &rest all &key predicate key)
-  (declare (ignore all))
+                        all)
   (make 'forward-without-proxy
-        :predicate predicate
-        :key key
+        :predicate (second all)
+        :key (cl-ds.utils:at-list all :key)
         :original-range range))
 
 

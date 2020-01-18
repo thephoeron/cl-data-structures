@@ -25,8 +25,7 @@
 
     (%x-key %y-key %average-x %average-y %yy %xy %xx)
 
-    ((&key x-key average-x y-key average-y &allow-other-keys)
-     (setf %x-key x-key
+    ((setf %x-key x-key
            %y-key y-key
            %average-x average-x
            %average-y average-y

@@ -13,8 +13,7 @@
 
   (%table %total-count %count-fn)
 
-  ((&key count-fn test &allow-other-keys)
-   (ensure-functionf count-fn)
+  ((ensure-functionf count-fn)
    (setf %table (make-hash-table :test test)
          %count-fn count-fn
          %total-count 0))

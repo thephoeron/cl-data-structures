@@ -8,26 +8,22 @@
   (:nicknames #:cl-ds.alg.meta)
   (:export
    #:%key
-   #:abstract-proxy-aggregator
    #:across-aggregate
-   #:aggregate
+   #:aggregator
    #:aggregation-function
+   #:aggregator-constructor
    #:apply-aggregation-function
    #:apply-aggregation-function-with-aggregator
    #:apply-layer
    #:apply-range-function
-   #:aggregator-constructor
+   #:construct-aggregator
    #:define-aggregation-function
    #:extract-result
-   #:fundamental-aggregator
-   #:construct-aggregator
    #:layer-function
+   #:let-aggregator
    #:linear-aggregator
-   #:make-linear-aggregator
-   #:make-state
    #:pass-to-aggregation
    #:range-function
-   #:read-inner-aggregator
    #:read-key
    #:state-result
    #:transformation!-function))

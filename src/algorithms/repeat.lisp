@@ -9,9 +9,9 @@
 (defgeneric repeat (range &optional times)
   (:generic-function-class repeat-function)
   (:method (range &optional times)
-    (apply-range-function range
-                          #'repeat
-                          :times times)))
+    (apply-range-function range #'repeat
+                          (list range #'repeat
+                                :times times))))
 
 
 (defclass repeat-proxy (proxy-range)
@@ -67,11 +67,9 @@
 
 (defmethod cl-ds.alg.meta:apply-layer ((range fundamental-range)
                                        (fn repeat-function)
-                                       &rest all &key times)
-  (declare (ignore all))
-  (check-type times (or null positive-integer))
+                                       all)
   (make 'forward-repeat-proxy
-        :times times
+        :times (cl-ds.utils:at-list all :times)
         :original-range range))
 
 

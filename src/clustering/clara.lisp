@@ -17,11 +17,7 @@
     (%data %from %to %sample-size %sample-count %metric-fn
      %select-medoids-attempts-count %attempts %split %merge)
 
-    ((&key from to sample-size sample-count
-           metric-fn select-medoids-attempts-count
-           attempts split merge
-           &allow-other-keys)
-     (setf %data (vect)
+    ((setf %data (vect)
            %from from
            %to to
            %sample-size sample-size

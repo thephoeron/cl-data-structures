@@ -5,15 +5,14 @@
     accumulate accumulate-function
 
   (:range fn &key key initial-value)
-  (:range fn &key (key #'identity) (initial-value nil initial-value-bound))
+  (:range fn &key (key #'identity) (initial-value :unbound))
 
   (%value %fn %first-iteration %initial-value-present)
 
-  ((&key fn (initial-value nil initial-value-bound) &allow-other-keys)
-   (setf %value initial-value
+  ((setf %value initial-value
          %fn fn
          %first-iteration t
-         %initial-value-present initial-value-bound))
+         %initial-value-present (not (eq :unbound initial-value))))
 
   ((element)
    (if %first-iteration

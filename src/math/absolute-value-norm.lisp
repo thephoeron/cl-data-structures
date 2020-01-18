@@ -10,8 +10,7 @@
 
   (%sum)
 
-  ((&key &allow-other-keys)
-   (setf %sum 0))
+  ((setf %sum 0))
 
   ((element)
    (incf %sum (abs element)))

@@ -14,8 +14,7 @@
 
   (%table %hash-table-key %number)
 
-  ((&key size test hash-table-key table &allow-other-keys)
-   (ensure-functionf hash-table-key)
+  ((ensure-functionf hash-table-key)
    (check-type table hash-table)
    (setf %table table
          %hash-table-key hash-table-key))

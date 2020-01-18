@@ -62,7 +62,7 @@
                               :components ((:test-file "meta-tests")))
                              (:test-file "split-into-chunks-test")
                              (:test-file "partition-if-test")
-                             (:test-file "hash-join-test")
+                             ;; (:test-file "hash-join-test")
                              (:test-file "without-test")
                              (:test-file "distinct-test")
                              (:test-file "extrema-test")

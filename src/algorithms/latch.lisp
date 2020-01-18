@@ -95,13 +95,13 @@
 (defgeneric latch (range latch &rest more-latches)
   (:generic-function-class latch-function)
   (:method (range latch &rest more-latches)
-    (apply-range-function range #'latch :latches (cons latch more-latches))))
+    (apply-range-function range #'latch
+                          (list range latch more-latches))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (function latch-function)
-                        &rest all &key latches)
-  (declare (ignore all))
+                        all)
   (make 'forward-latch-proxy
         :original-range range
-        :latches (coerce latches 'vector)))
+        :latches (cons (second all) (third all))))

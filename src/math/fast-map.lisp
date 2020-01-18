@@ -89,8 +89,7 @@
 
     (%data %distance-function %dimensions %iterations %parallel)
 
-    ((&key metric-function dimensions iterations parallel &allow-other-keys)
-     (setf %data (vect)
+    ((setf %data (vect)
            %distance-function metric-function
            %parallel parallel
            %iterations iterations

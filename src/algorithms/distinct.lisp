@@ -118,59 +118,49 @@
   (:generic-function-class distinct-function)
   (:method (range &key (key #'identity) (test 'eql) (hash-function #'sxhash))
     (ensure-functionf key test hash-function)
-    (apply-range-function range #'distinct :key key :test test
-                                           :hash-function hash-function)))
+    (apply-range-function range #'distinct
+                          (list range
+                                :key key :test test
+                                :hash-function hash-function))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (function distinct-function)
-                        &rest all &key key test hash-function)
-  (declare (ignore all))
+                        all)
   (make 'forward-distinct-proxy
-        :key key
+        :key (cl-ds.utils:at-list all :key)
         :seen (cl-ds.dicts.hamt:make-transactional-hamt-dictionary
-               hash-function test)
+               (cl-ds.utils:at-list all :hash-function)
+               (cl-ds.utils:at-list all :test))
         :original-range range))
-
-
-(defclass distinct-aggregator (cl-ds.alg.meta:abstract-proxy-aggregator)
-  ((%distinct-key :initarg :distinct-key
-                  :reader read-distinct-key)
-   (%seen :initarg :seen
-          :reader read-seen)))
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator distinct-aggregator)
-                                               element)
-  (bind (((:slots %distinct-key %seen) aggregator)
-         (selected (~>> element (funcall %distinct-key))))
-    (cl-ds:mod-bind (dict found) (cl-ds:add! %seen
-                                             selected
-                                             t)
-      (unless found
-        (~> aggregator cl-ds.alg.meta:read-inner-aggregator
-            (cl-ds.alg.meta:pass-to-aggregation element))))))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range distinct-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
-                                                  key
                                                   (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
   (bind (((:slots %key %seen) range)
          (distinct-key %key)
          (outer-fn (call-next-method))
          (seen %seen))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (lambda ()
-       (make 'distinct-aggregator
-             :seen (cl-ds:replica seen nil)
-             :key key
-             :distinct-key distinct-key
-             :inner-aggregator (funcall outer-fn)))
+     (cl-ds.utils:cases ((:variant (eq distinct-key 'identity)
+                                   (eq distinct-key #'identity)))
+       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn))
+                                       (seen (cl-ds:replica seen nil)))
+
+           ((element)
+             (let ((selected (funcall distinct-key element)))
+               (cl-ds:mod-bind (dict found) (cl-ds:add! seen
+                                                        selected
+                                                        t)
+                 (unless found
+                   (cl-ds.alg.meta:pass-to-aggregation inner element)))))
+
+           ((cl-ds.alg.meta:extract-result inner))))
      function
-     key
      arguments)))
 
 
