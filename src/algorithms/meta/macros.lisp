@@ -51,11 +51,12 @@
                                    (make-aggregator :pass (lambda (,@aggregate-lambda-list)
                                                             ,@aggregate-body)
                                                     :extract #1=(lambda () ,@result-form))
-                                   (make-aggregator :pass
-                                                    (lambda (,!element)
-                                                      (let ((,@aggregate-lambda-list (funcall ,!key ,!element)))
-                                                        ,@aggregate-body))
-                                                    :extract #1#))))
+                                   (let ((,!key (ensure-function ,!key)))
+                                     (make-aggregator :pass
+                                                      (lambda (,!element)
+                                                        (let ((,@aggregate-lambda-list (funcall ,!key ,!element)))
+                                                          ,@aggregate-body))
+                                                      :extract #1#)))))
                         (apply #',!init ,!arguments)
                         (,!main ,@function-state))))))
            (defmethod aggregator-constructor ((,!range cl-ds:traversable)
