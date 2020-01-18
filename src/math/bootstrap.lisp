@@ -68,24 +68,28 @@
                    :reader read-samples-count)))
 
 
-(defmethod cl-ds.alg:proxy-range-aggregator-outer-fn
-    ((range bootstrap-proxy)
-     key
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range bootstrap-proxy)
+                                                  outer-constructor
+                                                  (function cl-ds.alg.meta:aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (let ((outer-fn (call-next-method)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (cl-ds.alg:read-original-range range)
+     (lambda ()
+       (make 'bootstrap-aggregator
+             :outer-fn outer-fn
+             :function function
+             :key (cl-ds.alg.meta:read-key range)
+             :compare (read-compare range)
+             :parallel (read-parallel range)
+             :context-function (read-context-function range)
+             :confidence (read-confidence range)
+             :sample-size (read-sample-size range)
+             :samples-count (read-samples-count range)))
      function
-     outer-fn
-     arguments)
-  (bind ((outer-fn (call-next-method)))
-    (lambda ()
-      (make 'bootstrap-aggregator
-            :outer-fn outer-fn
-            :function function
-            :key (cl-ds.alg.meta:read-key range)
-            :compare (read-compare range)
-            :parallel (read-parallel range)
-            :context-function (read-context-function range)
-            :confidence (read-confidence range)
-            :sample-size (read-sample-size range)
-            :samples-count (read-samples-count range)))))
+     key
+     arguments)))
 
 
 (defclass bootstrap-function (cl-ds.alg.meta:layer-function)

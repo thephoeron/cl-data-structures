@@ -80,17 +80,23 @@
         cl-ds:whole-range)))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range split-into-chunks-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
-  (bind ((outer-fn (call-next-method)))
-    (lambda ()
-      (make 'linear-split-into-chunks-aggregator
-            :outer-fn outer-fn
-            :key key
-            :maximal-count-in-chunk (access-count-in-chunk range)))))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range split-into-chunks-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (let ((outer-fn (call-next-method))
+        (maximal-count-in-chunk (access-count-in-chunk range)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'linear-split-into-chunks-aggregator
+             :outer-fn outer-fn
+             :key key
+             :maximal-count-in-chunk maximal-count-in-chunk))
+     function
+     key
+     arguments)))
 
 
 (defclass split-into-chunks-function (layer-function)

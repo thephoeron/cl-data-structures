@@ -48,17 +48,6 @@
   (cl-ds:across (read-original-range range) function))
 
 
-(defgeneric proxy-range-aggregator-outer-fn (range key function
-                                             outer-fn arguments)
-  (:method ((range proxy-range) key function outer-fn arguments)
-    (or outer-fn
-        (lambda ()
-          (cl-ds.alg.meta:make-linear-aggregator
-           function
-           arguments
-           key)))))
-
-
 (defgeneric wrap-chunk (range chunk))
 
 
@@ -83,19 +72,6 @@
 
 (defmethod cl-ds:chunked ((range transparent-to-chunking-mixin) &optional chunk-size-hint)
   (~> range read-original-range (cl-ds:chunked chunk-size-hint)))
-
-
-(defmethod cl-ds.alg.meta:construct-aggregator
-    ((range proxy-range)
-     key
-     function
-     outer-fn
-     (arguments list))
-  (cl-ds.alg.meta:construct-aggregator
-   (read-original-range range) key function
-   (proxy-range-aggregator-outer-fn range key function
-                                    outer-fn arguments)
-   arguments))
 
 
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)

@@ -9,7 +9,7 @@
 
   (%value %fn %first-iteration %initial-value-present)
 
-  ((&key fn (initial-value nil initial-value-bound))
+  ((&key fn (initial-value nil initial-value-bound) &allow-other-keys)
    (setf %value initial-value
          %fn fn
          %first-iteration t

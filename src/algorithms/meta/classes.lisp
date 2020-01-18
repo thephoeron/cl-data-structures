@@ -53,10 +53,6 @@
            :accessor access-ended)))
 
 
-(defclass multi-aggregator (fundamental-aggregator)
-  ())
-
-
 (defun make-linear-aggregator (function arguments key)
   (make 'linear-aggregator
         :key key

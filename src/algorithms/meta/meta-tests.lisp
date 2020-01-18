@@ -1,11 +1,11 @@
 (in-package #:cl-user)
 (defpackage alg-meta-tests
-  (:use #:common-lisp #:prove #:serapeum #:iterate #:alexandria)
+  (:use #:common-lisp #:prove #:cl-data-structures.aux-package)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in))
 
 (in-package #:alg-meta-tests)
 
-(plan 10)
+(plan 6)
 
 (let* ((vector1 #((1) (2) (1) (2) (1) (2) (1)))
        (proxy (~> vector1
@@ -16,15 +16,6 @@
   (is (cl-ds:at proxy t) 2)
   (is (cl-ds:at proxy nil) 1))
 
-
-(let* ((vector1 #((1) (2) (1) (2) (1) (2) (1)))
-       (proxy (~> vector1
-                  cl-ds:whole-range
-                  (cl-ds.alg:group-by :key (alexandria:compose #'evenp #'car)
-                                      :test #'eq)
-                  (cl-ds.math:standard-deviation :key #'car))))
-  (is (cl-ds:at proxy t) 0 :test #'=)
-  (is (cl-ds:at proxy nil) 0 :test #'=))
 
 (let* ((vector1 #((6 . 1) (6 . 1) (6 . 1)
                   (5 . 2) (5 . 2) (5 . 2)

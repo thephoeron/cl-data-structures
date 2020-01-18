@@ -48,7 +48,7 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defclass group-by-aggregator (cl-ds.alg.meta:fundamental-aggregator)
+(defclass linear-group-by-aggregator (cl-ds.alg.meta:fundamental-aggregator)
   ((%groups :initarg :groups
             :type hash-table
             :reader read-groups)
@@ -58,11 +58,7 @@
                   :reader read-key)))
 
 
-(defclass linear-group-by-aggregator (group-by-aggregator)
-  ())
-
-
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)
+(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator linear-group-by-aggregator)
                                                element)
   (bind (((:slots %group-by-key %groups %outer-fn) aggregator)
          (selected (~>> element (funcall %group-by-key)))
@@ -73,13 +69,13 @@
     (cl-ds.alg.meta:pass-to-aggregation group element)))
 
 
-(defmethod cl-ds.alg.meta:extract-result ((aggregator group-by-aggregator))
+(defmethod cl-ds.alg.meta:extract-result ((aggregator linear-group-by-aggregator))
   (bind (((:slots %key %groups %outer-fn) aggregator)
          (groups (copy-hash-table %groups)))
     (maphash (lambda (key aggregator)
                (setf (gethash key groups)
                      (cl-ds.alg.meta:extract-result aggregator)))
-             %groups)
+             groups)
     (make-instance 'group-by-result-range
                    :hash-table groups
                    :keys (~> groups hash-table-keys (coerce 'vector))
@@ -95,53 +91,50 @@
                           :key key)))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range group-by-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range group-by-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
   (bind (((:slots %groups) range)
-         (groups (copy-hash-table %groups))
+         (key (read-key range))
          (outer-fn (call-next-method)))
-    (lambda ()
-      (make 'linear-group-by-aggregator
-            :groups (copy-hash-table groups)
-            :outer-fn outer-fn
-            :key key
-            :group-by-key (read-key range)))))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'linear-group-by-aggregator
+             :groups (copy-hash-table %groups)
+             :outer-fn outer-fn
+             :key key
+             :group-by-key (read-key range)))
+     function
+     key
+     arguments)))
 
 
 (defmethod apply-layer ((range cl-ds:traversable)
                         (fn group-by-function)
                         &rest all &key test key)
   (declare (ignore all))
-  (make-proxy range 'forward-group-by-proxy
-              :test test
-              :key key))
+  (make-proxy range 'forward-group-by-proxy :test test :key key))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn group-by-function)
                         &rest all &key test key)
   (declare (ignore all))
-  (make-proxy range 'forward-group-by-proxy
-              :test test
-              :key key))
+  (make-proxy range 'forward-group-by-proxy :test test :key key))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn group-by-function)
                         &rest all &key test key)
   (declare (ignore all))
-  (make-proxy range 'bidirectional-group-by-proxy
-              :test test
-              :key key))
+  (make-proxy range 'bidirectional-group-by-proxy :test test :key key))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn group-by-function)
                         &rest all &key test key)
   (declare (ignore all))
-  (make-proxy range 'random-access-group-by-proxy
-              :test test
-              :key key))
+  (make-proxy range 'random-access-group-by-proxy :test test :key key))

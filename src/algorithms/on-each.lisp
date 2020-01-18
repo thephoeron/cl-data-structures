@@ -171,19 +171,26 @@
          (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range proxy-box-range)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
+
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range proxy-box-range)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
   (let ((on-each-key (read-key range))
+        (outer-fn (call-next-method))
         (range-function (read-function range)))
-    (lambda ()
-      (make 'on-each-aggregator
-            :key key
-            :on-each-key on-each-key
-            :function range-function
-            :inner-aggregator (funcall (call-next-method))))))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'on-each-aggregator
+             :key key
+             :on-each-key on-each-key
+             :function range-function
+             :inner-aggregator (funcall outer-fn)))
+     function
+     key
+     arguments)))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range proxy-box-range) function)

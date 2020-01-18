@@ -162,20 +162,25 @@
          (cl-ds.alg.meta:pass-to-aggregation inner-aggregator))))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range cumulative-accumulate-function)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
-  (lambda ()
-    (apply #'make 'cumulative-accumulate-aggregator
-           :result (read-result range)
-           :function (read-function range)
-           :cumulative-key (read-cumulative-key range)
-           :key key
-           (if (slot-boundp range '%state)
-               (list :state (access-state range))
-               nil))))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range cumulative-accumulate-range)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (cl-ds.alg.meta:aggregator-constructor
+   (read-original-range range)
+   (lambda ()
+     (apply #'make 'cumulative-accumulate-aggregator
+            :result (read-result range)
+            :function (read-function range)
+            :cumulative-key (read-cumulative-key range)
+            :key key
+            (if (slot-boundp range '%state)
+                (list :state (access-state range))
+                nil)))
+   function
+   key
+   arguments))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range cumulative-accumulate-function) function)

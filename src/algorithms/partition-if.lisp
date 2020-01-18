@@ -192,35 +192,52 @@
         cl-ds:whole-range)))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range callback-partition-if-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
-  (let ((outer-fn (call-next-method)))
-    (lambda ()
-      (make 'linear-callback-partition-if-aggregator
-            :outer-fn outer-fn
-            :key key
-            :on-first (read-on-first range)
-            :callback (read-callback range)
-            :test (read-test range)
-            :partition-key (read-key range)))))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range callback-partition-if-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (bind ((on-first (read-on-first range))
+         (test (read-test range))
+         (partition-key (read-key range))
+         (callback (read-callback range))
+         (outer-fn (call-next-method)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'linear-callback-partition-if-aggregator
+             :outer-fn outer-fn
+             :key key
+             :on-first on-first
+             :callback callback
+             :test test
+             :partition-key partition-key))
+     function
+     key
+     arguments)))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range partition-if-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
-  (let ((outer-fn (call-next-method)))
-    (lambda ()
-      (make 'linear-partition-if-aggregator
-            :outer-fn outer-fn
-            :key key
-            :on-first (read-on-first range)
-            :test (read-test range)
-            :partition-key (read-key range)))))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range partition-if-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (bind ((on-first (read-on-first range))
+         (test (read-test range))
+         (partition-key (read-key range))
+         (outer-fn (call-next-method)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'linear-partition-if-aggregator
+             :outer-fn outer-fn
+             :key key
+             :on-first on-first
+             :test test
+             :partition-key partition-key))
+     function
+     key
+     arguments)))
 
 
 (defclass partition-if-function (layer-function)

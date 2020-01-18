@@ -16,10 +16,11 @@
    #:apply-aggregation-function-with-aggregator
    #:apply-layer
    #:apply-range-function
-   #:construct-aggregator
+   #:aggregator-constructor
    #:define-aggregation-function
    #:extract-result
    #:fundamental-aggregator
+   #:construct-aggregator
    #:layer-function
    #:linear-aggregator
    #:make-linear-aggregator
@@ -82,7 +83,6 @@
    #:partition-if-with-callback
    #:proxy-box-range
    #:proxy-range
-   #:proxy-range-aggregator-outer-fn
    #:random-access-chain-of-ranges
    #:random-access-proxy-range
    #:read-original-range

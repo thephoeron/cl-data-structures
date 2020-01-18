@@ -152,20 +152,26 @@
             (cl-ds.alg.meta:pass-to-aggregation element))))))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range distinct-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range filtering-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
   (bind (((:slots %key %seen) range)
          (distinct-key %key)
+         (outer-fn (call-next-method))
          (seen %seen))
-    (lambda ()
-      (make 'distinct-aggregator
-            :seen (cl-ds:replica seen nil)
-            :key key
-            :distinct-key distinct-key
-            :inner-aggregator (funcall (call-next-method))))))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'distinct-aggregator
+             :seen (cl-ds:replica seen nil)
+             :key key
+             :distinct-key distinct-key
+             :inner-aggregator (funcall outer-fn)))
+     function
+     key
+     arguments)))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range distinct-proxy) function)

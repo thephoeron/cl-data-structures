@@ -15,50 +15,6 @@ Top level aggregator protocol.
     (aggregate %function %state (funcall %key element))))
 
 
-(defmethod construct-aggregator ((range cl-ds:fundamental-container)
-                                 key function outer-fn arguments)
-  (construct-aggregator (cl-ds:whole-range range)
-                        key function
-                        outer-fn arguments))
-
-
-(defmethod construct-aggregator ((range fundamental-forward-range)
-                                 key
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments key))
-
-
-(defmethod construct-aggregator ((range cl:sequence)
-                                 key
-                                 (function aggregation-function)
-                                 (outer-fn (eql nil))
-                                 (arguments list))
-  (make-linear-aggregator function arguments key))
-
-
-(defmethod construct-aggregator ((range cl-ds:traversable)
-                                 key
-                                 (function aggregation-function)
-                                 outer-fn
-                                 (arguments list))
-  (make-linear-aggregator function arguments key))
-
-
-(defmethod construct-aggregator ((range cl:sequence)
-                                 key
-                                 (function aggregation-function)
-                                 outer-fn
-                                 (arguments list))
-  (lret ((result (funcall outer-fn)))
-    (setf (slot-value result '%key) key)))
-
-
-(defmethod expects-content-p ((aggregator linear-aggregator))
-  t)
-
-
 #|
 Range function invokaction protocol.
 |#
@@ -114,7 +70,7 @@ Range function invokaction protocol.
                                        (function aggregation-function)
                                        &rest all &key (key #'identity)
                                        &allow-other-keys)
-  (let ((aggregator (construct-aggregator range key function nil all)))
+  (let ((aggregator (construct-aggregator range key function all)))
     (apply #'apply-aggregation-function-with-aggregator
            aggregator range function all)))
 

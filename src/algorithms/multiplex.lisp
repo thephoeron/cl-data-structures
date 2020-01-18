@@ -132,16 +132,22 @@
                            x))))))
 
 
-(defmethod proxy-range-aggregator-outer-fn ((range multiplex-proxy)
-                                            key
-                                            function
-                                            outer-fn
-                                            arguments)
-  (lambda ()
-    (make 'multiplex-aggregator
-          :key key
-          :range range
-          :inner-aggregator (funcall (call-next-method)))))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range multiplex-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  key
+                                                  (arguments list))
+  (bind ((outer-fn (call-next-method)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'multiplex-aggregator
+             :key key
+             :range range
+             :inner-aggregator (funcall outer-fn)))
+     function
+     key
+     arguments)))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range multiplex-proxy) function)
