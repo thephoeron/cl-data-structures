@@ -116,16 +116,15 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0) (compilation-speed 0) (space 0)))
   (bind ((outer-fn (call-next-method))
-         (function (read-function range))
-         (key (read-key range)))
+         (function (ensure-function (read-function range)))
+         (key (ensure-function (read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.utils:cases ((:variant (eq key #'identity)
-                                   (eq key 'identity)))
+     (cl-ds.utils:cases ((:variant (eq key #'identity)))
        (cl-ds.alg.meta:let-aggregator
-           ((inner (funcall outer-fn)))
+           ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element)
              (~>> element (funcall key) (funcall function)

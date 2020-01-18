@@ -93,8 +93,7 @@
 
     (%data %fields)
 
-    ((&key fields &allow-other-keys)
-     (cl-ds:validate-fields #'mutual-information fields)
+    ((cl-ds:validate-fields #'mutual-information fields)
      (setf %data (vect)
            %fields fields))
 
@@ -305,7 +304,7 @@
 (cl-ds.alg.meta:define-aggregation-function
     optimal-split-point optimal-split-point-function
 
-    (:range  fields &key key)
+    (:range fields &key key)
     (:range fields &key (key #'identity))
 
     (%data %matched-fields %reference-field)

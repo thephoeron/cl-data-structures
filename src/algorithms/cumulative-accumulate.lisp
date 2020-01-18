@@ -156,14 +156,13 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (let ((function (read-function range))
+  (let ((function (ensure-function (read-function range)))
         (outer-fn (call-next-method))
         (key (read-cumulative-key range)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.utils:cases ((:variant (eq 'identity key)
-                                   (eq #'identity key)))
-       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn))
+     (cl-ds.utils:cases ((:variant (eq #'identity key)))
+       (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn))
                                        (state (access-state range))
                                        (initialized (slot-boundp range '%state)))
            ((element)

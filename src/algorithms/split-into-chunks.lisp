@@ -49,11 +49,13 @@
                                      (count-in-chunk 0))
 
          ((element)
-           (when (>= (the fixnum count-in-chunk) maximal-count-in-chunk)
-             (vector-push-extend (funcall outer-fn) chunks)
+           (when (or (>= (the fixnum count-in-chunk) maximal-count-in-chunk)
+                     (emptyp chunks))
+             (vector-push-extend (cl-ds.alg.meta:call-constructor outer-fn) chunks)
              (setf count-in-chunk 0))
            (cl-ds.alg.meta:pass-to-aggregation (aref chunks (1- (fill-pointer chunks)))
-                                               element))
+                                               element)
+           (incf count-in-chunk))
 
          ((~> #'cl-ds.alg.meta:extract-result
               (cl-ds.utils:transform chunks)
@@ -71,7 +73,7 @@
   (:generic-function-class split-into-chunks-function)
   (:method (range chunk-size)
     (apply-range-function range #'split-into-chunks
-                          (range chunk-size))))
+                          (list range chunk-size))))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)

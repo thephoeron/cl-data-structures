@@ -5,7 +5,7 @@
   (defun extract-parameters (lambda-list)
     (~>> lambda-list
          (mapcar (lambda (x) (if (listp x) (first x) x)))
-         (remove-if (lambda (x) (member x '(&key &optional &rest))))))
+         (remove-if (lambda (x) (member x '(&key &optional &rest &allow-other-keys))))))
 
   (defun extract-values (lambda-list)
     (bind (((:values required optional rest keys) (parse-ordinary-lambda-list lambda-list)))
@@ -103,5 +103,5 @@
   `(lambda ()
      (bind ,bindings
        (make-aggregator
-        :pass (lambda (,element) ,@pass)
+        :pass (lambda (,element) ,@pass nil)
         :extract (lambda () ,@extract)))))

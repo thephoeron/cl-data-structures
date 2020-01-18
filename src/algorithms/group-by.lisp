@@ -59,30 +59,32 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (bind (((:slots %groups) range)
-         (group-by-key (read-key range))
+         (group-by-key (ensure-function (read-key range)))
          (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.alg.meta:let-aggregator ((groups (copy-hash-table %groups)))
+     (cl-ds.utils:cases ((:variant (eq group-by-key #'identity)))
+       (cl-ds.alg.meta:let-aggregator ((groups (copy-hash-table %groups)))
 
-         ((element)
-          (bind ((selected (~>> element (funcall group-by-key)))
-                 (group (gethash selected groups)))
-            (when (null group)
-              (setf group (funcall outer-fn)
-                    (gethash selected groups) group))
-            (cl-ds.alg.meta:pass-to-aggregation group element)))
+           ((element)
+             (bind ((selected (~>> element (funcall group-by-key)))
+                    (group (gethash selected groups)))
+               (when (null group)
+                 (setf group (cl-ds.alg.meta:call-constructor outer-fn)
+                       (gethash selected groups) group))
+               (cl-ds.alg.meta:pass-to-aggregation group element)))
 
-         ((maphash (lambda (key aggregator)
-                     (setf (gethash key groups)
-                           (cl-ds.alg.meta:extract-result aggregator)))
-                   groups)
-           (make-instance 'group-by-result-range
-                          :hash-table groups
-                          :keys (~> groups hash-table-keys (coerce 'vector))
-                          :begin 0
-                          :end (hash-table-count groups))))
+           ((maphash (lambda (key aggregator)
+                       (setf (gethash key groups)
+                             (cl-ds.alg.meta:extract-result aggregator)))
+                     groups)
+             (make-instance 'group-by-result-range
+                            :hash-table groups
+                            :keys (~> groups hash-table-keys (coerce 'vector))
+                            :begin 0
+                            :end (hash-table-count groups)))))
      function
      arguments)))
 

@@ -22,6 +22,7 @@
    #:layer-function
    #:let-aggregator
    #:linear-aggregator
+   #:call-constructor
    #:pass-to-aggregation
    #:range-function
    #:read-key

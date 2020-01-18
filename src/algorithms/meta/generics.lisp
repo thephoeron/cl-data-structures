@@ -58,5 +58,8 @@ Range function invokaction protocol.
             (function aggregation-function) (arguments list))
     outer-constructor))
 
+(defmacro call-constructor (constructor)
+  `(the aggregator (funcall (the function ,constructor))))
+
 (defun construct-aggregator (range function arguments)
-  (funcall (aggregator-constructor range nil function arguments)))
+  (call-constructor (aggregator-constructor range nil function arguments)))

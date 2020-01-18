@@ -157,7 +157,7 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (let ((on-each-key (read-key range))
         (outer-fn (call-next-method))
         (range-function (read-function range)))
@@ -167,7 +167,7 @@
      (cl-ds.utils:cases ((:variant (eq on-each-key #'identity)
                                    (eq on-each-key 'identity)))
        (cl-ds.alg.meta:let-aggregator
-           ((inner (funcall outer-fn)))
+           ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element) (~>> element (funcall on-each-key) (funcall range-function)
                            (cl-ds.alg.meta:pass-to-aggregation inner)))

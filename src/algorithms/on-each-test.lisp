@@ -1,4 +1,4 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage on-each-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 

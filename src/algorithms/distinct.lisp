@@ -139,23 +139,20 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (bind (((:slots %key %seen) range)
-         (distinct-key %key)
+         (distinct-key (ensure-function %key))
          (outer-fn (call-next-method))
          (seen %seen))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.utils:cases ((:variant (eq distinct-key 'identity)
-                                   (eq distinct-key #'identity)))
-       (cl-ds.alg.meta:let-aggregator ((inner (funcall outer-fn))
+     (cl-ds.utils:cases ((:variant (eq distinct-key #'identity)))
+       (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn))
                                        (seen (cl-ds:replica seen nil)))
 
            ((element)
              (let ((selected (funcall distinct-key element)))
-               (cl-ds:mod-bind (dict found) (cl-ds:add! seen
-                                                        selected
-                                                        t)
+               (cl-ds:mod-bind (dict found) (cl-ds:add! seen selected t)
                  (unless found
                    (cl-ds.alg.meta:pass-to-aggregation inner element)))))
 

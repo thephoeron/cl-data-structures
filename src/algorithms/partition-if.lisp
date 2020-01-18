@@ -89,36 +89,44 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
   (bind ((on-first (read-on-first range))
-         (test (read-test range))
-         (partition-key (read-key range))
-         (callback (read-callback range))
+         (test (ensure-function (read-test range)))
+         (partition-key (ensure-function (read-key range)))
+         (callback (ensure-function (read-callback range)))
          (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.alg.meta:let-aggregator ((initialized nil)
-                                     (current-key nil)
-                                     (current-state nil))
-         ((element)
-           (bind ((key (~>> element (funcall partition-key))))
-             (cond ((not initialized)
-                    (setf current-key key
-                          initialized t
-                          current-state (funcall outer-fn))
-                    (pass-to-aggregation current-state element))
-                   ((funcall test current-key key)
-                    (unless on-first
-                      (setf current-key key))
-                    (pass-to-aggregation current-state element))
-                   (t
-                    (~>> current-state
-                         cl-ds.alg.meta:extract-result
-                         (funcall callback))
-                    (setf current-key key
-                          current-state (funcall outer-fn))
-                    (pass-to-aggregation current-state element)))))
+     (cl-ds.utils:cases ((:variant (eq partition-key #'identity))
+                         (:variant (eq test #'eq)
+                                   (eq test #'eql)
+                                   (eq test #'equal)
+                                   (eq test #'string=)
+                                   (eq test #'=)
+                                   (eq test #'equalp)))
+       (cl-ds.alg.meta:let-aggregator ((initialized nil)
+                                       (current-key nil)
+                                       (current-state nil))
+           ((element)
+             (bind ((key (~>> element (funcall partition-key))))
+               (cond ((not initialized)
+                      (setf current-key key
+                            initialized t
+                            current-state (cl-ds.alg.meta:call-constructor outer-fn))
+                      (pass-to-aggregation current-state element))
+                     ((funcall test current-key key)
+                      (unless on-first
+                        (setf current-key key))
+                      (pass-to-aggregation current-state element))
+                     (t
+                      (~>> current-state
+                           cl-ds.alg.meta:extract-result
+                           (funcall callback))
+                      (setf current-key key
+                            current-state (cl-ds.alg.meta:call-constructor outer-fn))
+                      (pass-to-aggregation current-state element)))))
 
-         (nil))
+           (nil)))
      function
      arguments)))
 
@@ -127,28 +135,21 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (bind ((on-first (read-on-first range))
-         (test (read-test range))
-         (partition-key (read-key range))
+         (test (ensure-function (read-test range)))
+         (partition-key (ensure-function (read-key range)))
          (outer-fn (call-next-method)))
     (assert (functionp outer-fn))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
-     (cl-ds.utils:cases ((:variant (eq partition-key #'identity)
-                                   (eq partition-key 'identity))
+     (cl-ds.utils:cases ((:variant (eq partition-key #'identity))
                          (:variant (eq test #'eq)
                                    (eq test #'eql)
                                    (eq test #'equal)
                                    (eq test #'string=)
                                    (eq test #'=)
-                                   (eq test #'equalp)
-                                   (eq test 'eq)
-                                   (eq test 'eql)
-                                   (eq test 'equal)
-                                   (eq test 'string=)
-                                   (eq test '=)
-                                   (eq test 'equalp)))
+                                   (eq test #'equalp)))
        (cl-ds.alg.meta:let-aggregator
            ((chunks (the (cl-ds.utils:extendable-vector t) (vect))))
 
@@ -158,14 +159,14 @@
                     (key (funcall partition-key element))
                     (empty (zerop chunks-length)))
                (if empty
-                   (let ((new (funcall outer-fn)))
+                   (let ((new (cl-ds.alg.meta:call-constructor outer-fn)))
                      (vector-push-extend (list* key new)
                                          chunks)
                      (cl-ds.alg.meta:pass-to-aggregation new element))
                    (bind (((prev . chunk) (aref chunks last-chunk)))
                      (if (funcall test prev key)
                          (pass-to-aggregation chunk element)
-                         (let ((new (funcall outer-fn)))
+                         (let ((new (cl-ds.alg.meta:call-constructor outer-fn)))
                            (vector-push-extend (list* key new)
                                                chunks)
                            (cl-ds.alg.meta:pass-to-aggregation new element)))
