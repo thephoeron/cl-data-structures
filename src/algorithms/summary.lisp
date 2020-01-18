@@ -45,7 +45,7 @@
       (check-type id symbol)
       (check-type function symbol)
       (for aggregator = `(cl-ds.alg.meta:aggregator-constructor
-                          nil
+                          '()
                           nil
                           (function ,function)
                           (list ,range ,@body)))
