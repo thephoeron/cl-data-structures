@@ -1,7 +1,6 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage summary-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use #:cl #:prove #:cl-ds #:cl-data-frames.aux-package))
 
 (in-package #:summary-tests)
 
