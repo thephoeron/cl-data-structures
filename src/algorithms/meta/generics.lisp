@@ -49,16 +49,17 @@ Range function invokaction protocol.
     range))
 
 
-(defgeneric aggregator-constructor (range outer-constructor function key arguments)
+(defgeneric aggregator-constructor (range outer-constructor
+                                    function key arguments)
   (:method ((range cl-ds:traversable) (outer-constructor (eql nil))
+            (function aggregation-function) key (arguments list))
+    (lambda () (make-linear-aggregator function arguments key)))
+  (:method ((range sequence) (outer-constructor (eql nil))
             (function aggregation-function) key (arguments list))
     (lambda () (make-linear-aggregator function arguments key)))
   (:method ((range cl-ds:traversable) (outer-constructor function)
             (function aggregation-function) key (arguments list))
     outer-constructor)
-  (:method ((range sequence) (outer-constructor (eql nil))
-            (function aggregation-function) key (arguments list))
-    (lambda () (make-linear-aggregator function arguments key)))
   (:method ((range sequence) (outer-constructor function)
             (function aggregation-function) key (arguments list))
     outer-constructor))
