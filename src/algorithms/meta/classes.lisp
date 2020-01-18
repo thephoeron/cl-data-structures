@@ -60,5 +60,6 @@
 (defun make-linear-aggregator (function arguments key)
   (make 'linear-aggregator
         :key key
+        :state (apply #'make-state function arguments)
         :function function
         :arguments arguments))

@@ -65,10 +65,7 @@
                   :accessor access-final-result
                   :reader cl-ds.alg.meta:extract-result)
    (%samples-count :initarg :samples-count
-                   :reader read-samples-count)
-   (%finished :initform nil
-              :reader cl-ds.alg.meta:aggregator-finished-p
-              :accessor access-finished)))
+                   :reader read-samples-count)))
 
 
 (defmethod cl-ds.alg:proxy-range-aggregator-outer-fn
@@ -170,20 +167,8 @@
                         :samples-count samples-count))
 
 
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator bootstrap-aggregator))
-  (not (access-finished aggregator)))
-
-
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator bootstrap-aggregator) element)
   (vector-push-extend element (read-whole-content aggregator)))
-
-
-(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator bootstrap-aggregator))
-  (access-finished aggregator))
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator bootstrap-aggregator))
-  nil)
 
 
 (defun aggregate-sample (aggregator sample function)
@@ -200,8 +185,7 @@
       (setf (aref result i) (aref vector (random (length vector)))))))
 
 
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator bootstrap-aggregator))
-  (setf (access-finished aggregator) t)
+(defmethod cl-ds.alg.meta:extract-result ((aggregrator bootstrap-aggregator))
   (let* ((samples-vector (make-array (read-samples-count aggregator)))
          (sample-size (read-sample-size aggregator))
          (whole-content (read-whole-content aggregator))

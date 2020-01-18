@@ -75,5 +75,6 @@
                              ;; (:test-file "chi-squared-tests")
                              (:test-file "mutual-information-tests")
                              (:test-file "simple-linear-regression-tests")))
-               (:module "counting"
-                :components ((:test-file "tests")))))
+               ;; (:module "counting"
+               ;;  :components ((:test-file "tests"))
+                )))

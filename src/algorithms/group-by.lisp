@@ -59,51 +59,7 @@
 
 
 (defclass linear-group-by-aggregator (group-by-aggregator)
-  ((%finished :initform nil
-              :reader cl-ds.alg.meta:aggregator-finished-p
-              :accessor access-finished)))
-
-
-(defclass multi-group-by-aggregator (group-by-aggregator
-                                     multi-aggregator)
-  ((%stages :initarg :stages
-            :accessor access-stages)))
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator group-by-aggregator))
-  (iterate
-    (for (key value) in-hashtable (read-groups aggregator))
-    (begin-aggregation value)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator group-by-aggregator))
-  (iterate
-    (for (key value) in-hashtable (read-groups aggregator))
-    (end-aggregation value)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator multi-group-by-aggregator))
-  (assert (access-stages aggregator))
-  (call-next-method)
-  (setf (access-stages aggregator) (rest (access-stages aggregator))))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-group-by-aggregator))
-  (setf (access-finished aggregator) t)
-  (call-next-method))
-
-
-(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator multi-group-by-aggregator))
-  (~> aggregator access-stages endp))
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-group-by-aggregator))
-  t)
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-group-by-aggregator))
-  (~> aggregator access-stages first
-      (cl-ds.alg.meta:expects-content-with-stage-p aggregator)))
+  ())
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator group-by-aggregator)
@@ -113,8 +69,7 @@
          (group (gethash selected %groups)))
     (when (null group)
       (setf group (funcall %outer-fn)
-            (gethash selected %groups) group)
-      (cl-ds.alg.meta:begin-aggregation group))
+            (gethash selected %groups) group))
     (cl-ds.alg.meta:pass-to-aggregation group element)))
 
 
@@ -148,22 +103,12 @@
   (bind (((:slots %groups) range)
          (groups (copy-hash-table %groups))
          (outer-fn (call-next-method)))
-    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-        (lambda ()
-          (make 'multi-group-by-aggregator
-                :groups (copy-hash-table groups)
-                :outer-fn outer-fn
-                :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                               function
-                               arguments)
-                :group-by-key (read-key range)
-                :key key))
-        (lambda ()
-          (make 'linear-group-by-aggregator
-                :groups (copy-hash-table groups)
-                :outer-fn outer-fn
-                :key key
-                :group-by-key (read-key range))))))
+    (lambda ()
+      (make 'linear-group-by-aggregator
+            :groups (copy-hash-table groups)
+            :outer-fn outer-fn
+            :key key
+            :group-by-key (read-key range)))))
 
 
 (defmethod apply-layer ((range cl-ds:traversable)

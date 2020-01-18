@@ -53,53 +53,7 @@
 
 
 (defclass linear-split-into-chunks-aggregator (split-into-chunks-aggregator)
-  ((%finished :initform nil
-              :reader cl-ds.alg.meta:aggregator-finished-p
-              :accessor access-finished)))
-
-
-(defclass multi-split-into-chunks-aggregator (split-into-chunks-aggregator
-                                              multi-aggregator)
-  ((%stages :initarg :stages
-            :accessor acess-stages)))
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator split-into-chunks-aggregator))
-  (setf (access-current-index aggregator) 0
-        (access-count-in-chunk aggregator) 0)
-  (iterate
-    (for chunk in-vector (read-chunks aggregator))
-    (begin-aggregation chunk)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator split-into-chunks-aggregator))
-  (iterate
-    (for chunk in-vector (read-chunks aggregator))
-    (end-aggregation chunk)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator multi-split-into-chunks-aggregator))
-  (assert (access-stages aggregator))
-  (call-next-method)
-  (setf (access-stages aggregator) (rest (access-stages aggregator))))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-split-into-chunks-aggregator))
-  (setf (access-finished aggregator) t)
-  (call-next-method))
-
-
-(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator multi-split-into-chunks-aggregator))
-  (~> aggregator access-stages endp))
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-split-into-chunks-aggregator))
-  t)
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-split-into-chunks-aggregator))
-  (cl-ds.alg.meta:expects-content-with-stage-p (~> aggregator access-stages first)
-                                               aggregator))
+  ())
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator split-into-chunks-aggregator)
@@ -132,20 +86,11 @@
                                             outer-fn
                                             arguments)
   (bind ((outer-fn (call-next-method)))
-    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-        (lambda ()
-          (make 'multi-split-into-chunks-aggregator
-                :outer-fn outer-fn
-                :maximal-count-in-chunk (access-count-in-chunk range)
-                :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                               function
-                               arguments)
-                :key key))
-        (lambda ()
-          (make 'linear-split-into-chunks-aggregator
-                :outer-fn outer-fn
-                :key key
-                :maximal-count-in-chunk (access-count-in-chunk range))))))
+    (lambda ()
+      (make 'linear-split-into-chunks-aggregator
+            :outer-fn outer-fn
+            :key key
+            :maximal-count-in-chunk (access-count-in-chunk range)))))
 
 
 (defclass split-into-chunks-function (layer-function)

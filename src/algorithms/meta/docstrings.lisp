@@ -33,17 +33,13 @@
     (:description "Passes ELEMENT to the AGGREGATOR."
      :arguments ((AGGREGATOR "Instance of aggregator.")
                  (ELEMENT "Element that is supposed to be aggregated."))
-     :affected-by "Class of AGGREGATOR."
-     :see-also (pass-to-aggregation-with-stage)
-     :notes "MULTI-STAGE-AGGREGATOR will forward this logic to pass-to-aggregation-with-stage."
-     :exceptional-situations "Will signal operation-not-allowed when aggregation cannot be performed (for instance because aggregator-finished-p returns T, which indicates finished aggregation)."))
+     :affected-by "Class of AGGREGATOR."))
 
   (function define-aggregation-function
     (:description "Defines all required methods and classes for aggregation functions."))
 
   (function extract-result
-    (:description "Extract final result of aggregation."
-     :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished."))
+    (:description "Extract final result of aggregation."))
 
   (function apply-layer
     (:description "Entry point to common layer function logic."
@@ -53,14 +49,13 @@
 
   (function apply-aggregation-function
     (:description "Entry point to common aggregation function logic."
-     :arguments ((range "Varies. Sometimes actually range, sometimes object of different class (for instance: aggregation-stage).")
+     :arguments ((range "Varies. Sometimes actually range, sometimes object of different class.")
                  (function "Instance of AGGREGATION-FUNCTION class.")
                  (key "Key used on each element to obtain object passed to aggregation.")
                  (all "Gathers all options required by make-state."))
      :see-also (apply-aggregation-function-with-aggregator)
      :affected-by "Class of range."
-     :notes ("Always pass KEY."
-             "This function is a little bit hairy. In multistage aggregation it is used to intercept function state of individiual aggregation stage.")
+     :notes ("Always pass KEY.")
      :affected-by "Class of RANGE."))
 
   (function apply-aggregation-function-with-aggregator

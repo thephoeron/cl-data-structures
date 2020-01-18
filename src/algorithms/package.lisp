@@ -19,7 +19,6 @@
    #:construct-aggregator
    #:define-aggregation-function
    #:extract-result
-   #:fundamental-aggregation-stage
    #:fundamental-aggregator
    #:layer-function
    #:linear-aggregator

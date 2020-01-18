@@ -91,11 +91,6 @@
       (error 'cl-ds:invalid-value
              :value function
              :format-control "~a is not an aggregation function!"
-             :format-arguments (list symbol)))
-    (when (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-      (error 'cl-ds:invalid-value
-             :value function
-             :format-control "~a is a multi-aggregation-function. Only single stage aggregation functions are supposted by summary."
              :format-arguments (list symbol)))) ; TODO actually there is no reason why this must be this way. It just needs extra work.
   (make-summary-aggregation-function-value
    :function-objects (map 'vector #'third lambdas)

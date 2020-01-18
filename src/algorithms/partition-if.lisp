@@ -122,75 +122,11 @@
 
 
 (defclass linear-partition-if-aggregator (partition-if-aggregator)
-  ((%finished :initform nil
-              :reader cl-ds.alg.meta:aggregator-finished-p
-              :accessor access-finished)))
+  ())
 
 
 (defclass linear-callback-partition-if-aggregator (callback-partition-if-aggregator)
-  ((%finished :initform nil
-              :reader cl-ds.alg.meta:aggregator-finished-p
-              :accessor access-finished)))
-
-
-(defclass multi-partition-if-aggregator (partition-if-aggregator
-                                         multi-aggregator)
-  ((%stages :initarg :stages
-            :accessor access-stages)))
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator callback-partition-if-aggregator))
-  nil)
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator callback-partition-if-aggregator))
-  t)
-
-
-(defmethod cl-ds.alg.meta:begin-aggregation ((aggregator partition-if-aggregator))
-  (setf (access-current-index aggregator) 0)
-  (iterate
-    (for (prev . chunk) in-vector (read-chunks aggregator))
-    (begin-aggregation chunk)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator partition-if-aggregator))
-  (iterate
-    (for (prev . chunk) in-vector (read-chunks aggregator))
-    (end-aggregation chunk)))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator multi-partition-if-aggregator))
-  (assert (access-stages aggregator))
-  (call-next-method)
-  (setf (access-stages aggregator) (rest (access-stages aggregator))))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-partition-if-aggregator))
-  (setf (access-finished aggregator) t)
-  (call-next-method))
-
-
-(defmethod cl-ds.alg.meta:end-aggregation ((aggregator linear-callback-partition-if-aggregator))
-  (when (access-initialized aggregator)
-    (~> aggregator access-current-state cl-ds.alg.meta:end-aggregation)
-    (~>> aggregator access-current-state
-         cl-ds.alg.meta:extract-result
-         (funcall (read-callback aggregator))))
-  (setf (access-finished aggregator) t))
-
-
-(defmethod cl-ds.alg.meta:aggregator-finished-p ((aggregator multi-partition-if-aggregator))
-  (~> aggregator access-stages endp))
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator linear-partition-if-aggregator))
-  t)
-
-
-(defmethod cl-ds.alg.meta:expects-content-p ((aggregator multi-partition-if-aggregator))
-  (~> aggregator access-stages first
-      (cl-ds.alg.meta:expects-content-with-stage-p aggregator)))
+  ())
 
 
 (defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator partition-if-aggregator)
@@ -203,7 +139,6 @@
          (empty (zerop length)))
     (if empty
         (let ((sub (funcall %outer-fn)))
-          (begin-aggregation sub)
           (vector-push-extend (list* key sub)
                               %chunks))
         (iterate
@@ -212,7 +147,6 @@
           (incf %current-index)
           (when (>= %current-index (length %chunks))
             (let ((sub (funcall %outer-fn)))
-              (begin-aggregation sub)
               (vector-push-extend (list* key sub)
                                   %chunks)
               (leave)))))
@@ -232,20 +166,17 @@
            (setf %current-key key
                  %initialized t
                  %current-state (funcall %outer-fn))
-           (begin-aggregation %current-state)
            (pass-to-aggregation %current-state element))
           ((funcall %test %current-key key)
            (unless %on-first
              (setf %current-key key))
            (pass-to-aggregation %current-state element))
           (t
-           (cl-ds.alg.meta:end-aggregation %current-state)
            (~>> %current-state
                 cl-ds.alg.meta:extract-result
                 (funcall %callback))
            (setf %current-key key
                  %current-state (funcall %outer-fn))
-           (begin-aggregation %current-state)
            (pass-to-aggregation %current-state element)))))
 
 
@@ -267,17 +198,14 @@
                                             outer-fn
                                             arguments)
   (let ((outer-fn (call-next-method)))
-    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-        (error 'cl-ds:operation-not-allowed
-               :format-control "Can't use callback-partition-if with multi-aggregation-function.")
-        (lambda ()
-          (make 'linear-callback-partition-if-aggregator
-                :outer-fn outer-fn
-                :key key
-                :on-first (read-on-first range)
-                :callback (read-callback range)
-                :test (read-test range)
-                :partition-key (read-key range))))))
+    (lambda ()
+      (make 'linear-callback-partition-if-aggregator
+            :outer-fn outer-fn
+            :key key
+            :on-first (read-on-first range)
+            :callback (read-callback range)
+            :test (read-test range)
+            :partition-key (read-key range)))))
 
 
 (defmethod proxy-range-aggregator-outer-fn ((range partition-if-proxy)
@@ -286,24 +214,13 @@
                                             outer-fn
                                             arguments)
   (let ((outer-fn (call-next-method)))
-    (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-        (lambda ()
-          (make 'multi-partition-if-aggregator
-                :outer-fn outer-fn
-                :test (read-test range)
-                :on-first (read-on-first range)
-                :key key
-                :partition-key (read-key range)
-                :stages (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                               function
-                               arguments)))
-        (lambda ()
-          (make 'linear-partition-if-aggregator
-                :outer-fn outer-fn
-                :key key
-                :on-first (read-on-first range)
-                :test (read-test range)
-                :partition-key (read-key range))))))
+    (lambda ()
+      (make 'linear-partition-if-aggregator
+            :outer-fn outer-fn
+            :key key
+            :on-first (read-on-first range)
+            :test (read-test range)
+            :partition-key (read-key range)))))
 
 
 (defclass partition-if-function (layer-function)

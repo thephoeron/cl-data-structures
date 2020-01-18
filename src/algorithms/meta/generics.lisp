@@ -12,10 +12,6 @@ Top level aggregator protocol.
   (:method ((aggregator abstract-proxy-aggregator))
     (cl-ds:forward-call aggregator #'extract-result)))
 
-(defgeneric aggregator-finished-p (aggregator)
-  (:method ((aggregator abstract-proxy-aggregator))
-    (cl-ds:forward-call aggregator #'aggregator-finished-p)))
-
 #|
 Range function invokaction protocol.
 |#

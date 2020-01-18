@@ -52,19 +52,11 @@
                                              outer-fn arguments)
   (:method ((range proxy-range) key function outer-fn arguments)
     (or outer-fn
-        (if (typep function 'cl-ds.alg.meta:multi-aggregation-function)
-            (lambda ()
-              (cl-ds.alg.meta:make-multi-stage-linear-aggregator
-               arguments
-               key
-               (apply #'cl-ds.alg.meta:multi-aggregation-stages
-                      function
-                      arguments)))
-            (lambda ()
-              (cl-ds.alg.meta:make-linear-aggregator
-               function
-               arguments
-               key))))))
+        (lambda ()
+          (cl-ds.alg.meta:make-linear-aggregator
+           function
+           arguments
+           key)))))
 
 
 (defgeneric wrap-chunk (range chunk))

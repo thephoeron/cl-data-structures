@@ -9,23 +9,6 @@ Top level aggregator protocol.
     (state-result %function %state)))
 
 
-(defmethod extract-result :before ((aggregator fundamental-aggregator))
-  (unless (aggregator-finished-p aggregator)
-    (error 'cl-ds:operation-not-allowed
-           :format-control "Can't extract result from unfinished aggregator")))
-
-
-(defmethod extract-result ((stage aggregation-stage))
-  (state-result (read-function stage) (read-state stage)))
-
-
-(defmethod pass-to-aggregation :before ((aggregator fundamental-aggregator)
-                                        element)
-  (when (aggregator-finished-p aggregator)
-    (error 'cl-ds:operation-not-allowed
-           :format-control "Can't pass element to aggregator that is already finished.")))
-
-
 (defmethod pass-to-aggregation ((aggregator linear-aggregator)
                                 element)
   (bind (((:slots %function %state %key) aggregator))
@@ -147,13 +130,3 @@ Range function invokaction protocol.
                       (pass-to-aggregation aggregator
                                            x)))
   (extract-result aggregator))
-
-
-(defmethod apply-aggregation-function ((stage aggregation-stage)
-                                       (function aggregation-function)
-                                       &rest all &key (key #'identity)
-                                       &allow-other-keys)
-  (bind (((:slots %function %key %state) stage))
-    (setf %state (apply #'make-state function all)
-          %function function
-          %key key)))

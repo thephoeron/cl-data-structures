@@ -284,6 +284,9 @@
            bucket location all)))
 
 
+(define-constant null-bucket 'null-bucket)
+
+
 (defgeneric map-bucket (container bucket function)
   (:method (container (bucket (eql null-bucket)) function)
     nil)
@@ -304,9 +307,6 @@
                                    location
                                    &rest all
                                    &key &allow-other-keys))
-
-
-(define-constant null-bucket 'null-bucket)
 
 
 (declaim (inline null-bucket-p))
