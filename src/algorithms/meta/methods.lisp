@@ -4,11 +4,6 @@
 Top level aggregator protocol.
 |#
 
-(defmethod extract-result ((aggregator multi-stage-linear-aggregator))
-  (bind (((:slots %accumulator) aggregator))
-    %accumulator))
-
-
 (defmethod extract-result ((aggregator linear-aggregator))
   (bind (((:slots %state %function) aggregator))
     (state-result %function %state)))
@@ -22,14 +17,6 @@ Top level aggregator protocol.
 
 (defmethod extract-result ((stage aggregation-stage))
   (state-result (read-function stage) (read-state stage)))
-
-
-(defmethod pass-to-aggregation ((aggregator multi-stage-linear-aggregator)
-                                element)
-  (bind (((:slots %stages %key) aggregator)
-         (stage (first %stages)))
-    (pass-to-aggregation-with-stage stage aggregator
-                                    element)))
 
 
 (defmethod pass-to-aggregation :before ((aggregator fundamental-aggregator)
