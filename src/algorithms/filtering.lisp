@@ -107,16 +107,17 @@
                                                   (function aggregation-function)
                                                   key
                                                   (arguments list))
-  (cl-ds.alg.meta:aggregator-constructor
-   (read-original-range range)
-   (lambda ()
-     (make 'filtering-aggregator
-           :key key
-           :inner-aggregator (funcall (call-next-method))
-           :range range))
-   function
-   key
-   arguments))
+  (let ((outer-fn (call-next-method)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (lambda ()
+       (make 'filtering-aggregator
+             :key key
+             :inner-aggregator (funcall outer-fn)
+             :range range))
+     function
+     key
+     arguments)))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range filtering-proxy) function)
