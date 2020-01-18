@@ -17,23 +17,10 @@
      :notes "Aggregation-function is part of moderatly complex user aggregation protocol."
      :see-also (make-state aggregate state-result)))
 
-  (type fundamental-aggregation-stage
-    (:description "Fundamental class of aggregation stages."
-     :responsibilities ("Represents up to one pass over data.")
-     :collaborators ("Aggregation-function" "Range")
-     :notes "cl:function is acceptable stage as well."))
-
   (type linear-aggregator
     (:description "Simple, low level aggregator."
      :responsibilities ("Calls aggregate."
                         "Manages aggregation functions state.")
-     :collaborators ("Aggregation-function" "Range")))
-
-  (type multi-stage-linear-aggregator
-    (:description "Low level aggregator for multistage functions."
-     :responsibilities ("Initializes stages."
-                        "Calls aggregate with each stage."
-                        "Passes values between stages.")
      :collaborators ("Aggregation-function" "Range")))
 
   (function make-linear-aggregator
@@ -41,12 +28,6 @@
      :arguments ((function "Instance of AGGREGATION-FUNCTION.")
                  (arguments "List of arguments passed to APPLY-AGGREGATION-FUNCTION.")
                  (key "Monoid function used akin to :KEY in CL:REDUCE."))))
-
-  (function aggregator-finished-p
-    (:description "Predicate. Informs caller if aggregator finished aggregation and result can be obtained."
-     :arguments (aggregator "Instance of FUNDAMENTAL-AGGREGATOR.")
-     :affected-by "Class of AGGREGATOR."
-     :returns "T if aggregator finished and result can be obtained. NIL otherwise."))
 
   (function pass-to-aggregation
     (:description "Passes ELEMENT to the AGGREGATOR."
@@ -60,50 +41,9 @@
   (function define-aggregation-function
     (:description "Defines all required methods and classes for aggregation functions."))
 
-  (function multi-aggregation-stages
-    (:description "Extracts aggregation stages of multi-aggregation-function."
-     :returns "List of stages."
-     :arguments ((function "Instance of multi-aggregation-function.")
-                 (all "All key arguments passed to apply-aggergation-function"))))
-
-  (function expects-content-p
-    (:description "Informs caller if aggregator expects elements passed on this stage."
-     :arguments ((aggregator "Instance of FUNDAMENTAL-AGGREGATOR"))
-     :affected-by "Class of aggregator."
-     :see-also (expects-content-with-stage-p)
-     :notes "MULTI-STAGE-AGGREGATOR will forward this logic to expects-content-with-stage-p."))
-
   (function extract-result
     (:description "Extract final result of aggregation."
      :exceptional-situations "Will signal operation-not-allowed if aggregator is not finished."))
-
-  (function extract-result-with-stage
-    (:description "Extract result of stage."
-     :see-also (extract-result)
-     :notes "This function is called from extract-result on multistage-aggregator."))
-
-  (function begin-aggregation
-    (:description "Signal that you are about to pass content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
-     :arguments ((aggregator "Instance of aggregator."))
-     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished, or aggregation already has began)."))
-
-  (function begin-aggregation-with-stage
-    (:description "Signal that you are about to pass content of range (once) to the aggregation stage."
-     :see-also (begin-aggregation)
-     :arguments ((stage "Instance of aggregation-stage")
-                 (aggregator "Instance of aggregator."))))
-
-  (function end-aggregation-with-stage
-    (:description "Signal that you finishing passing content of range (once) to the aggregation stage."
-     :see-also (end-aggregation)
-     :arguments ((stage "Instance of aggregation-stage")
-                 (aggregator "Instance of aggregator."))))
-
-  (function end-aggregation
-    (:description "Signal that you finished passing content of range (once) to the aggregator. May be called multiple times for multistage in the case of multistage aggregators."
-     :arguments ((aggregator "Instance of aggregator."))
-     :see-also (end-aggregation-with-stage)
-     :exceptional-situations "May signal operation-not-allowed if aggregation cannot be started (because for instance aggregator already finished)."))
 
   (function apply-layer
     (:description "Entry point to common layer function logic."
@@ -133,14 +73,6 @@
      :notes "Always pass KEY."
      :affected-by "Class of AGGREGATOR and class of RANGE."))
 
-  (function expects-content-with-stage-p
-    (:description "Informs caller if aggregation stage expects element passed."
-     :arguments ((stage "Either instance of AGGREGATION-STAGE or CL:FUNCTION.")
-                 (aggregator "Instance of MULTISTAGE-AGGREGATOR."))
-     :affected-by "Class of STAGE, class of AGGREGATOR."
-     :see-also (expects-content-p)
-     :notes "This function is called from expects-content as it's implementation on multistage-aggregator."))
-
   (function aggregate
     (:description "Mutate function state."
      :affected-by "Class of FUNCTION."
@@ -148,11 +80,6 @@
                  (state "Object construced with the MAKE-STATE function.")
                  (element "Item fetched from a range."))
      :notes "Specialization for this generic function is required for each aggregation-function."))
-
-  (function initialize-stage
-    (:description "Called with all key arguments from apply-aggregation-function and stage to initialize stage."
-     :arguments ((stage "fundamental-aggregation-stage instance")
-                 (arguments "All key arguments passed to apply-aggregation-function."))))
 
   (function state-result
     (:description "Extracts result of aggregation function out of state argument."

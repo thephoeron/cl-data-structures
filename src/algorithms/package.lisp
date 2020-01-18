@@ -12,37 +12,23 @@
    #:across-aggregate
    #:aggregate
    #:aggregation-function
-   #:aggregation-stage
-   #:aggregation-stage
-   #:aggregator-finished-p
    #:apply-aggregation-function
    #:apply-aggregation-function-with-aggregator
    #:apply-layer
    #:apply-range-function
-   #:begin-aggregation
    #:construct-aggregator
    #:define-aggregation-function
-   #:end-aggregation
-   #:expects-content-p
-   #:expects-content-with-stage-p
    #:extract-result
    #:fundamental-aggregation-stage
    #:fundamental-aggregator
-   #:gather-prior-states
    #:layer-function
    #:linear-aggregator
    #:make-linear-aggregator
-   #:make-multi-stage-linear-aggregator
    #:make-state
-   #:multi-aggregation-function
-   #:multi-aggregation-stages
-   #:multi-aggregator
    #:pass-to-aggregation
    #:range-function
    #:read-inner-aggregator
    #:read-key
-   #:reduce-stage
-   #:stage
    #:state-result
    #:transformation!-function))
 
