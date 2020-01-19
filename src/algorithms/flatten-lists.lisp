@@ -110,7 +110,7 @@
                         (function flatten-lists-function)
                         all)
   (make 'forward-flatten-proxy
-        :key (cl-ds.utils:at-list all :key)
+        :key (cl-ds.utils:at-list (rest all) :key)
         :original-range range))
 
 
@@ -135,9 +135,3 @@
            ((cl-ds.alg.meta:extract-result inner))))
      function
      arguments)))
-
-
-(defmethod cl-ds.alg.meta:across-aggregate ((range flatten-proxy) function)
-  (~> range
-      read-original-range
-      (cl-ds.alg.meta:across-aggregate function)))

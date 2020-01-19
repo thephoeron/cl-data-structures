@@ -10,6 +10,12 @@
                     :reader read-original-range)))
 
 
+(defmethod cl-ds.alg.meta:across-aggregate ((range proxy-range) function)
+  (~> range
+      read-original-range
+      (cl-ds.alg.meta:across-aggregate function)))
+
+
 (defalias clone-of-original-range (compose
                                    #'cl-ds:clone
                                    #'read-original-range))

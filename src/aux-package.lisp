@@ -210,6 +210,7 @@
   alexandria:destructuring-ecase
 
   serapeum:~>
+  serapeum:reshuffle
   serapeum:->
   serapeum:~>>
   serapeum:batches

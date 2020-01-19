@@ -136,12 +136,13 @@
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn cumulative-accumulate-function)
                                        all)
-  (let* ((key (cl-ds.utils:at-list all :key))
-         (result (cl-ds.utils:at-list all :result))
-         (function (second all))
-         (initial-value-cell (member :initial-value all))
+  (bind (((r function . keys) all)
+         (key (cl-ds.utils:at-list keys :key))
+         (result (cl-ds.utils:at-list keys :result))
+         (initial-value-cell (member :initial-value keys))
          (initial-value (second initial-value-cell))
          (initial-value-bound (not (endp initial-value-cell))))
+    (declare (ignore r))
     (apply #'cl-ds.alg:make-proxy
            range 'cumulative-accumulate-range
            :cumulative-key key
@@ -156,9 +157,10 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
   (let ((function (ensure-function (read-function range)))
         (outer-fn (call-next-method))
-        (key (read-cumulative-key range)))
+        (key (ensure-function (read-cumulative-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq #'identity key)))

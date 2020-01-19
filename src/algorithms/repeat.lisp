@@ -6,12 +6,11 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric repeat (range &optional times)
+(defgeneric repeat (range times)
   (:generic-function-class repeat-function)
   (:method (range &optional times)
     (apply-range-function range #'repeat
-                          (list range #'repeat
-                                :times times))))
+                          (list range #'repeat times))))
 
 
 (defclass repeat-proxy (proxy-range)
@@ -74,25 +73,48 @@
 
 
 (defmethod cl-ds:across ((range repeat-proxy) function)
-  (if (~> range read-times null)
-      (iterate
-        (~> range read-original-range (cl-ds:across function)))
-      (iterate
-        (with og-range = (~> range read-original-range))
-        (for i from (access-position range) below (read-times range))
-        (cl-ds:across og-range function)))
+  (iterate
+    (with og-range = (~> range read-original-range))
+    (for i from (access-position range) below (read-times range))
+    (cl-ds:across og-range function))
   range)
 
 
-(defmethod cl-ds:traverse ((range restrain-size-proxy) function)
-  (if (~> range read-times null)
-      (iterate
-        (~> range read-original-range (cl-ds:traverse function))
-        (~> range read-original-range cl-ds:reset!))
-      (iterate
-        (with og-range = (~> range read-original-range))
-        (for i from (access-position range) below (read-times range))
-        (cl-ds:traverse og-range function)
-        (cl-ds:reset! og-range)
-        (incf (access-position range))))
+(defmethod cl-ds:traverse ((range repeat-proxy) function)
+  (iterate
+    (with og-range = (~> range read-original-range))
+    (for i from (access-position range) below (read-times range))
+    (cl-ds:traverse og-range function)
+    (cl-ds:reset! og-range)
+    (incf (access-position range)))
   range)
+
+
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range repeat-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((outer-fn (call-next-method))
+        (position (access-position range))
+        (size (read-size range)))
+    (declare (type fixnum position size))
+    (assert (functionp outer-fn))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (cl-ds.alg.meta:let-aggregator
+         ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+          (data (vect)))
+
+         ((element)
+           (vector-push-extend element data))
+
+         ((iterate
+            (declare (type fixnum i))
+            (for i from position below size)
+            (iterate
+              (for elt in-vector data)
+              (cl-ds.alg.meta:pass-to-aggregation inner elt)))
+          (cl-ds.alg.meta:extract-result inner)))
+     function
+     arguments)))

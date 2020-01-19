@@ -44,54 +44,6 @@
   ())
 
 
-(defclass bootstrap-aggregator (cl-ds.alg.meta:fundamental-aggregator)
-  ((%outer-fn :initarg :outer-fn
-              :reader read-outer-fn)
-   (%compare :initarg :compare
-             :reader read-compare)
-   (%confidence :initarg :confidence
-                :reader read-confidence)
-   (%whole-content :initform (vect)
-                   :reader read-whole-content)
-   (%sample-size :initarg :sample-size
-                 :reader read-sample-size)
-   (%parallel :initarg :parallel
-              :reader read-parallel)
-   (%function :initarg :function
-              :accessor access-function)
-   (%context-function :initarg :context-function
-                      :reader read-context-function)
-   (%final-result :initform nil
-                  :accessor access-final-result
-                  :reader cl-ds.alg.meta:extract-result)
-   (%samples-count :initarg :samples-count
-                   :reader read-samples-count)))
-
-
-(defmethod cl-ds.alg.meta:aggregator-constructor ((range bootstrap-proxy)
-                                                  outer-constructor
-                                                  (function cl-ds.alg.meta:aggregation-function)
-                                                  key
-                                                  (arguments list))
-  (let ((outer-fn (call-next-method)))
-    (cl-ds.alg.meta:aggregator-constructor
-     (cl-ds.alg:read-original-range range)
-     (lambda ()
-       (make 'bootstrap-aggregator
-             :outer-fn outer-fn
-             :function function
-             :key (cl-ds.alg.meta:read-key range)
-             :compare (read-compare range)
-             :parallel (read-parallel range)
-             :context-function (read-context-function range)
-             :confidence (read-confidence range)
-             :sample-size (read-sample-size range)
-             :samples-count (read-samples-count range)))
-     function
-     key
-     arguments)))
-
-
 (defclass bootstrap-function (cl-ds.alg.meta:layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
@@ -167,49 +119,50 @@
     (apply #'destruct all)))
 
 
-(defmethod cl-ds.alg.meta:pass-to-aggregation ((aggregator bootstrap-aggregator) element)
-  (vector-push-extend element (read-whole-content aggregator)))
-
-
-(defun aggregate-sample (aggregator sample function)
-  (cl-ds.alg.meta:apply-aggregation-function-with-aggregator
-   aggregator
-   sample
-   function))
-
-
-(defun bootstrap-sample (vector size)
-  (lret ((result (make-array size)))
-    (iterate
-      (for i from 0 below size)
-      (setf (aref result i) (aref vector (random (length vector)))))))
-
-
-(defmethod cl-ds.alg.meta:extract-result ((aggregrator bootstrap-aggregator))
-  (let* ((samples-vector (make-array (read-samples-count aggregator)))
-         (sample-size (read-sample-size aggregator))
-         (whole-content (read-whole-content aggregator))
-         (samples-count (read-samples-count aggregator))
-         (outer-fn (read-outer-fn aggregator))
-         (function (access-function aggregator))
-         (confidence (read-confidence aggregator))
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range bootstrap-proxy)
+                                                  outer-constructor
+                                                  (function cl-ds.alg.meta:aggregation-function)
+                                                  (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
+  (let* ((outer-fn (call-next-method))
+         (sample-size (read-sample-size range))
+         (key (ensure-function (read-key range)))
+         (compare (ensure-function (read-compare range)))
+         (samples-count (read-samples-count range))
+         (confidence (read-confidence range))
          (offset (~> confidence (/ 2) (* samples-count)))
          (half (/ samples-count 2))
-         (parallel (read-parallel aggregator))
          (lower-percentail (floor (- half offset)))
-         (higher-percentail (ceiling (+ half offset))))
-    (funcall (if parallel #'lparallel:pmap-into #'map-into)
-             samples-vector
-             (funcall (read-context-function aggregator)
-                      (lambda ()
-                        (let* ((sample (bootstrap-sample whole-content sample-size))
-                               (fresh-aggregator (funcall outer-fn)))
-                          (aggregate-sample fresh-aggregator sample function)))))
-    (setf samples-vector
-          (lparallel:psort samples-vector
-                           (read-compare aggregator)
-                           :key (cl-ds.alg.meta:read-key aggregator))
+         (higher-percentail (ceiling (+ half offset)))
+         (parallel (read-parallel range))
+         (context-function (ensure-function (read-context-function range))))
+    (declare (type fixnum lower-percentail higher-percentail))
+    (assert (functionp outer-fn))
+    (cl-ds.alg.meta:aggregator-constructor
+     (cl-ds.alg:read-original-range range)
+     (cl-ds.alg.meta:let-aggregator
+         ((data (vect)))
 
-          (access-final-result aggregator)
-          (list* (aref samples-vector lower-percentail)
-                 (aref samples-vector higher-percentail)))))
+         ((element) (vector-push-extend element (funcall key data)))
+
+         ((let ((samples (make-array samples-count))
+                (length (length data)))
+            (declare (type simple-array samples))
+            (funcall (if parallel #'lparallel:pmap-into #'map-into)
+                     samples
+                     (lambda ()
+                       (funcall context-function
+                                (lambda ()
+                                  (iterate
+                                    (with aggregator = (cl-ds.alg.meta:call-constructor outer-fn))
+                                    (for i from 0 below sample-size)
+                                    (for random = (random length))
+                                    (cl-ds.alg.meta:pass-to-aggregation
+                                     aggregator
+                                     (aref data random))
+                                    (finally (return (cl-ds.alg.meta:extract-result aggregator))))))))
+            (setf samples (sort samples compare))
+            (list* (aref samples lower-percentail)
+                   (aref samples higher-percentail)))))
+     function
+     arguments)))

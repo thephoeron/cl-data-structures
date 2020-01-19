@@ -128,10 +128,10 @@
                         (function distinct-function)
                         all)
   (make 'forward-distinct-proxy
-        :key (cl-ds.utils:at-list all :key)
+        :key (cl-ds.utils:at-list (rest all) :key)
         :seen (cl-ds.dicts.hamt:make-transactional-hamt-dictionary
-               (cl-ds.utils:at-list all :hash-function)
-               (cl-ds.utils:at-list all :test))
+               (cl-ds.utils:at-list (rest all) :hash-function)
+               (cl-ds.utils:at-list (rest all) :test))
         :original-range range))
 
 

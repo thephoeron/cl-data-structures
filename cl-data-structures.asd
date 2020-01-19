@@ -264,7 +264,7 @@
                              (:file "standard-deviation")
                              (:file "moments")
                              ;; (:file "chi-squared")
-                             ;; (:file "bootstrap")
+                             (:file "bootstrap")
                              (:file "moving-average")
                              (:file "hmm")
                              (:file "gini-impurity")

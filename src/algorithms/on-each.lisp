@@ -159,9 +159,9 @@
                                                   (function aggregation-function)
                                                   (arguments list))
   (declare (optimize (speed 3) (safety 0)))
-  (let ((on-each-key (read-key range))
+  (let ((on-each-key (ensure-function (read-key range)))
         (outer-fn (call-next-method))
-        (range-function (read-function range)))
+        (range-function (ensure-function (read-function range))))
     (assert (functionp outer-fn))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
@@ -176,9 +176,3 @@
            ((cl-ds.alg.meta:extract-result inner))))
      function
      arguments)))
-
-
-(defmethod cl-ds.alg.meta:across-aggregate ((range proxy-box-range) function)
-  (~> range
-      read-original-range
-      (cl-ds.alg.meta:across-aggregate function)))

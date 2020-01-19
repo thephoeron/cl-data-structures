@@ -94,3 +94,29 @@
     (incf (access-position range))
     (funcall function data))
   range)
+
+
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range restrain-size-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((outer-fn (call-next-method))
+        (position (access-position range))
+        (size (read-size range)))
+    (declare (type fixnum position size))
+    (assert (functionp outer-fn))
+    (cl-ds.alg.meta:aggregator-constructor
+     (read-original-range range)
+     (cl-ds.alg.meta:let-aggregator
+         ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+          (position position))
+
+         ((element)
+           (when (< (the fixnum position) size)
+             (cl-ds.alg.meta:pass-to-aggregation inner element)
+             (incf (the fixnum position))))
+
+         ((cl-ds.alg.meta:extract-result inner)))
+     function
+     arguments)))
