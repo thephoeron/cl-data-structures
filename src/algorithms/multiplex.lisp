@@ -108,8 +108,8 @@
                         all)
   (make 'forward-multiplex-proxy
         :original-range range
-        :key (cl-ds.utils:at-list all :key)
-        :function (cl-ds.utils:at-list all :function)))
+        :key (cl-ds.utils:at-list (rest all) :key)
+        :function (cl-ds.utils:at-list (rest all) :function)))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range multiplex-proxy)
@@ -119,14 +119,21 @@
   (declare (optimize (speed 3) (safety 0) (compilation-speed 0) (space 0)))
   (bind ((outer-fn (call-next-method))
          (function (ensure-function (read-function range)))
+         (current (access-current range))
          (key (ensure-function (read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity)))
        (cl-ds.alg.meta:let-aggregator
-           ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
+           ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+            (current current))
 
            ((element)
+             (unless (null current)
+               (cl-ds:across current
+                             (lambda (x)
+                               (cl-ds.alg.meta:pass-to-aggregation inner x)))
+               (setf current nil))
              (~>> element (funcall key) (funcall function)
                   (cl-ds:traverse _
                                   (lambda (x)

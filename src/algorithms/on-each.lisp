@@ -89,7 +89,8 @@
 (defmethod apply-layer ((range cl-ds:traversable)
                         (fn on-each-function)
                         all)
-  (on-each-proxy-range-from-range range (second all) (cl-ds.utils:at-list all :key)))
+  (on-each-proxy-range-from-range range (second all)
+                                  (cl-ds.utils:at-list (cddr all) :key)))
 
 
 (defmethod cl-ds:consume-front ((range forward-proxy-box-range))

@@ -52,7 +52,7 @@
                         all)
   (make 'bidirectional-only-proxy
         :predicate (second all)
-        :key (cl-ds.utils:at-list all :key)
+        :key (cl-ds.utils:at-list (cddr all) :key)
         :original-range range))
 
 
@@ -61,6 +61,26 @@
                         all)
   (make 'forward-only-proxy
         :predicate (second all)
-        :key (cl-ds.utils:at-list all :key)
-        :original-range range
-        ))
+        :key (cl-ds.utils:at-list (cddr all) :key)
+        :original-range range))
+
+
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range only-proxy)
+                                                  outer-constructor
+                                                  (function aggregation-function)
+                                                  (arguments list))
+  (declare (optimize (speed 3) (safety 0)))
+  (let ((outer-fn (call-next-method))
+        (predicate (ensure-function (read-predicate range)))
+        (key (ensure-function (read-key range))))
+    (cl-ds.utils:cases ((:variant (eq key #'identity)))
+      (cl-ds.alg.meta:aggregator-constructor
+       (read-original-range range)
+       (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
+           ((element)
+             (when (funcall predicate (funcall key element))
+               (cl-ds.alg.meta:pass-to-aggregation inner element)))
+
+           ((cl-ds.alg.meta:extract-result inner)))
+       function
+       arguments))))

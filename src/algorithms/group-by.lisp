@@ -93,29 +93,29 @@
                         (fn group-by-function)
                         all)
   (make-proxy range 'forward-group-by-proxy
-              :test (cl-ds.utils:at-list all :test)
-              :key (cl-ds.utils:at-list all :key)))
+              :test (cl-ds.utils:at-list (rest all) :test)
+              :key (cl-ds.utils:at-list (rest all) :key)))
 
 
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn group-by-function)
                         all)
   (make-proxy range 'forward-group-by-proxy
-              :test (cl-ds.utils:at-list all :test)
-              :key (cl-ds.utils:at-list all :key)))
+              :test (cl-ds.utils:at-list (rest all) :test)
+              :key (cl-ds.utils:at-list (rest all) :key)))
 
 
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn group-by-function)
                         all)
   (make-proxy range 'bidirectional-group-by-proxy
-              :test (cl-ds.utils:at-list all :test)
-              :key (cl-ds.utils:at-list all :key)))
+              :test (cl-ds.utils:at-list (rest all) :test)
+              :key (cl-ds.utils:at-list (rest all) :key)))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn group-by-function)
                          all)
   (make-proxy range 'random-access-group-by-proxy
-              :test (cl-ds.utils:at-list all :test)
-              :key (cl-ds.utils:at-list all :key)))
+              :test (cl-ds.utils:at-list (rest all) :test)
+              :key (cl-ds.utils:at-list (rest all) :key)))
