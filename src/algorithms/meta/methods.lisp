@@ -7,10 +7,7 @@ Range function invokaction protocol.
 (defmethod apply-range-function ((object cl-ds:fundamental-container)
                                  (function aggregation-function)
                                  all)
-  (apply #'apply-aggregation-function
-         object
-         function
-         all))
+  (apply-aggregation-function object function all))
 
 
 (defmethod apply-range-function (range
