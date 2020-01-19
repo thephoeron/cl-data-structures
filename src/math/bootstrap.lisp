@@ -154,6 +154,7 @@
                        (funcall context-function
                                 (lambda ()
                                   (iterate
+                                    (declare (type fixnum i))
                                     (with aggregator = (cl-ds.alg.meta:call-constructor outer-fn))
                                     (for i from 0 below sample-size)
                                     (for random = (random length))
