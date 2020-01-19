@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.counting)
+(cl:in-package #:cl-data-structures.counting)
 
 
 (defmethod type-count ((index set-index))

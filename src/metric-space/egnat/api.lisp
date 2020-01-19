@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.metric-space.egnat)
+(cl:in-package #:cl-data-structures.metric-space.egnat)
 
 
 (defclass egnat-metric-set (cl-ds.ms:metric-space-set

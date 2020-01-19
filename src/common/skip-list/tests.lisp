@@ -1,6 +1,6 @@
 (cl:in-package #:cl-user)
 (defpackage skip-list-tests (:use :cl :cl-data-structures.aux-package))
-(in-package #:skip-list-tests)
+(cl:in-package #:skip-list-tests)
 
 (prove:plan 11)
 

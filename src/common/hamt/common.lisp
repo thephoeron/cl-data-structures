@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common.hamt)
+(cl:in-package #:cl-data-structures.common.hamt)
 
 #|
 

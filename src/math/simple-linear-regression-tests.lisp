@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage simple-linear-regression-tests
   (:use :cl-ds :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:simple-linear-regression-tests)
+(cl:in-package #:simple-linear-regression-tests)
 
 
 (plan 2)

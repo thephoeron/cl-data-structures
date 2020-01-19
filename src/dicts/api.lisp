@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.dicts)
+(cl:in-package #:cl-data-structures.dicts)
 
 
 (defmethod cl-ds:add ((container functional-dictionary) location new-value)

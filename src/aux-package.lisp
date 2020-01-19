@@ -1,7 +1,7 @@
 (defpackage :cl-data-structures.aux-package
   (:use #:cl))
 
-(in-package :cl-data-structures.aux-package)
+(cl:in-package :cl-data-structures.aux-package)
 
 
 (defmacro rexport (package &body symbols)

@@ -1,9 +1,9 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage hamt-range-tests
   (:use :cl :prove :cl-ds :cl-ds.dicts.hamt
         :cl-data-structures.aux-package)
   (:export :run-suite))
-(in-package :hamt-range-tests)
+(cl:in-package :hamt-range-tests)
 
 (plan 16)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))

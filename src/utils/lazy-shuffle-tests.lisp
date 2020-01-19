@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage :lazy-shuffe-test-suite (:use :prove :cl :iterate))
-(in-package :lazy-shuffe-test-suite)
+(cl:in-package :lazy-shuffe-test-suite)
 
 (prove:plan 1)
 

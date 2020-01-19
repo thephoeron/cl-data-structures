@@ -1,7 +1,7 @@
 (cl:in-package :cl-user)
 (defpackage skip-list-set-tests
   (:use :cl :cl-ds :cl-data-structures.aux-package))
-(in-package :skip-list-set-tests)
+(cl:in-package :skip-list-set-tests)
 
 
 (prove:plan 500)

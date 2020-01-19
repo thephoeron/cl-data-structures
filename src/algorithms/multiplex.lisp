@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.algorithms)
+(cl:in-package #:cl-data-structures.algorithms)
 
 
 (defclass multiplex-proxy (cl-ds:chunking-mixin

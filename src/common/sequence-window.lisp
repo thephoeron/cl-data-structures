@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common)
+(cl:in-package #:cl-data-structures.common)
 
 
 (defclass sequence-window (cl-ds:fundamental-random-access-range)

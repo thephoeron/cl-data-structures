@@ -2,7 +2,7 @@
 (defpackage partition-if-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:partition-if-tests)
+(cl:in-package #:partition-if-tests)
 
 (plan 20)
 

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.meta)
+(cl:in-package #:cl-data-structures.meta)
 (eval-always
   (scribble:configure-scribble :package :cl-data-structures.meta)
   (named-readtables:in-readtable :scribble))

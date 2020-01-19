@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage :ordered-algorithms-test-suite (:use :cl :prove))
-(in-package :ordered-algorithms-test-suite)
+(cl:in-package :ordered-algorithms-test-suite)
 
 (plan 4)
 

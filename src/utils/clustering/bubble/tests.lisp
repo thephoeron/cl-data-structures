@@ -2,7 +2,7 @@
 (defpackage :bubble-test-suite (:use
                                 :cl :alexandria
                                 :cl-data-structures.utils.clustering.bubble))
-(in-package :bubble-test-suite)
+(cl:in-package :bubble-test-suite)
 
 
 (defun metric (a b)

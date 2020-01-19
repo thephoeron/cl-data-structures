@@ -1,4 +1,4 @@
-(in-package #:cl-ds.alg)
+(cl:in-package #:cl-ds.alg)
 
 
 (defclass latch-proxy (cl-ds:chunking-mixin

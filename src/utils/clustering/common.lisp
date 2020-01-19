@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.clustering)
+(cl:in-package #:cl-data-structures.utils.clustering)
 
 
 (defclass clustering-result ()

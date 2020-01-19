@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures)
+(cl:in-package #:cl-data-structures)
 
 
 (defmacro mod-bind ((first &optional found value changed) form &body body)

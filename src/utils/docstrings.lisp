@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils)
+(cl:in-package #:cl-ds.utils)
 
 
 (docs:define-docs

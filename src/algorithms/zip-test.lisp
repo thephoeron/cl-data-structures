@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage zip-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:zip-tests)
+(cl:in-package #:zip-tests)
 
 (plan 6)
 

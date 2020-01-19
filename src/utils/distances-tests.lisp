@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage :distances-test-suite (:use :cl :prove :iterate))
-(in-package :distances-test-suite)
+(cl:in-package :distances-test-suite)
 
 (defun jaccard-metric (a b)
   (if (eql a b)

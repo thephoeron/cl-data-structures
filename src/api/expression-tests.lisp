@@ -1,7 +1,7 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage expression-tests
   (:use :cl :prove :cl-data-structures.aux-package))
-(in-package #:expression-tests)
+(cl:in-package #:expression-tests)
 
 (plan 5)
 (let ((data nil)

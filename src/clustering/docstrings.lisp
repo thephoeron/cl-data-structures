@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.clustering)
+(cl:in-package #:cl-data-structures.clustering)
 
 
 (docs:define-docs

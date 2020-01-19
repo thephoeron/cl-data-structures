@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.queues)
+(cl:in-package #:cl-data-structures.queues)
 
 
 (defclass fundamental-queue (cl-ds:fundamental-container)

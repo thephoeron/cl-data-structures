@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage mutual-information-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:mutual-information-tests)
+(cl:in-package #:mutual-information-tests)
 
 (plan 3)
 

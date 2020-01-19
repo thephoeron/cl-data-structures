@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common)
+(cl:in-package #:cl-data-structures.common)
 
 
 (defstruct changes

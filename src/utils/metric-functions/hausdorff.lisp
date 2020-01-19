@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.metric)
+(cl:in-package #:cl-data-structures.utils.metric)
 
 
 (defun hausdorff-metric (fn a b

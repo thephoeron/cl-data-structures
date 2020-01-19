@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.file-system)
+(cl:in-package #:cl-data-structures.file-system)
 
 
 (defclass tokenizing-range (cl-ds:chunking-mixin

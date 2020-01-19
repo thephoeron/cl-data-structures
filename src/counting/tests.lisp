@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage apriori-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:apriori-tests)
+(cl:in-package #:apriori-tests)
 
 (plan 31)
 

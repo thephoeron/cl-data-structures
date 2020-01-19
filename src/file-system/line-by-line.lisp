@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.file-system)
+(cl:in-package #:cl-data-structures.file-system)
 
 
 (defclass line-by-line-range (cl-ds:chunking-mixin

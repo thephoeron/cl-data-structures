@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.streaming-algorithms)
+(cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
 (defclass bloom-filter (fundamental-data-sketch)

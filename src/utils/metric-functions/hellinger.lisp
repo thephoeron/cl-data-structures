@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.metric)
+(cl:in-package #:cl-data-structures.utils.metric)
 
 
 (define-constant +sqrt2+ (sqrt 2))

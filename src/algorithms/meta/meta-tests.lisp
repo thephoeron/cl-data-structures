@@ -1,9 +1,9 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage alg-meta-tests
   (:use #:common-lisp #:prove #:cl-data-structures.aux-package)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in))
 
-(in-package #:alg-meta-tests)
+(cl:in-package #:alg-meta-tests)
 
 (plan 6)
 

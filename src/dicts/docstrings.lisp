@@ -1,4 +1,4 @@
-(in-package #:cl-ds.dicts)
+(cl:in-package #:cl-ds.dicts)
 
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter

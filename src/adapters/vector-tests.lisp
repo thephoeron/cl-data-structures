@@ -1,9 +1,9 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage vector-tests
   (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in))
 
-(in-package #:vector-tests)
+(cl:in-package #:vector-tests)
 
 (plan 14)
 (let* ((vector (vect 1 2 3 4 5 6 7))

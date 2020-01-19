@@ -1,9 +1,9 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage sequence-window-tests
   (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria)
   (:shadowing-import-from #:iterate #:collecting #:summing #:in))
 
-(in-package #:sequence-window-tests)
+(cl:in-package #:sequence-window-tests)
 
 (plan 2)
 

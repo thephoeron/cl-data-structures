@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.adapters)
+(cl:in-package #:cl-data-structures.adapters)
 
 
 (defclass vector-range (cl-ds:fundamental-random-access-range)

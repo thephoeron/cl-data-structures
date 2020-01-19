@@ -1,9 +1,9 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage functional-dictionary-test-suite
   (:use :cl :prove :cl-ds :cl-data-structures.aux-package)
   (:export :run-stress-test
    :run-suite))
-(in-package :functional-dictionary-test-suite)
+(cl:in-package :functional-dictionary-test-suite)
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
   (defun read-all-words ()

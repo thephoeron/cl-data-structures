@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils)
+(cl:in-package #:cl-ds.utils)
 
 
 (defun bourgain-embedding (vector-of-elements c distance-fn

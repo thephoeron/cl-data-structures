@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.algorithms)
+(cl:in-package #:cl-data-structures.algorithms)
 (eval-always
   (scribble:configure-scribble :package :cl-data-structures.algorithms)
   (named-readtables:in-readtable :scribble))

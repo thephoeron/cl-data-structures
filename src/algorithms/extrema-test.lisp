@@ -2,7 +2,7 @@
 (defpackage extrema-tests
   (:use #:cl #:prove #:cl-ds #:cl-data-structures.aux-package))
 
-(in-package #:extrema-tests)
+(cl:in-package #:extrema-tests)
 
 (plan 2)
 

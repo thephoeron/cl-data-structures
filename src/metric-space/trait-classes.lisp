@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.metric-space)
+(cl:in-package #:cl-data-structures.metric-space)
 
 
 (defclass metric-space-set (cl-ds:fundamental-container)

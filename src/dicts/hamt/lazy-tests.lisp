@@ -1,8 +1,8 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage lazy-hamt-dictionary-tests
   (:use :cl :prove :cl-ds :cl-ds.dicts.hamt
         :cl-data-structures.aux-package))
-(in-package :lazy-hamt-dictionary-tests)
+(cl:in-package :lazy-hamt-dictionary-tests)
 
 (plan 1114)
 (diag "Testing lazy HAMT")

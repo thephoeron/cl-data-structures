@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.queues)
+(cl:in-package #:cl-data-structures.queues)
 
 
 (docs:define-docs

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.algorithms.meta)
+(cl:in-package #:cl-data-structures.algorithms.meta)
 
 
 (defclass range-function (closer-mop:standard-generic-function)

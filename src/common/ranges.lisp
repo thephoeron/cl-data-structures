@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common)
+(cl:in-package #:cl-data-structures.common)
 
 
 (defclass forward-tree-range (cl-ds:fundamental-forward-range)

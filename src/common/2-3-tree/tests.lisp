@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage 2-3-tree-tests (:use :cl :prove :cl-data-structures.aux-package))
-(in-package :2-3-tree-tests)
+(cl:in-package :2-3-tree-tests)
 
 (plan 769)
 

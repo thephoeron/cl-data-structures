@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.meta)
+(cl:in-package #:cl-data-structures.meta)
 
 
 (defclass functional-function ()

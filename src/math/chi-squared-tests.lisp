@@ -1,7 +1,7 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 
 (defpackage chi-squared-test (:use #:prove #:cl))
-(in-package #:chi-squared-test)
+(cl:in-package #:chi-squared-test)
 
 (plan 1)
 

@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils)
+(cl:in-package #:cl-ds.utils)
 
 
 (deftype extendable-vector (&optional (type '*))

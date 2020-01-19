@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.sequences.rrb-vector)
+(cl:in-package #:cl-data-structures.sequences.rrb-vector)
 
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter

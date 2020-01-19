@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils)
+(cl:in-package #:cl-ds.utils)
 
 
 (defun ordered-p (sequence fn &key (key #'identity))

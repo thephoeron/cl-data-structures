@@ -1,4 +1,4 @@
-(in-package #:cl-ds.dicts.hamt)
+(cl:in-package #:cl-ds.dicts.hamt)
 
 
 (defclass hamt-dictionary (cl-ds.common.hamt:hamt-container

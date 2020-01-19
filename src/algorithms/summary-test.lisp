@@ -2,7 +2,7 @@
 (defpackage summary-tests
   (:use #:cl #:prove #:cl-ds #:cl-data-frames.aux-package))
 
-(in-package #:summary-tests)
+(cl:in-package #:summary-tests)
 
 (plan 4)
 

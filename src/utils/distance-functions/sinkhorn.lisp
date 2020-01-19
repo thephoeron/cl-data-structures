@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.distance)
+(cl:in-package #:cl-data-structures.utils.distance)
 
 
 (-> sinkhorn-optimal-transport-matrix

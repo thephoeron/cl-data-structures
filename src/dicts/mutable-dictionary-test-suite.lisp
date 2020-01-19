@@ -1,9 +1,9 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage mutable-dictionary-test-suite
   (:use :cl :prove :cl-ds :cl-data-structures.aux-package)
   (:export
    :run-suite))
-(in-package :mutable-dictionary-test-suite)
+(cl:in-package :mutable-dictionary-test-suite)
 
 (let ((path (asdf:system-relative-pathname :cl-data-structures "test/files/words.txt")))
   (defun read-all-words ()

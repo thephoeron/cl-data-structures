@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.clustering.k-means)
+(cl:in-package #:cl-data-structures.utils.clustering.k-means)
 
 
 (defclass k-means-algorithm-state ()

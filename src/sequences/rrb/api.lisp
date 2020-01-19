@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.sequences.rrb-vector)
+(cl:in-package #:cl-data-structures.sequences.rrb-vector)
 
 
 (defclass rrb-vector (cl-ds.common.rrb:rrb-container)

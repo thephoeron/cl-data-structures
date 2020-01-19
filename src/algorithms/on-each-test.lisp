@@ -2,7 +2,7 @@
 (defpackage on-each-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:on-each-tests)
+(cl:in-package #:on-each-tests)
 
 (plan 2)
 

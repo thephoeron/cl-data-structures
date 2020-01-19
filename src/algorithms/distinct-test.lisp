@@ -2,7 +2,7 @@
 (defpackage distinct-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:distinct-tests)
+(cl:in-package #:distinct-tests)
 
 (plan 3)
 

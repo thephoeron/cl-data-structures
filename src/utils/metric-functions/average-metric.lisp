@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.metric)
+(cl:in-package #:cl-data-structures.utils.metric)
 
 
 (defun average-metric (fn test a b &key (key #'identity))

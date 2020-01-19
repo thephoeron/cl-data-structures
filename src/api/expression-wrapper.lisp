@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures)
+(cl:in-package #:cl-data-structures)
 
 
 (defclass expression (c2mop:funcallable-standard-object

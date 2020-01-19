@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common.2-3-tree)
+(cl:in-package #:cl-data-structures.common.2-3-tree)
 
 
 (defclass tree (cl-ds:fundamental-container)

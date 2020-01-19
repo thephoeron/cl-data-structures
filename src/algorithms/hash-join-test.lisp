@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage hash-join-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:hash-join-tests)
+(cl:in-package #:hash-join-tests)
 
 (plan 6)
 (ok (emptyp (cl-ds.alg:hash-join #() #'identity

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.dicts.srrb)
+(cl:in-package #:cl-data-structures.dicts.srrb)
 
 
 (defclass fundamental-sparse-rrb-vector (cl-ds.dicts:fundamental-sparse-vector)

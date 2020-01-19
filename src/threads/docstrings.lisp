@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.threads)
+(cl:in-package #:cl-data-structures.threads)
 
 
 (docs:define-docs

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures)
+(cl:in-package #:cl-data-structures)
 
 
 (defclass functional (fundamental-container)

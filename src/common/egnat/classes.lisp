@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common.egnat)
+(cl:in-package #:cl-data-structures.common.egnat)
 
 
 (defclass fundamental-egnat-container (cl-ds:fundamental-container)

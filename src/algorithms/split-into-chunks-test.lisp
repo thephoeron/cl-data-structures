@@ -2,7 +2,7 @@
 (defpackage split-into-chunks-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:split-into-chunks-tests)
+(cl:in-package #:split-into-chunks-tests)
 
 (plan 4)
 

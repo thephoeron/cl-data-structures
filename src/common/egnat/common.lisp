@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common.egnat)
+(cl:in-package #:cl-data-structures.common.egnat)
 
 
 (defun select-seeds (branching-factor end &optional (start 0))

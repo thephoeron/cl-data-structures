@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.counting)
+(cl:in-package #:cl-data-structures.counting)
 
 
 (defclass tree-mixin ()

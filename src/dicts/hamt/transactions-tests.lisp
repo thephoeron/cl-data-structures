@@ -1,10 +1,10 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage transactional-hamt-dictionary-tests
   (:use :cl :prove :cl-ds :cl-ds.dicts.hamt
         :cl-data-structures.aux-package)
   (:export :run-stress-test
    :run-suite))
-(in-package :transactional-hamt-dictionary-tests)
+(cl:in-package :transactional-hamt-dictionary-tests)
 
 (plan 48)
 (diag "Testing isolation of insert")

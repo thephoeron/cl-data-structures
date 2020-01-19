@@ -1,4 +1,4 @@
-(in-package #:cl-ds.utils.cluster.clara/pam)
+(cl:in-package #:cl-ds.utils.cluster.clara/pam)
 
 
 (defun clear-unfinished-clusters (state)

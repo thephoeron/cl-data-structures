@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.metric)
+(cl:in-package #:cl-data-structures.utils.metric)
 
 
 (-> levenshtein-metric (string string) non-negative-fixnum)

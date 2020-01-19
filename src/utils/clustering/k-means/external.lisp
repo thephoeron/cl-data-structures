@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.clustering.k-means)
+(cl:in-package #:cl-data-structures.utils.clustering.k-means)
 
 
 (-> k-means (vector positive-fixnum non-negative-single-float

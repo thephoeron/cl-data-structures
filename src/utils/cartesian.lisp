@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils)
+(cl:in-package #:cl-data-structures.utils)
 
 
 (defun cartesian (sequence-of-sequences result-callback)
@@ -25,5 +25,3 @@
                result-table
                adr))
       result-table)))
-
-

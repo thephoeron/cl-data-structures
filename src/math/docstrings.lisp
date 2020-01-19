@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.math)
+(cl:in-package #:cl-data-structures.math)
 
 
 (docs:define-docs

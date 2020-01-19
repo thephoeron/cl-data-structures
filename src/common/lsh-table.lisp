@@ -1,4 +1,4 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 
 
 (defpackage :cl-data-structures.common.lsh
@@ -11,7 +11,7 @@
    #:read-tables))
 
 
-(in-package #:cl-data-structures.common.lsh)
+(cl:in-package #:cl-data-structures.common.lsh)
 
 
 (-> vector-dot-product ((vector single-float) (vector single-float))

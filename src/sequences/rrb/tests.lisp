@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage rrb-vector-tests (:use :prove :cl))
-(in-package :rrb-vector-tests)
+(cl:in-package :rrb-vector-tests)
 (cl-ds.utils:import-all-package-symbols :cl-data-structures.sequences.rrb-vector :rrb-vector-tests)
 
 (plan 39703)

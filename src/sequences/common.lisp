@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.sequences)
+(cl:in-package #:cl-data-structures.sequences)
 
 
 (defclass fundamental-sequence ()

@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils.metric)
+(cl:in-package #:cl-data-structures.utils.metric)
 
 
 (-> earth-mover-metric ((simple-array single-float (*))

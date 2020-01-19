@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.streaming-algorithms)
+(cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
 (define-constant +long-prime+ 4294967311)

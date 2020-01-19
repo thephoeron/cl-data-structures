@@ -1,4 +1,4 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 
 
 (defpackage :cl-data-structures.file-system

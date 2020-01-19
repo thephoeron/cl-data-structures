@@ -1,6 +1,6 @@
-(in-package :cl-user)
+(cl:in-package :cl-user)
 (defpackage :k-means-test-suite (:use :cl :prove :iterate))
-(in-package :k-means-test-suite)
+(cl:in-package :k-means-test-suite)
 
 
 (plan 2)

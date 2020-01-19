@@ -1,4 +1,4 @@
-(in-package #:cl-ds.math.aux)
+(cl:in-package #:cl-ds.math.aux)
 
 
 (defun gamma (xx)

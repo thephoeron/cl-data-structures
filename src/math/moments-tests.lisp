@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage moments-tests
  (:use :cl :cl-ds :prove :cl-data-structures.aux-package))
 
-(in-package #:moments-tests)
+(cl:in-package #:moments-tests)
 
 
 (plan 4)

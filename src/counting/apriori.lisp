@@ -1,4 +1,4 @@
-(in-package cl-data-structures.counting)
+(cl:in-package cl-data-structures.counting)
 
 
 (defclass set-index-function (cl-ds.alg.meta:multi-aggregation-function)

@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage without-tests
   (:use :cl :prove :cl-data-structures.aux-package))
 
-(in-package #:without-tests)
+(cl:in-package #:without-tests)
 
 (plan 8)
 

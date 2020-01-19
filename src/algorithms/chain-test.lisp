@@ -1,8 +1,8 @@
-(in-package #:cl-user)
+(cl:in-package #:cl-user)
 (defpackage chain-tests
   (:use :cl :cl-ds :prove :cl-data-structures.aux-package))
 
-(in-package #:chain-tests)
+(cl:in-package #:chain-tests)
 
 (plan 38)
 

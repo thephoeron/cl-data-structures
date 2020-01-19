@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.utils)
+(cl:in-package #:cl-data-structures.utils)
 
 
 (-> lazy-shuffle (integer integer) function)

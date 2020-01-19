@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.queues.2-3-tree)
+(cl:in-package #:cl-data-structures.queues.2-3-tree)
 
 
 (define-constant +buffer-size+ 32)

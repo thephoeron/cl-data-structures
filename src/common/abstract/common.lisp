@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.common.abstract)
+(cl:in-package #:cl-data-structures.common.abstract)
 
 
 (defun make-ownership-tag ()

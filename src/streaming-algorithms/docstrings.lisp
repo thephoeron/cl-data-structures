@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.streaming-algorithms)
+(cl:in-package #:cl-data-structures.streaming-algorithms)
 (eval-always
   (scribble:configure-scribble :package :cl-data-structures.streaming-algorithms)
   (named-readtables:in-readtable :scribble))

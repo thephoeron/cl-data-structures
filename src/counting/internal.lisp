@@ -1,4 +1,4 @@
-(in-package #:cl-data-structures.counting)
+(cl:in-package #:cl-data-structures.counting)
 
 
 (-> sort-sets (set-index-node) set-index-node)
