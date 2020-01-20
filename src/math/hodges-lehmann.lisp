@@ -39,7 +39,7 @@
     (:range &key key parallel)
     (:range &key (key #'identity) (parallel nil))
 
-    (%data %parallel)
+    ((%data (cl-ds.utils:extendable-vector t)) (%parallel boolean))
 
     ((setf %data (vect)
            %parallel parallel))

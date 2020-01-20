@@ -8,7 +8,7 @@
     (:range)
     (:range)
 
-    (%count)
+    ((%count integer))
 
     ((setf %count 0))
 

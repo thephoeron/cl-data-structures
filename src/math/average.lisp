@@ -4,39 +4,39 @@
 (cl-ds.alg.meta:define-aggregation-function
     average average-function
 
-  (:range &key key sum count)
-  (:range &key (key #'identity) (sum 0) (count 0))
+    (:range &key key sum count)
+    (:range &key (key #'identity) (sum 0) (count 0))
 
-  (%sum %count)
+    ((%sum number) (%count integer))
 
-  ((setf %sum sum
-         %count count))
+    ((setf %sum sum
+           %count count))
 
-  ((element)
-   (incf %count)
-   (incf %sum element))
+    ((element)
+     (incf %count)
+     (incf %sum element))
 
-  ((/ %sum %count)))
+    ((/ %sum %count)))
 
 
 (cl-ds.alg.meta:define-aggregation-function
     harmonic-average harmonic-average-function
 
-  (:range &key key)
-  (:range &key (key #'identity))
+    (:range &key key)
+    (:range &key (key #'identity))
 
-  (%sum %count %zero)
+    ((%sum number) (%count integer) (%zero boolean))
 
-  ((setf %sum 0
-         %count 0
-         %zero nil))
+    ((setf %sum 0
+           %count 0
+           %zero nil))
 
-  ((element)
-   (incf %count)
-   (if (zerop element)
-       (setf %zero t)
-       (incf %sum (/ 1 element))))
+    ((element)
+     (incf %count)
+     (if (zerop element)
+         (setf %zero t)
+         (incf %sum (/ 1 element))))
 
-  ((if %zero
-       0.0
-       (/ %count %sum))))
+    ((if %zero
+         0.0
+         (/ %count %sum))))
