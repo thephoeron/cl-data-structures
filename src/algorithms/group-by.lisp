@@ -60,13 +60,13 @@
                                                   (function aggregation-function)
                                                   (arguments list))
   (declare (optimize (speed 3) (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (bind (((:slots %groups) range)
+  (bind ((groups-prototype (read-groups range))
          (group-by-key (ensure-function (read-key range)))
          (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq group-by-key #'identity)))
-       (cl-ds.alg.meta:let-aggregator ((groups (copy-hash-table %groups)))
+       (cl-ds.alg.meta:let-aggregator ((groups (copy-hash-table groups-prototype)))
 
            ((element)
              (bind ((selected (~>> element (funcall group-by-key)))
