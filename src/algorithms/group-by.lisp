@@ -59,7 +59,8 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0) (compilation-speed 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)
+                     (space 0) (compilation-speed 0)))
   (bind ((groups-prototype (read-groups range))
          (group-by-key (ensure-function (read-key range)))
          (outer-fn (call-next-method)))
