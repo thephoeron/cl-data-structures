@@ -48,11 +48,11 @@
 
 
 
-(defgeneric group-by (range &key test key)
+(defgeneric group-by (range &key test key groups)
   (:generic-function-class group-by-function)
-  (:method (range &key (test 'eql) (key #'identity))
+  (:method (range &key (test 'eql) (key #'identity) (groups (make-hash-table :test test)))
     (apply-range-function range #'group-by
-                          (list range :test test :key key))))
+                          (list range :test test :key key :groups groups))))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range group-by-proxy)
@@ -94,7 +94,7 @@
                         (fn group-by-function)
                         all)
   (make-proxy range 'forward-group-by-proxy
-              :test (cl-ds.utils:at-list (rest all) :test)
+              :groups (cl-ds.utils:at-list (rest all) :groups)
               :key (cl-ds.utils:at-list (rest all) :key)))
 
 
@@ -102,7 +102,7 @@
                         (fn group-by-function)
                         all)
   (make-proxy range 'forward-group-by-proxy
-              :test (cl-ds.utils:at-list (rest all) :test)
+              :groups (cl-ds.utils:at-list (rest all) :groups)
               :key (cl-ds.utils:at-list (rest all) :key)))
 
 
@@ -110,13 +110,13 @@
                         (fn group-by-function)
                         all)
   (make-proxy range 'bidirectional-group-by-proxy
-              :test (cl-ds.utils:at-list (rest all) :test)
+              :groups (cl-ds.utils:at-list (rest all) :groups)
               :key (cl-ds.utils:at-list (rest all) :key)))
 
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn group-by-function)
-                         all)
+                        all)
   (make-proxy range 'random-access-group-by-proxy
-              :test (cl-ds.utils:at-list (rest all) :test)
+              :groups (cl-ds.utils:at-list (rest all) :groups)
               :key (cl-ds.utils:at-list (rest all) :key)))
