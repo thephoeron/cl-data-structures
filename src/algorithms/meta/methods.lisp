@@ -10,6 +10,12 @@ Range function invokaction protocol.
   (apply-aggregation-function object function all))
 
 
+(defmethod apply-range-function ((object cl:sequence)
+                                 (function aggregation-function)
+                                 all)
+  (apply-aggregation-function object function all))
+
+
 (defmethod apply-range-function (range
                                  (function aggregation-function)
                                  all)

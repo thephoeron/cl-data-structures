@@ -22,10 +22,11 @@
                     (function #'cl-ds:whole-range)
                     (key #'identity)
                     (maximum-queue-size 512))
+    (check-type maximum-queue-size positive-fixnum)
     (ensure-functionf function)
     (ensure-functionf key)
     (cl-ds.alg.meta:apply-range-function
-     range function
+     range #'parallel-multiplex
      (list range :key key :function function :maximum-queue-size maximum-queue-size))))
 
 
@@ -45,14 +46,20 @@
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
-  (declare (optimize (speed 3) (safety 0) (compilation-speed 0) (space 0)))
-  (bind ((outer-fn (call-next-method range nil function arguments))
+  (declare (optimize (speed 3) (safety 0)
+                     (compilation-speed 0) (space 0)))
+  (bind ((outer-fn (or outer-constructor
+                       (cl-ds.alg.meta:aggregator-constructor '()
+                                                              nil
+                                                              function
+                                                              arguments)))
          (maximum-queue-size (read-maximum-queue-size range))
-         (function (ensure-function (cl-ds.alg:read-function range)))
+         (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
-     (cl-ds.utils:cases ((:variant (eq key #'identity)))
+     (cl-ds.utils:cases ((:variant (eq key #'identity))
+                         (:variant (eq fn #'identity)))
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
             (queue (lparallel.queue:make-queue
@@ -63,26 +70,26 @@
                 (iterate
                   (declare (type fixnum count))
                   (with count = 1)
+                  (until (zerop count))
                   (for (op . elt) = (lparallel.queue:pop-queue queue))
                   (switch (op :test eq)
                     (:progress (cl-ds.alg.meta:pass-to-aggregation
                                 inner
                                 elt))
                     (:start (incf count))
-                    (:end (decf count)))
-                  (until (zerop count)))))))
+                    (:end (decf count))))))))
 
            ((element)
-             (lparallel.queue:push-queue (cons :start nil) queue)
+             (lparallel.queue:push-queue '(:start nil) queue)
              (lparallel:future
-               (~>> element (funcall key) (funcall function)
+               (~>> element (funcall key) (funcall fn)
                     (cl-ds:traverse _
                                     (lambda (element)
                                       (lparallel.queue:push-queue
-                                       (cons :progress element) queue)))))
-             (lparallel.queue:push-queue (cons :end nil) queue))
+                                       (cons :progress element) queue))))
+               (lparallel.queue:push-queue '(:end nil) queue)))
 
-           ((lparallel.queue:push-queue (cons :end nil) queue)
+           ((lparallel.queue:push-queue '(:end nil) queue)
              (bt:join-thread aggregate-thread)
              (cl-ds.alg.meta:extract-result inner))))
      function

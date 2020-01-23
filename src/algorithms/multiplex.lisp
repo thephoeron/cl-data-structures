@@ -120,7 +120,7 @@
                                                   (arguments list))
   (declare (optimize (speed 3) (safety 0) (compilation-speed 0) (space 0)))
   (bind ((outer-fn (call-next-method))
-         (function (ensure-function (read-function range)))
+         (fn (ensure-function (read-function range)))
          (key (ensure-function (read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
@@ -129,7 +129,7 @@
            ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element)
-             (~>> element (funcall key) (funcall function)
+             (~>> element (funcall key) (funcall fn)
                   (cl-ds:traverse _
                                   (lambda (x)
                                     (cl-ds.alg.meta:pass-to-aggregation inner x)))))

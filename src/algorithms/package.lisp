@@ -67,6 +67,7 @@
    #:forward-chain-of-ranges
    #:forward-proxy-range
    #:gather-prior-states
+   #:read-key
    #:group-by
    #:group-by-result-range
    #:summary-result-range
