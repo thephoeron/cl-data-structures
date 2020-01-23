@@ -22,7 +22,9 @@
                     (function #'cl-ds:whole-range)
                     (key #'identity)
                     (maximum-queue-size 512))
-    (check-type maximum-queue-size positive-fixnum)
+    (check-type maximum-queue-size integer)
+    (cl-ds:check-argument-bounds maximum-queue-size
+                                 (<= 16 maximum-queue-size))
     (ensure-functionf function)
     (ensure-functionf key)
     (cl-ds.alg.meta:apply-range-function
@@ -77,7 +79,8 @@
                                 inner
                                 elt))
                     (:start (incf count))
-                    (:end (decf count))))))))
+                    (:end (decf count)))))
+              :name "Aggregation Thread")))
 
            ((element)
              (lparallel.queue:push-queue '(:start nil) queue)
@@ -90,7 +93,12 @@
                (lparallel.queue:push-queue '(:end nil) queue)))
 
            ((lparallel.queue:push-queue '(:end nil) queue)
-             (bt:join-thread aggregate-thread)
+             (handler-case
+                 (progn
+                   (bt:join-thread aggregate-thread)
+                   (setf aggregate-thread nil))
+               (t (e) (declare (ignore e))
+                 (bt:destroy-thread aggregate-thread)))
              (cl-ds.alg.meta:extract-result inner))))
      function
      arguments)))

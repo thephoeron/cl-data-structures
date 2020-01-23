@@ -240,7 +240,8 @@
                              (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")
-                             (:file "parallel-multiplex")))
+                             (:file "parallel-multiplex")
+                             (:file "buffer-range")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")

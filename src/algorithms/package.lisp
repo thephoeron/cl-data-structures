@@ -71,6 +71,7 @@
    #:group-by
    #:group-by-result-range
    #:summary-result-range
+   #:%summary
    #:hash-table-range
    #:group-by-function
    #:hash-join

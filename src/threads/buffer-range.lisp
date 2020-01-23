@@ -1,18 +1,14 @@
 (cl:in-package #:cl-data-structures.threads)
 
 
-(defclass buffer-range (cl-ds.alg:transparent-to-chunking-mixin
-                        cl-ds.alg:proxy-range)
-  ((%limit :initarg :limit
-           :reader read-limit)
-   (%context-function :initarg :context-function
-                      :reader read-context-function)))
+(defclass buffer-range (cl-ds.alg:proxy-range)
+  ((%maximum-queue-size :initarg :maximum-queue-size
+                        :reader read-maximum-queue-size)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range buffer-range))
-  '((:limit read-limit)
-    (:context-function read-context-function)))
+  '((:maximum-queue-size read-maximum-queue-size)))
 
 
 (defclass forward-buffer-range (buffer-range cl-ds.alg:forward-proxy-range)
@@ -27,86 +23,77 @@
   ())
 
 
-(defun traverse/accross-thread-buffer-range (traverse/accross range function)
-  (bind ((queue (lparallel.queue:make-queue :fixed-capacity (read-limit range)))
-         ((:flet enque (data))
-          (lparallel.queue:push-queue data queue))
-         (og-range (cl-ds.alg::read-original-range range))
-         (context-function (read-context-function range))
-         (fn (lambda ()
-               (block nil
-                 (handler-case
-                     (funcall context-function
-                              (lambda ()
-                                (funcall traverse/accross
-                                         og-range
-                                         (compose #'enque (rcurry #'list* t)))))
-                   (condition (e)
-                     (enque (list* e :error))
-                     (return nil))))
-               (enque '(nil))))
-         (thread (bt:make-thread fn :name "buffer-range thread"))
-         (all-good nil))
-    (unwind-protect
-        (iterate
-          (for (data . more) = (lparallel.queue:pop-queue queue))
-          (while more)
-          (when (eql more :error)
-            (error data))
-          (funcall function data)
-          (finally (bt:join-thread thread)
-                   (setf all-good t)))
-      (unless all-good
-        (bt:destroy-thread thread)))
-    range))
-
-
-(defmethod cl-ds:traverse ((range buffer-range) function)
-  (traverse/accross-thread-buffer-range #'cl-ds:traverse range function))
-
-
-(defmethod cl-ds:across ((range buffer-range) function)
-  (traverse/accross-thread-buffer-range #'cl-ds:across range function))
-
-
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)
   ()
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric thread-buffer (range limit &key context-function)
+(defgeneric thread-buffer (range maximum-queue-size)
   (:generic-function-class thread-buffer-function)
-  (:method (range limit &key (context-function #'funcall))
-    (ensure-functionf context-function)
-    (check-type limit integer)
-    (cl-ds:check-argument-bounds limit (<= 16 limit))
-    (cl-ds.alg.meta:apply-range-function range #'thread-buffer
-                                         :limit limit
-                                         :context-function context-function)))
+  (:method (range maximum-queue-size)
+    (check-type maximum-queue-size integer)
+    (cl-ds:check-argument-bounds maximum-queue-size
+                                 (<= 16 maximum-queue-size))
+    (cl-ds.alg.meta:apply-range-function
+     range #'thread-buffer
+     (list range maximum-queue-size))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn thread-buffer-function)
-                                       &rest all &key limit context-function)
-  (declare (ignore all))
+                                       arguments)
   (cl-ds.alg:make-proxy range 'forward-buffer-range
-                        :limit limit
-                        :context-function context-function))
+                        :maximum-queue-size (second arguments)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
                                        (fn thread-buffer-function)
-                                       &rest all &key limit context-function)
-  (declare (ignore all))
+                                       arguments)
   (cl-ds.alg:make-proxy range 'random-access-buffer-range
-                        :limit limit
-                        :context-function context-function))
+                        :maximum-queue-size (second arguments)))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-bidirectional-range)
                                        (fn thread-buffer-function)
-                                       &rest all &key limit context-function)
-  (declare (ignore all))
+                                       arguments)
   (cl-ds.alg:make-proxy range 'bidirectional-buffer-range
-                        :limit limit
-                        :context-function context-function))
+                        :maximum-queue-size (second arguments)))
+
+
+(defmethod cl-ds.alg.meta:aggregator-constructor
+    ((range forward-buffer-range)
+     outer-constructor
+     (function cl-ds.alg.meta:aggregation-function)
+     (arguments list))
+  (declare (optimize (speed 3) (safety 0)
+                     (compilation-speed 0) (space 0)))
+  (bind ((outer-fn (call-next-method))
+         (maximum-queue-size (read-maximum-queue-size range)))
+    (cl-ds.alg.meta:aggregator-constructor
+     (cl-ds.alg:read-original-range range)
+     (cl-ds.alg.meta:let-aggregator
+         ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+          (queue (lparallel.queue:make-queue
+                  :fixed-capacity maximum-queue-size))
+          (aggregate-thread
+           (bt:make-thread
+            (lambda ()
+              (iterate
+                (for (op . elt) = (lparallel.queue:pop-queue queue))
+                (until (eq :end op))
+                (cl-ds.alg.meta:pass-to-aggregation inner elt)))
+            :name "Aggregation Thread")))
+
+         ((element)
+           (lparallel.queue:push-queue `(:progress . ,element) queue))
+
+         ((lparallel.queue:push-queue '(:end . nil) queue)
+           (handler-case
+               (progn
+                 (bt:join-thread aggregate-thread)
+                 (setf aggregate-thread nil))
+             (t (e) (declare (ignore e))
+               (bt:destroy-thread aggregate-thread)))
+           (cl-ds.alg.meta:extract-result inner)))
+     function
+     arguments)))

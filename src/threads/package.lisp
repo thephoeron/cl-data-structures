@@ -6,6 +6,6 @@
   (:nicknames #:cl-ds.threads)
   (:export
    ;; #:in-parallel
-   ;; #:thread-buffer
+   #:thread-buffer
    #:parallel-multiplex
    ))
