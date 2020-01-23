@@ -2,12 +2,13 @@
 
 
 (defclass parallel-forward-multiplex-proxy (cl-ds.alg:forward-multiplex-proxy)
-  ())
+  ((%maximum-queue-size :initarg :maximum-queue-size
+                        :reader read-maximum-queue-size)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range parallel-forward-multiplex-proxy))
-  '())
+  '((:maximum-queue-size read-maximum-queue-size)))
 
 
 (defclass parallel-multiplex-function (cl-ds.alg.meta:layer-function)
@@ -15,14 +16,17 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric parallel-multiplex (range &key key function)
+(defgeneric parallel-multiplex (range &key key function maximum-queue-size)
   (:generic-function-class parallel-multiplex-function)
-  (:method (range &key (function #'cl-ds:whole-range) (key #'identity))
+  (:method (range &key
+                    (function #'cl-ds:whole-range)
+                    (key #'identity)
+                    (maximum-queue-size 512))
     (ensure-functionf function)
     (ensure-functionf key)
     (cl-ds.alg.meta:apply-range-function
      range function
-     (list range :key key :function function))))
+     (list range :key key :function function :maximum-queue-size maximum-queue-size))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)
@@ -32,6 +36,7 @@
     (make 'parallel-forward-multiplex-proxy
           :original-range range
           :key (getf keys :key)
+          :maximum-queue-size (getf keys :maximum-queue-size)
           :function (getf keys :function))))
 
 
@@ -64,6 +69,7 @@
      (arguments list))
   (declare (optimize (speed 3) (safety 0) (compilation-speed 0) (space 0)))
   (bind ((outer-fn (call-next-method range nil function arguments))
+         (maximum-queue-size (read-maximum-queue-size range))
          (function (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
@@ -72,7 +78,7 @@
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
             (queue (lparallel.queue:make-queue
-                    :fixed-capacity 512))
+                    :fixed-capacity maximum-queue-size))
             (aggregate-thread
              (bt:make-thread
               (lambda ()
