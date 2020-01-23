@@ -238,11 +238,9 @@
                              (:file "tokenize")
                              (:file "find")
                              (:file "docstrings")))
-               ;; (:module "threads"
-               ;;  :components ((:file "package")
-               ;;               (:file "buffer-range")
-               ;;               (:file "in-parallel")
-               ;;               (:file "docstrings")))
+               (:module "threads"
+                :components ((:file "package")
+                             (:file "parallel-multiplex")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")

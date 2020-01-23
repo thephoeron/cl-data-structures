@@ -41,9 +41,11 @@
    #:%summary
    #:enumerate
    #:translation
+   #:read-function
    #:to-list
    #:accumulate
    #:bidirectional-chain-of-ranges
+   #:forward-multiplex-proxy
    #:multiplex
    #:bidirectional-proxy-range
    #:cartesian
