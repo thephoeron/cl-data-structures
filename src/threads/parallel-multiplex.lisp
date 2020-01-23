@@ -40,28 +40,6 @@
           :function (getf keys :function))))
 
 
-(cl-ds.alg.meta:define-aggregation-function
-    to-queue to-queue-function
-
-    (:range &key key maximum-size queue)
-    (:range &key (key #'identity) (maximum-size 512) queue)
-
-    ((%queue lparallel.queue:queue) (%count number))
-
-    ((setf %queue (or queue
-                      (lparallel.queue:make-queue
-                       :fixed-capacity maximum-size))
-           %count 0)
-     (lparallel.queue:push-queue (cons :start nil) %queue))
-
-    ((element)
-     (lparallel.queue:push-queue (cons :progress element) %queue)
-     (incf %count))
-
-    ((lparallel.queue:push-queue (cons :end nil) %queue)
-     %count))
-
-
 (defmethod cl-ds.alg.meta:aggregator-constructor
     ((range parallel-forward-multiplex-proxy)
      outer-constructor
