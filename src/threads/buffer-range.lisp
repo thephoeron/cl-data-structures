@@ -75,25 +75,31 @@
          ((inner (cl-ds.alg.meta:call-constructor outer-fn))
           (queue (lparallel.queue:make-queue
                   :fixed-capacity maximum-queue-size))
+          (error-lock (bt:make-lock "error lock"))
+          (stored-error nil)
           (aggregate-thread
            (bt:make-thread
             (lambda ()
               (iterate
                 (for (op . elt) = (lparallel.queue:pop-queue queue))
                 (until (eq :end op))
-                (cl-ds.alg.meta:pass-to-aggregation inner elt)))
+                (handler-case (cl-ds.alg.meta:pass-to-aggregation inner elt)
+                  (error (e) (bt:with-lock-held (error-lock)
+                               (setf stored-error e)
+                               (leave))))))
             :name "Aggregation Thread")))
 
          ((element)
+           (bt:with-lock-held (error-lock)
+             (unless (null stored-error)
+               (bt:destroy-thread aggregate-thread)
+               (error stored-error)))
            (lparallel.queue:push-queue `(:progress . ,element) queue))
 
          ((lparallel.queue:push-queue '(:end . nil) queue)
-           (handler-case
-               (progn
-                 (bt:join-thread aggregate-thread)
-                 (setf aggregate-thread nil))
-             (t (e) (declare (ignore e))
-               (bt:destroy-thread aggregate-thread)))
+           (bt:join-thread aggregate-thread)
+           (bt:with-lock-held (error-lock)
+             (unless (null stored-error) (error stored-error)))
            (cl-ds.alg.meta:extract-result inner)))
      function
      arguments)))

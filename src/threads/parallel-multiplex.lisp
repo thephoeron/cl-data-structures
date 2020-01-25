@@ -66,6 +66,10 @@
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
             (queue (lparallel.queue:make-queue
                     :fixed-capacity maximum-queue-size))
+            (futures-lock (bt:make-lock "futures lock"))
+            (futures (make-array maximum-queue-size
+                                 :element-type t
+                                 :fill-pointer 0))
             (aggregate-thread
              (bt:make-thread
               (lambda ()
@@ -75,30 +79,54 @@
                   (until (zerop count))
                   (for (op . elt) = (lparallel.queue:pop-queue queue))
                   (switch (op :test eq)
-                    (:progress (cl-ds.alg.meta:pass-to-aggregation
-                                inner
-                                elt))
+                    (:progress (handler-case (cl-ds.alg.meta:pass-to-aggregation
+                                              inner
+                                              elt)
+                                 (error (e)
+                                   (bt:with-lock-held (futures-lock)
+                                     (setf (fill-pointer futures) 0)
+                                     (vector-push-extend e futures))
+                                   (leave))))
                     (:start (incf count))
                     (:end (decf count)))))
-              :name "Aggregation Thread")))
+              :name "Aggregation Thread"))
+            ((:flet scan-futures (&optional force))
+             (bt:with-lock-held (futures-lock)
+               (iterate
+                 (for fill-pointer = (fill-pointer futures))
+                 (until (zerop (the fixnum fill-pointer)))
+                 (for future = (aref futures 0))
+                 (for fullfilledp =  (lparallel:fulfilledp future))
+                 (for full = (>= fill-pointer maximum-queue-size))
+                 (when (or force full fullfilledp)
+                   (cl-ds.utils:swapop futures 0)
+                   (when-let ((e (lparallel:force future)))
+                     (bt:destroy-thread aggregate-thread)
+                     (setf aggregate-thread nil)
+                     (error e))
+                   (next-iteration))
+                 (unless force (leave))))))
 
            ((element)
+             (scan-futures)
              (lparallel.queue:push-queue '(:start nil) queue)
-             (lparallel:future
-               (~>> element (funcall key) (funcall fn)
-                    (cl-ds:traverse _
-                                    (lambda (element)
-                                      (lparallel.queue:push-queue
-                                       (cons :progress element) queue))))
-               (lparallel.queue:push-queue '(:end nil) queue)))
+             (vector-push-extend
+              (lparallel:future
+                (handler-case
+                    (progn
+                      (~>> element (funcall key) (funcall fn)
+                           (cl-ds:traverse _
+                                           (lambda (element)
+                                             (lparallel.queue:push-queue
+                                              (cons :progress element) queue))))
+                      (lparallel.queue:push-queue '(:end nil) queue)
+                      nil)
+                  (error (e) e)))
+              futures))
 
            ((lparallel.queue:push-queue '(:end nil) queue)
-             (handler-case
-                 (progn
-                   (bt:join-thread aggregate-thread)
-                   (setf aggregate-thread nil))
-               (t (e) (declare (ignore e))
-                 (bt:destroy-thread aggregate-thread)))
+             (scan-futures t)
+             (bt:join-thread aggregate-thread)
              (cl-ds.alg.meta:extract-result inner))))
      function
      arguments)))
