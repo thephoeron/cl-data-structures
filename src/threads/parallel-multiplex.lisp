@@ -96,7 +96,7 @@
                  (for fill-pointer = (fill-pointer futures))
                  (until (zerop (the fixnum fill-pointer)))
                  (for future = (aref futures 0))
-                 (for fullfilledp =  (lparallel:fulfilledp future))
+                 (for fullfilledp = (lparallel:fulfilledp future))
                  (for full = (>= fill-pointer maximum-queue-size))
                  (when (or force full fullfilledp)
                    (cl-ds.utils:swapop futures 0)
