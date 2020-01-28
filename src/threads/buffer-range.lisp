@@ -1,8 +1,7 @@
 (cl:in-package #:cl-data-structures.threads)
 
 
-(defclass buffer-range (cl-ds:fundamental-forward-range
-                        cl-ds.alg:proxy-range)
+(defclass buffer-range (cl-ds.alg:proxy-range)
   ((%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)))
 
@@ -62,7 +61,7 @@
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor
-    ((range forward-buffer-range)
+    ((range buffer-range)
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
@@ -78,17 +77,16 @@
                   :fixed-capacity maximum-queue-size))
           (error-lock (bt:make-lock "error lock"))
           (stored-error nil)
-          (aggregate-thread
-           (bt:make-thread
-            (lambda ()
-              (iterate
-                (for (op . elt) = (lparallel.queue:pop-queue queue))
-                (until (eq :end op))
-                (handler-case (cl-ds.alg.meta:pass-to-aggregation inner elt)
-                  (error (e) (bt:with-lock-held (error-lock)
-                               (setf stored-error e)
-                               (leave))))))
-            :name "Aggregation Thread")))
+          ((:flet thread-function ())
+           (iterate
+             (for (op . elt) = (lparallel.queue:pop-queue queue))
+             (until (eq :end op))
+             (handler-case (cl-ds.alg.meta:pass-to-aggregation inner elt)
+               (error (e) (bt:with-lock-held (error-lock)
+                            (setf stored-error e)
+                            (leave))))))
+          (aggregate-thread (bt:make-thread #'thread-function
+                                            :name "Aggregation Thread")))
 
          ((element)
            (bt:with-lock-held (error-lock)

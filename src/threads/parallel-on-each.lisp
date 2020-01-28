@@ -86,28 +86,27 @@
                     (error (e) e)))
                 queue))
              (setf (fill-pointer chunk) 0))
-            (aggregate-thread
-             (bt:make-thread
-              (lambda ()
-                (iterate
-                  (for future = (lparallel.queue:pop-queue queue))
-                  (when (null future)
-                    (leave))
-                  (for elt = (lparallel:future future))
-                  (if (vectorp elt)
-                      (handler-case
-                          (iterate
-                            (for e in-vector elt)
-                            (cl-ds.alg.meta:pass-to-aggregation inner e))
-                        (error (e)
-                          (bt:with-lock-held (error-lock)
-                            (setf stored-error e))
-                          (leave)))
-                      (progn
-                        (bt:with-lock-held (error-lock)
-                          (setf stored-error elt))
-                        (leave)))))
-              :name "Aggregation Thread")))
+            ((:flet thread-function ())
+             (iterate
+               (for future = (lparallel.queue:pop-queue queue))
+               (when (null future)
+                 (leave))
+               (for elt = (lparallel:future future))
+               (if (vectorp elt)
+                   (handler-case
+                       (iterate
+                         (for e in-vector elt)
+                         (cl-ds.alg.meta:pass-to-aggregation inner e))
+                     (error (e)
+                       (bt:with-lock-held (error-lock)
+                         (setf stored-error e))
+                       (leave)))
+                   (progn
+                     (bt:with-lock-held (error-lock)
+                       (setf stored-error elt))
+                     (leave)))))
+            (aggregate-thread (bt:make-thread #'thread-function
+                                              :name "Aggregation Thread")))
 
            ((element)
              (bt:with-lock-held (error-lock)
