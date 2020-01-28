@@ -1,7 +1,7 @@
 (cl:in-package #:cl-data-structures.threads)
 
 
-(defclass parallel-on-each-proxy (cl-ds.alg:forward-multiplex-proxy)
+(defclass parallel-on-each-proxy (cl-ds.alg:forward-proxy-range)
   ((%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)
    (%chunk-size :initarg :chunk-size

@@ -42,6 +42,7 @@
    #:enumerate
    #:translation
    #:read-function
+   #:forward-proxy-box-range
    #:to-list
    #:accumulate
    #:bidirectional-chain-of-ranges

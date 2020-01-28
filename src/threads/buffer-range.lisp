@@ -1,7 +1,8 @@
 (cl:in-package #:cl-data-structures.threads)
 
 
-(defclass buffer-range (cl-ds.alg:proxy-range)
+(defclass buffer-range (cl-ds:fundamental-forward-range
+                        cl-ds.alg:proxy-range)
   ((%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)))
 
