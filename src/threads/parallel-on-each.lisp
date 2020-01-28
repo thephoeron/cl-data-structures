@@ -57,10 +57,8 @@
   (declare (optimize (speed 3) (safety 0)
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (or outer-constructor
-                       (cl-ds.alg.meta:aggregator-constructor '()
-                                                              nil
-                                                              function
-                                                              arguments)))
+                       (cl-ds.alg.meta:aggregator-constructor
+                        '() nil function arguments)))
          (maximum-queue-size (read-maximum-queue-size range))
          (chunk-size (the fixnum (read-chunk-size range)))
          (fn (ensure-function (cl-ds.alg:read-function range)))
