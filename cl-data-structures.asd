@@ -242,7 +242,8 @@
                 :components ((:file "package")
                              (:file "parallel-multiplex")
                              (:file "parallel-on-each")
-                             (:file "buffer-range")))
+                             (:file "buffer-range")
+                             (:file "docstrings")))
                (:module "clustering"
                 :components ((:file "package")
                              (:file "clara")

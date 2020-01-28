@@ -71,7 +71,7 @@
                          (:variant (eq fn #'identity)))
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-            (queue (lparallel.queue:make-queue
+            (queue (lparallel:make-channel
                     :fixed-capacity maximum-queue-size))
             (error-lock (bt:make-lock "error lock"))
             (stored-error nil)
@@ -79,19 +79,18 @@
             ((:flet push-chunk ())
              (let ((chunk (copy-array chunk)))
                (declare (type (cl-ds.utils:extendable-vector t) chunk))
-               (lparallel.queue:push-queue
-                (lparallel:future
+               (lparallel:submit-task
+                queue
+                (lambda ()
                   (assert (array-has-fill-pointer-p chunk))
                   (handler-case (map 'vector fn chunk)
-                    (error (e) e)))
-                queue))
+                    (error (e) e)))))
              (setf (fill-pointer chunk) 0))
             ((:flet thread-function ())
              (iterate
-               (for future = (lparallel.queue:pop-queue queue))
-               (when (null future)
+               (for elt = (lparallel:receive-result queue))
+               (when (null elt)
                  (leave))
-               (for elt = (lparallel:future future))
                (if (vectorp elt)
                    (handler-case
                        (iterate

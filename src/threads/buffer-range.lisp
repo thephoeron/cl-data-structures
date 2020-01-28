@@ -28,9 +28,9 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric thread-buffer (range maximum-queue-size)
+(defgeneric thread-buffer (range &key maximum-queue-size)
   (:generic-function-class thread-buffer-function)
-  (:method (range maximum-queue-size)
+  (:method (range &key (maximum-queue-size 512))
     (check-type maximum-queue-size integer)
     (cl-ds:check-argument-bounds maximum-queue-size
                                  (<= 16 maximum-queue-size))
