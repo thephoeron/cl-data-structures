@@ -92,7 +92,6 @@
          ((element)
            (bt:with-lock-held (error-lock)
              (unless (null stored-error)
-               (bt:destroy-thread aggregate-thread)
                (error stored-error)))
            (lparallel.queue:push-queue `(:progress . ,element) queue))
 

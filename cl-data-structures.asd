@@ -241,6 +241,7 @@
                (:module "threads"
                 :components ((:file "package")
                              (:file "parallel-multiplex")
+                             (:file "parallel-on-each")
                              (:file "buffer-range")))
                (:module "clustering"
                 :components ((:file "package")
