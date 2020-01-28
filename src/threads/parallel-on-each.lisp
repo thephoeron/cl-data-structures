@@ -115,7 +115,7 @@
 
            ((unless (zerop (fill-pointer chunk))
               (push-chunk))
-             (lparallel.queue:push-queue nil queue)
+             (lparallel:submit-task queue (constantly #'nil))
              (bt:join-thread aggregate-thread)
              (bt:with-lock-held (error-lock)
                (unless (null stored-error)
