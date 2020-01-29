@@ -2,13 +2,13 @@
 
 
 (defclass parallel-forward-multiplex-proxy (cl-ds.alg:forward-multiplex-proxy)
-  ((%maximum-queue-size :initarg :maximum-queue-size
-                        :reader read-maximum-queue-size)))
+  ((%maximal-queue-size :initarg :maximal-queue-size
+                        :reader read-maximal-queue-size)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range parallel-forward-multiplex-proxy))
-  '((:maximum-queue-size read-maximum-queue-size)))
+  '((:maximal-queue-size read-maximal-queue-size)))
 
 
 (defclass parallel-multiplex-function (cl-ds.alg.meta:layer-function)
@@ -16,20 +16,20 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric parallel-multiplex (range &key key function maximum-queue-size)
+(defgeneric parallel-multiplex (range &key key function maximal-queue-size)
   (:generic-function-class parallel-multiplex-function)
   (:method (range &key
                     (function #'cl-ds:whole-range)
                     (key #'identity)
-                    (maximum-queue-size 512))
-    (check-type maximum-queue-size integer)
-    (cl-ds:check-argument-bounds maximum-queue-size
-                                 (<= 16 maximum-queue-size))
+                    (maximal-queue-size 512))
+    (check-type maximal-queue-size integer)
+    (cl-ds:check-argument-bounds maximal-queue-size
+                                 (<= 16 maximal-queue-size))
     (ensure-functionf function)
     (ensure-functionf key)
     (cl-ds.alg.meta:apply-range-function
      range #'parallel-multiplex
-     (list range :key key :function function :maximum-queue-size maximum-queue-size))))
+     (list range :key key :function function :maximal-queue-size maximal-queue-size))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)
@@ -39,7 +39,7 @@
     (make 'parallel-forward-multiplex-proxy
           :original-range range
           :key (getf keys :key)
-          :maximum-queue-size (getf keys :maximum-queue-size)
+          :maximal-queue-size (getf keys :maximal-queue-size)
           :function (getf keys :function))))
 
 
@@ -53,7 +53,7 @@
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
                         '() nil function arguments)))
-         (maximum-queue-size (read-maximum-queue-size range))
+         (maximal-queue-size (read-maximal-queue-size range))
          (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range))))
     (cl-ds.alg.meta:aggregator-constructor
@@ -63,9 +63,9 @@
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
             (queue (lparallel.queue:make-queue
-                    :fixed-capacity maximum-queue-size))
+                    :fixed-capacity maximal-queue-size))
             (futures-lock (bt:make-lock "futures lock"))
-            (futures (make-array maximum-queue-size
+            (futures (make-array maximal-queue-size
                                  :element-type t
                                  :fill-pointer 0))
             (aggregate-thread
@@ -95,7 +95,7 @@
                  (until (zerop (the fixnum fill-pointer)))
                  (for future = (aref futures 0))
                  (for fullfilledp = (lparallel:fulfilledp future))
-                 (for full = (>= fill-pointer maximum-queue-size))
+                 (for full = (>= fill-pointer maximal-queue-size))
                  (when (or force full fullfilledp)
                    (cl-ds.utils:swapop futures 0)
                    (when-let ((e (lparallel:force future)))
