@@ -112,44 +112,34 @@
 
 
 (defun obtain-value (pull push)
-  (declare (optimize (debug 3))
+  (declare (optimize (speed 3))
            (type function pull push))
-  (flet ((push-next (node position parents)
-           (declare (type fixnum position)
-                    (type list parents)
+  (flet ((push-next (node parents)
+           (declare (type list parents)
                     (type cl-ds.common.qp-trie:qp-trie-node node))
-           (if (eql position 16)
-               (iterate
-                 (declare (type fixnum i))
-                 (for i from 0 below 16)
-                 (when (cl-ds.common.qp-trie:qp-trie-node-present-p node i)
-                   (funcall
-                    push (list (cl-ds.common.qp-trie:qp-trie-node-ref node i)
-                               i
-                               (cons i parents)))))
-               (funcall push (list node position parents)))
-           nil))
-    (iterate outer
-      (declare (type fixnum current-position next-position))
-      (for (node current-position parents) = (funcall pull))
-      (for next-position = (1+ current-position))
-      (push-next node next-position parents)
-      (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p
-             node
-             current-position)
-        (return-from obtain-value
-          (values (~> current-position
-                      (cons parents)
-                      cl-ds.common.qp-trie:half-byte-list-to-array)
-                  t))))))
+           (iterate
+             (declare (type fixnum i))
+             (for i from 0 below 16)
+             (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p node i)
+               (funcall push (list nil (cons i parents)))))
+           (iterate
+             (declare (type fixnum i))
+             (for i from 0 below 16)
+             (when (cl-ds.common.qp-trie:qp-trie-node-present-p node i)
+               (funcall
+                push (list (cl-ds.common.qp-trie:qp-trie-node-ref node i)
+                           (cons i parents)))))))
+    (iterate
+      (for (node parents) = (funcall pull))
+      (when (null node)
+        (leave (cl-ds.common.qp-trie:half-byte-list-to-array parents)))
+      (push-next node parents))))
 
 
 (defmethod cl-ds:whole-range ((container fundamental-qp-trie-set))
   (make-instance 'cl-ds.common:forward-tree-range
                  :obtain-value #'obtain-value
-                 :forward-stack (~> container
-                                    cl-ds.common.qp-trie:access-root
-                                    (list 0 nil)
-                                    list)
+                 :forward-stack (list (list (cl-ds.common.qp-trie:access-root container)
+                                            '()))
                  :key #'identity
                  :container container))

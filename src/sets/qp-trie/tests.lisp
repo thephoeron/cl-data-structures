@@ -1,6 +1,6 @@
 (cl:in-package #:cl-data-structures.sets.qp-trie)
 
-(prove:plan 502)
+(prove:plan 503)
 
 (let ((trie (make-mutable-qp-trie-set))
       (data (make-array 500)))
@@ -15,16 +15,18 @@
   (prove:is (cl-ds.alg:count-elements trie)
             (~> data (remove-duplicates :test #'vector=) length))
   (prove:is (cl-ds:size trie) (cl-ds.alg:count-elements trie))
-  (~> trie cl-ds:whole-range cl-ds.alg:to-vector
-      (sort #'> :key (rcurry #'aref 0))
-      (stable-sort #'> :key (rcurry #'aref 1))
-      (stable-sort #'> :key (rcurry #'aref 2))
-      (stable-sort #'> :key (rcurry #'aref 3)))
-  (~> data
-      (sort #'> :key (rcurry #'aref 0))
-      (stable-sort #'> :key (rcurry #'aref 1))
-      (stable-sort #'> :key (rcurry #'aref 2))
-      (stable-sort #'> :key (rcurry #'aref 3)))
-  )
+  (prove:is
+   (~> trie cl-ds:whole-range cl-ds.alg:to-vector
+       (sort #'> :key (rcurry #'aref 0))
+       (stable-sort #'> :key (rcurry #'aref 1))
+       (stable-sort #'> :key (rcurry #'aref 2))
+       (stable-sort #'> :key (rcurry #'aref 3))
+       print)
+   (~> data
+       (sort #'> :key (rcurry #'aref 0))
+       (stable-sort #'> :key (rcurry #'aref 1))
+       (stable-sort #'> :key (rcurry #'aref 2))
+       (stable-sort #'> :key (rcurry #'aref 3)))
+   :test #'equalp))
 
 (prove:finalize)
