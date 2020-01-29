@@ -120,15 +120,15 @@
            (iterate
              (declare (type fixnum i))
              (for i from 0 below 16)
-             (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p node i)
-               (funcall push (list nil (cons i parents)))))
-           (iterate
-             (declare (type fixnum i))
-             (for i from 0 below 16)
              (when (cl-ds.common.qp-trie:qp-trie-node-present-p node i)
                (funcall
                 push (list (cl-ds.common.qp-trie:qp-trie-node-ref node i)
-                           (cons i parents)))))))
+                           (cons i parents)))))
+           (iterate
+             (declare (type fixnum i))
+             (for i from 0 below 16)
+             (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p node i)
+               (funcall push (list nil (cons i parents)))))))
     (iterate
       (for (node parents) = (funcall pull))
       (when (null node)
