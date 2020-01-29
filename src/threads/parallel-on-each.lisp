@@ -92,7 +92,10 @@
                (if (vectorp elt)
                    (handler-case
                        (iterate
-                         (for e in-vector elt)
+                         (with vector = (the simple-vector elt))
+                         (with length = (length vector))
+                         (for i from 0 below length)
+                         (for e = (aref vector i))
                          (cl-ds.alg.meta:pass-to-aggregation inner e))
                      (error (e)
                        (bt:with-lock-held (error-lock)
