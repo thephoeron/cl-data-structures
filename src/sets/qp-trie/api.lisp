@@ -112,7 +112,7 @@
 
 
 (defun obtain-value (pull push)
-  (declare (optimize (speed 3))
+  (declare (optimize (debug 3))
            (type function pull push))
   (flet ((push-next (node position parents)
            (declare (type fixnum position)
@@ -133,24 +133,23 @@
       (declare (type fixnum current-position next-position))
       (for (node current-position parents) = (funcall pull))
       (for next-position = (1+ current-position))
+      (push-next node next-position parents)
       (when (cl-ds.common.qp-trie:qp-trie-node-leaf-present-p
              node
              current-position)
-        (push-next node next-position parents)
         (return-from obtain-value
           (values (~> current-position
                       (cons parents)
                       cl-ds.common.qp-trie:half-byte-list-to-array)
-                  t)))
-      (push-next node next-position parents))))
+                  t))))))
 
 
 (defmethod cl-ds:whole-range ((container fundamental-qp-trie-set))
-  (make 'cl-ds.common:forward-tree-range
-        :obtain-value #'obtain-value
-        :forward-stack (~> container
-                           cl-ds.common.qp-trie:access-root
-                           (list 0 nil)
-                           list)
-        :key #'identity
-        :container container))
+  (make-instance 'cl-ds.common:forward-tree-range
+                 :obtain-value #'obtain-value
+                 :forward-stack (~> container
+                                    cl-ds.common.qp-trie:access-root
+                                    (list 0 nil)
+                                    list)
+                 :key #'identity
+                 :container container))
