@@ -81,7 +81,7 @@
                 queue
                 (lambda ()
                   (assert (array-has-fill-pointer-p chunk))
-                  (handler-case (map 'vector fn chunk)
+                  (handler-case (cl-ds.utils:transform fn chunk)
                     (error (e) e)))))
              (setf (fill-pointer chunk) 0))
             ((:flet thread-function ())
@@ -92,10 +92,9 @@
                (if (vectorp elt)
                    (handler-case
                        (iterate
-                         (with vector = (the simple-vector elt))
-                         (with length = (length vector))
+                         (with length = (length elt))
                          (for i from 0 below length)
-                         (for e = (aref vector i))
+                         (for e = (aref elt i))
                          (cl-ds.alg.meta:pass-to-aggregation inner e))
                      (error (e)
                        (bt:with-lock-held (error-lock)
