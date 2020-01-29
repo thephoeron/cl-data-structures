@@ -53,7 +53,9 @@
                               :components ((:test-file "tests")))))
                (:module "sets"
                 :components ((:module "skip-list"
-                              :components ((:test-file "tests")))))
+                                      :components ((:test-file "tests")))
+                             (:module "qp-trie"
+                                      :components ((:test-file "tests")))))
                (:module "metric-space"
                 :components ((:module "egnat"
                               :components ((:test-file "tests")))))

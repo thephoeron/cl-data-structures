@@ -6,7 +6,7 @@
   (:nicknames #:cl-ds.common.qp-trie)
   (:export #:qp-trie
            #:qp-trie-find
-           #:map-qp-trie-node
+           #:map-qp-trie-nodes
            #:access-root
            #:make-qp-trie-node
            #:qp-trie-node-clone
@@ -383,7 +383,7 @@
     (for i from 0 below 16)
     (for present = (ldb-test (byte 1 i) leafs))
     (when present
-      (funcall function node (cons i ac))))
+      (funcall function (half-byte-list-to-array (cons i ac)))))
   (iterate
     (declare (type fixnum i j))
     (with children = (qp-trie-node-children-bitmask node))
@@ -391,18 +391,7 @@
     (with j = 0)
     (for i from 0 below 16)
     (for present = (ldb-test (byte 1 i) children))
-    (unless present
-      (next-iteration))
-    (map-qp-trie-node function (aref content j) (cons i ac))
+    (unless present (next-iteration))
+    (map-qp-trie-nodes function (aref content j) (cons i ac))
     (incf j))
   node)
-
-
-(defun map-qp-trie-node (function node)
-  (declare (optimize (speed 3))
-           (type qp-trie-node node)
-           (type list ac)
-           (type function function))
-  (map-qp-trie-node (lambda (node path)
-                      (funcall function (half-byte-list-to-array path)))
-                    node))

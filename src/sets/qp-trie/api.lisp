@@ -93,7 +93,7 @@
                          function)
   (ensure-functionf function)
   (~>> object cl-ds.common.qp-trie:access-root
-       (cl-ds.common.qp-trie:map-qp-trie-node function))
+       (cl-ds.common.qp-trie:map-qp-trie-nodes function))
   object)
 
 
