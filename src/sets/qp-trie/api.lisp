@@ -139,7 +139,9 @@
 (defmethod cl-ds:whole-range ((container fundamental-qp-trie-set))
   (make-instance 'cl-ds.common:forward-tree-range
                  :obtain-value #'obtain-value
-                 :forward-stack (list (list (cl-ds.common.qp-trie:access-root container)
-                                            '()))
+                 :forward-stack (~> container
+                                    cl-ds.common.qp-trie:access-root
+                                    (list '())
+                                    list)
                  :key #'identity
                  :container container))
