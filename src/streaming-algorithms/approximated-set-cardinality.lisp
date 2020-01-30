@@ -106,10 +106,8 @@
 
   (%data-sketch)
 
-  ((&key data-sketch &allow-other-keys)
-
-   (check-type data-sketch approximated-set-cardinality)
-   (setf %data-sketch data-sketch))
+  ((check-type data-sketch approximated-set-cardinality)
+   (setf %data-sketch (cl-ds:clone data-sketch)))
 
   ((element)
    (bind (((:slots %hash-fn %bits %registers) %data-sketch)

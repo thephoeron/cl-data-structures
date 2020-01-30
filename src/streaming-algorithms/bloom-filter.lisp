@@ -104,9 +104,8 @@
 
   (%data-sketch)
 
-  ((&key data-sketch &allow-other-keys)
-   (check-type data-sketch bloom-filter)
-   (setf %data-sketch data-sketch))
+  ((check-type data-sketch bloom-filter)
+   (setf %data-sketch (cl-ds:clone data-sketch)))
 
   ((element)
    (iterate

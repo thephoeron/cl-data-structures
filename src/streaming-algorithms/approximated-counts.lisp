@@ -101,9 +101,8 @@
 
   (%data-sketch)
 
-  ((&key data-sketch &allow-other-keys)
-   (check-type data-sketch approximated-counts)
-   (setf %data-sketch data-sketch))
+  ((check-type data-sketch approximated-counts)
+   (setf %data-sketch (cl-ds:clone data-sketch)))
 
   ((element)
    (incf (access-size %data-sketch))
