@@ -173,6 +173,8 @@
            ((element) (~>> element (funcall on-each-key) (funcall range-function)
                            (cl-ds.alg.meta:pass-to-aggregation inner)))
 
-           ((cl-ds.alg.meta:extract-result inner))))
+           ((cl-ds.alg.meta:extract-result inner))
+
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

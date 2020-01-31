@@ -152,16 +152,17 @@
                      samples
                      (lambda ()
                        (funcall context-function
-                                (lambda ()
-                                  (iterate
-                                    (declare (type fixnum i))
-                                    (with aggregator = (cl-ds.alg.meta:call-constructor outer-fn))
-                                    (for i from 0 below sample-size)
-                                    (for random = (random length))
-                                    (cl-ds.alg.meta:pass-to-aggregation
-                                     aggregator
-                                     (aref data random))
-                                    (finally (return (cl-ds.alg.meta:extract-result aggregator))))))))
+                                (lambda (&aux (aggregator (cl-ds.alg.meta:call-constructor outer-fn)))
+                                  (handler-case
+                                      (iterate
+                                        (declare (type fixnum i))
+                                        (for i from 0 below sample-size)
+                                        (for random = (random length))
+                                        (cl-ds.alg.meta:pass-to-aggregation aggregator (aref data random))
+                                        (finally (return (cl-ds.alg.meta:extract-result aggregator))))
+                                    (error (e)
+                                      (cl-ds.alg.meta:cleanup aggregator)
+                                      (error e)))))))
             (setf samples (sort samples compare))
             (list* (aref samples lower-percentail)
                    (aref samples higher-percentail)))))

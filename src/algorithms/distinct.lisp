@@ -159,9 +159,3 @@
            ((cl-ds.alg.meta:extract-result inner))))
      function
      arguments)))
-
-
-(defmethod cl-ds.alg.meta:across-aggregate ((range distinct-proxy) function)
-  (~> range
-      read-original-range
-      (cl-ds.alg.meta:across-aggregate function)))

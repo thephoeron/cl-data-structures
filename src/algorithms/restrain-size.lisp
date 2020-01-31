@@ -117,6 +117,8 @@
              (cl-ds.alg.meta:pass-to-aggregation inner element)
              (incf (the fixnum position))))
 
-         ((cl-ds.alg.meta:extract-result inner)))
+         ((cl-ds.alg.meta:extract-result inner))
+
+       (cl-ds.alg.meta:cleanup inner))
      function
      arguments)))

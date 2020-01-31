@@ -86,7 +86,11 @@
                             :hash-table groups
                             :keys (~> groups hash-table-keys (coerce 'vector))
                             :begin 0
-                            :end (hash-table-count groups)))))
+                            :end (hash-table-count groups)))
+
+         (iterate
+           (for (key group) in-hashtable groups)
+           (cl-ds.alg.meta:cleanup group))))
      function
      arguments)))
 

@@ -81,6 +81,8 @@
              (when (funcall predicate (funcall key element))
                (cl-ds.alg.meta:pass-to-aggregation inner element)))
 
-           ((cl-ds.alg.meta:extract-result inner)))
+           ((cl-ds.alg.meta:extract-result inner))
+
+         (cl-ds.alg.meta:cleanup inner))
        function
        arguments))))

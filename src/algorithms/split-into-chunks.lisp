@@ -59,7 +59,11 @@
 
          ((~> #'cl-ds.alg.meta:extract-result
               (cl-ds.utils:transform chunks)
-              cl-ds:whole-range)))
+              cl-ds:whole-range))
+
+       (iterate
+         (for inner in-vector chunks)
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
 

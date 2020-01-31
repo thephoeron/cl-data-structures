@@ -117,6 +117,8 @@
             (iterate
               (for elt in-vector data)
               (cl-ds.alg.meta:pass-to-aggregation inner elt)))
-          (cl-ds.alg.meta:extract-result inner)))
+           (cl-ds.alg.meta:extract-result inner)
+
+          (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

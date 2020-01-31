@@ -109,7 +109,7 @@
 (defmacro let-aggregator (bindings
                           ((element) &body pass)
                           (&body extract)
-                          &optional cleanup)
+                          &body cleanup)
   `(lambda ()
      (bind ,bindings
        (make-aggregator

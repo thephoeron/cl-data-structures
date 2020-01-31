@@ -129,7 +129,10 @@
                       (let ((*current-key* current-key))
                         (pass-to-aggregation current-state element))))))
 
-           (nil)))
+           (nil)
+
+         (when current-state
+           (cl-ds.alg.meta:cleanup current-state))))
      function
      arguments)))
 
@@ -179,9 +182,13 @@
                      (unless on-first
                        (setf (car (aref chunks (1- (fill-pointer chunks)))) key))))))
 
-           ((~> (cl-ds.utils:transform (compose #'cl-ds.alg.meta:extract-result #'cdr)
-                                       chunks)
-                cl-ds:whole-range))))
+           ((~> (compose #'cl-ds.alg.meta:extract-result #'cdr)
+                (cl-ds.utils:transform chunks)
+                cl-ds:whole-range))
+
+         (iterate
+           (for inner in-vector chunks)
+           (cl-ds.alg.meta:cleanup inner))))
 
      function
      arguments)))

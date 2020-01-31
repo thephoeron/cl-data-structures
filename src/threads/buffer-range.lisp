@@ -120,6 +120,8 @@
            (bt:with-lock-held (error-lock)
              (unless (null stored-error)
                (error stored-error)))
-           (cl-ds.alg.meta:extract-result inner)))
+           (cl-ds.alg.meta:extract-result inner))
+
+       (cl-ds.alg.meta:cleanup inner))
      function
      arguments)))

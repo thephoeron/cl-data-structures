@@ -178,7 +178,9 @@
                    (setf state r initialized t)
                    (cl-ds.alg.meta:pass-to-aggregation inner state))))
 
-           ((cl-ds.alg.meta:extract-result inner))))
+           ((cl-ds.alg.meta:extract-result inner))
+
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
 

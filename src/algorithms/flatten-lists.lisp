@@ -132,6 +132,8 @@
                             (map nil #'impl x))))
                (~>> element (funcall flatten-key) impl)))
 
-           ((cl-ds.alg.meta:extract-result inner))))
+           ((cl-ds.alg.meta:extract-result inner))
+
+        (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

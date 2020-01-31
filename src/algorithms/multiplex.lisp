@@ -134,6 +134,8 @@
                                   (lambda (x)
                                     (cl-ds.alg.meta:pass-to-aggregation inner x)))))
 
-           ((cl-ds.alg.meta:extract-result inner))))
+           ((cl-ds.alg.meta:extract-result inner))
+
+        (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
