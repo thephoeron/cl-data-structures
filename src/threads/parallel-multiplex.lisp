@@ -125,6 +125,11 @@
            ((lparallel.queue:push-queue '(:end nil) queue)
              (scan-futures t)
              (bt:join-thread aggregate-thread)
-             (cl-ds.alg.meta:extract-result inner))))
+             (setf aggregate-thread nil)
+             (cl-ds.alg.meta:extract-result inner))
+
+         (when aggregate-thread
+           (bt:destroy-thread aggregate-thread))
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

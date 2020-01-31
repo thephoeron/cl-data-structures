@@ -117,11 +117,14 @@
             (push-chunk))
            (lparallel.queue:push-queue nil queue)
            (bt:join-thread aggregate-thread)
+           (setf aggregate-thread nil)
            (bt:with-lock-held (error-lock)
              (unless (null stored-error)
                (error stored-error)))
            (cl-ds.alg.meta:extract-result inner))
 
+       (when aggregate-thread
+         (bt:destroy-thread aggregate-thread))
        (cl-ds.alg.meta:cleanup inner))
      function
      arguments)))
