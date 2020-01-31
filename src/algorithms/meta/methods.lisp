@@ -59,12 +59,11 @@ Range function invokaction protocol.
                                        all)
   (let ((aggregator (construct-aggregator range function all)))
     (handler-case
-        (progn
-          (across-aggregate range
-                            (lambda (x)
-                              (pass-to-aggregation aggregator
-                                                   x)))
-          (extract-result aggregator))
+        (across-aggregate range
+                          (lambda (x)
+                            (pass-to-aggregation aggregator
+                                                 x)))
       (error (e)
         (cleanup aggregator)
-        (error e)))))
+        (error e)))
+    (extract-result aggregator)))
