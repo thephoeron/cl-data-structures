@@ -7,16 +7,18 @@
   (:nicknames #:cl-ds.math)
   (:export
    #:absolute-value-norm
+   #:array-average
+   #:array-geometric-average
+   #:array-harmonic-average
    #:array-sum
    #:average
-   #:array-average
-   #:array-harmonic-average
    #:beta0
    #:beta1
    #:bootstrap
    #:co-occurence-table
    #:entropy
    #:fast-map
+   #:geometric-average
    #:gini-impurity
    #:harmonic-average
    #:harmonic-average-mutual-information

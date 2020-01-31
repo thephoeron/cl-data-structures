@@ -33,6 +33,21 @@
 
 
 (cl-ds.alg.meta:define-aggregation-function
+    geometric-average geometric-average-function
+    (:range &key key count total)
+    (:range &key (key #'identity) (count 0) (total nil))
+    ((%total (or null number)) (%count integer))
+    ((setf %total total
+           %count count))
+    ((element)
+     (incf %count)
+     (if (null %total)
+         (setf %total element)
+         (setf %total (* %total element))))
+    ((expt %total (/ 1 %count))))
+
+
+(cl-ds.alg.meta:define-aggregation-function
     array-average array-average-function
     (:range &key key sum count)
     (:range &key (key #'identity) (sum nil) (count 0))
@@ -54,6 +69,31 @@
        (setf (row-major-aref %sum i) (/ (row-major-aref %sum i)
                                         %count))
        (finally (return %sum)))))
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    array-geometric-average array-geometric-average-function
+    (:range &key key total count)
+    (:range &key (key #'identity) (total nil) (count 0))
+    ((%total (or array null)) (%count integer))
+    ((setf %count count
+           %total (if (null total)
+                    nil
+                    (copy-array total))))
+    ((element)
+     (incf %count)
+     (if (null %total)
+         (setf %total (copy-array element))
+         (iterate
+           (for i from 0 below (array-total-size %total))
+           (setf (row-major-aref %total i)
+                 (* (row-major-aref %total i)
+                    (row-major-aref element i))))))
+    ((iterate
+       (for i from 0 below (array-total-size %total))
+       (setf (row-major-aref %total i) (expt (row-major-aref %total i)
+                                             (/ 1 %count)))
+       (finally (return %total)))))
 
 
 (cl-ds.alg.meta:define-aggregation-function

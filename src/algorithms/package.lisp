@@ -26,6 +26,7 @@
    #:pass-to-aggregation
    #:range-function
    #:read-key
+   #:cleanup
    #:state-result
    #:transformation!-function))
 

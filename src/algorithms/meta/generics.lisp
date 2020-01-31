@@ -7,7 +7,8 @@ Top level aggregator protocol.
 
 (defstruct aggregator
   (pass #'identity :type (-> (t) t))
-  (extract (lambda () nil) :type (-> () t)))
+  (extract (lambda () nil) :type (-> () t))
+  (cleanup (lambda () nil) :type (-> () t)))
 
 (declaim (inline pass-to-aggregation))
 (-> pass-to-aggregation (aggregator t) null)
@@ -23,6 +24,13 @@ Top level aggregator protocol.
   (declare (type aggregator aggregator)
            (optimize (speed 3) (safety 0)))
   (~> aggregator aggregator-extract funcall))
+
+(declaim (inline cleanup))
+(-> cleanup (aggregator) t)
+(defun cleanup (aggregator)
+  (declare (type aggregator aggregator)
+           (optimize (speed 3) (safety 0)))
+  (~> aggregator aggregator-cleanup funcall))
 
 #|
 Range function invokaction protocol.

@@ -108,9 +108,11 @@
 
 (defmacro let-aggregator (bindings
                           ((element) &body pass)
-                          (&body extract))
+                          (&body extract)
+                          &optional cleanup)
   `(lambda ()
      (bind ,bindings
        (make-aggregator
         :pass (lambda (,element) ,@pass nil)
-        :extract (lambda () ,@extract)))))
+        :extract (lambda () ,@extract)
+        :cleanup (lambda () ,@cleanup nil)))))
