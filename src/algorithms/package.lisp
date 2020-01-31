@@ -39,20 +39,16 @@
   (:shadow #:extrema #:extremum)
   (:export
    #:%summary
-   #:enumerate
-   #:translation
-   #:read-function
-   #:forward-proxy-box-range
-   #:to-list
+   #:%summary
+   #:*current-key*
    #:accumulate
    #:bidirectional-chain-of-ranges
-   #:forward-multiplex-proxy
-   #:multiplex
    #:bidirectional-proxy-range
    #:cartesian
    #:chain
-   #:read-keys
    #:chain-traversable
+   #:connect
+   #:connect-traversable
    #:count-elements
    #:count-elements-function
    #:count-elements-if
@@ -60,25 +56,25 @@
    #:cumulative-accumulate
    #:cumulative-accumulate-range
    #:distinct
-   #:to-hash-table
+   #:enumerate
    #:extrema
    #:extremum
    #:filtering-proxy
    #:flatten-lists
    #:forward-chain-of-ranges
+   #:forward-multiplex-proxy
+   #:forward-proxy-box-range
    #:forward-proxy-range
+   #:frequency
    #:gather-prior-states
-   #:read-key
    #:group-by
-   #:group-by-result-range
-   #:summary-result-range
-   #:%summary
-   #:hash-table-range
    #:group-by-function
-   #:hash-join
+   #:group-by-result-range
+   #:hash-table-range
    #:latch
    #:make-hash-table-range
    #:make-proxy
+   #:multiplex
    #:on-each
    #:only
    #:partition-if
@@ -87,6 +83,10 @@
    #:proxy-range
    #:random-access-chain-of-ranges
    #:random-access-proxy-range
+   #:rate
+   #:read-function
+   #:read-key
+   #:read-keys
    #:read-original-range
    #:repeat
    #:restrain-size
@@ -94,13 +94,13 @@
    #:shuffled-range
    #:split-into-chunks
    #:summary
+   #:summary-result-range
+   #:to-hash-table
+   #:to-list
    #:to-vector
+   #:translation
    #:transparent-to-chunking-mixin
    #:without
    #:wrap-chunk
    #:zip
-   #:connect
-   #:connect-traversable
-   #:rate
-   #:frequency
    #:zip-traversable))

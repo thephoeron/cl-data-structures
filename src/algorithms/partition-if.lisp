@@ -113,18 +113,21 @@
                       (setf current-key key
                             initialized t
                             current-state (cl-ds.alg.meta:call-constructor outer-fn))
-                      (pass-to-aggregation current-state element))
+                      (let ((*current-key* key))
+                        (cl-ds.alg.meta:pass-to-aggregation new element)))
                      ((funcall test current-key key)
                       (unless on-first
                         (setf current-key key))
-                      (pass-to-aggregation current-state element))
+                      (let ((*current-key* current-key))
+                        (pass-to-aggregation current-state element)))
                      (t
                       (~>> current-state
                            cl-ds.alg.meta:extract-result
                            (funcall callback))
                       (setf current-key key
                             current-state (cl-ds.alg.meta:call-constructor outer-fn))
-                      (pass-to-aggregation current-state element)))))
+                      (let ((*current-key* current-key))
+                        (pass-to-aggregation current-state element))))))
 
            (nil)))
      function
@@ -162,14 +165,17 @@
                    (let ((new (cl-ds.alg.meta:call-constructor outer-fn)))
                      (vector-push-extend (list* key new)
                                          chunks)
-                     (cl-ds.alg.meta:pass-to-aggregation new element))
+                     (let ((*current-key* key))
+                       (cl-ds.alg.meta:pass-to-aggregation new element)))
                    (bind (((prev . chunk) (aref chunks last-chunk)))
                      (if (funcall test prev key)
-                         (pass-to-aggregation chunk element)
+                         (let ((*current-key* key))
+                           (cl-ds.alg.meta:pass-to-aggregation chunk element))
                          (let ((new (cl-ds.alg.meta:call-constructor outer-fn)))
                            (vector-push-extend (list* key new)
                                                chunks)
-                           (cl-ds.alg.meta:pass-to-aggregation new element)))
+                           (let ((*current-key* key))
+                             (cl-ds.alg.meta:pass-to-aggregation new element))))
                      (unless on-first
                        (setf (car (aref chunks (1- (fill-pointer chunks)))) key))))))
 
