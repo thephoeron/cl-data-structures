@@ -9,6 +9,8 @@
    #:absolute-value-norm
    #:array-sum
    #:average
+   #:array-average
+   #:array-harmonic-average
    #:beta0
    #:beta1
    #:bootstrap
