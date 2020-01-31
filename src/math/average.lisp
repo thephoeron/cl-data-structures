@@ -43,14 +43,15 @@
                     (copy-array sum))))
     ((element)
      (incf %count)
-     (if (null %sum)
-         (setf %sum (copy-array element))
-         (iterate
-           (for i from 0 below (array-total-size %sum))
-           (incf (row-major-aref %sum i) (row-major-aref element i)))))
+     (when (null %sum)
+       (setf %sum (make-array (array-dimensions element)
+                              :initial-element 0.0)))
+     (iterate
+       (for i from 0 below (array-total-size %sum))
+       (incf (row-major-aref %sum i) (row-major-aref element i))))
     ((iterate
        (for i from 0 below (array-total-size %sum))
-       (incf (row-major-aref %sum i) (/ (row-major-aref %sum i)
+       (setf (row-major-aref %sum i) (/ (row-major-aref %sum i)
                                         %count))
        (finally (return %sum)))))
 
@@ -73,24 +74,23 @@
                     (copy-array sum))))
     ((element)
      (incf %count)
-     (if (null %sum)
-         (setf %sum (copy-array element)
-               %zeros (make-array (array-dimensions %sum)
-                                  :element-type 'boolean
-                                  :initial-element nil))
-         (iterate
-           (for i from 0 below (array-total-size %sum))
-           (unless (zerop (row-major-aref element i))
-             (incf (row-major-aref %sum i)
-                   (/ 1 (row-major-aref element i))))))
+     (when (null %zeros)
+       (setf %zeros (make-array (array-dimensions element)
+                                :element-type 'boolean
+                                :initial-element nil)))
+     (when (null %sum)
+       (setf %sum (setf %sum (make-array (array-dimensions element)
+                                         :initial-element 0.0))))
      (iterate
        (for i from 0 below (array-total-size %sum))
-       (when (zerop (row-major-aref element i))
-         (setf (row-major-aref %zeros i) t))))
+       (if (zerop (row-major-aref element i))
+           (setf (row-major-aref %zeros i) t)
+           (incf (row-major-aref %sum i)
+                 (/ 1 (row-major-aref element i))))))
     ((iterate
        (for i from 0 below (array-total-size %sum))
        (if (row-major-aref %zeros i)
            (setf (row-major-aref %sum i) 0)
-           (incf (row-major-aref %sum i) (/ %count
+           (setf (row-major-aref %sum i) (/ %count
                                             (row-major-aref %sum i))))
        (finally (return %sum)))))
