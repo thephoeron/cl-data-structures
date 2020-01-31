@@ -271,6 +271,7 @@
                              (:file "gini-impurity")
                              (:file "entropy")
                              (:file "fast-map")
+                             (:file "sum")
                              (:file "docstrings")
                              ))
                (:module "streaming-algorithms"
