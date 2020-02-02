@@ -67,7 +67,8 @@
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq group-by-key #'identity)))
-       (cl-ds.alg.meta:let-aggregator ((groups (copy-hash-table groups-prototype)))
+       (cl-ds.alg.meta:let-aggregator
+           ((groups (copy-hash-table groups-prototype)))
 
            ((element)
             (bind ((selected (~>> element (funcall group-by-key)))

@@ -46,7 +46,7 @@
            :chunk-size chunk-size))))
 
 
-(defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
+(defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)
                                        (fn thread-buffer-function)
                                        arguments)
   (cl-ds.alg:make-proxy range 'forward-buffer-range
