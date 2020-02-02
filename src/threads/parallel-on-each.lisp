@@ -111,7 +111,7 @@
              (bt:with-lock-held (error-lock)
                (unless (null stored-error)
                  (error stored-error)))
-             (when (= chunk-size (fill-pointer chunk))
+            (unless (< (fill-pointer chunk) chunk-size)
                (push-chunk))
              (vector-push-extend element chunk))
 

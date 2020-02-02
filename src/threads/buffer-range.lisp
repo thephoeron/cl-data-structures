@@ -106,9 +106,9 @@
                                             :name "Aggregation Thread")))
 
          ((element)
-           (when (= chunk-size (fill-pointer chunk))
-             (push-chunk))
-           (vector-push-extend element chunk))
+          (unless (< (fill-pointer chunk) chunk-size)
+            (push-chunk))
+          (vector-push-extend element chunk))
 
          ((bt:with-lock-held (error-lock)
             (unless (null stored-error)
