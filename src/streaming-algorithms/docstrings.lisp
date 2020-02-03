@@ -28,7 +28,8 @@
                  (key "Function used to extract value for aggregation."))
      :exceptional-situations ("Will signal TYPE-ERROR wthen K is not of the type POSITIVE-FIXNUM.")
      :notes ("Larger K values usually allow for higher precision of the Jaccard distance estimation."
-             "Uses HASH-TABLE with EQUAL :TEST underneath to gather elements. Therefore it is required fore elements in the RANGE to be comparable with EQUAL function.")
+             "Uses HASH-TABLE with EQUAL :TEST underneath to gather elements. Therefore it is required fore elements in the RANGE to be comparable with EQUAL function."
+             "To produce stream of elements from individual sets in a range you can use either FLATTEN-LISTS or MULTIPLEX functions.")
      :returns "Instance of the MINHASH-CORPUS class."))
 
   (function minhash-jaccard/fixnum
