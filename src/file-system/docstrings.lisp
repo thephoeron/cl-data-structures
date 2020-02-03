@@ -10,7 +10,7 @@
      :exceptional-situations ("Signalling error from a callback during traverse will close the inner stream automaticly."
                               "Signals the type error if PATH is not (OR STRING PATHNAME)."
                               "Signals errors just as CL:OPEN does.")
-     :notes "File is opened lazily. Calling either TRAVERSE or ACROSS on the line-by-line range will automaticly close the inner file. This makes it suitable to use with the aggregation functions without additional code."))
+     :notes "File is opened lazily. Calling either TRAVERSE or ACROSS on the line-by-line range will automaticly close the inner file (in exception safe way). This makes it suitable to use with the aggregation functions without additional code."))
 
   (function find
     (:description "A function somewhat similar to the posix find tool. Depending on the filesystem content and the DESCRIPTION list, returns a forward-range containing pathnames matching the DESCRIPTION list. DESCRIPTION list supports :directory, :regex-file, :regex-directory, :file, :all-directories and :all-files filters. Type of the filter is supplied as the first element, rest of the specifies the additional options in the form of the plist (:PATH, :PREDICATE etc.). Each of those filters selects matching nodes in the file system and handles it to the next filter. The complete DESCRIPTION list usually looks `((:directory :path "/path/to/dir") (:all-files :predicate i-want-this-file-p)). In this example first filter in the list designates the directory to scan for files and the second filter will select all files in the directory that are accepted by i-want-this-file-p function."
