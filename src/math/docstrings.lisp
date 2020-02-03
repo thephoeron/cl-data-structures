@@ -7,12 +7,40 @@
   (function average
     (:description "Calculate average of elements in the range."
      :arguments ((range "Object to aggregate.")
-                 (key "Function used to extract value from element that shall be passed to average function."))))
+                 (:key "Function used to extract value from RANGE element."))))
+
+  (function harmonic-average
+    (:description "Calculate harmonic average of elements in the range"
+     :arguments ((range "Object to aggregate.")
+                 (:key "Function used to extract value from RANGE element."))))
+
+  (function geometric-average
+    (:description "Calculate geometric average of elements in the range"
+     :arguments ((range "Object to aggregate.")
+                 (:key "Function used to extract value from RANGE element."))))
+
+  (function array-average
+    (:description "Calculate element wise average of arrays in the range."
+     :arguments ((range "Object to aggregate.")
+                 (key "Function used to extract value from element that shall be passed to average function."))
+     :returns "SIMPLE-ARRAY holding results."))
+
+  (function array-harmonic-average
+    (:description "Calculate element wise harmonic average of arrays in the range."
+     :arguments ((range "Object to aggregate.")
+                 (:key "Function used to extract array from RANGE element."))
+     :returns "SIMPLE-ARRAY holding results."))
+
+  (function array-geometric-average
+    (:description "Calculate element wise geometric average of arrays in the range."
+     :arguments ((range "Object to aggregate.")
+                 (:key "Function used to extract array from RANGE element."))
+     :returns "SIMPLE-ARRAY holding results."))
 
   (function median-absolute-deviation
     (:description "Calculates MAD estimator for element in the RANGE."
      :arguments ((range "Object to aggregate")
-                 (key "Function used to extract values from elements."))
+                 (:key "Function used to extract array from RANGE element."))
      :notes "Roboost scale estimator."))
 
   (function moving-average
