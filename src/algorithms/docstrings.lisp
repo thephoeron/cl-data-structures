@@ -173,7 +173,7 @@
      :exceptional-situations "Will signal a TYPE-ERROR if KEY is not funcallable."
      :arguments ((range "Input range.")
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
-     :notes ("Pretty much the same purpose ALEXANDRIA:FLATTEN.")
+     :notes ("Pretty much the same purpose as for ALEXANDRIA:FLATTEN, but FLATTEN-LISTS is lazy.")
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function latch
