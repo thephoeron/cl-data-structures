@@ -7,6 +7,7 @@
   ((%sum number))
   ((setf %sum sum))
   ((element)
+   (check-type element number)
    (incf %sum element))
   (%sum))
 
@@ -19,6 +20,7 @@
        (setf %sum nil)
        (setf %sum (copy-array sum))))
   ((element)
+   (check-type element array)
    (if (null %sum)
        (setf %sum (copy-array element))
        (iterate

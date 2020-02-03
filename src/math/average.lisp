@@ -9,6 +9,7 @@
     ((setf %sum sum
            %count count))
     ((element)
+     (check-type element number)
      (incf %count)
      (incf %sum element))
     ((/ %sum %count)))
@@ -23,6 +24,7 @@
            %count count
            %zero nil))
     ((element)
+     (check-type element number)
      (incf %count)
      (if (zerop element)
          (setf %zero t)
@@ -40,6 +42,7 @@
     ((setf %total total
            %count count))
     ((element)
+     (check-type element number)
      (incf %count)
      (if (null %total)
          (setf %total element)
@@ -57,6 +60,7 @@
                     nil
                     (copy-array sum))))
     ((element)
+     (check-type element array)
      (incf %count)
      (when (null %sum)
        (setf %sum (make-array (array-dimensions element)
@@ -81,6 +85,7 @@
                     nil
                     (copy-array total))))
     ((element)
+     (check-type element array)
      (incf %count)
      (if (null %total)
          (setf %total (copy-array element))
@@ -113,6 +118,7 @@
                     nil
                     (copy-array sum))))
     ((element)
+     (check-type element array)
      (incf %count)
      (when (null %zeros)
        (setf %zeros (make-array (array-dimensions element)
