@@ -11,6 +11,7 @@
 
   (function harmonic-average
     (:description "Calculate harmonic average of elements in the range"
+     :exceptional-situations "Will return 0 if at least one elements is zero."
      :arguments ((range "Object to aggregate.")
                  (:key "Function used to extract value from RANGE element."))))
 
