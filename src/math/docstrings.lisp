@@ -73,9 +73,9 @@
                               "Will signal exception as would CL:MAKE-HASH-TABLE function when TEST is invalid.")
      :returns "Numerical value representing the Gini impurity."
      :arguments ((range "Object to aggregate.")
-                 (key "Function used to extract value from element.")
-                 (test "Test for the hash table.")
-                 (count-fn "Function used to extract count of elements from the element in the RANGE."))))
+                 (:key "Function used to extract value from element.")
+                 (:test "Test for the hash table.")
+                 (:count-fn "Function used to extract count of elements from the element in the RANGE."))))
 
   (function entropy
     (:description "Calculates Shannon information entropy of the elements in the range (using natural logarithm)."
