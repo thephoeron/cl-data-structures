@@ -47,7 +47,6 @@
    #:bidirectional-proxy-range
    #:cartesian
    #:chain
-   #:chain-traversable
    #:connect
    #:connect-traversable
    #:count-elements
