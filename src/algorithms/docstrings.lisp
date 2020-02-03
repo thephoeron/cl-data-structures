@@ -122,20 +122,6 @@
                  (:table "Optional, initial HASH-TABLE.")
                  (:hash-table-key "Function used to extract key for the HASH-TABLE. Defaults to IDENTITY."))))
 
-  (function hash-join
-    (:description "Joins multiple ranges using the hash join algorithm."
-     :returns "FUNDAMENTAL-FORWARD-RANGE instance."
-     :arguments ((primary-range "Input range.")
-                 (primary-key "Key function used to extract values from the PRIMARY-RANGE.")
-                 (secondary-range-forms "List of forms describing the other ranges.")
-                 (:test "Test for the inner HASH-TABLE.")
-                 (:join-function "Function applied to each group. Defaults to CL:LIST.")
-                 (:key "Key function. Defaults to CL:IDENTITY."))
-     :examples [(let ((result (cl-ds.alg:hash-join #(1 2 3 4) #'identity
-                                                   (list (cl-ds:field :data #(1 2 3)
-                                                                      :key #'identity)))))
-                  (map nil (lambda (x) (prove:is (first x) (second x))) result))]))
-
   (function chain
     (:description "Concatenate multiple ranges into one."
      :examples [(prove:is (cl-ds.alg:to-vector (cl-ds.alg:chain '(1 2 3) '(4 5 6)))
