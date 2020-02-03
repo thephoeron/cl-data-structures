@@ -65,6 +65,13 @@
      :see-also (bootstrap)
      :thread-safety "Will ues lparallel if PARALLEL is T."))
 
+  (function sum
+    (:description "Calculates sum of all elements in the range."
+     :returns "A total sum of all elements in the array."))
+
+  (function array-sum
+    (:description "Calculates elementwise sum of all arrays in the range."))
+
   (function gini-impurity
     (:description "Calculates Gini impurity of the content range."
      :exceptional-situations ("Will signal TYPE-ERROR when HASH-TABLE is not of the type CL:HASH-TABLE."
