@@ -26,7 +26,8 @@
             &key (key #'identity) (maximal-queue-size 512) (chunk-size 128))
     (check-type maximal-queue-size integer)
     (check-type chunk-size integer)
-    (cl-ds:check-argument-bounds maximal-queue-size (<= 16 maximal-queue-size))
+    (cl-ds:check-argument-bounds maximal-queue-size
+                                 (<= 16 maximal-queue-size))
     (cl-ds:check-argument-bounds chunk-size (<= 1 chunk-size))
     (ensure-functionf function)
     (ensure-functionf key)
