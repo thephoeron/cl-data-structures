@@ -119,9 +119,7 @@
                               "Will signal conditions just like MAKE-HASH-TABLE would if either SIZE or TEST is invalid.")
      :arguments ((:key "Key function used to extract value to the result vector.")
                  (:test "Test fo the MAKE-HASH-TABLE.")
-                 (:size "Size for the MAKE-HASH-TABLE.")
-                 (:table "Optional, initial HASH-TABLE.")
-                 (:hash-table-key "Function used to extract key for the HASH-TABLE. Defaults to IDENTITY."))))
+                 (:size "Size for the MAKE-HASH-TABLE."))))
 
   (function chain
     (:description "Concatenate multiple ranges into one."

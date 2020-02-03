@@ -4,20 +4,15 @@
 (cl-ds.alg.meta:define-aggregation-function
     enumerate enumerate-function
 
-  (:range &key key test size hash-table-key table)
+  (:range &key key test size)
   (:range &key
           (test 'eql)
           (key #'identity)
-          (hash-table-key #'identity)
-          (size 16)
-          (table (make-hash-table :test test :size size)))
+          (size 16))
 
   (%table %hash-table-key %number)
 
-  ((ensure-functionf hash-table-key)
-   (check-type table hash-table)
-   (setf %table table
-         %hash-table-key hash-table-key))
+  ((setf %table (make-hash-table :test test :size size)))
 
   ((element)
    (let ((key (funcall %hash-table-key element)))
