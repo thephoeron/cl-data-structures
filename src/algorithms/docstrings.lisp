@@ -114,7 +114,7 @@
   (function enumerate
     (:description "Gathers unique elements in the RANGE and assigns a number to each (starting with zero, incrementing)."
      :returns "CL:HASH-TABLE, unique elements used as keys, numbers stored as values."
-     :exceptional-situations ("Will signal a TYPE-ERROR if either KEY, HASH-TABLE-KEY is not funcallable."
+     :exceptional-situations ("Will signal a TYPE-ERROR if either KEY is not funcallable."
                               "Will signal a TYPE-ERROR if TABLE is not of type CL:HASH-TABLE."
                               "Will signal conditions just like MAKE-HASH-TABLE would if either SIZE or TEST is invalid.")
      :arguments ((:key "Key function used to extract value to the result vector.")
