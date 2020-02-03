@@ -82,6 +82,7 @@
      :returns "Numerical value representing the Gini impurity."
      :arguments ((range "Object to aggregate.")
                  (:key "Function used to extract value from element.")
+                 (:size "Size passed to the MAKE-HASH-TABLE function.")
                  (:test "Test for the hash table.")
                  (:count-fn "Function used to extract count of elements from the element in the RANGE."))))
 
@@ -89,8 +90,9 @@
     (:description "Calculates Shannon information entropy of the elements in the range (using natural logarithm)."
      :arguments ((range "Object to aggregate.")
                  (:key "Function used to extract value from element.")
+                 (:size "Size passed to MAKE-HASH-TABLE function.")
                  (:test "Test for the hash table.")
-                 (:count-fn "Function used to extract count of elements from the element in the RANGE."))
+                 (:count-fn "Function used to extract number of elements. Defaults to constantly 1."))
      :exceptional-situations ("Will signal TYPE-ERROR when KEY is not a function."
                               "Will signal TYPE-ERROR when COUNT-FN is not a function."
                               "Will signal exception as would CL:MAKE-HASH-TABLE function when TEST is invalid.")
@@ -107,7 +109,7 @@
                  (compare "Function passed to SORT function.")
                  (parallel "Will use lparallel to evaluate samples if T. Defaults to T."))
      :thread-safety "Will process each sample in the lparallel task if PARALLEL is T."
-     :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in the aggregation function."))
+     :notes "Don't attempt to mix lparallel used in bootstrap with lparallel used in the aggregation function"))
 
   (function simple-linear-regression
     (:description "Matches linear function to RANGE using least squares method."

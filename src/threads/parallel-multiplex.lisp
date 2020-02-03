@@ -29,7 +29,8 @@
     (ensure-functionf key)
     (cl-ds.alg.meta:apply-range-function
      range #'parallel-multiplex
-     (list range :key key :function function :maximal-queue-size maximal-queue-size))))
+     (list range :key key :function function
+                 :maximal-queue-size maximal-queue-size))))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)
