@@ -7,6 +7,12 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (function multiplex
+    (:description "Transforms input RANGE by extracting elements from it, applying FUNCTION and chaining resulting ranges."
+     :notes ("Chaining process is not recursive."
+             "To completly flatten lists use FLATTEN-LISTS instead.")
+     :returns "Instance of MULTIPLEX-PROXY"))
+
   (function accumulate
     (:description "Like CL:REDUCE but works on all traversable objects."
      :see-also (cumulative-accumulate)))
