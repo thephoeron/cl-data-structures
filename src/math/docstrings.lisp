@@ -37,6 +37,10 @@
                  (:key "Function used to extract array from RANGE element."))
      :returns "SIMPLE-ARRAY holding results."))
 
+  (function fast-map
+    (:description "Embedds finite metric set into euclid space using fast-map algorithm.."
+     :returns "SIMPLE-ARRAY containing with embeddings with all elements."))
+
   (function median-absolute-deviation
     (:description "Calculates MAD estimator for element in the RANGE."
      :arguments ((range "Object to aggregate")
