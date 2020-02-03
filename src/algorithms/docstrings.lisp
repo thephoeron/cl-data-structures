@@ -51,7 +51,7 @@
                   (prove:is (cl-ds.alg:to-vector aggregated) #("word" "as" "law") :test #'equalp))]
      :notes ("Aggregation on the returned range is performed eagerly."
              "Can be considered to be alternative to the GROUP-BY, suitable for the ordered data.")
-     :returns "FUNDAMENTAL-RANDOM-ACCESS-RANGE instance."
+     :returns "ABSTRACT-PARTITION-IF-PROXY instance."
      :arguments ((range "An input range.")
                  (test "A function of two arguments used to check if elements belong to the same partition."))))
 
