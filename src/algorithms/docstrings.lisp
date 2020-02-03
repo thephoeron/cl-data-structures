@@ -238,6 +238,9 @@
      :exceptional-situations "Will raise a TYPE-ERROR if any of the RANGES is of a wrong type."
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
+  (variable *current-key*
+    (:description "KEY for the current group when aggregating by the GROUP-BY or PARTITION-IF function."))
+
   (function group-by
     (:description "Groups RANGE into partitions according to the TEST. This does not change the content of the RANGE, but will force aggregation to be performed on every group independently."
      :exceptional-situations ("Will signal a TYPE-ERROR if KEY is not funcallable."
