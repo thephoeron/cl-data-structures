@@ -112,12 +112,14 @@
      :see-also (group-by)))
 
   (function enumerate
-    (:description "Gathers unique elements in the RANGE and assigns a number to each (starting with zero, incrementing)."
+    (:description "Gathers unique elements in the RANGE and assigns a number to each (starting with NUMBER, incrementing by 1)."
      :returns "CL:HASH-TABLE, unique elements used as keys, numbers stored as values."
      :exceptional-situations ("Will signal a TYPE-ERROR if either KEY is not funcallable."
                               "Will signal a TYPE-ERROR if TABLE is not of type CL:HASH-TABLE."
+                              "Will signal a TYPE-ERROR if NUMBER is not of type CL:INTEGER"
                               "Will signal conditions just like MAKE-HASH-TABLE would if either SIZE or TEST is invalid.")
      :arguments ((:key "Key function used to extract value to the result vector.")
+                 (:number "Start of the enumeration.")
                  (:test "Test fo the MAKE-HASH-TABLE.")
                  (:size "Size for the MAKE-HASH-TABLE."))))
 
