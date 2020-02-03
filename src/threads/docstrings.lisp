@@ -4,6 +4,36 @@
 (docs:define-docs
   :formatter docs.ext:rich-aggregating-formatter
 
+  (function parallel-multiplex
+    (:description "Like CL-DS.ALG:MULTIPLEX but when aggregation is performed, multiplexing function is applied in parallel. Obtained results are then passed with a queue into a single aggregation thread."
+     :arguments-and-values ((range "Input range.")
+                            (:key "Key function.")
+                            (:function "Function that should return traversable range. Defaults to #'CL-DS:WHOLE-RANGE")
+                            (:maximal-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
+     :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
+                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
+                              "Exceptions raised during aggregation will be transfered to the original thread."
+                              "Will raise a TYPE-ERROR when FUNCTION is not funcallable."
+                              "Will raise a TYPE-ERROR when FUNCTION is not key.")
+     :notes ("Outside of aggregation behaves exactly like MULTIPLEX.")
+     :see-also (cl-ds.alg:multiplex)
+     :returns "Instance of PARALLEL-FORWARD-MULTIPLEX-PROXY."))
+
+  (function thread-buffer
+    (:description "Creates a proxy range that will present exactly the same content as the original range. However, when calling an aggregation function internal thread with queue will created. Original thread will pass elements of the range to the queue, and the fresh thread will pass it further. This allows operations performed before and after thread-buffer to run in parallel."
+     :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
+                              "Will raise a TYPE-ERROR when CHUNK-SIZE is not integer."
+                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when CHUNK-SIZE is not at least 1."
+                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
+                              "Exceptions raised during aggregation will be transfered to the original thread.")
+     :notes ("Thread buffer only changes the aggregation process."
+             "For optimal performance results, operations performed before and after THREAD-BUFFER should take approximately the same ammount of time."
+             "Unlike PARALLEL-ON-EACH or PARALLEL-MULTIPLEX, THREAD-BUFFER does not use lparallel workers.")
+     :arguments-and-values ((range "The input range.")
+                            (:chunk-size "Number of elements grouped before being sent to the queue.")
+                            (:maximal-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
+     :returns "Instance of BUFFER-RANGE subclass. Depending on the class of the RANGE it may be a FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
+
   (function thread-buffer
     (:description "Creates a proxy range that will present exactly the same content as the original range. However, when calling an aggregation function internal thread with queue will created. Original thread will pass elements of the range to the queue, and the fresh thread will pass it further. This allows operations performed before and after thread-buffer to run in parallel."
      :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
