@@ -207,3 +207,12 @@
   (lret ((result (apply #'make-mutable-skip-list-set arguments)))
     (cl-ds:traverse traversable
                     (lambda (x) (cl-ds:put! result x)))))
+
+
+(defmethod cl-ds:reset! ((container mutable-skip-list-set))
+  (setf (cl-ds.common.skip-list:access-size container) 0)
+  (iterate
+    (with pointers = (cl-ds.common.skip-list:read-pointers container))
+    (for i from 0 below (length pointers))
+    (setf (aref pointers i) nil))
+  container)
