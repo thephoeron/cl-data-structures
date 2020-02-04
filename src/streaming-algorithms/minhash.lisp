@@ -8,6 +8,12 @@
        :reader read-k)))
 
 
+(defmethod cl-ds:clone ((object minhash-corpus))
+  (make (class-of object)
+        :table (~> object read-table copy-hash-table)
+        :k (read-k object)))
+
+
 (cl-ds.utils:define-list-of-slots minhash-corpus ()
   (table read-table)
   (k read-k))
@@ -15,12 +21,16 @@
 
 (cl-ds.alg.meta:define-aggregation-function gather-minhash-corpus
     gather-corpus-function
-    (:range k &key key)
-    (:range k &key (key #'identity))
-    (%table %k)
+    (:range k &key key corpus)
+    (:range k &key (key #'identity)
+     (corpus (make-instance 'minhash-corpus
+                            :k k
+                            :table (make-hash-table :test 'equal))))
+    (%table %k %corpus)
     ((check-type k positive-fixnum)
-     (setf %table (make-hash-table :test 'equal)
-           %k k))
+     (setf %corpus (cl-ds:clone corpus)
+           %table (read-table %corpus)
+           %k (read-k %corpus)))
     ((element)
      (ensure (gethash element %table) (make-array %k :element-type 'fixnum)))
     ((iterate
@@ -34,9 +44,7 @@
          (for pointer = (gethash value pointers 0))
          (setf (aref value pointer) i)
          (incf (gethash value pointers 0)))
-       (finally (return (make-instance 'minhash-corpus
-                                       :k %k
-                                       :table %table))))))
+       (finally (return %corpus)))))
 
 
 (-> minhash* (minhash-corpus list) (simple-array fixnum (*)))
