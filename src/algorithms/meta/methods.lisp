@@ -57,13 +57,14 @@ Range function invokaction protocol.
 (defmethod apply-aggregation-function (range
                                        (function aggregation-function)
                                        all)
-  (let ((aggregator (construct-aggregator range function all)))
-    (handler-case
-        (across-aggregate range
-                          (lambda (x)
-                            (pass-to-aggregation aggregator
-                                                 x)))
-      (error (e)
-        (cleanup aggregator)
-        (error e)))
+  (let ((aggregator (construct-aggregator range function all))
+        (success nil))
+    (unwind-protect
+         (progn
+           (across-aggregate range
+                             (lambda (x)
+                               (pass-to-aggregation aggregator
+                                                    x)))
+           (setf success t))
+      (unless success (cleanup aggregator)))
     (extract-result aggregator)))
