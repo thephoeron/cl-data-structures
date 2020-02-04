@@ -20,13 +20,13 @@
 
 (-> skip-list-node-level (skip-list-node) fixnum)
 (defun skip-list-node-level (skip-list-node)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (~> skip-list-node skip-list-node-pointers length))
 
 
 (-> skip-list-node-at (skip-list-node cl-ds.utils:index) t)
 (defun skip-list-node-at (skip-list-node index)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (~> skip-list-node skip-list-node-pointers (aref index)))
 
 
@@ -34,7 +34,7 @@
     ((or null skip-list-node) skip-list-node cl-ds.utils:index)
     (or null skip-list-node))
 (defun (setf skip-list-node-at) (new-value skip-list-node index)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (cl-ds.utils:with-slots-for (skip-list-node skip-list-node)
     (setf (aref pointers index) new-value)))
 
@@ -42,7 +42,7 @@
 (-> skip-list-node-clone ((or null skip-list-node)) (values (or null skip-list-node)
                                                             hash-table))
 (defun skip-list-node-clone (skip-list-node &aux (table (make-hash-table :test 'eq)))
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (when (null skip-list-node)
     (return-from skip-list-node-clone (values nil table)))
   (bind ((stack (vect))
@@ -95,7 +95,7 @@
 
 (-> new-node-update-pointers! (function skip-list-node simple-vector) skip-list-node)
 (defun new-node-update-pointers! (test spliced-node pointers)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (iterate
     (declare (type fixnum i))
     (with spliced-level = (skip-list-node-level spliced-node))
@@ -117,7 +117,7 @@
 
 (-> random-level (positive-fixnum) positive-fixnum)
 (defun random-level (maximum-level)
-  (declare (optimize (speed 0) (safety 3) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (iterate
     (declare (type fixnum i))
     (for i from 1 to maximum-level)
@@ -127,13 +127,13 @@
 
 (-> make-skip-list-node-of-level (fixnum) skip-list-node)
 (defun make-skip-list-node-of-level (level)
-  (declare (optimize (speed 0) (safety 3) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (make-skip-list-node :pointers (make-array level :initial-element nil)))
 
 
 (-> make-skip-list-node-of-random-level (fixnum) skip-list-node)
 (defun make-skip-list-node-of-random-level (maximum-level)
-  (declare (optimize (speed 0) (safety 3) (debug 3)))
+  (declare (optimize (speed 3) (safety 0) (debug 0)))
   (make-skip-list-node-of-level (random-level maximum-level)))
 
 
@@ -141,7 +141,7 @@
 (-> locate-node (simple-vector t function) (values simple-vector
                                                    simple-vector))
 (defun locate-node (pointers item test)
-  (declare (optimize (speed 0) (safety 3) (debug 3)
+  (declare (optimize (speed 3) (safety 0) (debug 0)
                      (compilation-speed 0) (space 0)))
   (let* ((pointers-length (length pointers))
          (prev-result (make-array pointers-length
@@ -165,7 +165,7 @@
 
 (-> insert-node-between! (simple-vector simple-vector function skip-list-node) skip-list-node)
 (defun insert-node-between! (pointers previous-pointers test skip-list-node)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (new-node-update-pointers! test skip-list-node previous-pointers)
   (skip-list-node-update-pointers! skip-list-node pointers)
   skip-list-node)
@@ -173,7 +173,7 @@
 
 (-> delete-node-between! (simple-vector simple-vector) skip-list-node)
 (defun delete-node-between! (pointers prev-pointers)
-  (declare (optimize (speed 0) (debug 3) (safety 3)))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
   (lret ((result (aref pointers 0)))
     (assert (not (null result)))
     (iterate
@@ -233,13 +233,13 @@
 (defun update-head-pointers! (skip-list skip-list-node)
   (declare (type skip-list-node skip-list-node)
            (type fundamental-skip-list skip-list)
-           (optimize (speed 0) (debug 3) (safety 3)))
+           (optimize (speed 3) (debug 0) (safety 0)))
   (iterate
     (declare (type fixnum i)
              (type simple-vector head))
     (with head = (read-pointers skip-list))
     (with content = (skip-list-node-content skip-list-node))
-    (with ordering-function = (read-ordering-function skip-list))
+    (with ordering-function = (ensure-function (read-ordering-function skip-list)))
     (for i from (~> skip-list-node skip-list-node-level 1-) downto 0)
     (for node = (aref head i))
     (when (null node)
