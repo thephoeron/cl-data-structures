@@ -18,9 +18,9 @@
    (cond (%first-iteration
           (setf %value element
                 %first-iteration nil))
-         ((not (funcall %fn
-                        (funcall %value-key %value)
-                        (funcall %value-key element)))
+         ((not (funcall (ensure-function %fn)
+                        (funcall (ensure-function %value-key) %value)
+                        (funcall (ensure-function %value-key) element)))
           (setf %value element))))
 
   (%value))
