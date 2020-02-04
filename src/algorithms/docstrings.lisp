@@ -10,7 +10,8 @@
   (function multiplex
     (:description "Transforms input RANGE by extracting elements from it, applying FUNCTION and chaining resulting ranges."
      :notes ("Chaining process is not recursive."
-             "To completly flatten lists use FLATTEN-LISTS instead.")
+             "To completly flatten lists use FLATTEN-LISTS instead."
+             "There is a parallelized version of this function called parallel-multiplex.")
      :returns "Instance of MULTIPLEX-PROXY"))
 
   (function accumulate
@@ -175,6 +176,7 @@
      :arguments ((range "Input range.")
                  (key "Function used to extract lists from elements of the RANGE. Defaults to CL:IDENTITY."))
      :notes ("Pretty much the same purpose as for ALEXANDRIA:FLATTEN, but FLATTEN-LISTS is lazy.")
+     :see-also (multiplex)
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."))
 
   (function latch
