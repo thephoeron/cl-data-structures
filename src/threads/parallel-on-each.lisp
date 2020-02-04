@@ -1,7 +1,7 @@
 (cl:in-package #:cl-data-structures.threads)
 
 
-(defclass parallel-on-each-proxy (cl-ds.alg:forward-proxy-range)
+(defclass parallel-on-each-proxy (cl-ds.alg:forward-proxy-box-range)
   ((%maximal-queue-size :initarg :maximal-queue-size
                         :reader read-maximal-queue-size)
    (%chunk-size :initarg :chunk-size
@@ -43,11 +43,12 @@
                                        (fn parallel-on-each-function)
                                        all)
   (let ((keys (cddr all)))
-    (make 'parallel-on-each-proxy
-          :original-range range
-          :key (getf keys :key)
-          :maximal-queue-size (getf keys :maximal-queue-size)
-          :function (second all))))
+    (make-instance 'parallel-on-each-proxy
+                   :original-range range
+                   :chunk-size (getf keys :chunk-size)
+                   :key (getf keys :key)
+                   :maximal-queue-size (getf keys :maximal-queue-size)
+                   :function (second all))))
 
 
 (defmethod cl-ds.alg.meta:aggregator-constructor
