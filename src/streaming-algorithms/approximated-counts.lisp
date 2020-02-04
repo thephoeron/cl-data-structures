@@ -105,7 +105,6 @@
    (setf %data-sketch (cl-ds:clone data-sketch)))
 
   ((element)
-   (incf (access-size %data-sketch))
    (iterate
      (with hash = (funcall (access-hash-fn %data-sketch) element))
      (with hashes = (access-hashes %data-sketch))
