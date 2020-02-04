@@ -130,7 +130,7 @@
              (cl-ds.alg.meta:extract-result inner))
 
          (when aggregate-thread
-           (bt:destroy-thread aggregate-thread))
+           (ignore-errors (bt:destroy-thread aggregate-thread)))
          (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
