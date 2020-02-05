@@ -141,9 +141,7 @@
      (cl-ds.alg:read-original-range range)
      (cl-ds.alg.meta:let-aggregator
          ((data (vect)))
-
          ((element) (vector-push-extend element (funcall key data)))
-
          ((let ((samples (make-array samples-count))
                 (length (length data)))
             (declare (type simple-array samples))
