@@ -55,6 +55,6 @@
        (unless (null inners)
          (iterate
            (for i from 0 below (array-total-size inners))
-           (cl-ds.alg.meta:cleanup (row-major-aref inners i))))
-       function)
+           (cl-ds.alg.meta:cleanup (row-major-aref inners i)))))
+     function
      arguments)))
