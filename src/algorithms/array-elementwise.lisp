@@ -50,7 +50,8 @@
             (iterate
               (for i from 0 below (array-total-size inners))
               (setf #1=(row-major-aref inners i)
-                    (cl-ds.alg.meta:extract-result #1#)))))
+                    (cl-ds.alg.meta:extract-result #1#))
+              (finally (return inners)))))
 
        (unless (null inners)
          (iterate
