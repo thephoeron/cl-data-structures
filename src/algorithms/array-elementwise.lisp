@@ -12,17 +12,17 @@
     (apply-range-function range #'array-elementwise (list range))))
 
 
-(defclass in-array-forward-proxy (forward-proxy-range)
+(defclass array-elementwise-forward-proxy (forward-proxy-range)
   ())
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)
                                        (function array-elementwise-function)
                                        arguments)
-  (make 'in-array-forward-proxy :original-range range))
+  (make 'array-elementwise-forward-proxy :original-range range))
 
 
-(defmethod cl-ds.alg.meta:aggregator-constructor ((range in-array-forward-proxy)
+(defmethod cl-ds.alg.meta:aggregator-constructor ((range array-elementwise-forward-proxy)
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))

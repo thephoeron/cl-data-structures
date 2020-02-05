@@ -55,7 +55,7 @@
   (:method (range sample-size samples-count
             &key
               (confidence 0.95) (key #'identity) (compare #'<)
-              (parallel t) (context-function #'identity))
+              (parallel t) (context-function #'funcall))
     (check-type samples-count integer)
     (check-type sample-size integer)
     (check-type confidence float)
@@ -123,7 +123,6 @@
                                                   outer-constructor
                                                   (function cl-ds.alg.meta:aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3) (safety 0)))
   (let* ((outer-fn (call-next-method))
          (sample-size (read-sample-size range))
          (key (ensure-function (read-key range)))
@@ -132,8 +131,8 @@
          (confidence (read-confidence range))
          (offset (~> confidence (/ 2) (* samples-count)))
          (half (/ samples-count 2))
-         (lower-percentail (floor (- half offset)))
-         (higher-percentail (ceiling (+ half offset)))
+         (lower-percentail (max 0 (floor (- half offset))))
+         (higher-percentail (min samples-count (ceiling (+ half offset))))
          (parallel (read-parallel range))
          (context-function (ensure-function (read-context-function range))))
     (declare (type fixnum lower-percentail higher-percentail))
@@ -159,7 +158,7 @@
                                         (for i from 0 below sample-size)
                                         (for random = (random length))
                                         (cl-ds.alg.meta:pass-to-aggregation aggregator (aref data random))
-                                        (finally (return (cl-ds.alg.meta:extract-result aggregator))))
+                                        (finally (return (print (cl-ds.alg.meta:extract-result aggregator)))))
                                     (error (e)
                                       (cl-ds.alg.meta:cleanup aggregator)
                                       (error e)))))))
