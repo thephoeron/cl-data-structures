@@ -43,6 +43,7 @@
    #:%summary
    #:*current-key*
    #:accumulate
+   #:array-elementwise
    #:bidirectional-chain-of-ranges
    #:bidirectional-proxy-range
    #:cartesian

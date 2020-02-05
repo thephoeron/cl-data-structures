@@ -196,6 +196,7 @@
                                            (:file "docstrings")
                                            ))
                              (:file "common")
+                             (:file "array-elementwise")
                              (:file "on-each")
                              (:file "translation")
                              (:file "count")
