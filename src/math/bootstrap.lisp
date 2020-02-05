@@ -158,7 +158,7 @@
                                         (for i from 0 below sample-size)
                                         (for random = (random length))
                                         (cl-ds.alg.meta:pass-to-aggregation aggregator (aref data random))
-                                        (finally (return (print (cl-ds.alg.meta:extract-result aggregator)))))
+                                        (finally (return (cl-ds.alg.meta:extract-result aggregator))))
                                     (error (e)
                                       (cl-ds.alg.meta:cleanup aggregator)
                                       (error e)))))))
