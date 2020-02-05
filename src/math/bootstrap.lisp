@@ -132,7 +132,7 @@
          (offset (~> confidence (/ 2) (* samples-count)))
          (half (/ samples-count 2))
          (lower-percentail (max 0 (floor (- half offset))))
-         (higher-percentail (min samples-count (ceiling (+ half offset))))
+         (higher-percentail (min (1- samples-count) (ceiling (+ half offset))))
          (parallel (read-parallel range))
          (context-function (ensure-function (read-context-function range))))
     (declare (type fixnum lower-percentail higher-percentail))
