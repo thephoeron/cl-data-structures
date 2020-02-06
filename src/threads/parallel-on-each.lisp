@@ -64,17 +64,40 @@
          (maximal-queue-size (read-maximal-queue-size range))
          (chunk-size (the fixnum (read-chunk-size range)))
          (fn (ensure-function (cl-ds.alg:read-function range)))
-         (key (ensure-function (cl-ds.alg:read-key range))))
+         (key (ensure-function (cl-ds.alg:read-key range)))
+         (error-lock (bt:make-lock "error lock"))
+         (stored-error nil)
+         (queue (lparallel:make-channel
+                 :fixed-capacity maximal-queue-size))
+         ((:flet thread-function ())
+          (iterate
+            (for cons = (lparallel:receive-result queue))
+            (when (null cons)
+              (leave))
+            (for (elt . inner) = cons)
+            (if (vectorp elt)
+                (handler-case
+                    (iterate
+                      (with length = (length elt))
+                      (for i from 0 below length)
+                      (for e = (aref elt i))
+                      (cl-ds.alg.meta:pass-to-aggregation inner e))
+                  (error (e)
+                    (bt:with-lock-held (error-lock)
+                      (setf stored-error e))
+                    (leave)))
+                (progn
+                  (bt:with-lock-held (error-lock)
+                    (setf stored-error elt))
+                  (leave)))))
+         (aggregate-thread (bt:make-thread #'thread-function
+                                           :name "Aggregation Thread")))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
                          (:variant (eq fn #'identity)))
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-            (queue (lparallel:make-channel
-                    :fixed-capacity maximal-queue-size))
-            (error-lock (bt:make-lock "error lock"))
-            (stored-error nil)
             (chunk (make-array chunk-size :fill-pointer 0))
             ((:flet push-chunk ())
              (let ((chunk (copy-array chunk)))
@@ -83,31 +106,10 @@
                 queue
                 (lambda ()
                   (assert (array-has-fill-pointer-p chunk))
-                  (handler-case (cl-ds.utils:transform fn chunk)
-                    (error (e) e)))))
-             (setf (fill-pointer chunk) 0))
-            ((:flet thread-function ())
-             (iterate
-               (for elt = (lparallel:receive-result queue))
-               (when (null elt)
-                 (leave))
-               (if (vectorp elt)
-                   (handler-case
-                       (iterate
-                         (with length = (length elt))
-                         (for i from 0 below length)
-                         (for e = (aref elt i))
-                         (cl-ds.alg.meta:pass-to-aggregation inner e))
-                     (error (e)
-                       (bt:with-lock-held (error-lock)
-                         (setf stored-error e))
-                       (leave)))
-                   (progn
-                     (bt:with-lock-held (error-lock)
-                       (setf stored-error elt))
-                     (leave)))))
-            (aggregate-thread (bt:make-thread #'thread-function
-                                              :name "Aggregation Thread")))
+                  (handler-case (cons (cl-ds.utils:transform fn chunk)
+                                      inner)
+                    (error (e) (cons e inner))))))
+             (setf (fill-pointer chunk) 0)))
 
            ((element)
              (bt:with-lock-held (error-lock)
