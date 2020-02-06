@@ -97,7 +97,6 @@
                (unless force (leave)))))
 
            ((element)
-             (scan-futures)
             (bind ((selected (~>> element (funcall group-by-key)))
                    (group (gethash selected groups)))
               (when (null group)
@@ -110,6 +109,7 @@
                 (unless (< (length buffer) chunk-size)
                   (let ((chunk (copy-array buffer)))
                     (setf (fill-pointer buffer) 0)
+                    (scan-futures)
                     (vector-push-extend (lparallel:future
                                           (handler-case
                                               (iterate
