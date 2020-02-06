@@ -67,11 +67,11 @@
          (key (ensure-function (cl-ds.alg:read-key range)))
          (error-lock (bt:make-lock "error lock"))
          (stored-error nil)
-         (queue (lparallel:make-channel
+         (channel (lparallel:make-channel
                  :fixed-capacity maximal-queue-size))
          ((:flet thread-function ())
           (iterate
-            (for cons = (lparallel:receive-result queue))
+            (for cons = (lparallel:receive-result channel))
             (when (null cons)
               (leave))
             (for (elt . inner) = cons)
@@ -102,7 +102,7 @@
              (let ((chunk (copy-array chunk)))
                (declare (type (cl-ds.utils:extendable-vector t) chunk))
                (lparallel:submit-task
-                queue
+                channel
                 (lambda ()
                   (assert (array-has-fill-pointer-p chunk))
                   (handler-case (cons (cl-ds.utils:transform fn chunk)
@@ -127,7 +127,7 @@
                 (error stored-error)))
              (unless (zerop (fill-pointer chunk))
               (push-chunk))
-             (lparallel:submit-task queue (constantly nil))
+             (lparallel:submit-task channel (constantly nil))
              (bt:join-thread aggregate-thread)
              (setf aggregate-thread nil)
              (bt:with-lock-held (error-lock)

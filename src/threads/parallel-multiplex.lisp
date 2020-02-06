@@ -111,19 +111,19 @@
                                        :name "Aggregation Thread"))))
              (scan-futures)
              (lparallel.queue:push-queue '(:start nil inner) queue)
-             (vector-push-extend
-              (lparallel:future
-                (handler-case
-                    (progn
-                      (~>> element (funcall key) (funcall fn)
-                           (cl-ds:traverse _
-                                           (lambda (element)
-                                             (lparallel.queue:push-queue
-                                              (list :progress element inner) queue))))
-                      (lparallel.queue:push-queue '(:end nil inner) queue)
-                      nil)
-                  (error (e) e)))
-              futures))
+             (let ((future (lparallel:future
+                             (handler-case
+                                 (progn
+                                   (~>> element (funcall key) (funcall fn)
+                                        (cl-ds:traverse _
+                                                        (lambda (element)
+                                                          (lparallel.queue:push-queue
+                                                           (list :progress element inner) queue))))
+                                   (lparallel.queue:push-queue '(:end nil inner) queue)
+                                   nil)
+                               (error (e) e)))))
+               (bt:with-lock-held (futures-lock)
+                 (vector-push-extend future futures))))
 
            ((lparallel.queue:push-queue '(:end nil inner) queue)
              (scan-futures t)
