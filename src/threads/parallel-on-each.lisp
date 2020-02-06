@@ -90,8 +90,7 @@
                   (bt:with-lock-held (error-lock)
                     (setf stored-error elt))
                   (leave)))))
-         (aggregate-thread (bt:make-thread #'thread-function
-                                           :name "Aggregation Thread")))
+         (aggregate-thread nil ))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
@@ -114,7 +113,11 @@
            ((element)
              (bt:with-lock-held (error-lock)
                (unless (null stored-error)
-                 (error stored-error)))
+                 (error stored-error))
+               (when (null aggregate-thread)
+                 (setf aggregate-thread
+                       (bt:make-thread #'thread-function
+                                       :name "Aggregation Thread"))))
              (unless (< (fill-pointer chunk) chunk-size)
                (push-chunk))
              (vector-push-extend element chunk))

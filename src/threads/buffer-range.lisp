@@ -79,36 +79,42 @@
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (call-next-method))
          (chunk-size (the fixnum (read-chunk-size range)))
-         (maximum-queue-size (read-maximum-queue-size range)))
+         (maximum-queue-size (read-maximum-queue-size range))
+         (queue (lparallel.queue:make-queue
+                 :fixed-capacity maximum-queue-size))
+         (error-lock (bt:make-lock "error lock"))
+         (stored-error nil)
+         ((:flet thread-function ())
+          (iterate
+            (for cons = (lparallel.queue:pop-queue queue))
+            (until (null cons))
+            (for (elt . inner) = cons)
+            (handler-case (iterate
+                            (for e in-vector elt)
+                            (cl-ds.alg.meta:pass-to-aggregation inner e))
+              (error (e) (bt:with-lock-held (error-lock)
+                           (setf stored-error e)
+                           (leave))))))
+         (aggregate-thread nil))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.alg.meta:let-aggregator
          ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-          (queue (lparallel.queue:make-queue
-                  :fixed-capacity maximum-queue-size))
-          (error-lock (bt:make-lock "error lock"))
-          (stored-error nil)
           (chunk (make-array chunk-size :fill-pointer 0))
           ((:flet push-chunk ())
-           (lparallel.queue:push-queue (copy-array chunk) queue)
-           (setf (fill-pointer chunk) 0))
-          ((:flet thread-function ())
-           (iterate
-             (for elt = (lparallel.queue:pop-queue queue))
-             (until (null elt))
-             (handler-case (iterate
-                             (for e in-vector elt)
-                             (cl-ds.alg.meta:pass-to-aggregation inner e))
-               (error (e) (bt:with-lock-held (error-lock)
-                            (setf stored-error e)
-                            (leave))))))
-          (aggregate-thread (bt:make-thread #'thread-function
-                                            :name "Aggregation Thread")))
+           (lparallel.queue:push-queue (cons (copy-array chunk)
+                                             inner)
+                                       queue)
+           (setf (fill-pointer chunk) 0)))
 
          ((element)
            (bt:with-lock-held (error-lock)
              (unless (null stored-error)
-               (error stored-error)))
+               (error stored-error))
+             (when (null aggregate-thread)
+               (setf aggregate-thread
+                     (bt:make-thread #'thread-function
+                                     :name "Aggregation Thread"))))
            (unless (< (fill-pointer chunk) chunk-size)
              (push-chunk))
            (vector-push-extend element chunk))
