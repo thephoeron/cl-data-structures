@@ -18,7 +18,7 @@
 
 
 (defun make-hash-array (count)
-  (lret ((result (make-array (list count 2) :element-type 'fixnum)))
+  (lret ((result (make-array (list count 2) :element-type 'non-negative-fixnum)))
     (map-into (cl-ds.utils:unfold-table result)
               (curry #'random most-positive-fixnum))))
 

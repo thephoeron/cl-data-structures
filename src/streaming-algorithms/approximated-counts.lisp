@@ -39,8 +39,8 @@
   (declare (ignore all))
   (check-type (access-space object) integer)
   (check-type (access-count object) integer)
-  (check-type (access-hashes object) (simple-array fixnum (* 2)))
-  (check-type (access-counters object) (simple-array fixnum (*)))
+  (check-type (access-hashes object) (simple-array non-negative-fixnum (* 2)))
+  (check-type (access-counters object) (simple-array non-negative-fixnum (*)))
   (unless (eql (array-dimension (access-counters object) 0)
                (access-space object))
     (error 'cl-ds:incompatible-arguments
@@ -59,6 +59,7 @@
   ((sketch approximated-counts))
   '((:counters access-counters)
     (:hashes access-hashes)
+    (:space access-space)
     (:count access-count)))
 
 
@@ -90,8 +91,8 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-  (:range &key hash-fn space count key hashes data-sketch)
-  (:range &key hash-fn space count (key #'identity) hashes
+    (:range &key hash-fn space count key hashes data-sketch)
+    (:range &key (hash-fn #'sxhash) space count (key #'identity) hashes
           (data-sketch (clean-sketch
                         #'approximated-counts
                         :hashes hashes
@@ -99,23 +100,23 @@
                         :space space
                         :count count)))
 
-  (%data-sketch)
+    (%data-sketch)
 
-  ((check-type data-sketch approximated-counts)
-   (setf %data-sketch (cl-ds:clone data-sketch)))
+    ((check-type data-sketch approximated-counts)
+     (setf %data-sketch (cl-ds:clone data-sketch)))
 
-  ((element)
-   (iterate
-     (with hash = (funcall (access-hash-fn %data-sketch) element))
-     (with hashes = (access-hashes %data-sketch))
-     (with counters = (access-counters %data-sketch))
-     (with count = (access-count %data-sketch))
-     (with space = (access-space %data-sketch))
-     (for j from 0 below count)
-     (for hashval = (hashval hashes space j hash))
-     (incf (aref counters hashval))))
+    ((element)
+     (iterate
+       (with hash = (funcall (access-hash-fn %data-sketch) element))
+       (with hashes = (access-hashes %data-sketch))
+       (with counters = (access-counters %data-sketch))
+       (with count = (access-count %data-sketch))
+       (with space = (access-space %data-sketch))
+       (for j from 0 below count)
+       (for hashval = (hashval hashes space j hash))
+       (incf (aref counters hashval))))
 
-  (%data-sketch))
+    (%data-sketch))
 
 
 (defmethod clean-sketch ((function approximated-counts-function)
@@ -123,7 +124,7 @@
   (declare (ignore all))
   (check-type count integer)
   (check-type space integer)
-  (check-type hashes (or null (simple-array fixnum (* 2))))
+  (check-type hashes (or null (simple-array non-negative-fixnum (* 2))))
   (cl-ds:check-argument-bounds count (< 0 count))
   (cl-ds:check-argument-bounds space (< 0 space))
   (make 'approximated-counts

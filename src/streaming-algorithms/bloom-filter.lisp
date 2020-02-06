@@ -40,7 +40,7 @@
     (check-type %space integer)
     (check-type %count integer)
     (check-type %counters (simple-array bit (*)))
-    (check-type %hashes (simple-array fixnum (* 2)))
+    (check-type %hashes (simple-array non-negative-fixnum (* 2)))
     (unless (eql (array-dimension (access-counters sketch) 0)
                  (access-space sketch))
       (error 'cl-ds:incompatible-arguments
