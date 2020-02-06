@@ -8,4 +8,5 @@
    #:thread-buffer
    #:parallel-multiplex
    #:parallel-on-each
+   #:parallel-group-by
    ))

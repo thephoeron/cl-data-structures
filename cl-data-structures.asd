@@ -242,6 +242,7 @@
                (:module "threads"
                 :components ((:file "package")
                              (:file "parallel-multiplex")
+                             (:file "parallel-group-by")
                              (:file "parallel-on-each")
                              (:file "buffer-range")
                              (:file "docstrings")))
