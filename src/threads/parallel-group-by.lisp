@@ -121,7 +121,8 @@
                        queue)))))))
 
            ((let ((result (copy-hash-table groups-prototype)))
-              (scan-futures t)
+              (lparallel.queue:with-locked-queue queue
+                (scan-futures t))
               (maphash (lambda (key group)
                          (bind (((lock buffer aggregator) group))
                            (setf (gethash result key)
