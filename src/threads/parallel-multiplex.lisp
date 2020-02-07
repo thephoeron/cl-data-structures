@@ -49,7 +49,7 @@
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
-  (declare (optimize (speed 3) (safety 0)
+  (declare (optimize (speed 1) (safety 2) (debug 2)
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
@@ -57,45 +57,39 @@
          (maximal-queue-size (read-maximal-queue-size range))
          (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range)))
-         (futures-lock (bt:make-lock "futures lock"))
+         (chunk-size (read-chunk-size range))
          (queue (lparallel.queue:make-queue
                  :fixed-capacity maximal-queue-size))
-         (futures (make-array maximal-queue-size
-                              :element-type t
-                              :fill-pointer 0))
-         ((:flet scan-futures (&optional force))
-          (bt:with-lock-held (futures-lock)
-            (iterate
-              (for fill-pointer = (fill-pointer futures))
-              (until (zerop (the fixnum fill-pointer)))
-              (for future = (aref futures 0))
-              (for fullfilledp = (lparallel:fulfilledp future))
-              (for full = (>= fill-pointer maximal-queue-size))
-              (when (or force full fullfilledp)
-                (cl-ds.utils:swapop futures 0)
-                (when-let ((e (lparallel:force future)))
-                  (error e))
-                (next-iteration))
-              (unless force (leave)))))
-         ((:flet thread-function ())
+         (result-queue (lparallel.queue:make-queue))
+         ((:flet read-results ())
           (iterate
-            (declare (type fixnum count))
-            (with count = 0)
-            (for (op elt inner) = (lparallel.queue:pop-queue queue))
-            (switch (op :test eq)
-              (:progress (handler-case (cl-ds.alg.meta:pass-to-aggregation
-                                        inner
-                                        elt)
-                           (error (e)
-                             (bt:with-lock-held (futures-lock)
-                               (setf (fill-pointer futures) 0)
-                               (vector-push-extend e futures))
-                             (leave))))
-              (:start (incf count))
-              (:end (decf count)))
-            (until (zerop count))))
-         (aggregation-thread-lock (bt:make-lock))
-         (aggregate-thread nil))
+            (until (lparallel.queue:queue-empty-p result-queue))
+            (for (vector . inner) = (lparallel.queue:pop-queue result-queue))
+            (iterate
+              (for elt in-vector vector)
+              (cl-ds.alg.meta:pass-to-aggregation inner elt))))
+         ((:flet push-queue (new inner))
+          (lparallel.queue:with-locked-queue queue
+            (when (lparallel.queue:queue-full-p/no-lock queue)
+              (lparallel:force (lparallel.queue:pop-queue/no-lock queue)))
+            (lparallel.queue:push-queue/no-lock
+             (lparallel:future
+               (let ((result (vect)))
+                 (~>> new (funcall key) (funcall fn)
+                      (cl-ds:traverse
+                       _
+                       (lambda (element)
+                         (vector-push-extend element result)
+                         (unless (< (fill-pointer result) chunk-size)
+                           (lparallel.queue:push-queue (cons (copy-array result)
+                                                             inner)
+                                                       result-queue)
+                           (setf (fill-pointer result) 0)))))
+                 (unless (zerop (fill-pointer result))
+                   (lparallel.queue:push-queue (cons result inner)
+                                               result-queue))))
+             queue))
+          (read-results)))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
@@ -104,34 +98,14 @@
            ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element)
-             (bt:with-lock-held (aggregation-thread-lock)
-               (when (null aggregate-thread)
-                 (setf aggregate-thread
-                       (bt:make-thread #'thread-function
-                                       :name "Aggregation Thread"))))
-             (scan-futures)
-             (lparallel.queue:push-queue '(:start nil inner) queue)
-             (let ((future (lparallel:future
-                             (handler-case
-                                 (progn
-                                   (~>> element (funcall key) (funcall fn)
-                                        (cl-ds:traverse _
-                                                        (lambda (element)
-                                                          (lparallel.queue:push-queue
-                                                           (list :progress element inner) queue))))
-                                   (lparallel.queue:push-queue '(:end nil inner) queue)
-                                   nil)
-                               (error (e) e)))))
-               (bt:with-lock-held (futures-lock)
-                 (vector-push-extend future futures))))
+             (push-queue element inner))
 
-           ((lparallel.queue:push-queue '(:end nil inner) queue)
-             (scan-futures t)
-             (bt:join-thread aggregate-thread)
-             (setf aggregate-thread nil)
+           ((iterate
+              (until (lparallel.queue:queue-empty-p queue))
+              (lparallel:force (lparallel.queue:pop-queue queue)))
+             (read-results)
              (cl-ds.alg.meta:extract-result inner))
 
-         (ignore-errors (bt:destroy-thread aggregate-thread))
          (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

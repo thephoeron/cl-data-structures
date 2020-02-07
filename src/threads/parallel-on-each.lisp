@@ -56,7 +56,7 @@
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
-  (declare (optimize (speed 0) (safety 3) (debug 3)
+  (declare (optimize (speed 1) (safety 2) (debug 2)
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
@@ -66,46 +66,43 @@
          (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range)))
          (queue (lparallel.queue:make-queue
-                 :fixed-capacity maximal-queue-size)))
+                 :fixed-capacity maximal-queue-size))
+         ((:flet handle-result (elt inner))
+          (setf elt (lparallel:force elt))
+          (iterate
+            (with length = (length elt))
+            (for i from 0 below length)
+            (for e = (aref elt i))
+            (cl-ds.alg.meta:pass-to-aggregation inner e)))
+         ((:flet push-chunk (chunk inner))
+          (let ((chunk (copy-array chunk)))
+            (declare (type (cl-ds.utils:extendable-vector t) chunk))
+            (lparallel.queue:with-locked-queue queue
+              (when (lparallel.queue:queue-full-p/no-lock queue)
+                (bind (((elt . inner) (lparallel.queue:pop-queue/no-lock queue)))
+                  (handle-result elt inner)))
+              (lparallel.queue:push-queue/no-lock
+               (cons (lparallel:future
+                       (assert (array-has-fill-pointer-p chunk))
+                       (cl-ds.utils:transform fn chunk))
+                     inner)
+               queue)))
+          (setf (fill-pointer chunk) 0)))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
                          (:variant (eq fn #'identity)))
        (cl-ds.alg.meta:let-aggregator
            ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-            (chunk (make-array chunk-size :fill-pointer 0))
-            ((:flet handle-result (elt inner))
-             (setf elt (lparallel:force elt))
-             (if (vectorp elt)
-                 (iterate
-                   (with length = (length elt))
-                   (for i from 0 below length)
-                   (for e = (aref elt i))
-                   (cl-ds.alg.meta:pass-to-aggregation inner e))
-                 (error elt)))
-            ((:flet push-chunk ())
-             (let ((chunk (copy-array chunk)))
-               (declare (type (cl-ds.utils:extendable-vector t) chunk))
-               (lparallel.queue:with-locked-queue queue
-                 (when (lparallel.queue:queue-full-p queue)
-                   (bind (((elt . inner) (lparallel.queue:pop-queue/no-lock queue)))
-                     (handle-result elt inner)))
-                 (lparallel.queue:push-queue/no-lock
-                  (cons (lparallel:future
-                          (assert (array-has-fill-pointer-p chunk))
-                          (handler-case (cl-ds.utils:transform fn chunk)
-                            (error (e) e)))
-                        inner)
-                  queue)))
-             (setf (fill-pointer chunk) 0)))
+            (chunk (make-array chunk-size :fill-pointer 0)))
 
            ((element)
              (unless (< (fill-pointer chunk) chunk-size)
-               (push-chunk))
+               (push-chunk chunk inner))
              (vector-push-extend element chunk))
 
            ((unless (zerop (fill-pointer chunk))
-              (push-chunk))
+              (push-chunk chunk inner))
              (lparallel.queue:with-locked-queue queue
                (iterate
                  (until (lparallel.queue:queue-empty-p/no-lock queue))
