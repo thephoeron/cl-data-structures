@@ -138,11 +138,10 @@
                                      (error (e) (cons nil e)))))))
                        groups)
               (maphash (lambda (key aggregator)
-                         (bind (((success . result) (lparallel:force aggregator)))
+                         (bind (((success . value) (lparallel:force aggregator)))
                            (unless success
-                             (error result))
-                           (setf (gethash key result)
-                                 (lparallel:force aggregator))))
+                             (error value))
+                           (setf (gethash key result) value)))
                        result)
               (make-instance 'cl-ds.alg:group-by-result-range
                              :hash-table result
