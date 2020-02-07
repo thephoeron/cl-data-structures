@@ -56,7 +56,7 @@
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
-  (declare (optimize (speed 3) (safety 0)
+  (declare (optimize (speed 0) (safety 3) (debug 3)
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
@@ -65,87 +65,54 @@
          (chunk-size (the fixnum (read-chunk-size range)))
          (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range)))
-         (error-lock (bt:make-lock "error lock"))
-         (stored-error nil)
          (queue (lparallel.queue:make-queue
-                 :fixed-capacity maximal-queue-size))
-         ((:flet thread-function ())
-          (iterate
-            (with count = 0)
-            (for cons = (lparallel.queue:pop-queue queue))
-            (when (eq :start cons)
-              (incf count)
-              (next-iteration))
-            (when (eq :end cons)
-              (decf count)
-              (when (zerop count)
-                (leave)))
-            (for (elt . inner) = cons)
-            (setf elt (lparallel:force elt))
-            (if (vectorp elt)
-                (handler-case
-                    (iterate
-                      (with length = (length elt))
-                      (for i from 0 below length)
-                      (for e = (aref elt i))
-                      (cl-ds.alg.meta:pass-to-aggregation inner e))
-                  (error (e)
-                    (bt:with-lock-held (error-lock)
-                      (setf stored-error e))
-                    (leave)))
-                (progn
-                  (bt:with-lock-held (error-lock)
-                    (setf stored-error elt))
-                  (leave)))))
-         (aggregate-thread nil ))
+                 :fixed-capacity maximal-queue-size)))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
                          (:variant (eq fn #'identity)))
-       (lambda ()
-         (lparallel.queue:push-queue :start queue)
-         (funcall
-          (cl-ds.alg.meta:let-aggregator
-              ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-               (chunk (make-array chunk-size :fill-pointer 0))
-               ((:flet push-chunk ())
-                (let ((chunk (copy-array chunk)))
-                  (declare (type (cl-ds.utils:extendable-vector t) chunk))
-                  (lparallel.queue:push-queue
-                   (lparallel:future
-                     (assert (array-has-fill-pointer-p chunk))
-                     (handler-case (cons (cl-ds.utils:transform fn chunk)
-                                         inner)
-                       (error (e) (cons e inner))))
-                   queue))
-                (setf (fill-pointer chunk) 0)))
+       (cl-ds.alg.meta:let-aggregator
+           ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+            (chunk (make-array chunk-size :fill-pointer 0))
+            ((:flet handle-result (elt inner))
+             (setf elt (lparallel:force elt))
+             (if (vectorp elt)
+                 (iterate
+                   (with length = (length elt))
+                   (for i from 0 below length)
+                   (for e = (aref elt i))
+                   (cl-ds.alg.meta:pass-to-aggregation inner e))
+                 (error elt)))
+            ((:flet push-chunk ())
+             (let ((chunk (copy-array chunk)))
+               (declare (type (cl-ds.utils:extendable-vector t) chunk))
+               (lparallel.queue:with-locked-queue queue
+                 (when (lparallel.queue:queue-full-p queue)
+                   (bind (((elt . inner) (lparallel.queue:pop-queue/no-lock queue)))
+                     (handle-result elt inner)))
+                 (lparallel.queue:push-queue/no-lock
+                  (cons (lparallel:future
+                          (assert (array-has-fill-pointer-p chunk))
+                          (handler-case (cl-ds.utils:transform fn chunk)
+                            (error (e) e)))
+                        inner)
+                  queue)))
+             (setf (fill-pointer chunk) 0)))
 
-              ((element)
-                (bt:with-lock-held (error-lock)
-                  (unless (null stored-error)
-                    (error stored-error))
-                  (when (null aggregate-thread)
-                    (setf aggregate-thread
-                          (bt:make-thread #'thread-function
-                                          :name "Aggregation Thread"))))
-                (unless (< (fill-pointer chunk) chunk-size)
-                  (push-chunk))
-                (vector-push-extend element chunk))
+           ((element)
+             (unless (< (fill-pointer chunk) chunk-size)
+               (push-chunk))
+             (vector-push-extend element chunk))
 
-              ((bt:with-lock-held (error-lock)
-                 (unless (null stored-error)
-                   (error stored-error)))
-                (unless (zerop (fill-pointer chunk))
-                  (push-chunk))
-                (lparallel.queue:push-queue nil queue)
-                (bt:join-thread aggregate-thread)
-                (setf aggregate-thread nil)
-                (bt:with-lock-held (error-lock)
-                  (unless (null stored-error)
-                    (error stored-error)))
-                (cl-ds.alg.meta:extract-result inner))
+           ((unless (zerop (fill-pointer chunk))
+              (push-chunk))
+             (lparallel.queue:with-locked-queue queue
+               (iterate
+                 (until (lparallel.queue:queue-empty-p/no-lock queue))
+                 (for (elt . inner) = (lparallel.queue:pop-queue/no-lock queue))
+                 (handle-result elt inner)))
+             (cl-ds.alg.meta:extract-result inner))
 
-            (ignore-errors (bt:destroy-thread aggregate-thread))
-            (cl-ds.alg.meta:cleanup inner)))))
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
