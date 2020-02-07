@@ -3,12 +3,15 @@
 
 (defclass parallel-forward-multiplex-proxy (cl-ds.alg:forward-multiplex-proxy)
   ((%maximal-queue-size :initarg :maximal-queue-size
-                        :reader read-maximal-queue-size)))
+                        :reader read-maximal-queue-size)
+   (%chunk-size :initarg :chunk-size
+                :reader read-chunk-size)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range parallel-forward-multiplex-proxy))
-  '((:maximal-queue-size read-maximal-queue-size)))
+  '((:chunk-size read-chunk-size)
+    (:maximal-queue-size read-maximal-queue-size)))
 
 
 (defclass parallel-multiplex-function (cl-ds.alg.meta:layer-function)
@@ -16,11 +19,13 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-(defgeneric parallel-multiplex (range &key key function maximal-queue-size)
+(defgeneric parallel-multiplex (range &key key function chunk-size
+                                        maximal-queue-size)
   (:generic-function-class parallel-multiplex-function)
   (:method (range &key
                     (function #'cl-ds:whole-range)
                     (key #'identity)
+                    (chunk-size 32)
                     (maximal-queue-size 512))
     (check-type maximal-queue-size integer)
     (cl-ds:check-argument-bounds maximal-queue-size
@@ -30,6 +35,7 @@
     (cl-ds.alg.meta:apply-range-function
      range #'parallel-multiplex
      (list range :key key :function function
+                 :chunk-size chunk-size
                  :maximal-queue-size maximal-queue-size))))
 
 
@@ -40,6 +46,7 @@
     (make 'parallel-forward-multiplex-proxy
           :original-range range
           :key (getf keys :key)
+          :chunk-size (getf keys :chunk-size)
           :maximal-queue-size (getf keys :maximal-queue-size)
           :function (getf keys :function))))
 

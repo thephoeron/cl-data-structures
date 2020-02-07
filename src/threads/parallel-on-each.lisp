@@ -75,8 +75,8 @@
             (for e = (aref elt i))
             (cl-ds.alg.meta:pass-to-aggregation inner e)))
          ((:flet push-chunk (chunk inner))
+          (declare (type (cl-ds.utils:extendable-vector t) chunk))
           (let ((chunk (copy-array chunk)))
-            (declare (type (cl-ds.utils:extendable-vector t) chunk))
             (lparallel.queue:with-locked-queue queue
               (when (lparallel.queue:queue-full-p/no-lock queue)
                 (bind (((elt . inner) (lparallel.queue:pop-queue/no-lock queue)))
