@@ -78,10 +78,10 @@
          ((:flet scan-futures (&optional force))
           (iterate
             (until (if force
+                       (lparallel.queue:queue-empty-p/no-lock queue)
                        (~> queue
                            lparallel.queue:queue-full-p/no-lock
-                           not)
-                       (lparallel.queue:queue-empty-p/no-lock queue)))
+                           not)))
             (for future = (lparallel.queue:pop-queue/no-lock queue))
             (for result = (lparallel:force future))
             (unless (null result)
