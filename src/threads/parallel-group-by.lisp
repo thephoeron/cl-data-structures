@@ -73,28 +73,25 @@
          (chunk-size (read-chunk-size range))
          (maximal-queue-size (read-maximal-queue-size range))
          (group-by-key (ensure-function (read-key range)))
+         (queue (lparallel.queue:make-queue
+                 :fixed-capacity maximal-queue-size))
+         ((:flet scan-futures (&optional force))
+          (iterate
+            (until (if force
+                       (~> queue
+                           lparallel.queue:queue-full-p/no-lock
+                           not)
+                       (lparallel.queue:queue-empty-p/no-lock queue)))
+            (for future = (lparallel.queue:pop-queue/no-lock queue))
+            (for result = (lparallel:force future))
+            (unless (null result)
+              (error result))))
          (outer-fn (call-next-method)))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq group-by-key #'identity)))
        (cl-ds.alg.meta:let-aggregator
-           ((groups (copy-hash-table groups-prototype))
-            (futures (make-array maximal-queue-size
-                                 :element-type t
-                                 :fill-pointer 0))
-            ((:flet scan-futures (&optional force))
-             (iterate
-               (for fill-pointer = (fill-pointer futures))
-               (until (zerop (the fixnum fill-pointer)))
-               (for future = (aref futures 0))
-               (for fullfilledp = (lparallel:fulfilledp future))
-               (for full = (>= fill-pointer maximal-queue-size))
-               (when (or force full fullfilledp)
-                 (cl-ds.utils:swapop futures 0)
-                 (when-let ((e (lparallel:force future)))
-                   (error e))
-                 (next-iteration))
-               (unless force (leave)))))
+           ((groups (copy-hash-table groups-prototype)))
 
            ((element)
             (bind ((selected (~>> element (funcall group-by-key)))
@@ -109,16 +106,19 @@
                 (unless (< (length buffer) chunk-size)
                   (let ((chunk (copy-array buffer)))
                     (setf (fill-pointer buffer) 0)
-                    (scan-futures)
-                    (vector-push-extend (lparallel:future
-                                          (handler-case
-                                              (iterate
-                                                (for elt in-vector chunk)
-                                                (bt:with-lock-held (lock)
-                                                  (cl-ds.alg.meta:pass-to-aggregation
-                                                   aggregator elt)))
-                                            (error (e) e)))
-                     futures))))))
+                    (lparallel.queue:with-locked-queue queue
+                      (scan-futures)
+                      (lparallel.queue:push-queue/no-lock
+                       (lparallel:future
+                         (handler-case
+                             (iterate
+                               (for elt in-vector chunk)
+                               (bt:with-lock-held (lock)
+                                 (cl-ds.alg.meta:pass-to-aggregation
+                                  aggregator elt))
+                               (finally (return nil)))
+                           (error (e) e)))
+                       queue)))))))
 
            ((let ((result (copy-hash-table groups-prototype)))
               (scan-futures t)
