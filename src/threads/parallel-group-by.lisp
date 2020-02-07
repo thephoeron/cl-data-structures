@@ -112,6 +112,7 @@
                        (lparallel:future
                          (handler-case
                              (iterate
+                               (with cl-ds.alg:*current-key* = selected)
                                (for elt in-vector chunk)
                                (bt:with-lock-held (lock)
                                  (cl-ds.alg.meta:pass-to-aggregation
@@ -129,6 +130,7 @@
                                  (lparallel:future
                                    (handler-case
                                        (iterate
+                                         (with cl-ds.alg:*current-key* = key)
                                          (for c in-vector buffer)
                                          (bt:with-lock-held (lock)
                                            (cl-ds.alg.meta:pass-to-aggregation c aggregator))
