@@ -69,6 +69,7 @@
               (for elt in-vector vector)
               (cl-ds.alg.meta:pass-to-aggregation inner elt))))
          ((:flet push-queue (new inner))
+          (read-results)
           (lparallel.queue:with-locked-queue queue
             (when (lparallel.queue:queue-full-p/no-lock queue)
               (lparallel:force (lparallel.queue:pop-queue/no-lock queue)))
@@ -88,8 +89,7 @@
                  (unless (zerop (fill-pointer result))
                    (lparallel.queue:push-queue (cons result inner)
                                                result-queue))))
-             queue))
-          (read-results)))
+             queue))))
     (cl-ds.alg.meta:aggregator-constructor
      (cl-ds.alg:read-original-range range)
      (cl-ds.utils:cases ((:variant (eq key #'identity))
