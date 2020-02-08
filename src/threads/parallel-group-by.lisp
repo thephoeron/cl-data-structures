@@ -126,7 +126,7 @@
                 (scan-futures t))
               (maphash (lambda (key group)
                          (bind (((lock buffer aggregator) group))
-                           (setf (gethash result key)
+                           (setf (gethash key result)
                                  (lparallel:future
                                    (handler-case
                                        (iterate
