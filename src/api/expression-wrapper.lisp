@@ -60,7 +60,7 @@
 
 (defmethod traverse ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
-  (let ((fn (access-closure obj))
+  (let ((fn (ensure-function (access-closure obj)))
         (function (ensure-function function)))
     (declare (type (-> (t) t) function)
              (type (-> (&optional boolean) t) fn))
@@ -73,10 +73,11 @@
 
 (defmethod across ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
-  (let ((function (ensure-function function)))
+  (let ((function (ensure-function (ensure-function function))))
     (declare (type (-> (t) t) function))
     (bind (((:slots %construct-function %closure %arguments-closure) obj)
-           (fn (apply %construct-function (funcall %arguments-closure))))
+           (fn (ensure-function (apply %construct-function
+                                       (funcall %arguments-closure)))))
       (declare (type (-> (&optional boolean) t) fn))
       (iterate
         (for (values value not-finished) = (funcall fn))
