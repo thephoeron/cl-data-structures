@@ -107,9 +107,12 @@
            ((element)
              (push-queue element inner))
 
-           ((read-results)
+           ((iterate
+              (until (lparallel.queue:queue-empty-p queue))
+              (lparallel:force (lparallel.queue:pop-queue queue)))
+             (read-results)
              (cl-ds.alg.meta:extract-result inner))
 
-         (cl-ds.alg.meta:cleanup inner)))
+         (cl-ds.alg.meta:cleanup inner))))
      function
-     arguments)))
+     arguments))
