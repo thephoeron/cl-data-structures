@@ -29,7 +29,8 @@
            (position (position element %heap :test %test
                                              :key #'car)))
        (cond ((not (null position))
-              (setf (cdr (aref %heap position)) count) ; count is overestimated, so simply incf value is likely to be wrong.
+              ;; count is overestimated, so simply incf value in the %heap is likely to be wrong.
+              (setf (cdr (aref %heap position)) count)
               (sort %heap #'> :key #'cdr))
              ((< fill-pointer %k)
               (vector-push-extend (cons element count)
