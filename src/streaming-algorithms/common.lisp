@@ -4,17 +4,17 @@
 (define-constant +long-prime+ 4294967311)
 
 
-(defun hashval (hashes width j hash)
+(defun hashval (hashes depth j hash)
   (declare (optimize (speed 3) (safety 0))
            (type (simple-array fixnum (* 2)) hashes)
-           (type non-negative-fixnum width j hash))
+           (type non-negative-fixnum depth j hash))
   (~> (aref hashes j 0)
       (* hash)
       (ldb (byte 32 0) _)
       (+ (aref hashes j 1))
       (ldb (byte 32 0) _)
       (rem +long-prime+)
-      (rem width)))
+      (rem depth)))
 
 
 (defun make-hash-array (count)

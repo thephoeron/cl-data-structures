@@ -8,12 +8,10 @@
    (%hashes :initarg :hashes
             :type vector
             :accessor access-hashes)
-   (%count :initarg :count
-           :type fixnum
-           :accessor access-count)
-   (%space :initarg :space
-           :type fixnum
-           :accessor access-space)))
+   (%depth :initarg :depth
+           :accessor access-depth)
+   (%width :initarg :width
+           :accessor access-width)))
 
 
 (defmethod union ((first approximated-counts) &rest more)
@@ -26,10 +24,8 @@
 
 (defmethod compatible-p ((first approximated-counts) &rest more)
   (push first more)
-  (and (cl-ds.utils:homogenousp more :key #'access-count)
-       (cl-ds.utils:homogenousp more :key #'access-space)
-       (cl-ds.utils:homogenousp more :key (compose #'access-counters
-                                                   #'length))
+  (and (cl-ds.utils:homogenousp more :key #'access-depth)
+       (cl-ds.utils:homogenousp more :key #'access-width)
        (cl-ds.utils:homogenousp more :key #'access-hashes
                                      :test #'vector=)))
 
@@ -37,36 +33,35 @@
 (defmethod initialize-instance :after ((object approximated-counts)
                                        &rest all)
   (declare (ignore all))
-  (check-type (access-space object) integer)
-  (check-type (access-count object) integer)
+  (check-type (access-width object) integer)
+  (check-type (access-depth object) integer)
   (check-type (access-hashes object) (simple-array non-negative-fixnum (* 2)))
-  (check-type (access-counters object) (simple-array non-negative-fixnum (*)))
+  (check-type (access-counters object) (simple-array non-negative-fixnum (* *)))
   (unless (eql (array-dimension (access-counters object) 0)
-               (access-space object))
+               (access-width object))
     (error 'cl-ds:incompatible-arguments
            :parameters '(hashes space)
-           :values `(,(access-hashes object) ,(access-space object))
-           :format-control "First dimension of the COUNTERS is expected to be equal to SPACE."))
-  (unless (eql (array-dimension (access-hashes object) 0)
-               (access-count object))
+           :values `(,(access-hashes object) ,(access-width object))
+           :format-control "First dimension of the COUNTERS is expected to be equal to WIDTH."))
+  (unless (eql (array-dimension (access-counters object) 1)
+               (access-depth object))
     (error 'cl-ds:incompatible-arguments
            :parameters '(hashes space)
-           :values `(,(access-hashes object) ,(access-space object))
-           :format-control "First dimension of the hashes is expected to be equal to space.")))
+           :values `(,(access-hashes object) ,(access-depth object))
+           :format-control "Second dimension of the COUNTERS is expected to be equal to DEPTH.")))
 
 
 (defmethod cl-ds.utils:cloning-information append
   ((sketch approximated-counts))
   '((:counters access-counters)
     (:hashes access-hashes)
-    (:space access-space)
-    (:count access-count)))
+    (:width access-width)
+    (:depth access-depth)))
 
 
 (defmethod cl-ds:clone ((sketch approximated-counts))
   (cl-ds.utils:quasi-clone* sketch
-    :counters (~> sketch access-counters copy-array)
-    :hashes (~> sketch access-hashes)))
+    :counters (~> sketch access-counters copy-array)))
 
 
 (defmethod cl-ds:at ((container approximated-counts)
@@ -80,36 +75,37 @@
                           location))
     (with counts = (access-counters container))
     (with hashes = (access-hashes container))
-    (with space = (access-space container))
-    (for j from 0 below (access-count container))
-    (minimize (aref counts (hashval hashes space j hash))
+    (with width = (access-width container))
+    (with depth = (access-depth container))
+    (for j from 0 below width)
+    (minimize (aref counts j (hashval hashes depth j hash))
               into min)
     (finally (return (values min t)))))
 
 
-(defun update-count-min-sketch (element data-sketch)
+(defun update-count-min-sketch (location data-sketch)
   (iterate
-    (with hash = (funcall (access-hash-fn data-sketch) element))
+    (with hash = (funcall (access-hash-fn data-sketch)
+                          location))
+    (with counts = (access-counters data-sketch))
     (with hashes = (access-hashes data-sketch))
-    (with counters = (access-counters data-sketch))
-    (with count = (access-count data-sketch))
-    (with space = (access-space data-sketch))
-    (for j from 0 below count)
-    (for hashval = (hashval hashes space j hash))
-    (minimize (incf (aref counters hashval)))))
+    (with width = (access-width data-sketch))
+    (with depth = (access-depth data-sketch))
+    (for j from 0 below width)
+    (minimize (incf (aref counts j (hashval hashes depth j hash))))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
     approximated-counts approximated-counts-function
 
-    (:range &key hash-fn space count key hashes data-sketch)
-    (:range &key (hash-fn #'sxhash) space count (key #'identity) hashes
+    (:range &key hash-fn depth width key hashes data-sketch)
+    (:range &key (hash-fn #'sxhash) depth width (key #'identity) hashes
           (data-sketch (clean-sketch
                         #'approximated-counts
                         :hashes hashes
                         :hash-fn hash-fn
-                        :space space
-                        :count count)))
+                        :depth depth
+                        :width width)))
 
     (%data-sketch)
 
@@ -123,19 +119,19 @@
 
 
 (defmethod clean-sketch ((function approximated-counts-function)
-                         &rest all &key hashes hash-fn space count)
+                         &rest all &key hashes hash-fn depth width)
   (declare (ignore all))
-  (check-type count integer)
-  (check-type space integer)
+  (check-type depth integer)
+  (check-type width integer)
   (check-type hashes (or null (simple-array non-negative-fixnum (* 2))))
-  (cl-ds:check-argument-bounds count (< 0 count))
-  (cl-ds:check-argument-bounds space (< 0 space))
+  (cl-ds:check-argument-bounds depth (> depth 0))
+  (cl-ds:check-argument-bounds width (> width 0))
   (make 'approximated-counts
         :counters (make-array
-                   space
+                   `(,width ,depth)
                    :initial-element 0
                    :element-type 'non-negative-fixnum)
-        :hashes (or hashes (make-hash-array count))
+        :hashes (or hashes (make-hash-array width))
         :hash-fn (ensure-function hash-fn)
-        :space space
-        :count count))
+        :depth depth
+        :width width))
