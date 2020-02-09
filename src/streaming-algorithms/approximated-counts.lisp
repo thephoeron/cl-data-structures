@@ -76,9 +76,8 @@
                                        :value (1+ (length more-locations))
                                        :format-control "Approximated-counts does not accept more-locations"))
   (iterate
-    (with hash = (ldb (byte 32 0)
-                      (funcall (access-hash-fn container)
-                               location)))
+    (with hash = (funcall (access-hash-fn container)
+                          location))
     (with counts = (access-counters container))
     (with hashes = (access-hashes container))
     (with space = (access-space container))
@@ -86,6 +85,18 @@
     (minimize (aref counts (hashval hashes space j hash))
               into min)
     (finally (return (values min t)))))
+
+
+(defun update-count-min-sketch (element data-sketch)
+  (iterate
+    (with hash = (funcall (access-hash-fn data-sketch) element))
+    (with hashes = (access-hashes data-sketch))
+    (with counters = (access-counters data-sketch))
+    (with count = (access-count data-sketch))
+    (with space = (access-space data-sketch))
+    (for j from 0 below count)
+    (for hashval = (hashval hashes space j hash))
+    (minimize (incf (aref counters hashval)))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
@@ -106,15 +117,7 @@
      (setf %data-sketch (cl-ds:clone data-sketch)))
 
     ((element)
-     (iterate
-       (with hash = (funcall (access-hash-fn %data-sketch) element))
-       (with hashes = (access-hashes %data-sketch))
-       (with counters = (access-counters %data-sketch))
-       (with count = (access-count %data-sketch))
-       (with space = (access-space %data-sketch))
-       (for j from 0 below count)
-       (for hashval = (hashval hashes space j hash))
-       (incf (aref counters hashval))))
+     (update-count-min-sketch element %data-sketch))
 
     (%data-sketch))
 

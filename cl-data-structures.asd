@@ -281,6 +281,7 @@
                              (:file "common")
                              (:file "approximated-set-cardinality")
                              (:file "approximated-counts")
+                             (:file "approximated-top-k")
                              (:file "bloom-filter")
                              (:file "minhash")
                              (:file "docstrings")))

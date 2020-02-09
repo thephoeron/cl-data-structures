@@ -7,14 +7,15 @@
   (:shadow cl:union)
   (:export
    #:approximated-counts
-   #:minhash-jaccard/fixnum
-   #:minhash-jaccard/single-float
-   #:minhash-jaccard/double-float
+   #:approximated-set-cardinality
+   #:approximated-top-k
    #:bloom-filter
    #:clean-sketch
    #:fundamental-data-sketch
-   #:make-hash-array
-   #:union
    #:gather-minhash-corpus
+   #:make-hash-array
    #:minhash
-   #:approximated-set-cardinality))
+   #:minhash-jaccard/double-float
+   #:minhash-jaccard/fixnum
+   #:minhash-jaccard/single-float
+   #:union))
