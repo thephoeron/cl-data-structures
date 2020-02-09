@@ -31,7 +31,8 @@
               (vector-push-extend (cons element count)
                                   %heap)
               (setf %heap (sort %heap #'> :key #'cdr)))
-             ((setf position (position element %heap :test %test :key #'car))
+             ((setf position (position element %heap :test %test
+                                                     :key #'car))
               (incf (cdr (aref %heap position)))
               (sort %heap #'> :key #'cdr))
              ((> count (~>> fill-pointer 1- (aref %heap) cdr))
