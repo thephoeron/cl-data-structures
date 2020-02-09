@@ -29,8 +29,7 @@
                                   %heap)
               (setf %heap (sort %heap #'> :key #'cdr)))
              ((> count (~>> fill-pointer 1- (aref %heap) cdr))
-              (setf (aref %heap (1- fill-pointer))
-                    (cons element count)
+              (setf (aref %heap (1- fill-pointer)) (cons element count)
                     %heap (sort %heap #'> :key #'cdr)))
              (t nil))))
 
