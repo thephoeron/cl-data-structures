@@ -26,15 +26,15 @@
     ((element)
      (let ((count (update-count-min-sketch element %data-sketch))
            (fill-pointer (fill-pointer %heap))
-           (position nil))
-       (cond ((< fill-pointer %k)
+           (position (position element %heap :test %test
+                                             :key #'car)))
+       (cond ((not (null position))
+              (setf (cdr (aref %heap position)) count) ; count is overestimated, so simply incf value is likely to be wrong.
+              (sort %heap #'> :key #'cdr))
+             ((< fill-pointer %k)
               (vector-push-extend (cons element count)
                                   %heap)
               (setf %heap (sort %heap #'> :key #'cdr)))
-             ((setf position (position element %heap :test %test
-                                                     :key #'car))
-              (incf (cdr (aref %heap position)))
-              (sort %heap #'> :key #'cdr))
              ((> count (~>> fill-pointer 1- (aref %heap) cdr))
               (setf (aref %heap (1- fill-pointer)) (cons element count)
                     %heap (sort %heap #'> :key #'cdr)))
