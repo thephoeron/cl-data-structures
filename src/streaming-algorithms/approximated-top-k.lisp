@@ -67,5 +67,4 @@
        (for top.old-estimate = (aref %heap i))
        (for (top . old-estimate) = top.old-estimate)
        (setf (cdr top.old-estimate) (cl-ds:at %data-sketch top)))
-     (setf %heap (sort %heap #'> :key #'cdr))
-     (cl-ds:whole-range %heap)))
+     (cl-ds:whole-range (sort %heap #'> :key #'cdr))))
