@@ -1,6 +1,18 @@
 (cl:in-package #:cl-ds.sa)
 
 
+(defun move-updated (vector position)
+  (iterate
+    (for i from position downto 0)
+    (for j from (1- position) downto 0)
+    (for (front-elt . front-count) = (aref vector j))
+    (for (back-elt . back-count) = (aref vector i))
+    (if (> back-count front-count)
+        (rotatef (aref vector i) (aref vector j))
+        (finish))
+    (finally (return vector))))
+
+
 (cl-ds.alg.meta:define-aggregation-function
     approximated-top-k approximated-top-k-function
 
@@ -31,10 +43,9 @@
        (if (null %data-sketch)
            (cond ((not (null position))
                   (incf (cdr (aref %heap position)))
-                  (sort %heap #'> :key #'cdr))
+                  (move-updated %heap position))
                  ((< fill-pointer %k)
-                  (vector-push-extend (cons element 1) %heap)
-                  (setf %heap (sort %heap #'> :key #'cdr)))
+                  (vector-push-extend (cons element 1) %heap))
                  (t
                   (setf %data-sketch (cl-ds:clone %prototype-data-sketch))
                   (iterate
@@ -45,11 +56,11 @@
              (cond ((not (null position))
                     ;; count is overestimated, so simply incf value in the %heap is likely to be wrong.
                     (setf (cdr (aref %heap position)) count)
-                    (sort %heap #'> :key #'cdr))
+                    (move-updated %heap position))
                    ((< fill-pointer %k)
                     (vector-push-extend (cons element count)
                                         %heap)
-                    (setf %heap (sort %heap #'> :key #'cdr)))
+                    (move-updated %heap position))
                    (t
                     (let ((split-point -1)
                           (needs-sort nil))
@@ -71,8 +82,8 @@
                         (setf (cdr top.old-estimate) (cl-ds:at %data-sketch top)))
                       (cond ((< split-point 0)
                              (setf %heap (sort %heap #'> :key #'cdr)
-                                   (aref %heap (1- fill-pointer)) (cons element count)
-                                   %heap (sort %heap #'> :key #'cdr)))
+                                   (aref %heap (1- fill-pointer)) (cons element count))
+                             (move-updated %heap (1- fill-pointer)))
                             (needs-sort
                              (setf %heap (sort %heap #'> :key #'cdr)))))))))))
 
