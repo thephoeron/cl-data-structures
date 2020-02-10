@@ -83,7 +83,7 @@
     (finally (return (values min t)))))
 
 
-(defun update-count-min-sketch (location data-sketch)
+(defun update-count-min-sketch (location data-sketch &optional (count 1))
   (iterate
     (with hash = (funcall (access-hash-fn data-sketch)
                           location))
@@ -92,7 +92,8 @@
     (with width = (access-width data-sketch))
     (with depth = (access-depth data-sketch))
     (for j from 0 below width)
-    (minimize (incf (aref counts j (hashval hashes depth j hash))))))
+    (minimize (incf (aref counts j (hashval hashes depth j hash))
+                    count))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
