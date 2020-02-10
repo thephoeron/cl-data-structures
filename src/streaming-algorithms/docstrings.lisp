@@ -9,6 +9,15 @@
   (function union
     (:description "Creates new data-sketch from the provided. Can be used to join sketches built on different data chunks."))
 
+  (function approximated-top-k
+    (:description "Attempts to find the top most common elements in a stream. Uses count-min sketch to accomplish that, so it will need only constant memory."
+     :arguments ((range "Input for scanning.")
+                 (k "Determines the maximum size of the result.")
+                 (:test "Test to check elements equality.")
+                 (:depth "Depth for count min sketch (APPROXIMATED-COUNTS). Higher value increases confidence.")
+                 (:width "Width for count min sketch (APPROXIMATED-COUNTS). Higher value decreases error."))
+     :returns "Range of pairs. CAR of pair is the object, CDR of pair is estimated count. Range is ordered, with the most frequent element at zero and at most it has K values."))
+
   (function minhash
     (:description "Calculates minhash for the ELEMENTS with the use of the CORPUS"
      :arguments ((corpus "Object constructed with the GATHER-MINHASH-CORPUS function.")
