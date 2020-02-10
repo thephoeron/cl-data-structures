@@ -64,7 +64,7 @@
                    ((< fill-pointer %k)
                     (vector-push-extend (cons element count)
                                         %heap)
-                    (move-updated %heap position))
+                    (move-updated %heap fill-pointer))
                    (t
                     (let ((split-point -1)
                           (needs-sort nil))
