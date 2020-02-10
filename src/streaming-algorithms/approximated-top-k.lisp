@@ -16,22 +16,24 @@
 (cl-ds.alg.meta:define-aggregation-function
     approximated-top-k approximated-top-k-function
 
-    (:range k &key hash-fn width depth key hashes data-sketch test)
-    (:range k &key (hash-fn #'sxhash) width depth key hashes
+    (:range k &key hash-fn width depth key hashes test data-sketch)
+    (:range k &key (hash-fn #'sxhash)
+     width depth (key #'identity)
+     (hashes (make-hash-array width))
      (test 'equal)
-     (data-sketch (clean-sketch #'approximated-counts
-                                :hashes hashes
-                                :hash-fn hash-fn
-                                :width width
-                                :depth depth)))
+     data-sketch)
 
     (%data-sketch %prototype-data-sketch %heap %k %test)
 
-    ((check-type data-sketch approximated-counts)
-     (check-type k integer)
+    ((check-type k integer)
      (cl-ds:check-argument-bounds k (> k 0))
-     (setf %prototype-data-sketch data-sketch
-           %data-sketch nil
+     (setf %prototype-data-sketch `(:hashes ,hashes
+                                    :hash-fn ,hash-fn
+                                    :width ,width
+                                    :depth ,depth)
+           %data-sketch (if (null data-sketch)
+                            nil
+                            (cl-ds:clone data-sketch))
            %k k
            %test (ensure-function test)
            %heap (make-array k :fill-pointer 0)))
@@ -47,7 +49,9 @@
                  ((< fill-pointer %k)
                   (vector-push-extend (cons element 1) %heap))
                  (t
-                  (setf %data-sketch (cl-ds:clone %prototype-data-sketch))
+                  (setf %data-sketch (apply #'clean-sketch
+                                            #'approximated-counts
+                                            %prototype-data-sketch))
                   (iterate
                     (for (top . count) in-vector %heap)
                     (update-count-min-sketch top %data-sketch count))

@@ -13,7 +13,9 @@
     (:description "Attempts to find the top most common elements in a stream. Uses count-min sketch to accomplish that, so it will need only constant memory."
      :arguments ((range "Input for scanning.")
                  (k "Determines the maximum size of the result.")
+                 (:hashes "Optional hashes vector. Needs to be supplied in order to ensure that the same hash values are generated between different filters.")
                  (:test "Test to check elements equality.")
+                 (:hash-fn "Hashing function, defaults to sxhash.")
                  (:depth "Depth for count min sketch (APPROXIMATED-COUNTS). Higher value increases confidence.")
                  (:width "Width for count min sketch (APPROXIMATED-COUNTS). Higher value decreases error."))
      :returns "Range of pairs. CAR of pair is the object, CDR of pair is estimated count. Range is ordered, with the most frequent element at zero and at most it has K values."))
