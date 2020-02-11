@@ -8,51 +8,51 @@
    (%hashes :initarg :hashes
             :type vector
             :accessor access-hashes)
-   (%count :initarg :count
+   (%width :initarg :width
            :type fixnum
-           :accessor access-count)
-   (%space :initarg :space
+           :accessor access-width)
+   (%depth :initarg :depth
            :type fixnum
-           :accessor access-space)))
+           :accessor access-depth)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((sketch bloom-filter))
   '((:counters access-counters)
     (:hashes access-hashes)
-    (:count access-count)
-    (:space access-space)))
+    (:depth access-depth)
+    (:width access-width)))
 
 
 (defmethod compatible-p ((first bloom-filter) &rest more)
   (push first more)
-  (and (cl-ds.utils:homogenousp more :key #'access-count)
-       (cl-ds.utils:homogenousp more :key #'access-space)
+  (and (cl-ds.utils:homogenousp more :key #'access-width)
+       (cl-ds.utils:homogenousp more :key #'access-depth)
        (cl-ds.utils:homogenousp more :key (compose #'access-counters
-                                                   #'length))
+                                                   #'array-total-size))
        (cl-ds.utils:homogenousp more :key #'access-hashes
                                      :test #'vector=)))
 
 
 (defmethod initialize-instance :after ((sketch bloom-filter) &rest all)
   (declare (ignore all))
-  (bind (((:slots %space %counters %count %hashes) sketch))
-    (check-type %space integer)
-    (check-type %count integer)
-    (check-type %counters (simple-array bit (*)))
+  (bind (((:slots %width %counters %depth %hashes) sketch))
+    (check-type %width integer)
+    (check-type %depth integer)
+    (check-type %counters (simple-array bit (* *)))
     (check-type %hashes (simple-array non-negative-fixnum (* 2)))
     (unless (eql (array-dimension (access-counters sketch) 0)
-                 (access-space sketch))
+                 (access-width sketch))
       (error 'cl-ds:incompatible-arguments
-             :parameters '(hashes space)
-             :values `(,(access-hashes sketch) ,(access-space sketch))
-             :format-control "First dimension of the COUNTERS is expected to be equal to SPACE."))
-    (unless (eql (array-dimension %hashes 0)
-                 %count)
+             :parameters '(hashes width)
+             :values `(,(access-hashes sketch) ,(access-width sketch))
+             :format-control "First dimension of the COUNTERS is expected to be equal to WIDTH."))
+    (unless (eql (array-dimension %hashes 1)
+                 %width)
       (error 'cl-ds:incompatible-arguments
-             :parameters '(hashes space)
-             :values `(,%hashes ,%space)
-             :format-control "First dimension of the hashes is expected to be equal to space."))))
+             :parameters '(hashes width)
+             :values `(,%hashes ,%width)
+             :format-control "First dimension of the hashes is expected to be equal to WIDTH."))))
 
 
 (defmethod cl-ds:clone ((object bloom-filter))
@@ -80,10 +80,10 @@
                                location)))
     (with counts = (access-counters container))
     (with hashes = (access-hashes container))
-    (with count = (access-count container))
-    (with space = (access-space container))
-    (for j from 0 below count)
-    (for value = (aref counts (hashval hashes space j hash)))
+    (with width = (access-width container))
+    (with depth = (access-depth container))
+    (for j from 0 below width)
+    (for value = (aref counts j (hashval hashes depth j hash)))
     (when (zerop value)
       (leave (values nil t)))
     (finally (return (values t t)))))
@@ -92,13 +92,13 @@
 (cl-ds.alg.meta:define-aggregation-function
     bloom-filter bloom-filter-function
 
-  (:range &key hash-fn space count key hashes data-sketch)
-  (:range &key hash-fn space count (key #'identity) hashes
+  (:range &key hash-fn width depth key hashes data-sketch)
+  (:range &key hash-fn width depth (key #'identity) hashes
           (data-sketch
            (clean-sketch
             #'bloom-filter
-            :count count
-            :space space
+            :width width
+            :depth depth
             :hashes hashes
             :hash-fn hash-fn)))
 
@@ -109,32 +109,36 @@
 
   ((element)
    (iterate
-     (with hash = (funcall (access-hash-fn %data-sketch) element))
+     (declare (type fixnum j width depth)
+              (type (simple-array non-negative-fixnum (*)) hashes))
+     (with hash = (ldb (byte 32 0)
+                       (funcall (access-hash-fn %data-sketch)
+                                element)))
+     (with counts = (access-counters %data-sketch))
      (with hashes = (access-hashes %data-sketch))
-     (with counters = (access-counters %data-sketch))
-     (with space = (access-space %data-sketch))
-     (for j from 0 below (access-count %data-sketch))
-     (for position = (hashval hashes space j hash))
-     (setf (aref counters position) 1)))
+     (with width = (access-width %data-sketch))
+     (with depth = (access-depth %data-sketch))
+     (for j from 0 below width)
+     (setf (aref counts j (hashval hashes depth j hash)) 1)))
 
   (%data-sketch))
 
 
 (defmethod clean-sketch ((function bloom-filter-function)
-                         &rest all &key hashes hash-fn space count)
+                         &rest all &key hashes hash-fn depth width)
   (declare (ignore all))
   (ensure-functionf hash-fn)
-  (check-type space integer)
-  (check-type count integer)
+  (check-type depth integer)
+  (check-type width integer)
   (check-type hashes (or null (simple-array fixnum (* 2))))
-  (cl-ds:check-argument-bounds space (< 0 space))
-  (cl-ds:check-argument-bounds count (< 0 count))
+  (cl-ds:check-argument-bounds depth (<= 1 depth array-total-size-limit))
+  (cl-ds:check-argument-bounds width (<= 1 width array-total-size-limit))
   (make 'bloom-filter
         :counters (make-array
-                   space
+                   `(,width ,depth)
                    :initial-element 0
                    :element-type 'non-negative-fixnum)
-        :hashes (or hashes (make-hash-array count))
+        :hashes (or hashes (make-hash-array width))
         :hash-fn (ensure-function hash-fn)
-        :space space
-        :count count))
+        :depth depth
+        :width width))
