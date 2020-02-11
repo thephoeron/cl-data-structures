@@ -39,7 +39,7 @@
   (bind (((:slots %width %counters %depth %hashes) sketch))
     (check-type %width integer)
     (check-type %depth integer)
-    (check-type %counters (simple-array bit (* *)))
+    (check-type %counters (simple-array bit (*)))
     (check-type %hashes (simple-array non-negative-fixnum (* 2)))
     (unless (eql (array-dimension (access-counters sketch) 0)
                  (access-width sketch))
@@ -83,7 +83,7 @@
     (with width = (access-width container))
     (with depth = (access-depth container))
     (for j from 0 below width)
-    (for value = (aref counts j (hashval hashes depth j hash)))
+    (for value = (aref counts (hashval hashes depth j hash)))
     (when (zerop value)
       (leave (values nil t)))
     (finally (return (values t t)))))
@@ -119,7 +119,7 @@
      (with width = (access-width %data-sketch))
      (with depth = (access-depth %data-sketch))
      (for j from 0 below width)
-     (setf (aref counts j (hashval hashes depth j hash)) 1)))
+     (setf (aref counts (hashval hashes depth j hash)) 1)))
 
   (%data-sketch))
 
@@ -134,8 +134,7 @@
   (cl-ds:check-argument-bounds depth (<= 1 depth array-total-size-limit))
   (cl-ds:check-argument-bounds width (<= 1 width array-total-size-limit))
   (make 'bloom-filter
-        :counters (make-array
-                   `(,width ,depth)
+        :counters (make-array depth
                    :initial-element 0
                    :element-type 'non-negative-fixnum)
         :hashes (or hashes (make-hash-array width))
