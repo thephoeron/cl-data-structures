@@ -2,12 +2,16 @@
 
 
 (defun move-updated (vector position)
+  (declare (type (cl-ds.utils:extendable-vector list) vector)
+           (type fixnum position)
+           (optimize (speed 3) (safety 0) (debug 0)))
   (iterate
+    (declare (type fixnum i j))
     (for i from position downto 0)
     (for j from (1- position) downto 0)
     (for (front-elt . front-count) = (aref vector j))
     (for (back-elt . back-count) = (aref vector i))
-    (if (> back-count front-count)
+    (if (> (the positive-fixnum back-count) (the positive-fixnum front-count))
         (rotatef (aref vector i) (aref vector j))
         (finish))
     (finally (return vector))))
@@ -23,10 +27,13 @@
      (test 'equal)
      data-sketch)
 
-    (%data-sketch %prototype-data-sketch %heap %k %test)
+    (%data-sketch
+     (%prototype-data-sketch list)
+     (%heap (cl-ds.utils:extendable-vector list))
+     (%k fixnum) (%test function))
 
     ((check-type k integer)
-     (cl-ds:check-argument-bounds k (> k 0))
+     (cl-ds:check-argument-bounds k (<= 1 k array-total-size-limit))
      (setf %prototype-data-sketch `(:hashes ,hashes
                                     :hash-fn ,hash-fn
                                     :width ,width
@@ -36,15 +43,18 @@
                             (cl-ds:clone data-sketch))
            %k k
            %test (ensure-function test)
-           %heap (make-array k :fill-pointer 0)))
+           %heap (make-array k :fill-pointer 0
+                               :initial-element '()
+                               :element-type 'list)))
 
     ((element)
      (bind ((fill-pointer (fill-pointer %heap))
             (position (position element %heap :test %test
                                               :key #'car)))
+       (declare (type (or null fixnum) position))
        (if (null %data-sketch)
            (cond ((not (null position))
-                  (incf (cdr (aref %heap position)))
+                  (incf (the non-negative-fixnum (cdr (aref %heap position))))
                   (move-updated %heap position))
                  ((< fill-pointer %k)
                   (vector-push-extend (cons element 1) %heap))
@@ -57,6 +67,7 @@
                     (update-count-min-sketch top %data-sketch count))
                   (update-count-min-sketch element %data-sketch)))
            (let ((count (update-count-min-sketch element %data-sketch)))
+             (declare (type non-negative-fixnum count))
              (cond ((not (null position))
                     ;; count is overestimated, so simply incf value in the %heap is likely to be wrong.
                     (setf (cdr (aref %heap position)) count)
@@ -69,6 +80,7 @@
                     (let ((split-point -1)
                           (needs-sort nil))
                       (iterate
+                        (declare (type fixnum i))
                         (for i from (1- fill-pointer) downto 0)
                         (for top.old-estimate = (aref %heap i))
                         (for (top . old-estimate) = top.old-estimate)
@@ -80,6 +92,7 @@
                           (setf split-point i)
                           (leave)))
                       (iterate
+                        (declare (type fixnum i))
                         (for i from 0 below split-point)
                         (for top.old-estimate = (aref %heap i))
                         (for (top . old-estimate) = top.old-estimate)
