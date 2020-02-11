@@ -38,13 +38,13 @@
            (check-type element array)
            (when (null inners)
              (setf inners (~> element array-dimensions make-array))
-             (progn
-               (assert (typep inners 'simple-array))
-               (iterate
-                 (declare (type fixnum i))
-                 (for i from 0 below (array-total-size inners))
-                 (setf (row-major-aref inners i)
-                       (cl-ds.alg.meta:call-constructor outer-fn)))))
+             (assert (typep inners 'simple-array))
+             (iterate
+               (declare (type fixnum i))
+               (for i from 0 below (array-total-size inners))
+               (setf (row-major-aref inners i)
+                     (cl-ds.alg.meta:call-constructor outer-fn))))
+           (assert (typep inners 'simple-array))
            (iterate
              (declare (type fixnum i))
              (for i from 0 below (array-total-size inners))
