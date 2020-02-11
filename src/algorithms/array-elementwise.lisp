@@ -26,6 +26,7 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
+  (declare (optimize (speed 3)))
   (let ((outer-fn (call-next-method)))
     (assert (functionp outer-fn))
     (cl-ds.alg.meta:aggregator-constructor
@@ -36,18 +37,24 @@
          ((element)
            (check-type element array)
            (when (null inners)
-             (setf inners (make-array (array-dimensions element)))
-             (iterate
-               (for i from 0 below (array-total-size inners))
-               (setf (row-major-aref inners i)
-                     (cl-ds.alg.meta:call-constructor outer-fn))))
+             (setf inners (~> element array-dimensions make-array))
+             (progn
+               (assert (typep inners 'simple-array))
+               (iterate
+                 (declare (type fixnum i))
+                 (for i from 0 below (array-total-size inners))
+                 (setf (row-major-aref inners i)
+                       (cl-ds.alg.meta:call-constructor outer-fn)))))
            (iterate
+             (declare (type fixnum i))
              (for i from 0 below (array-total-size inners))
              (cl-ds.alg.meta:pass-to-aggregation (row-major-aref inners i)
                                                  (row-major-aref element i))))
 
          ((unless (null inners)
+            (assert (typep inners 'simple-array))
             (iterate
+              (declare (type fixnum i))
               (for i from 0 below (array-total-size inners))
               (setf #1=(row-major-aref inners i)
                     (cl-ds.alg.meta:extract-result #1#))
@@ -55,6 +62,7 @@
 
        (unless (null inners)
          (iterate
+           (declare (type fixnum i))
            (for i from 0 below (array-total-size inners))
            (cl-ds.alg.meta:cleanup (row-major-aref inners i)))))
      function
