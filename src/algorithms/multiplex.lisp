@@ -129,13 +129,13 @@
            ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element)
-             (~>> element (funcall key) (funcall fn)
-                  (cl-ds:traverse _
-                                  (lambda (x)
-                                    (cl-ds.alg.meta:pass-to-aggregation inner x)))))
+            (~>> element (funcall key) (funcall fn)
+                 (cl-ds:traverse _
+                                 (lambda (x)
+                                   (cl-ds.alg.meta:pass-to-aggregation inner x)))))
 
            ((cl-ds.alg.meta:extract-result inner))
 
-        (cl-ds.alg.meta:cleanup inner)))
+         (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))

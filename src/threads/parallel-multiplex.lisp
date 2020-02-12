@@ -56,7 +56,7 @@
      outer-constructor
      (function cl-ds.alg.meta:aggregation-function)
      (arguments list))
-  (declare (optimize (speed 1) (safety 2) (debug 2)
+  (declare (optimize (speed 1) (safety 1) (debug 3)
                      (compilation-speed 0) (space 0)))
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
@@ -105,13 +105,13 @@
            ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
 
            ((element)
-             (push-queue element inner))
+            (push-queue element inner))
 
            ((iterate
               (until (lparallel.queue:queue-empty-p queue))
               (lparallel:force (lparallel.queue:pop-queue queue)))
-             (read-results)
-             (cl-ds.alg.meta:extract-result inner))
+            (read-results)
+            (cl-ds.alg.meta:extract-result inner))
 
          (cl-ds.alg.meta:cleanup inner))))
      function

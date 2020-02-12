@@ -127,9 +127,9 @@
        (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn)))
            ((element)
              (labels ((impl (x)
-                        (if (atom x)
-                            (cl-ds.alg.meta:pass-to-aggregation inner x)
-                            (map nil #'impl x))))
+                        (if (listp x)
+                            (map nil #'impl x)
+                            (cl-ds.alg.meta:pass-to-aggregation inner x))))
                (~>> element (funcall flatten-key) impl)))
 
            ((cl-ds.alg.meta:extract-result inner))

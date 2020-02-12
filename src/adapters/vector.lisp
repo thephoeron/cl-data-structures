@@ -125,11 +125,15 @@
 
 
 (defmethod cl-ds:traverse ((range vector-range) function)
-  (bind (((:slots %lower-bound %upper-bound %vector) range))
-    (iterate
-      (for i from %lower-bound below %upper-bound)
-      (funcall function (aref %vector i))
-      (setf %lower-bound (1+ i)))
+  (bind (((:slots %lower-bound %upper-bound %vector) range)
+         (lower-bound %lower-bound)
+         (upper-bound %upper-bound))
+    (unwind-protect
+         (iterate
+           (for i from lower-bound below upper-bound)
+           (funcall function (aref %vector i))
+           (setf lower-bound i))
+      (setf %lower-bound lower-bound))
     range))
 
 
