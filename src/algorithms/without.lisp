@@ -67,7 +67,9 @@
                                                   (function aggregation-function)
                                                   (arguments list))
   (declare (optimize (speed 3) (safety 0)))
-  (let ((outer-fn (call-next-method))
+  (let ((outer-fn (or outer-constructor
+                      (cl-ds.alg.meta:aggregator-constructor
+                       '() nil function arguments)))
         (predicate (ensure-function (read-predicate range)))
         (key (ensure-function (read-key range))))
     (cl-ds.utils:cases ((:variant (eq key #'identity)))

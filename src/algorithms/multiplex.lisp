@@ -130,9 +130,10 @@
 
            ((element)
             (~>> element (funcall key) (funcall fn)
-                 (cl-ds:traverse _
-                                 (lambda (x)
-                                   (cl-ds.alg.meta:pass-to-aggregation inner x)))))
+                 (cl-ds:traverse
+                  _
+                  (lambda (x)
+                    (cl-ds.alg.meta:pass-to-aggregation inner x)))))
 
            ((cl-ds.alg.meta:extract-result inner))
 
