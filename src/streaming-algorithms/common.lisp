@@ -42,7 +42,7 @@
 (defgeneric compatible-p (first-sketch &rest more-sketches)
   (:method :around ((a fundamental-data-sketch) &rest more-sketches)
     (unless (every (curry #'eq (class-of a))
-                   more-sketches)
+                   (mapcar #'class-of more-sketches))
       (return-from compatible-p nil))
     (unless (every (curry #'eq (access-hash-fn a))
                    (mapcar #'access-hash-fn more-sketches))

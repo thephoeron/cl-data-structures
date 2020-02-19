@@ -19,13 +19,10 @@
     :registers (~> object access-registers copy-hash-table)))
 
 
-(defmethod compatible-p ((first-sketch fundamental-data-sketch)
+(defmethod compatible-p ((first-sketch approximated-set-cardinality)
                          &rest more-sketches)
   (push first-sketch more-sketches)
-  (and (cl-ds.utils:homogenousp more-sketches
-                                :key #'access-bits)
-       (cl-ds.utils:homogenousp more-sketches
-                                :key (compose #'access-registers #'length))))
+  (cl-ds.utils:homogenousp more-sketches :key #'access-bits))
 
 
 (defmethod union ((first approximated-set-cardinality) &rest more)
@@ -33,7 +30,7 @@
     (iterate
       (for m in more)
       (iterate
-        (for (key value) in-hashtable m)
+        (for (key value) in-hashtable (access-registers m))
         (maxf (gethash key result-table 0) value)))
     (cl-ds.utils:quasi-clone* first
       :registers result-table)))
