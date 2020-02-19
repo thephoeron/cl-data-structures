@@ -85,6 +85,7 @@
    #:random-access-chain-of-ranges
    #:random-access-proxy-range
    #:rate
+   #:reservoir-sample
    #:read-function
    #:read-key
    #:read-keys

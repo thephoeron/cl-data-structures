@@ -217,6 +217,7 @@
                              (:file "only")
                              (:file "cartesian")
                              (:file "restrain-size")
+                             (:file "reservoir-sample")
                              (:file "repeat")
                              (:file "latch")
                              (:file "extrema")
