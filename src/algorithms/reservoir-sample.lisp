@@ -92,6 +92,7 @@
                         all)
   (let ((arguments (cddr all))
         (sample-size (second all)))
+    (check-type sample-size positive-fixnum)
     (make-proxy range 'forward-with-reservoir-sample-proxy
                 :key (getf arguments :key)
                 :sample-size sample-size)))
