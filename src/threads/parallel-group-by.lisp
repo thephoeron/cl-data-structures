@@ -7,8 +7,8 @@
             :reader read-groups)
    (%chunk-size :initarg :chunk-size
                 :reader read-chunk-size)
-   (%maximal-queue-size :initarg :maximal-queue-size
-                        :reader read-maximal-queue-size)
+   (%maximum-queue-size :initarg :maximum-queue-size
+                        :reader read-maximum-queue-size)
    (%key :initarg :key
          :reader read-key)))
 
@@ -16,7 +16,7 @@
 (defmethod cl-ds.utils:cloning-information append
     ((range parallel-group-by-proxy))
   '((:groups read-groups)
-    (:maximal-queue-size read-maximal-queue-size)
+    (:maximum-queue-size read-maximum-queue-size)
     (:chunk-size read-chunk-size)
     (:key read-key)))
 
@@ -49,18 +49,17 @@
   (:metaclass closer-mop:funcallable-standard-class))
 
 
-
-(defgeneric parallel-group-by (range &key test key groups chunk-size maximal-queue-size)
+(defgeneric parallel-group-by (range &key test key groups chunk-size maximum-queue-size)
   (:generic-function-class parallel-group-by-function)
   (:method (range &key
                     (test 'eql) (key #'identity)
                     (chunk-size 16)
-                    (maximal-queue-size 32)
+                    (maximum-queue-size 32)
                     (groups (make-hash-table :test test)))
     (cl-ds.alg.meta:apply-range-function range #'parallel-group-by
                                          (list range :test test
                                                      :key key
-                                                     :maximal-queue-size maximal-queue-size
+                                                     :maximum-queue-size maximum-queue-size
                                                      :chunk-size chunk-size
                                                      :groups groups))))
 
@@ -71,10 +70,10 @@
                                                   (arguments list))
   (bind ((groups-prototype (read-groups range))
          (chunk-size (read-chunk-size range))
-         (maximal-queue-size (read-maximal-queue-size range))
+         (maximum-queue-size (read-maximum-queue-size range))
          (group-by-key (ensure-function (read-key range)))
          (queue (lparallel.queue:make-queue
-                 :fixed-capacity maximal-queue-size))
+                 :fixed-capacity maximum-queue-size))
          ((:flet scan-futures (&optional force))
           (iterate
             (until (if force
@@ -165,7 +164,7 @@
                                        all)
   (cl-ds.alg:make-proxy range 'forward-parallel-group-by-proxy
                         :groups (getf (rest all) :groups)
-                        :maximal-queue-size (getf (rest all) :maximal-queue-size)
+                        :maximum-queue-size (getf (rest all) :maximum-queue-size)
                         :chunk-size (getf (rest all) :chunk-size)
                         :key (getf (rest all) :key)))
 
@@ -175,7 +174,7 @@
                                        all)
   (cl-ds.alg:make-proxy range 'forward-parallel-group-by-proxy
                         :groups (getf (rest all) :groups)
-                        :maximal-queue-size (getf (rest all) :maximal-queue-size)
+                        :maximum-queue-size (getf (rest all) :maximum-queue-size)
                         :chunk-size (getf (rest all) :chunk-size)
                         :key (getf (rest all) :key)))
 
@@ -185,7 +184,7 @@
                                        all)
   (cl-ds.alg:make-proxy range 'bidirectional-parallel-group-by-proxy
                         :groups (getf (rest all) :groups)
-                        :maximal-queue-size (getf (rest all) :maximal-queue-size)
+                        :maximum-queue-size (getf (rest all) :maximum-queue-size)
                         :chunk-size (getf (rest all) :chunk-size)
                         :key (getf (rest all) :key)))
 
@@ -195,6 +194,6 @@
                                        all)
   (cl-ds.alg:make-proxy range 'random-access-parallel-group-by-proxy
                         :groups (getf (rest all) :groups)
-                        :maximal-queue-size (getf (rest all) :maximal-queue-size)
+                        :maximum-queue-size (getf (rest all) :maximum-queue-size)
                         :chunk-size (getf (rest all) :chunk-size)
                         :key (getf (rest all) :key)))

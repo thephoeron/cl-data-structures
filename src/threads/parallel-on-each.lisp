@@ -2,15 +2,15 @@
 
 
 (defclass parallel-on-each-proxy (cl-ds.alg:forward-proxy-box-range)
-  ((%maximal-queue-size :initarg :maximal-queue-size
-                        :reader read-maximal-queue-size)
+  ((%maximum-queue-size :initarg :maximum-queue-size
+                        :reader read-maximum-queue-size)
    (%chunk-size :initarg :chunk-size
                 :reader read-chunk-size)))
 
 
 (defmethod cl-ds.utils:cloning-information append
     ((range parallel-on-each-proxy))
-  '((:maximal-queue-size read-maximal-queue-size)
+  '((:maximum-queue-size read-maximum-queue-size)
     (:chunk-size read-chunk-size)))
 
 
@@ -20,14 +20,14 @@
 
 
 (defgeneric parallel-on-each (range function
-                              &key key maximal-queue-size chunk-size)
+                              &key key maximum-queue-size chunk-size)
   (:generic-function-class parallel-on-each-function)
   (:method (range function
-            &key (key #'identity) (maximal-queue-size 512) (chunk-size 128))
-    (check-type maximal-queue-size integer)
+            &key (key #'identity) (maximum-queue-size 512) (chunk-size 128))
+    (check-type maximum-queue-size integer)
     (check-type chunk-size integer)
-    (cl-ds:check-argument-bounds maximal-queue-size
-                                 (<= 16 maximal-queue-size))
+    (cl-ds:check-argument-bounds maximum-queue-size
+                                 (<= 16 maximum-queue-size))
     (cl-ds:check-argument-bounds chunk-size (<= 1 chunk-size))
     (ensure-functionf function)
     (ensure-functionf key)
@@ -35,7 +35,7 @@
      range #'parallel-on-each
      (list range function
            :key key
-           :maximal-queue-size maximal-queue-size
+           :maximum-queue-size maximum-queue-size
            :chunk-size chunk-size))))
 
 
@@ -47,7 +47,7 @@
                    :original-range range
                    :chunk-size (getf keys :chunk-size)
                    :key (getf keys :key)
-                   :maximal-queue-size (getf keys :maximal-queue-size)
+                   :maximum-queue-size (getf keys :maximum-queue-size)
                    :function (second all))))
 
 
@@ -61,12 +61,12 @@
   (bind ((outer-fn (or outer-constructor
                        (cl-ds.alg.meta:aggregator-constructor
                         '() nil function arguments)))
-         (maximal-queue-size (read-maximal-queue-size range))
+         (maximum-queue-size (read-maximum-queue-size range))
          (chunk-size (the fixnum (read-chunk-size range)))
          (fn (ensure-function (cl-ds.alg:read-function range)))
          (key (ensure-function (cl-ds.alg:read-key range)))
          (queue (lparallel.queue:make-queue
-                 :fixed-capacity maximal-queue-size))
+                 :fixed-capacity maximum-queue-size))
          ((:flet handle-result (elt inner))
           (setf elt (lparallel:force elt))
           (iterate

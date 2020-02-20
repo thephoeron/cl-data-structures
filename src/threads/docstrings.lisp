@@ -9,7 +9,7 @@
      :arguments-and-values ((range "Input range.")
                             (:key "Key function.")
                             (:function "Function that should return traversable range. Defaults to #'CL-DS:WHOLE-RANGE")
-                            (:maximal-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
+                            (:maximum-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
      :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
                               "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
                               "Will raise a TYPE-ERROR when FUNCTION is not funcallable."
@@ -30,7 +30,7 @@
              "Unlike PARALLEL-ON-EACH or PARALLEL-MULTIPLEX, THREAD-BUFFER does not use lparallel workers.")
      :arguments-and-values ((range "The input range.")
                             (:chunk-size "Number of elements grouped before being sent to the queue.")
-                            (:maximal-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
+                            (:maximum-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
      :returns "Instance of BUFFER-RANGE subclass. Depending on the class of the RANGE it may be a FORWARD-BUFFER-RANGE, BIDIRECTIONAL-BUFFER-RANGE or RANDOM-ACCESS-BUFFER-RANGE."))
 
   (function parallel-on-each
@@ -43,6 +43,6 @@
                               "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
                               "Exceptions raised during aggregation or when funcalling the callback will be transfered to the original thread.")
      :arguments-and-values ((range "Input range.")
-                            (:maximal-queue-size "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")
+                            (:maximum-queue-size "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")
                             (:chunk-size "Number of elements grouped for individual lparallel task."))
      :returns "Instance of PARALLEL-ON-EACH-PROXY.")))
