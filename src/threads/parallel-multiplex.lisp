@@ -68,9 +68,11 @@
          (queue (lparallel.queue:make-queue
                  :fixed-capacity maximum-queue-size))
          (result-queue (lparallel.queue:make-queue))
-         ((:flet read-results ())
+         ((:flet read-results (&optional block))
           (iterate
-            (until (lparallel.queue:queue-empty-p result-queue))
+            (until (and (not block)
+                        (lparallel.queue:queue-empty-p result-queue)))
+            (setf block nil)
             (for (vector . inner) = (lparallel.queue:pop-queue result-queue))
             (iterate
               (for elt in-vector vector)
@@ -82,21 +84,21 @@
               (iterate
                 (with future = (lparallel.queue:pop-queue/no-lock queue))
                 (until (lparallel:fulfilledp future))
-                (read-results)))
+                (read-results t)))
             (lparallel.queue:push-queue/no-lock
              (lparallel:future
                (let ((result (vect)))
-                 (~>> new (funcall key) (funcall fn)
-                      (cl-ds:traverse
-                       _
-                       (lambda (element)
-                         (vector-push-extend element result)
-                         (unless (< (fill-pointer result) chunk-size)
-                           (lparallel.queue:push-queue (cons (copy-array result)
-                                                             inner)
-                                                       result-queue)
-                           (setf (fill-pointer result) 0)))))
-                 (unless (zerop (fill-pointer result))
+                 (unwind-protect
+                      (~>> new (funcall key) (funcall fn)
+                           (cl-ds:traverse
+                            _
+                            (lambda (element)
+                              (vector-push-extend element result)
+                              (unless (< (fill-pointer result) chunk-size)
+                                (lparallel.queue:push-queue (cons (copy-array result)
+                                                                  inner)
+                                                            result-queue)
+                                (setf (fill-pointer result) 0)))))
                    (lparallel.queue:push-queue (cons result inner)
                                                result-queue))))
              queue))))
@@ -115,7 +117,7 @@
               (for future = (lparallel.queue:pop-queue queue))
               (iterate
                 (until (lparallel:fulfilledp future))
-                (read-results)))
+                (read-results t)))
             (read-results)
             (cl-ds.alg.meta:extract-result inner))
 
