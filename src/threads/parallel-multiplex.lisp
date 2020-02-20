@@ -115,8 +115,7 @@
               (for future = (lparallel.queue:pop-queue queue))
               (iterate
                 (until (lparallel:fulfilledp future))
-                (read-results))
-              (lparallel:force future))
+                (read-results)))
             (read-results)
             (cl-ds.alg.meta:extract-result inner))
 
