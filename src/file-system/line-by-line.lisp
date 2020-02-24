@@ -65,7 +65,8 @@
     (unwind-protect
          (let ((position (access-current-position range)))
            (with-open-file (stream (read-path range))
-             (unless (file-position stream position)
+             (unless (or (zerop position)
+                         (file-position stream position))
                (error 'cl-ds:file-releated-error
                       :format-control "Can't set position in the stream."
                       :path (read-path range)))
