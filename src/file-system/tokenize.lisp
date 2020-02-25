@@ -72,6 +72,7 @@
 
 
 (defun tokenize (path regex &key case-insensitive-mode)
+  (check-type path stream-designator)
   (let ((scanner (cl-ppcre:create-scanner
                   regex :case-insensitive-mode case-insensitive-mode)))
     (make 'tokenizing-range

@@ -12,9 +12,11 @@
    #:file-range-mixin
    #:close-stream
    #:open-stream-designator
+   #:stream-designator-p
    #:access-reached-end
    #:access-current-position
    #:ensure-stream
    #:tokenize
+   #:command
    #:read-path
    #:with-file-ranges))

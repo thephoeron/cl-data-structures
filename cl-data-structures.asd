@@ -239,6 +239,7 @@
                              (:file "line-by-line")
                              (:file "tokenize")
                              (:file "find")
+                             (:file "unix")
                              (:file "docstrings")))
                (:module "threads"
                 :components ((:file "package")

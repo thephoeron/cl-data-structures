@@ -9,6 +9,21 @@
   (open designator))
 
 
+(defgeneric stream-designator-p (designator))
+
+
+(defmethod stream-designator-p ((designator pathname))
+  t)
+
+
+(defmethod stream-designator-p ((designator string))
+  t)
+
+
+(deftype stream-designator ()
+  '(satisfies stream-designator-p))
+
+
 (defclass file-range-mixin ()
   ((%reached-end :initarg :reached-end
                  :type boolean
@@ -27,6 +42,23 @@
           :reader read-path)
    (%mutex :initform (bt:make-lock)
            :reader read-mutex)))
+
+
+(defmacro with-stream-input ((stream range) &body body)
+  (with-gensyms (!stream !position)
+    (once-only (range)
+      `(let* ((,stream (open-stream-designator (read-path ,range)))
+              (,!stream ,stream)
+              (,!position (access-current-position ,range)))
+         (unwind-protect
+              (progn
+                (unless (or (zerop ,!position)
+                            (file-position ,stream ,!position))
+                  (error 'cl-ds:file-releated-error
+                         :format-control "Can't set position in the stream."
+                         :path (read-path ,range)))
+                ,@body)
+           (close ,!stream))))))
 
 
 (defmethod cl-ds.utils:cloning-information append ((object file-range-mixin))
