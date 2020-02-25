@@ -11,6 +11,7 @@
    #:line-by-line
    #:file-range-mixin
    #:close-stream
+   #:open-stream-designator
    #:access-reached-end
    #:access-current-position
    #:ensure-stream

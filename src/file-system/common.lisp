@@ -1,6 +1,14 @@
 (cl:in-package #:cl-data-structures.file-system)
 
 
+(defmethod open-stream-designator ((designator pathname))
+  (open designator))
+
+
+(defmethod open-stream-designator ((designator string))
+  (open designator))
+
+
 (defclass file-range-mixin ()
   ((%reached-end :initarg :reached-end
                  :type boolean
@@ -55,7 +63,7 @@
 (defun ensure-stream (range)
   (bt:with-lock-held ((read-mutex range))
     (when (~> range read-stream null)
-      (let ((file (~> range read-path open)))
+      (let ((file (~> range read-path open-stream-designator)))
         (unless (file-position file (access-current-position range))
           (error 'cl-ds:file-releated-error
                  :path (read-path range)
