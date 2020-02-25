@@ -97,6 +97,7 @@
     (when (~> range read-stream null)
       (let ((file (~> range read-path open-stream-designator)))
         (unless (file-position file (access-current-position range))
+          (close file)
           (error 'cl-ds:file-releated-error
                  :path (read-path range)
                  :format-control "Can't change position in the stream."))
