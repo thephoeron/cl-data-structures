@@ -17,6 +17,9 @@
       uiop/launch-program:process-info-output))
 
 
-(defun command (command)
-  (check-type command string)
-  (make 'command :command-string command))
+(defun command (format-control-string &rest format-arguments)
+  (declare (dynamic-extent format-arguments))
+  (check-type format-control-string string)
+  (make 'command
+        :command-string (apply #'format nil
+                               format-control-string format-arguments)))
