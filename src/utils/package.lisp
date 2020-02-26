@@ -39,6 +39,7 @@
    #:future-carousel
    #:half-matrix
    #:homogenousp
+   #:fixnum-hash
    #:if-else
    #:ignore-errors*
    #:import-all-package-symbols

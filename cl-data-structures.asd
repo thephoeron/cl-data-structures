@@ -39,6 +39,7 @@
                              (:file "skip-vector")
                              (:file "embedding")
                              (:file "cloning")
+                             (:file "numbers")
                              (:file "bucket-sort")
                              (:file "docstrings")
                              (:module "metric-functions"
