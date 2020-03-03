@@ -232,6 +232,7 @@
                              (:file "flatten-lists")
                              (:file "partition-if")
                              (:file "distinct")
+                             (:file "first-element")
                              (:file "docstrings")
                              ))
                (:module "file-system"
