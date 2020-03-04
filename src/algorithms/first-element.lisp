@@ -18,3 +18,19 @@
            %value element)))
 
   (%value))
+
+
+(cl-ds.alg.meta:define-aggregation-function
+    last-element last-element-function
+
+  (:range &key key)
+  (:range &key (key #'identity))
+
+  (%value)
+
+  ((setf %value nil))
+
+  ((element)
+   (setf %value element))
+
+  (%value))

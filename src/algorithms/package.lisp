@@ -49,6 +49,7 @@
    #:cartesian
    #:chain
    #:first-element
+   #:last-element
    #:connect
    #:connect-traversable
    #:count-elements
