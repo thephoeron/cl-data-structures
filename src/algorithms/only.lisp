@@ -56,7 +56,7 @@
         :original-range range))
 
 
-(defmethod apply-layer ((range fundamental-forward-range)
+(defmethod apply-layer ((range cl-ds:traversable)
                         (function only-function)
                         all)
   (make 'forward-only-proxy
