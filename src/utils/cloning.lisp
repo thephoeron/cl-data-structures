@@ -18,6 +18,13 @@
          (cloning-list instance)))
 
 
+(defmacro quasi-clone-other-class* (instance class &body arguments)
+  (once-only (instance)
+    `(apply #'make-instance ,class
+            ,@arguments
+            (cloning-list ,instance))))
+
+
 (defmacro quasi-clone* (instance &body arguments)
   (once-only (instance)
     `(apply #'make-instance (class-of ,instance)
@@ -27,3 +34,7 @@
 
 (defun quasi-clone (instance initarg initval)
   (quasi-clone* instance initarg initval))
+
+
+(defun quasi-clone-other-class (instance class initarg initval)
+  (quasi-clone-other-class* instance class initarg initval))

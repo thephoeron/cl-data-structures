@@ -80,6 +80,8 @@
    #:pop-last
    #:quasi-clone
    #:quasi-clone*
+   #:quasi-other-class
+   #:quasi-other-class*
    #:read-size
    #:rebind
    #:remove-fill-pointer
