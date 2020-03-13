@@ -22,6 +22,7 @@
    #:cases
    #:clone
    #:cloning-information
+   #:cloning-list
    #:cond+
    #:cond-compare
    #:copy-slots
