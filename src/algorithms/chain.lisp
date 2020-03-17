@@ -163,4 +163,5 @@
   (bind (((:slots %content range) range))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
-      (cl-ds:across (flexichain:element* %content i) function))))
+      (cl-ds:across (flexichain:element* %content i) function)))
+  range)
