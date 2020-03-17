@@ -43,10 +43,11 @@
            %count count))
     ((element)
      (check-type element number)
-     (incf %count)
-     (if (null %total)
-         (setf %total element)
-         (setf %total (* %total element))))
+     (unless (zerop element)
+       (incf %count)
+       (if (null %total)
+           (setf %total element)
+           (setf %total (* %total element)))))
     ((expt %total (/ 1 %count))))
 
 

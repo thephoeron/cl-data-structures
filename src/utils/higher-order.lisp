@@ -90,7 +90,7 @@
     (shiftf initial-state (funcall function initial-state))))
 
 
-(defun prevent-duplicates (&key (test 'eql))
+(defun prevent-duplicates (&key (test 'eql) (key #'identity))
   (let ((table (make-hash-table :test test)))
-    (lambda (data)
+    (lambda (value &aux (data (funcall key value)))
       (ensure (gethash data table) data))))
