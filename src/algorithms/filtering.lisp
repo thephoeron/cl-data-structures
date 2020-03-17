@@ -86,7 +86,13 @@
 
 
 (defmethod cl-ds:across ((range filtering-proxy) function)
-  (~> range cl-ds:clone (cl-ds:traverse function))
+  (let ((key (read-key range)))
+    (cl-ds:across (read-original-range range)
+                    (lambda (x) (unless (should-skip range
+                                                     (funcall key x)
+                                                     t)
+                                  (funcall function x))))
+    range)
   range)
 
 
