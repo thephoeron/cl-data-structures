@@ -49,11 +49,23 @@
                       (setf %current (funcall range-function elt))
                       (cl-ds:traverse %current function)
                       (setf %current nil)))
-    range))
+    range)
+  range)
 
 
 (defmethod cl-ds:across ((range multiplex-proxy) function)
-  (cl-ds:traverse (cl-ds:clone range) function)
+  (ensure-functionf function)
+  (bind ((key (read-key range))
+         (range-function (read-function range))
+         ((:slots %current) range)
+         (current %current))
+    (cl-ds:across (read-original-range range)
+                    (lambda (x &aux (elt (funcall key x)))
+                      (cl-ds:traverse current function)
+                      (setf current (funcall range-function elt))
+                      (cl-ds:traverse current function)
+                      (setf current nil)))
+    range)
   range)
 
 

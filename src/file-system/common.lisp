@@ -167,4 +167,5 @@
 
 
 (defmethod cl-ds:across ((range file-range-mixin) function)
-  (~> range cl-ds:clone (cl-ds:traverse function)))
+  (~> range cl-ds:clone (cl-ds:traverse function))
+  range)
