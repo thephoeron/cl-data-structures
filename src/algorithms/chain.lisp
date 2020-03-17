@@ -152,6 +152,7 @@
 
 
 (defmethod cl-ds:traverse ((range forward-chain-of-ranges) function)
+  (ensure-functionf function)
   (bind (((:slots %content) range))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
@@ -160,6 +161,7 @@
 
 
 (defmethod cl-ds:across ((range forward-chain-of-ranges) function)
+  (ensure-functionf function)
   (bind (((:slots %content range) range))
     (iterate
       (for i from 0 below (flexichain:nb-elements %content))
