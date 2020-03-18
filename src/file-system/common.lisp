@@ -95,8 +95,10 @@
 (defun ensure-stream (range)
   (bt:with-lock-held ((read-mutex range))
     (when (~> range read-stream null)
-      (let ((file (~> range read-path open-stream-designator)))
-        (unless (file-position file (access-current-position range))
+      (let ((current-position (access-current-position range))
+            (file (~> range read-path open-stream-designator)))
+        (unless (and (not (zerop current-position))
+                     (file-position file (access-current-position range)))
           (close file)
           (error 'cl-ds:file-releated-error
                  :path (read-path range)

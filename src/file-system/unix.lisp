@@ -7,6 +7,11 @@
                     :reader read-command-string)))
 
 
+(defmethod print-object ((object command) stream)
+  (print-unreadable-object (object stream)
+    (format stream "~a" (read-command-string object))))
+
+
 (defmethod stream-designator-p ((designator command))
   t)
 
