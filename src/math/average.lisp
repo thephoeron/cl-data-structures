@@ -48,7 +48,9 @@
        (if (null %total)
            (setf %total element)
            (setf %total (* %total element)))))
-    ((expt %total (/ 1 %count))))
+    ((if (zerop %count)
+         0
+         (expt %total (/ 1 %count)))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
