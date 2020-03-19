@@ -49,7 +49,7 @@
        (if (null %total)
            (setf %total element)
            (incf %total element))))
-  ((if (zerop %count)
+    ((if (zerop %count)
        0
        (expt 10 (/ %total %count)))))
 
