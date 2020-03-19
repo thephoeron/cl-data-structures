@@ -44,13 +44,14 @@
     ((element)
      (check-type element number)
      (unless (zerop element)
+       (setf element (log element 10))
        (incf %count)
        (if (null %total)
            (setf %total element)
-           (setf %total (* %total element)))))
-    ((if (zerop %count)
-         0
-         (expt %total (/ 1 %count)))))
+           (incf %total element))))
+  ((if (zerop %count)
+       0
+       (expt 10 (/ %total %count)))))
 
 
 (cl-ds.alg.meta:define-aggregation-function
