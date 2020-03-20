@@ -84,7 +84,9 @@
          (key (read-key range))
          (inner-range (read-original-range range)))
     (iterate
-      (for (values element more) = (cl-ds:consume-front %current))
+      (for (values element more) = (if (null %current)
+                                       (values nil nil)
+                                       (cl-ds:consume-front %current)))
       (when more
         (return-from cl-ds:consume-front (values element more)))
       (setf %current nil)
