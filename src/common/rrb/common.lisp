@@ -1087,7 +1087,9 @@
   (declare (optimize (speed 3)))
   (check-type depth fixnum)
   (if (zerop depth)
-      (sparse-rrb-node-size tree)
+      (if (cl-ds.meta:null-bucket-p tree)
+          0
+          (sparse-rrb-node-size tree))
       (iterate
         (declare (type fixnum i))
         (for i from 0 below +maximum-children-count+)
