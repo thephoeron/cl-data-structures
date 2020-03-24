@@ -18,7 +18,7 @@
 
 (defmethod open-stream-designator ((designator command))
   (~> designator read-command-string
-      (uiop:launch-program :output :stream :force-shell t)
+      (uiop:launch-program :output :stream :force-shell nil)
       uiop/launch-program:process-info-output))
 
 
