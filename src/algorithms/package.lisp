@@ -81,7 +81,6 @@
    #:on-each
    #:only
    #:partition-if
-   #:partition-if-with-callback
    #:proxy-box-range
    #:proxy-range
    #:random-access-chain-of-ranges
