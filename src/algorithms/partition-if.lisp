@@ -124,62 +124,94 @@
               :test (second all)))
 
 
-(defmethod cl-ds:consume-front ((range forward-partition-if-proxy))
-  (let ((key (read-key range))
-        (on-first (read-on-first range))
-        (test (read-test range)))
-    (iterate
-      (bind (((:values value more) (call-next-method))
-             (collected (access-collected range))
+(defun partition-if-consume-implementation (collected key on-first test original-range)
+  (iterate
+      (bind (((:values value more) (cl-ds:consume-front original-range))
              (collected-size (cl-ds:size collected)))
         (unless more
-          (return-from cl-ds:consume-front
+          (return-from partition-if-consume-implementation
             (if (zerop collected-size)
                 (values nil nil)
-                (progn (setf (access-collected range)
-                             (cl-ds.seqs.rrb:make-functional-rrb-vector))
-                       (values (cl-ds:whole-range collected)
-                               t)))))
+                (let ((replica (cl-ds:replica collected t)))
+                  (cl-ds:reset! collected)
+                  (values (cl-ds:whole-range replica)
+                          t)))))
         (if (zerop collected-size)
-            (setf (access-collected range) (cl-ds:put collected value))
+            (cl-ds:put! collected value)
             (let ((key-value (funcall key value))
                   (current-key
                     (~>> (if on-first 0 (1- collected-size))
                          (cl-ds:at collected)
                          (funcall key))))
               (if (funcall test key-value current-key)
-                  (setf (access-collected range) (cl-ds:put collected value))
-                  (let ((new-collected
-                          (cl-ds.seqs.rrb:make-functional-rrb-vector)))
-                    (setf (access-collected range) (cl-ds:put new-collected value))
-                    (return-from cl-ds:consume-front
-                      (values (cl-ds:whole-range collected)
-                              t))))))))))
+                  (cl-ds:put! collected value)
+                  (let ((old-collected (cl-ds:replica collected t)))
+                    (cl-ds:put! old-collected value)
+                    (cl-ds:reset! collected)
+                    (return-from partition-if-consume-implementation
+                      (values (cl-ds:whole-range old-collected)
+                              t)))))))))
+
+
+(defmethod cl-ds:consume-front ((range forward-partition-if-proxy))
+  (bind ((key (read-key range))
+         (on-first (read-on-first range))
+         (original-range (read-original-range range))
+         (collected (~> range access-collected
+                        become-transactional))
+         (test (read-test range))
+         ((:values result more)
+          (partition-if-consume-implementation collected
+                                               key
+                                               on-first
+                                               test
+                                               original-range)))
+    (setf (access-collected range) (become-functional collected))
+    (values result more)))
 
 
 (defmethod cl-ds:peek-front ((range forward-partition-if-proxy))
-  (let ((key (read-key range))
-        (on-first (read-on-first range))
-        (collected (access-collected range))
-        (test (read-test range)))
-    (iterate
-      (bind (((:values value more) (call-next-method))
-             (collected-size (cl-ds:size collected)))
-        (unless more
-          (return-from cl-ds:peek-front
-            (if (zerop collected-size)
-                (values nil nil)
-                (values (cl-ds:whole-range collected)
-                        t))))
-        (if (zerop collected-size)
-            (setf collected (cl-ds:put collected value))
-            (let ((key-value (funcall key value))
-                  (current-key
-                    (~>> (if on-first 0 (1- collected-size))
-                         (cl-ds:at collected)
-                         (funcall key))))
-              (if (funcall test key-value current-key)
-                  (setf collected (cl-ds:put collected value))
-                  (return-from cl-ds:peek-front
-                    (values (cl-ds:whole-range collected)
-                            t)))))))))
+  (bind ((key (read-key range))
+         (on-first (read-on-first range))
+         (original-range (read-original-range range))
+         (collected (~> range access-collected
+                        become-transactional))
+         (test (read-test range))
+         ((:values result more)
+          (partition-if-consume-implementation collected
+                                               key
+                                               on-first
+                                               test
+                                               (cl-ds:clone original-range))))
+    (values result more)))
+
+
+(defmethod cl-ds:traverse ((range forward-partition-if-proxy)
+                           function)
+  (ensure-functionf function)
+  (iterate
+    (for (values value more) = (cl-ds:consume-front range))
+    (while more)
+    (funcall function value)
+    (finally (return range))))
+
+
+(defmethod cl-ds:across ((range forward-partition-if-proxy)
+                         function)
+  (ensure-functionf function)
+  (iterate
+    (with key = (read-key range))
+    (with collected = (~> range access-collected
+                          become-transactional))
+    (with on-first = (read-on-first range))
+    (with test = (read-test range))
+    (with original-range = (~> range read-original-range cl-ds:clone))
+    (for (values value more) = (partition-if-consume-implementation
+                                collected
+                                key
+                                on-first
+                                test
+                                original-range))
+    (while more)
+    (funcall function value)
+    (finally (return range))))

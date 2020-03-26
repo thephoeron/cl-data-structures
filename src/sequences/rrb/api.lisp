@@ -593,7 +593,7 @@
 
 
 (defmethod cl-ds:empty-clone ((container rrb-vector))
-  (make-instance (type-of container)
+  (make-instance (class-of container)
                  :root nil
                  :shift 0
                  :size 0
@@ -602,13 +602,20 @@
 
 
 (defmethod cl-ds:reset! ((obj mutable-rrb-vector))
-  (bind (((:slots %root %shift %size %tail-size %tail) obj))
-    (setf %root nil
-          %shift 0
-          %size 0
-          %tail-size 0
-          %tail nil)
-    obj))
+  (setf (cl-ds.common.rrb:access-root obj) nil
+        (cl-ds.common.rrb:access-shift obj) 0
+        (cl-ds.common.rrb:access-size obj) 0
+        (cl-ds.common.rrb:access-tail-size obj) 0
+        (cl-ds.common.rrb:access-tail obj) nil)
+  obj)
+
+
+(defmethod cl-ds:reset! ((obj transactional-rrb-vector))
+  (setf (cl-ds.common.rrb:access-root obj) nil
+        (cl-ds.common.rrb:access-shift obj) 0
+        (cl-ds.common.rrb:access-size obj) 0
+        (cl-ds.common.rrb:access-tail-size obj) 0
+        (cl-ds.common.rrb:access-tail obj) nil))
 
 
 (defmethod cl-ds:become-mutable ((container functional-rrb-vector))
@@ -632,6 +639,16 @@
 
 
 (defmethod cl-ds:become-functional ((container mutable-rrb-vector))
+  (make 'functional-rrb-vector
+        :root (cl-ds.common.rrb:access-root container)
+        :shift (cl-ds.common.rrb:access-shift container)
+        :size (cl-ds.common.rrb:access-size container)
+        :tail-size (cl-ds.common.rrb:access-tail-size container)
+        :tail (and #1=(cl-ds.common.rrb:access-tail container)
+                   (copy-array #1#))))
+
+
+(defmethod cl-ds:become-functional ((container transactional-rrb-vector))
   (make 'functional-rrb-vector
         :root (cl-ds.common.rrb:access-root container)
         :shift (cl-ds.common.rrb:access-shift container)
