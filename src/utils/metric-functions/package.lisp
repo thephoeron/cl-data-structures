@@ -8,4 +8,5 @@
    #:hausdorff-metric
    #:hellinger-metric
    #:levenshtein-metric
+   #:lcs-metric
    #:svr-metric))

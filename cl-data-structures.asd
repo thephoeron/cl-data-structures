@@ -47,6 +47,7 @@
                                            (:file "levenshtein")
                                            (:file "hellinger")
                                            (:file "average-metric")
+                                           (:file "lcs-metric")
                                            (:file "hausdorff")
                                            (:file "euclid")
                                            (:file "earth-mover")
