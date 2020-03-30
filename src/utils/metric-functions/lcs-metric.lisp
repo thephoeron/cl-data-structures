@@ -1,9 +1,9 @@
 (cl:in-package #:cl-data-structures.utils.metric)
 
 
-(-> lcs-metric (vector vector (or symbol function))
+(-> lcs-metric (vector vector &optional (or symbol function))
     single-float)
-(defun lcs-metric (a b test)
+(defun lcs-metric (a b &optional (test #'equal))
   (declare (optimize (speed 3) (safety 1) (space 0) (debug 0)))
   (bind ((a-length (length a))
          (b-length (length b))
