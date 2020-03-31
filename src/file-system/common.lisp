@@ -97,8 +97,8 @@
     (when (~> range read-stream null)
       (let ((current-position (access-current-position range))
             (file (~> range read-path open-stream-designator)))
-        (unless (and (not (zerop current-position))
-                     (file-position file (access-current-position range)))
+        (unless (or (zerop current-position)
+                    (file-position file (access-current-position range)))
           (close file)
           (error 'cl-ds:file-releated-error
                  :path (read-path range)
