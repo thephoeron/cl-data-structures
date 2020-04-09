@@ -1,16 +1,36 @@
 (cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
-(defclass minhash-corpus ()
-  ((%table :initarg :table
-           :reader read-table)
-   (%k :initarg :k
+(defclass fundamental-minhash ()
+  ((%k :initarg :k
        :reader read-k)))
+
+
+(defclass minhash-corpus (fundamental-minhash)
+  ((%table :initarg :table
+           :reader read-table)))
+
+
+(defclass callback-minhash (fundamental-minhash)
+  ((%hash-function :initarg :hash-function
+                   :reader read-hash-function)))
+
+
+(defgeneric minhash-corpus-hash-value (corpus element))
+
+
+(defmethod minhash-corpus-hash-value ((corpus minhash-corpus) element)
+  (gethash element (read-table corpus)))
+
+
+(defmethod minhash-corpus-hash-value ((corpus callback-minhash) element)
+  (funcall (read-hash-function corpus) element))
 
 
 (defmethod cl-ds:clone ((object minhash-corpus))
   (make (class-of object)
         :table (~> object read-table copy-hash-table)
+        :function (read-function object)
         :k (read-k object)))
 
 
@@ -47,8 +67,12 @@
        (finally (return %corpus)))))
 
 
-(-> minhash* (minhash-corpus list) (simple-array fixnum (*)))
-(defun minhash* (corpus elements)
+(defun make-minhash (k &optional (hash-function #'sxhash))
+  (make 'callback-minhash :k k :hash-function hash-function))
+
+
+(-> minhash-corpus-minhash (minhash-corpus list) (simple-array fixnum (*)))
+(defun minhash-corpus-minhash (corpus elements)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (cl-ds.utils:with-slots-for (corpus minhash-corpus)
     (iterate
@@ -71,10 +95,36 @@
       (finally (return minis)))))
 
 
-(defun minhash (corpus elements)
+(defgeneric minhash (corpus elements))
+
+
+(defmethod minhash :around ((corpus minhash-corpus) elements)
+  (check-type corpus fundamental-minhash)
   (check-type elements list)
-  (check-type corpus minhash-corpus)
-  (minhash* corpus elements))
+  (call-next-method corpus elements))
+
+
+(defmethod minhash ((corpus minhash-corpus) elements)
+  (minhash-corpus-minhash corpus elements))
+
+
+(defmethod minhash ((corpus fundamental-minhash) elements)
+  (iterate
+    (declare (type fixnum count)
+             (type (simple-array fixnum (*)) minis))
+    (with count = (read-k corpus))
+    (with minis = (make-array count :element-type 'fixnum
+                                    :initial-element most-positive-fixnum))
+    (for element in elements)
+    (for sub = (minhash-corpus-hash-value corpus element))
+    (when (null sub)
+      (next-iteration))
+    (iterate
+      (declare (type fixnum i))
+      (for i from 0 below count)
+      (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
+                                 i)))
+    (finally (return minis))))
 
 
 (-> minhash-jaccard/fixnum ((simple-array fixnum (*)) (simple-array fixnum (*)))

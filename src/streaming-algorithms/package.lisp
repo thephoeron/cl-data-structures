@@ -13,6 +13,7 @@
    #:clean-sketch
    #:fundamental-data-sketch
    #:gather-minhash-corpus
+   #:make-minhash
    #:make-hash-array
    #:minhash
    #:minhash-jaccard/double-float
