@@ -98,8 +98,7 @@
 (defgeneric minhash (corpus elements))
 
 
-(defmethod minhash :around ((corpus minhash-corpus) elements)
-  (check-type corpus fundamental-minhash)
+(defmethod minhash :around ((corpus fundamental-minhash) elements)
   (check-type elements list)
   (call-next-method corpus elements))
 
