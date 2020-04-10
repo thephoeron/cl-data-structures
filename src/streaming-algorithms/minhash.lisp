@@ -13,7 +13,9 @@
 
 (defclass callback-minhash (fundamental-minhash)
   ((%hash-function :initarg :hash-function
-                   :reader read-hash-function)))
+                   :reader read-hash-function)
+   (%hash-array :initarg :hash-array
+                 :reader read-hash-array)))
 
 
 (defgeneric minhash-corpus-hash-value (corpus element))
@@ -24,7 +26,14 @@
 
 
 (defmethod minhash-corpus-hash-value ((corpus callback-minhash) element)
-  (funcall (read-hash-function corpus) element))
+  (let* ((k (read-k corpus))
+         (hash-array (read-hash-array corpus))
+         (result (make-array (read-k corpus) :element-type 'fixnum))
+         (hash (funcall (read-hash-function corpus) element)))
+    (iterate
+      (for i from 0 below k)
+      (setf (aref result i) (hashval-no-depth hash-array i hash))
+      (finally (return result)))))
 
 
 (defmethod cl-ds:clone ((object minhash-corpus))
@@ -67,8 +76,11 @@
        (finally (return %corpus)))))
 
 
-(defun make-minhash (k &optional (hash-function #'sxhash))
-  (make 'callback-minhash :k k :hash-function hash-function))
+(defun make-minhash (k &key
+                         (hash-function #'sxhash)
+                         (hash-array (make-hash-array k)))
+  (make 'callback-minhash :k k :hash-function hash-function
+        :hash-array hash-array))
 
 
 (-> minhash-corpus-minhash (minhash-corpus list) (simple-array fixnum (*)))
