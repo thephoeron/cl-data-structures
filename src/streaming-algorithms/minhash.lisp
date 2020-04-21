@@ -39,8 +39,13 @@
 (defmethod cl-ds:clone ((object minhash-corpus))
   (make (class-of object)
         :table (~> object read-table copy-hash-table)
-        :function (read-function object)
         :k (read-k object)))
+
+
+(defmethod cl-ds:clone ((object callback-minhash))
+  (make (class-of object)
+        :hash-function (read-hash-function object)
+        :hash-array (read-hash-array object)))
 
 
 (cl-ds.utils:define-list-of-slots minhash-corpus ()
