@@ -43,6 +43,7 @@
 
 (define-condition argument-error (textual-error)
   ((%argument :type symbol
+              :initarg :parameter
               :initarg :argument
               :reader read-argument)))
 
