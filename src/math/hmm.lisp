@@ -66,7 +66,7 @@
     (check-probability-in-rows 'trans-table trans-table)
     (check-probability-in-rows 'observation-table observation-table)
     (when (> initial-state (first dim1))
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'initial-state
              :value initial-state
              :bounds `(0 ,(first dim1))

@@ -33,6 +33,6 @@
                  (maximal-size "Integer, only return sets up-to this size.")
                  (minimal-frequency "Real, only return sets with total frequency above this limit."))
      :exceptional-situations ("Will signal type-errors if minimal-frequency is not real or maximal-size is not of type integer."
-                              "Will signal cl-ds:argument-out-of-bounds if minimal frequency is below 0 or above 1"
-                              "Will signal cl-ds:argument-out-of-bounds if maximal-size is not above 0.")
+                              "Will signal cl-ds:argument-value-out-of-bounds if minimal frequency is below 0 or above 1"
+                              "Will signal cl-ds:argument-value-out-of-bounds if maximal-size is not above 0.")
      :returns "Forward range of SET-IN-INDEX objects.")))

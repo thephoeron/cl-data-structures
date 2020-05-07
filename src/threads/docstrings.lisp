@@ -11,7 +11,7 @@
                             (:function "Function that should return traversable range. Defaults to #'CL-DS:WHOLE-RANGE")
                             (:maximum-queue-size "The maximal size of the queue used internally. Setting this to a low value reduces memory overhead."))
      :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
-                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
+                              "Will raise CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
                               "Will raise a TYPE-ERROR when FUNCTION is not funcallable."
                               "Will raise a TYPE-ERROR when FUNCTION is not key.")
      :notes ("Outside of aggregation behaves exactly like MULTIPLEX.")
@@ -22,8 +22,8 @@
     (:description "Creates a proxy range that will present exactly the same content as the original range. However, when calling an aggregation function internal thread with queue will created. This allows operations performed before and after thread-buffer to run in parallel."
      :exceptional-situations ("Will raise a TYPE-ERROR when MAXIMAL-QUEUE-SIZE is not integer."
                               "Will raise a TYPE-ERROR when CHUNK-SIZE is not integer."
-                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when CHUNK-SIZE is not at least 1."
-                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
+                              "Will raise CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS when CHUNK-SIZE is not at least 1."
+                              "Will raise CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
                               "Exceptions raised during aggregation will be transfered to the original thread.")
      :notes ("Thread buffer only changes the aggregation process."
              "For optimal performance results, operations performed before and after THREAD-BUFFER should take approximately the same ammount of time."
@@ -39,8 +39,8 @@
                               "Will raise a TYPE-ERROR when FUNCTION is not a (OR FUNCTION SYMBOL)."
                               "Will raise a TYPE-ERROR when KEY is not a (OR FUNCTION SYMBOL)."
                               "Will raise a TYPE-ERROR when CHUNK-SIZE is not integer."
-                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when CHUNK-SIZE is not at least 1."
-                              "Will raise CL-DS:ARGUMENT-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
+                              "Will raise CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS when CHUNK-SIZE is not at least 1."
+                              "Will raise CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS when MAXIMAL-QUEUE-SIZE is not at least 16."
                               "Exceptions raised during aggregation or when funcalling the callback will be transfered to the original thread.")
      :arguments-and-values ((range "Input range.")
                             (:maximum-queue-size "Maximal size of queue used internally. Setting this to low value reduces memory overhead.")

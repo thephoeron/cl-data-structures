@@ -22,7 +22,7 @@
   (if (or (null to) (< from to))
       (progn
         (unless (positive-integer-p by)
-          (error 'argument-out-of-bounds
+          (error 'argument-value-out-of-bounds
                  :format-control "BY must be positive because TO is larger then FROM."
                  :argument 'by
                  :bounds '(> 0)
@@ -33,7 +33,7 @@
             (send-recur i :i (+ by i)))))
       (progn
         (unless (negative-integer-p by)
-          (error 'argument-out-of-bounds
+          (error 'argument-value-out-of-bounds
                  :format-control "BY must be negative because TO is smaller then FROM."
                  :argument 'by
                  :bounds '(< 0)

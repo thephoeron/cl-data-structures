@@ -43,7 +43,7 @@
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
-           (error 'cl-ds:argument-out-of-bounds
+           (error 'cl-ds:argument-value-out-of-bounds
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."
@@ -70,7 +70,7 @@
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
-           (error 'cl-ds:argument-out-of-bounds
+           (error 'cl-ds:argument-value-out-of-bounds
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."
@@ -97,7 +97,7 @@
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
     (cond ((negative-integer-p position)
-           (error 'cl-ds:argument-out-of-bounds
+           (error 'cl-ds:argument-value-out-of-bounds
                   :argument 'position
                   :value position
                   :bounds "Must be non-negative."

@@ -15,7 +15,7 @@
 
      :returns
      "In case of associative containers, second value informs if LOCATION was found in the CONTAINER (first value is NIL if element was not found).
- In case of non-associtive containers (e.g. vectors), the function returns value under LOCATION if LOCATION is valid, otherwise condition of type ARGUMENT-OUT-OF-BOUNDS will be raised."
+ In case of non-associtive containers (e.g. vectors), the function returns value under LOCATION if LOCATION is valid, otherwise condition of type ARGUMENT-VALUE-OUT-OF-BOUNDS will be raised."
 
      :description
      "Obtain element stored at LOCATION in the CONTAINER."
@@ -556,7 +556,7 @@
   (type initialization-error
     (:description "Error signaled when the container can't be initialized."))
 
-  (type argument-out-of-bounds
+  (type argument-value-out-of-bounds
     (:description "Error signaled when passed the argument exceeds allowed bounds"))
 
   (type initialization-out-of-bounds

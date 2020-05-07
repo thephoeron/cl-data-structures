@@ -9,7 +9,7 @@
 (defmethod initialize-instance :after ((object split-into-chunks-proxy) &key)
   (check-type (access-count-in-chunk object) integer)
   (unless (< 0 (access-count-in-chunk object))
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'chunk-size
            :bounds '(< 0)
            :value (access-count-in-chunk object))))

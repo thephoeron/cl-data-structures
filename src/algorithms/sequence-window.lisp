@@ -54,13 +54,13 @@
 (defmethod sequence-window ((sequence cl-ds:fundamental-random-access-range)
                             from to)
   (unless (< from to)
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'from
            :bounds (list 0 to)
            :value from
            :format-control "FROM argument is out of bounds."))
   (unless (<= to (cl-ds:size sequence))
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'to
            :bounds (list from (cl-ds:size sequence))
            :value to
@@ -115,13 +115,13 @@
 (defmethod sequence-window :before ((sequence cl:sequence)
                                     from to)
   (unless (< from to)
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'from
            :bounds (list 0 to)
            :value from
            :format-control "FROM argument is out of bounds."))
   (unless (<= to (length sequence))
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'to
            :bounds (list from (length sequence))
            :value to

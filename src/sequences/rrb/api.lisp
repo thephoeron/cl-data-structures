@@ -176,7 +176,7 @@
             (setf result-status status)
             node)))
     (unless (> (cl-ds:size structure) index)
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index
@@ -452,7 +452,7 @@
             (setf result-status status)
             node)))
     (unless (> (cl-ds:size structure) index)
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index
@@ -532,7 +532,7 @@
             (setf result-status status)
             node)))
     (unless (> (cl-ds:size structure) index)
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'index
              :bounds (list 0 (cl-ds:size structure))
              :value index

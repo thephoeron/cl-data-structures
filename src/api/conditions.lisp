@@ -53,6 +53,7 @@
   ())
 
 
+
 (define-condition unexpected-argument (invalid-argument)
   ())
 
@@ -67,8 +68,13 @@
             :reader read-bounds)))
 
 
-(define-condition argument-out-of-bounds (argument-error
-                                          out-of-bounds)
+(define-condition invalid-argument-value (invalid-value
+                                          argument-error)
+  ())
+
+
+(define-condition argument-value-out-of-bounds (invalid-argument-value
+                                                out-of-bounds)
   ())
 
 
@@ -76,8 +82,8 @@
   ())
 
 
-(define-condition argument-not-in-allowed-set (not-in-allowed-set
-                                               argument-error)
+(define-condition argument-value-not-in-allowed-set (invalid-argument-value
+                                                     not-in-allowed-set)
   ())
 
 
@@ -110,7 +116,7 @@
   (call-next-method))
 
 
-(defmethod print-condition ((condition argument-out-of-bounds) stream)
+(defmethod print-condition ((condition argument-value-out-of-bounds) stream)
   (if (slot-boundp condition '%argument)
       (format stream "Argument ~A has value ~a which is out of bounds ~a.~%"
               (read-argument condition)
@@ -153,7 +159,7 @@
 
 
 (define-condition initialization-out-of-bounds (initialization-error
-                                                argument-out-of-bounds)
+                                                argument-value-out-of-bounds)
   ())
 
 

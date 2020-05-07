@@ -168,8 +168,8 @@
     (is (cl-ds:at container i) i)))
 
 (let ((container (cl-ds:make-of-size 'functional-rrb-vector 5)))
-  (is-error (cl-ds:at container 6) 'cl-ds:argument-out-of-bounds)
-  (is-error (cl-ds:at container -1) 'cl-ds:argument-out-of-bounds)
+  (is-error (cl-ds:at container 6) 'cl-ds:argument-value-out-of-bounds)
+  (is-error (cl-ds:at container -1) 'cl-ds:argument-value-out-of-bounds)
   (is-error (cl-ds:at container 0.2) 'cl:type-error))
 
 

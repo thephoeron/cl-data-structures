@@ -66,7 +66,7 @@
   (let ((size (cl-ds.utils:at-list all :size)))
     (check-type size integer)
     (unless (<= 0 size)
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'size
              :bounds '(< 0)
              :value size))

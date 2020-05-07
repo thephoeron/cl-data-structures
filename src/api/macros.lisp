@@ -48,7 +48,7 @@
 
 (defmacro check-argument-bounds (argument expression)
   `(unless ,expression
-     (error 'cl-ds:argument-out-of-bounds
+     (error 'cl-ds:argument-value-out-of-bounds
             :argument ',argument
             :bounds ',expression
             :value ,argument)))

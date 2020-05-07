@@ -36,7 +36,7 @@
     (:description "Divides aggregation process into partitions up to size."
      :returns "Instance of SPLIT-INTO-CHUNKS-PROXY range subclass."
      :exceptional-situations ("Will signal type error if CHUNK-SIZE is not INTEGER."
-                              "Will signal ARGUMENT-OUT-OF-BOUNDS if CHUNK-SIZE is not above 0.")
+                              "Will signal ARGUMENT-VALUE-OUT-OF-BOUNDS if CHUNK-SIZE is not above 0.")
      :examples [(let ((data (cl-ds.alg:to-vector (cl-ds.alg:split-into-chunks #(1 2 3 4 5 6) 2))))
                   (prove:is (cl-ds:size data) 3)
                   (prove:is (cl-ds:at data 0) #(1 2) :test 'equalp)
@@ -211,7 +211,7 @@
                  (size "What should be the limit on the new range?"))
      :returns "FUNDAMENTAL-FORWARD-RANGE instance."
      :exceptional-situations ("Will raise a TYPE-ERROR when the SIZE is not of the type INTEGER."
-                              "Will raise ARGUMENT-OUT-OF-BOUNDS when the SIZE is negative.")))
+                              "Will raise ARGUMENT-VALUE-OUT-OF-BOUNDS when the SIZE is negative.")))
 
   (function extremum
     (:description "An aggregation function. Finds the extremum (the first value that would occur if the whole range was sorted according to the FN). This can be used to find either the maximum or the minimum."

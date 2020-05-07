@@ -42,7 +42,7 @@
   (bind (((:slots %bits %registers %hash-fn) object))
     (check-type %bits integer)
     (unless (<= 4 %bits 20)
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'bits
              :bounds (list 4 20)
              :value %bits

@@ -9,8 +9,8 @@
    #:add
    #:add!
    #:argument-error
-   #:argument-not-in-allowed-set
-   #:argument-out-of-bounds
+   #:argument-value-not-in-allowed-set
+   #:argument-value-out-of-bounds
    #:assert-one-dimension
    #:at
    #:become-functional
@@ -33,6 +33,7 @@
    #:drop-front
    #:empty-clone
    #:empty-container
+   #:invalid-argument-value
    #:empty-range
    #:erase
    #:check-argument-bounds

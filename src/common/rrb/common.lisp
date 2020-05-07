@@ -552,7 +552,7 @@
 (defmethod cl-ds:at ((container rrb-container) index &rest more)
   (cl-ds:assert-one-dimension more)
   (unless (< -1 index (cl-ds:size container))
-    (error 'cl-ds:argument-out-of-bounds
+    (error 'cl-ds:argument-value-out-of-bounds
            :argument 'index
            :bounds (list 0 (cl-ds:size container))
            :value index
@@ -925,7 +925,7 @@
   (cl-ds:assert-one-dimension more)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'index
              :bounds (list %lower-bound %upper-bound)
              :value index
@@ -1069,7 +1069,7 @@
   (cl-ds:assert-one-dimension more)
   (bind (((:slots %upper-bound %lower-bound %content) range))
     (unless (and (>= index %lower-bound) (< index %upper-bound))
-      (error 'cl-ds:argument-out-of-bounds
+      (error 'cl-ds:argument-value-out-of-bounds
              :argument 'index
              :bounds (list %lower-bound %upper-bound)
              :value index

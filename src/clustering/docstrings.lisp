@@ -10,7 +10,7 @@
                               "Will signal a TYPE-ERROR when KEY is not funcallable."
                               "Will signal a TYPE-ERROR when DISTORTION-EPSILON is not SINGLE-FLOAT."
                               "Will signal a TYPE-ERROR when SILHOUETTE-SAMPLE-SIZE or SILHOUETTE-SAMPLE-COUNT is not of the INTEGER type."
-                              "sILHOUETTE-SAMPLE-SIZE and SILHOUETTE-SAMPLE-COUNT are supposed to have positive value. Otherwise ARGUMENT-OUT-OF-BOUNDS will be signalled.")
+                              "sILHOUETTE-SAMPLE-SIZE and SILHOUETTE-SAMPLE-COUNT are supposed to have positive value. Otherwise ARGUMENT-VALUE-OUT-OF-BOUNDS will be signalled.")
      :returns "Clusters object. Clusters itself are represented as a vector of vectors and can be read using CLUSTER-CONTENTS function. Additionally, silhouette values can be read with SILHOUETTE function."
      :notes "This algorithm does not calculate silhouette during it's operation and because of that calling silhouette on the result will take extra time."
      :thread-safety "Uses lparallel underneath."))

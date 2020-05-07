@@ -69,7 +69,7 @@
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
      :exceptional-situations ("Will signal a TYPE-ERROR if BITS is not integer."
                               "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
-                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if BITS is not at least 4 and 32 at most.")
+                              "Will signal a CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS if BITS is not at least 4 and 32 at most.")
      :arguments ((range "Object to aggregate.")
                  (:bits "How many bits per register should be used? Should be at least 4, and 32 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
@@ -101,7 +101,7 @@
      :exceptional-situations ("Will signal a TYPE-ERROR when either COUNT or SPACE is not integer."
                               "Will signal a TYPE-ERROR when HASH-FN is not funcallable."
                               "Will signal a TYPE-ERROR when HASHES is not either NIL or (SIMPLE-ARRAY FIXNUM (*))."
-                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if either COUNT or SPACE is not above zero.")
+                              "Will signal a CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS if either COUNT or SPACE is not above zero.")
      :arguments ((range "Object to aggregate.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
                  (:space "Positive integer. Size of the counters array")
@@ -115,7 +115,7 @@
     (:description "Creates bloom filter out of elements in the range. Bloom filter is a memory efficient data structure allowing to check if an item is absent from the range. If AT returns nil, the item is certainly absent. If AT returns T item either present or not."
      :returns "Instance of the fundamental-data-sketch class. Use cl-ds:at to check if element is present. False positives are possible, false negatives are not possible."
      :exceptional-situations ("Will signal a TYPE-ERROR if either SPACE or COUNT is not integer."
-                              "Will signal a CL-DS:ARGUMENT-OUT-OF-BOUNDS if either SPACE or COUNT is not above 0."
+                              "Will signal a CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS if either SPACE or COUNT is not above 0."
                               "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
                               "Will signal a TYPE-ERROR if HASHES is not (OR NULL (SIMPLE-ARRAY FIXNUM (* 2)).")
      :arguments ((range "Input for the creation of the bloom filter.")
