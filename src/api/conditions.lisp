@@ -4,8 +4,7 @@
 (defgeneric print-condition (object stream))
 
 
-(define-condition textual-error (program-error
-                                 simple-condition
+(define-condition textual-error (simple-error
                                  more-conditions:chainable-condition)
   ()
   (:report print-condition))
