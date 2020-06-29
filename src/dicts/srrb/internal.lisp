@@ -41,18 +41,16 @@
          (tail (the simple-vector %tail))
          (element-type (read-element-type rrb-container))
          (new-content
-          (if (eql tail-size cl-ds.common.rrb:+maximum-children-count+)
-              tail
-              (iterate
-                (declare (type fixnum j i))
-                (with result = (make-array tail-size :element-type element-type))
-                (with j = 0)
-                (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
-                (for present = (ldb-test (byte 1 i) tail-mask))
-                (when present
-                  (setf (aref result j) (aref tail i))
-                  (incf j))
-                (finally (return result)))))
+          (iterate
+            (declare (type fixnum j i))
+            (with result = (make-array tail-size :element-type element-type))
+            (with j = 0)
+            (for i from 0 below cl-ds.common.rrb:+maximum-children-count+)
+            (for present = (ldb-test (byte 1 i) tail-mask))
+            (when present
+              (setf (aref result j) (aref tail i))
+              (incf j))
+            (finally (return result))))
          (new-node (cl-ds.common.rrb:make-sparse-rrb-node
                     :content new-content
                     :bitmask tail-mask
