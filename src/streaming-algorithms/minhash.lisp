@@ -92,32 +92,23 @@
 (defun minhash-corpus-minhash (corpus elements)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (cl-ds.utils:with-slots-for (corpus minhash-corpus)
-    (iterate
-      (declare (type fixnum count)
-               (type (simple-array fixnum (*)) minis)
-               (type hash-table hash-table))
-      (with hash-table = table)
-      (with count = k)
-      (with minis = (make-array count :element-type 'fixnum
-                                      :initial-element most-positive-fixnum))
-      (for element in elements)
-      (for sub = (gethash element hash-table))
-      (when (null sub)
-        (next-iteration))
-      (iterate
-        (declare (type fixnum i))
-        (for i from 0 below count)
-        (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
-                                   i)))
-      (finally (return minis)))))
+    (bind ((count (the fixnum (read-k corpus)))
+           (hash-table table)
+           (minis (make-array count :element-type 'fixnum
+                                  :initial-element most-positive-fixnum))
+         ((:flet impl (element))
+          (let ((sub (gethash element hash-table)))
+            (unless (null sub)
+              (iterate
+                (declare (type fixnum i))
+                (for i from 0 below count)
+                (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
+                                           i)))))))
+    (cl-ds:across elements #'impl)
+    minis)))
 
 
 (defgeneric minhash (corpus elements))
-
-
-(defmethod minhash :around ((corpus fundamental-minhash) elements)
-  (check-type elements list)
-  (call-next-method corpus elements))
 
 
 (defmethod minhash ((corpus minhash-corpus) elements)
@@ -125,22 +116,19 @@
 
 
 (defmethod minhash ((corpus fundamental-minhash) elements)
-  (iterate
-    (declare (type fixnum count)
-             (type (simple-array fixnum (*)) minis))
-    (with count = (read-k corpus))
-    (with minis = (make-array count :element-type 'fixnum
-                                    :initial-element most-positive-fixnum))
-    (for element in elements)
-    (for sub = (minhash-corpus-hash-value corpus element))
-    (when (null sub)
-      (next-iteration))
-    (iterate
-      (declare (type fixnum i))
-      (for i from 0 below count)
-      (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
-                                 i)))
-    (finally (return minis))))
+  (bind ((count (read-k corpus))
+         (minis (make-array count :element-type 'fixnum
+                                  :initial-element most-positive-fixnum))
+         ((:flet impl (element))
+          (let ((sub (minhash-corpus-hash-value corpus element)))
+            (unless (null sub)
+              (iterate
+                (declare (type fixnum i))
+                (for i from 0 below count)
+                (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
+                                           i)))))))
+    (cl-ds:across elements #'impl)
+    minis))
 
 
 (-> minhash-jaccard/fixnum ((simple-array fixnum (*)) (simple-array fixnum (*)))
