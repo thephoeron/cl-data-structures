@@ -116,7 +116,8 @@
 
 
 (defmethod minhash ((corpus fundamental-minhash) elements)
-  (bind ((count (read-k corpus))
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (bind ((count (the fixnum (read-k corpus)))
          (minis (make-array count :element-type 'fixnum
                                   :initial-element most-positive-fixnum))
          ((:flet impl (element))
