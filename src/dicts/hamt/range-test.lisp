@@ -5,7 +5,7 @@
   (:export :run-suite))
 (cl:in-package :hamt-range-tests)
 
-(plan 16)
+(plan 14)
 (let ((dict (make-mutable-hamt-dictionary #'identity #'eql))
       (count 0))
   (setf (cl-ds:at dict 5) 1)
@@ -51,13 +51,7 @@
                          (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
                          (cl-ds.alg:accumulate #'+ :key #'cdr))))
     (is (cl-ds:at divided-sum nil) 4)
-    (is (cl-ds:at divided-sum t) 6))
-  (let ((divided-variance (~> dict
-                              cl-ds:whole-range
-                              (cl-ds.alg:group-by :key (compose #'evenp #'cdr))
-                              (cl-ds.math:variance :key #'cdr))))
-    (is (cl-ds:at divided-variance nil) 1)
-    (is (cl-ds:at divided-variance t) 1)))
+    (is (cl-ds:at divided-sum t) 6)))
 
 (let ((dict (cl-ds:make-from-traversable
              (cl-ds.alg:chain

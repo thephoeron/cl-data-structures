@@ -33,7 +33,7 @@
     (is node cl-ds.meta:null-bucket)))
 
 (let* ((tree (make 'cl-data-structures.common.2-3-tree::tree))
-       (i 31))
+       (i 127))
   (iterate
     (for i from 0 below 128)
     (for new = (lambda () i))
@@ -59,7 +59,7 @@
       (is i old-value))))
 
 (let* ((tree (make 'cl-data-structures.common.2-3-tree::tagged-tree))
-       (i 31))
+       (i 127))
   (iterate
     (for i from 0 below 128)
     (for new = (lambda () i))

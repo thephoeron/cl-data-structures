@@ -37,7 +37,7 @@
     (:shift access-shift)
     (:tree-size access-tree-size)
     (:tree-index-bound access-tree-index-bound)
-    (:index-bound access-tree-index-bound)
+    (:index-bound access-index-bound)
     (:element-type read-element-type)))
 
 

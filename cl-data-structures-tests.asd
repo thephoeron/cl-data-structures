@@ -30,9 +30,9 @@
                 :components ((:test-file "sequence-window-tests")
                              (:test-file "qp-trie-tests")
                              (:module "2-3-tree"
-                              :components ((:test-file "tests.lisp")))
+                              :components ((:test-file "tests")))
                              (:module "skip-list"
-                              :components ((:test-file "tests.lisp")))
+                              :components ((:test-file "tests")))
                              (:module "egnat"
                               :components ((:test-file "tests")))))
                (:module "dicts"
@@ -79,4 +79,4 @@
                              (:test-file "simple-linear-regression-tests")))
                ;; (:module "counting"
                ;;  :components ((:test-file "tests"))
-                )))
+                ))

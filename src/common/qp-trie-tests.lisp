@@ -1,6 +1,5 @@
 (cl:in-package #:cl-data-structures.common.qp-trie)
 
-
 (prove:plan 9)
 
 (let ((tree (make 'qp-trie))

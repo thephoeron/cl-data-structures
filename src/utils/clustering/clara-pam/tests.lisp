@@ -1,6 +1,6 @@
-(cl:in-package #:cl-user)
+(cl:in-package :cl-user)
 (defpackage :clara/pam-test-suite (:use :cl :prove))
-(cl:in-package :clara/pma-test-suite)
+(cl:in-package :clara/pam-test-suite)
 
 
 (defun metric (a b)

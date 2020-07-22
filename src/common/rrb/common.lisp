@@ -165,7 +165,7 @@
                    (if (>= length new-length)
                        content
                        (make-array
-                        (clamp (* 2 length) 0 +maximum-children-count+)
+                        (clamp (* 2 length) 1 +maximum-children-count+)
                         :element-type (array-element-type content)))))
             (declare (type rrb-index new-length)
                      (type node-size sindex)

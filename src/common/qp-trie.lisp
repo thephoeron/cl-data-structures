@@ -299,7 +299,7 @@
 
 
 (-> qp-trie-delete!
-    (qp-trie-node (simple-array (unsigned-byte 8) (*)))
+    (qp-trie (simple-array (unsigned-byte 8) (*)))
     boolean)
 (defun qp-trie-delete! (qp-trie bytes)
   (declare (type (simple-array (unsigned-byte 8) (*)) bytes)

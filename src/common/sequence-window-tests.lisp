@@ -1,7 +1,7 @@
 (cl:in-package #:cl-user)
 (defpackage sequence-window-tests
   (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:shadowing-import-from #:iterate #:sum #:collecting #:summing #:in))
 
 (cl:in-package #:sequence-window-tests)
 

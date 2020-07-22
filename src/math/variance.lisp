@@ -4,8 +4,7 @@
 (cl-ds.alg.meta:define-aggregation-function variance variance-function
     (:range around &key key biased)
     (:range around &key (key #'identity) (biased t))
-
-    (%count %sum %biased %average)
+    ((%count integer) (%sum number) (%biased t) (%average number))
 
     ((setf %count 0
            %average around
@@ -16,4 +15,4 @@
      (incf %count)
      (incf %sum (expt (- element %average) 2)))
 
-    ((/ %sum %count)))
+    ((/ %sum (if %biased %count (1- %count)))))

@@ -134,7 +134,6 @@
   (is (cl-ds:at container 0) 1)
   (is (cl-ds:at container 456) 2))
 
-
 (let* ((count 500)
        (input-data (~>> (cl-ds:iota-range :to count)
                         (cl-ds.alg:zip #'list*
@@ -312,6 +311,7 @@
                         cl-ds.alg:to-vector))
        (container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
   (declare (optimize (debug 3)))
+  (diag "Testing insert.")
   (iterate
     (for (position . point) in-vector input-data)
     (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
@@ -320,6 +320,7 @@
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point))
+  (diag "Testing erasing.")
   (iterate
     (repeat (length input-data))
     (for position = (car (aref input-data 0)))
@@ -332,5 +333,19 @@
     (iterate
       (for (position . point) in-vector input-data)
       (is (cl-ds:at container position) point))))
+
+(let* ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (declare (optimize (debug 3)))
+  (diag "Testing insert.")
+  (break)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    32 :value 32)
+  (break)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    64 :value 64)
+  (break)
+  (is (cl-ds:at container 32) 32)
+  (is (cl-ds:at container 64) 64)
+  )
 
 (finalize)

@@ -175,12 +175,12 @@
 
 (defmethod cl-ds:become-functional ((container fundamental-sparse-rrb-vector))
   (apply #'make 'functional-sparse-rrb-vector
-         (cl-ds.utils:cloning-information container)))
+         (cl-ds.utils:cloning-list container)))
 
 
 (defmethod cl-ds:become-mutable ((container fundamental-sparse-rrb-vector))
   (apply #'make 'mutable-sparse-rrb-vector
-         (cl-ds.utils:cloning-information container)))
+         (cl-ds.utils:cloning-list container)))
 
 
 (defmethod cl-ds:become-transactional ((container transactional-sparse-rrb-vector))

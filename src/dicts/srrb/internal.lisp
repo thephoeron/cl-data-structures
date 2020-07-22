@@ -97,7 +97,7 @@
 (-> insert-tail! (mutable-sparse-rrb-vector)
     mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
-  (declare (optimize (speed 3) (debug 0) (debug 0) (space 0)))
+  (declare (optimize (speed 3) (safety 0) (debug 3) (space 0)))
   (let ((tail-mask (access-tail-mask structure))
         (ownership-tag nil))
     (declare (type fixnum tail-mask))
@@ -155,9 +155,9 @@
                   (insert-into-node! node new-node
                                      (ldb (byte cl-ds.common.rrb:+bit-count+
                                                 cl-ds.common.rrb:+bit-count+)
-                                          size)))))))
-    (setf (access-tail-mask structure) 0
-          (access-tree-index-bound structure) (access-index-bound structure))
+                                          size))))))
+      (setf (access-tail-mask structure) 0
+            (access-tree-index-bound structure) (tree-index-bound tree %shift)))
     (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 
@@ -243,7 +243,7 @@
                 :shift shift
                 :tree-size (+ tree-size
                               (logcount (access-tail-mask structure)))
-                :tree-index-bound (access-index-bound structure)
+                :tree-index-bound (tree-index-bound root shift)
                 :index-bound (+ cl-ds.common.rrb:+maximum-children-count+
                                 (access-index-bound structure))
                 :element-type (read-element-type structure))))))
@@ -336,9 +336,9 @@
                                      (* cl-ds.common.rrb:+bit-count+ shift)
                                      (max 0 (1- shift)))))
                  (unless (eq new-tree root)
-                   (setf tree new-tree))))))
-    (setf (access-tail-mask structure) 0
-          (access-tree-index-bound structure) (access-index-bound structure))
+                   (setf tree new-tree)))))
+      (setf (access-tail-mask structure) 0
+            (access-tree-index-bound structure) (tree-index-bound tree %shift)))
     (incf (access-tree-size structure) (logcount tail-mask)))
   structure)
 

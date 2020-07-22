@@ -1,12 +1,11 @@
 (cl:in-package #:cl-user)
 (defpackage vector-tests
-  (:use #:cl #:prove #:serapeum #:cl-ds #:iterate #:alexandria)
-  (:shadowing-import-from #:iterate #:collecting #:summing #:in))
+  (:use #:cl #:prove #:cl-ds #:iterate #:alexandria))
 
 (cl:in-package #:vector-tests)
 
 (plan 14)
-(let* ((vector (vect 1 2 3 4 5 6 7))
+(let* ((vector (serapeum:vect 1 2 3 4 5 6 7))
        (range (cl-ds:whole-range vector)))
   (iterate
     (for (values val more) = (cl-ds:consume-front range))
