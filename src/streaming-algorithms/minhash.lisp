@@ -28,7 +28,7 @@
 (defmethod minhash-corpus-hash-value ((corpus callback-minhash) element)
   (let* ((k (read-k corpus))
          (hash-array (read-hash-array corpus))
-         (result (make-array (read-k corpus) :element-type 'fixnum))
+         (result (make-array (read-k corpus) :element-type '(unsigned-byte 64)))
          (hash (funcall (read-hash-function corpus) element)))
     (iterate
       (for i from 0 below k)
@@ -66,7 +66,7 @@
            %table (read-table %corpus)
            %k (read-k %corpus)))
     ((element)
-     (ensure (gethash element %table) (make-array %k :element-type 'fixnum)))
+     (ensure (gethash element %table) (make-array %k :element-type '(unsigned-byte 64))))
     ((iterate
        (with corpus-size = (hash-table-count %table))
        (with input-list = (~>> %table hash-table-alist))
@@ -88,13 +88,13 @@
         :hash-array hash-array))
 
 
-(-> minhash-corpus-minhash (minhash-corpus list) (simple-array fixnum (*)))
+(-> minhash-corpus-minhash (minhash-corpus list) (simple-array (unsigned-byte 64) (*)))
 (defun minhash-corpus-minhash (corpus elements)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (cl-ds.utils:with-slots-for (corpus minhash-corpus)
     (bind ((count (the fixnum (read-k corpus)))
            (hash-table table)
-           (minis (make-array count :element-type 'fixnum
+           (minis (make-array count :element-type '(unsigned-byte 64)
                                   :initial-element most-positive-fixnum))
          ((:flet impl (element))
           (let ((sub (gethash element hash-table)))
@@ -102,7 +102,7 @@
               (iterate
                 (declare (type fixnum i))
                 (for i from 0 below count)
-                (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
+                (minf (aref minis i) (aref (the (simple-array (unsigned-byte 64) (*)) sub)
                                            i)))))))
     (cl-ds:across elements #'impl)
     minis)))
@@ -116,29 +116,30 @@
 
 
 (defmethod minhash ((corpus fundamental-minhash) elements)
-  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (declare (optimize (speed 3) (debug 0) (safety 1)))
   (bind ((count (the fixnum (read-k corpus)))
-         (minis (make-array count :element-type 'fixnum
+         (minis (make-array count :element-type '(unsigned-byte 64)
                                   :initial-element most-positive-fixnum))
          ((:flet impl (element))
           (let ((sub (minhash-corpus-hash-value corpus element)))
+            (declare (type (simple-array (unsigned-byte 64) (*)) sub))
             (unless (null sub)
               (iterate
                 (declare (type fixnum i))
                 (for i from 0 below count)
-                (minf (aref minis i) (aref (the (simple-array fixnum (*)) sub)
+                (minf (aref minis i) (aref (the (simple-array (unsigned-byte 64) (*)) sub)
                                            i)))))))
     (cl-ds:across elements #'impl)
     minis))
 
 
-(-> minhash-jaccard/fixnum ((simple-array fixnum (*)) (simple-array fixnum (*)))
-    non-negative-fixnum)
+(-> minhash-jaccard/fixnum ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
+    fixnum)
 (defun minhash-jaccard/fixnum (a b)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
   (cl-ds.utils:lolol (a b)
-    (check-type a (simple-array fixnum (*)))
-    (check-type b (simple-array fixnum (*)))
+    (check-type a (simple-array (unsigned-byte 64) (*)))
+    (check-type b (simple-array (unsigned-byte 64) (*)))
     (unless (= (length a) (length b))
       (error 'cl-ds:incompatible-arguments
              :parameters '(a b)
@@ -154,7 +155,7 @@
       (finally (return result)))))
 
 
-(-> minhash-jaccard/single-float ((simple-array fixnum (*)) (simple-array fixnum (*)))
+(-> minhash-jaccard/single-float ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
     single-float)
 (defun minhash-jaccard/single-float (a b)
   (declare (optimize (speed 3)))
@@ -164,7 +165,7 @@
     (/ (coerce result 'single-float) length)))
 
 
-(-> minhash-jaccard/double-float ((simple-array fixnum (*)) (simple-array fixnum (*)))
+(-> minhash-jaccard/double-float ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
     double-float)
 (defun minhash-jaccard/double-float (a b)
   (declare (optimize (speed 3)))
