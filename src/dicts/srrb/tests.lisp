@@ -4,8 +4,7 @@
   (:shadowing-import-from :iterate :collecting :summing :in))
 (cl:in-package :sparse-rrb-vector-tests)
 
-(plan 382792)
-
+(plan 382797)
 
 (def ok-status (cl-ds.common:make-eager-modification-operation-status
                 t
@@ -71,8 +70,8 @@
                         cl-ds.alg:to-vector)))
   (iterate
     (for (position . point) in-vector input-data)
-    (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
-                                      position :value point))
+    (cl-ds.meta:position-modification
+     #'(setf cl-ds:at) container :mock position :value point))
   (iterate
     (for (position . point) in-vector input-data)
     (is (cl-ds:at container position) point))
@@ -336,15 +335,24 @@
 
 (let* ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
   (declare (optimize (debug 3)))
-  (diag "Testing insert.")
-  (break)
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                     32 :value 32)
-  (break)
   (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
                                     64 :value 64)
-  (break)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    512 :value 512)
   (is (cl-ds:at container 32) 32)
+  (is (cl-ds:at container 64) 64)
+  (is (cl-ds:at container 512) 512)
+  )
+
+(let* ((container (make-instance 'cl-ds.dicts.srrb::mutable-sparse-rrb-vector)))
+  (declare (optimize (debug 3)))
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    1 :value 1)
+  (cl-ds.meta:position-modification #'(setf cl-ds:at) container :mock
+                                    64 :value 64)
+  (is (cl-ds:at container 1) 1)
   (is (cl-ds:at container 64) 64)
   )
 
