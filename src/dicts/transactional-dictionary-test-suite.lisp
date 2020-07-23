@@ -211,6 +211,6 @@
 
 
 (progn
-  (plan 3109)
+  (plan 2911)
   (run-suite)
   (finalize))
