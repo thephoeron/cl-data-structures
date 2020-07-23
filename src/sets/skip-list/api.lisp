@@ -161,10 +161,11 @@
                                 level))
                 (for node-at = (cl-ds.common.skip-list:skip-list-node-at previous i))
                 (for rest = (aref rests i))
-                (if (cl-ds.common.skip-list:skip-list-node-compare
-                     test (aref rests i) node-at)
-                    (setf (cl-ds.common.skip-list:skip-list-node-at previous i)
-                          (aref rests i)))))
+                (until (eq rest previous))
+                (when (cl-ds.common.skip-list:skip-list-node-compare
+                       test rest node-at)
+                  (setf (cl-ds.common.skip-list:skip-list-node-at previous i)
+                        rest))))
             (decf (cl-ds.common.skip-list:access-size structure))
             (values
              structure

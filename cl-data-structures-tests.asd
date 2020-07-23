@@ -64,7 +64,6 @@
                               :components ((:test-file "meta-tests")))
                              (:test-file "split-into-chunks-test")
                              (:test-file "partition-if-test")
-                             ;; (:test-file "hash-join-test")
                              (:test-file "without-test")
                              (:test-file "distinct-test")
                              (:test-file "extrema-test")
@@ -74,9 +73,5 @@
                              (:test-file "zip-test")))
                (:module "math"
                 :components ((:test-file "moments-tests")
-                             ;; (:test-file "chi-squared-tests")
                              (:test-file "mutual-information-tests")
-                             (:test-file "simple-linear-regression-tests")))
-               ;; (:module "counting"
-               ;;  :components ((:test-file "tests"))
-                ))
+                             (:test-file "simple-linear-regression-tests")))))
