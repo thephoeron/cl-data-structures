@@ -20,8 +20,7 @@
        (sort #'> :key (rcurry #'aref 0))
        (stable-sort #'> :key (rcurry #'aref 1))
        (stable-sort #'> :key (rcurry #'aref 2))
-       (stable-sort #'> :key (rcurry #'aref 3))
-       print)
+       (stable-sort #'> :key (rcurry #'aref 3)))
    (~> data
        (sort #'> :key (rcurry #'aref 0))
        (stable-sort #'> :key (rcurry #'aref 1))
