@@ -510,7 +510,8 @@
           (values (or bucket 'cl-ds.meta:null-bucket)
                   (cl-ds.common:make-eager-modification-operation-status
                    t
-                   (cl-ds.common:hash-dict-content-value tuple)))))
+                   (cl-ds.common:hash-dict-content-value tuple)
+                   t))))
       (finally
        (return (values (or bucket 'cl-ds.meta:null-bucket)
                        cl-ds.common:empty-eager-modification-operation-status))))))

@@ -11,7 +11,6 @@
                 :ok
                 t))
 
-
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:grow-function)
                                     (container (eql :mock))
                                     bucket
