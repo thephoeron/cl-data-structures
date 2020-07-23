@@ -1,6 +1,6 @@
 (cl:in-package #:cl-user)
 (defpackage summary-tests
-  (:use #:cl #:prove #:cl-ds #:cl-data-frames.aux-package))
+  (:use #:cl #:prove #:cl-ds #:cl-data-structures.aux-package))
 
 (cl:in-package #:summary-tests)
 
@@ -12,8 +12,8 @@
        (min-and-max (cl-ds.alg:summary (cl-ds.alg:group-by data :key #'evenp)
                       :min (cl-ds.alg:accumulate #'min)
                       :max (cl-ds.alg:accumulate #'max))))
-  (is (cl-ds:at min-and-max :min) 0)
-  (is (cl-ds:at min-and-max :max) 249))
+  (is (~> min-and-max (cl-ds:at t) (cl-ds:at :min)) 0)
+  (is (~> min-and-max (cl-ds:at nil) (cl-ds:at :max)) 249))
 
 (let* ((data (~> (cl-ds:iota-range :to 50)
                  (cl-ds.alg:group-by :key #'oddp)))
