@@ -4,7 +4,7 @@
 (cl:in-package :skip-list-set-tests)
 
 
-(prove:plan 500)
+(prove:plan 620)
 
 (let ((set (cl-ds.sets.skip-list:make-mutable-skip-list-set #'< #'=)))
   (prove:ok (not (cl-ds:at set 1)))
@@ -57,6 +57,10 @@
     (prove:is (cl-ds:size set) i)
     (prove:ok (cl-ds:at set (first d)))
     (cl-ds:erase! set (first d))
+    (iterate
+      (for e on data)
+      (prove:is (cl-ds:at set (car e)) nil)
+      (until (eq d e)))
     (iterate
       (for elt in (rest d))
       (prove:ok (cl-ds:at set elt)))))
