@@ -38,10 +38,11 @@
                 column)))
 
 
-(defun make-half-matrix (type size &key (query-key #'identity))
+(defun make-half-matrix (type size &key (query-key #'identity) (initial-element 0))
   (let ((result (make-array (1+ (index-in-content-of-distance-matrix size
                                                                      (1- size)
                                                                      (1- size)))
+                            :initial-element initial-element
                             :element-type type)))
     (assure half-matrix
       (make 'half-matrix
