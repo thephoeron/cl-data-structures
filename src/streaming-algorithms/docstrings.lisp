@@ -67,16 +67,13 @@
 
   (function approximated-set-cardinality
     (:description "Calculates the estimated set cardinality using the HyperLogLog algorithm. This requires only a constant (and modest) amount of memory."
-     :exceptional-situations ("Will signal a TYPE-ERROR if BITS is not integer."
-                              "Will signal a TYPE-ERROR if HASH-FN is not funcallable."
-                              "Will signal a CL-DS:ARGUMENT-VALUE-OUT-OF-BOUNDS if BITS is not at least 4 and 32 at most.")
+     :exceptional-situations ("Will signal a TYPE-ERROR if HASH-FN is not funcallable.")
      :arguments ((range "Object to aggregate.")
-                 (:bits "How many bits per register should be used? Should be at least 4, and 32 at most. Large values are beneficial for high accuracy of the result but will require more memory.")
                  (:hash-fn "Hashing function. SXHASH will do for strings.")
                  (:data-sketch "Instead of the bits and the hash-fn, the user can pass a data-sketch argument.")
                  (:key "A function used to extract value from each element."))
      :notes ("This algorithm gives a solid estimate for large sets, not so good for small sets."
-             "Fairly sensitive to a hash function. Large avalanche factor is very helpful."
+             "Sensitive to a hash function. Large avalanche factor is very helpful. Needs all 64 bits so sxhash won't be fine."
              "Can be used to (for instance) estimate number of keys before creating a hash table. A good estimate of size minimizes rehashing and therefore reduces both memory allocation and time required to fill the hash table.")
      :returns "Instance of the fundamental-data-sketch class. Use CL-DS:VALUE to extract estimate from it."
      :examples [(let ((data (cl-ds:xpr (:i 0)
@@ -86,8 +83,7 @@
                                (cl-ds:value
                                 (cl-data-structures.streaming-algorithms:approximated-set-cardinality
                                  data
-                                 :bits 20
-                                 :hash-fn #'sxhash))
+                                 :hash-fn #'cl-data-structures.streaming-algorithms.hyperloglog:hash-integer))
                                510000)))]))
 
   (function clean-sketch

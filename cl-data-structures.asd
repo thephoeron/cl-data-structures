@@ -282,7 +282,8 @@
                              (:file "docstrings")
                              ))
                (:module "streaming-algorithms"
-                :components ((:file "package")
+                :components ((:file "hyperloglog")
+                             (:file "package")
                              (:file "common")
                              (:file "approximated-set-cardinality")
                              (:file "approximated-counts")

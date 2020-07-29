@@ -5,6 +5,7 @@
   (:use #:common-lisp #:cl-data-structures.aux-package)
   (:nicknames #:cl-ds.sa)
   (:shadow cl:union)
+  (:local-nicknames (#:hll #:cl-data-structures.streaming-algorithms.hyperloglog))
   (:export
    #:approximated-counts
    #:approximated-set-cardinality
