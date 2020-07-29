@@ -57,8 +57,7 @@
    (bind (((:slots %hash-fn %registers) %data-sketch)
           (hash-fn (ensure-function %hash-fn))
           (hash (ldb (byte 64 0) (funcall hash-fn element))))
-     (declare (optimize (speed 3) (debug 0) (safety 1) (space 0))
-              (type hll:sketch registers))
+     (declare (optimize (speed 3) (debug 0) (safety 1) (space 0)))
      (hll:add-hash %registers hash)))
 
   (%data-sketch))
