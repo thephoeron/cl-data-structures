@@ -14,8 +14,9 @@
    #:clean-sketch
    #:fundamental-data-sketch
    #:gather-minhash-corpus
-   #:make-minhash
+   #:hyperloglog-jaccard
    #:make-hash-array
+   #:make-minhash
    #:minhash
    #:minhash-jaccard/double-float
    #:minhash-jaccard/fixnum

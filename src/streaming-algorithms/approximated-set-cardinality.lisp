@@ -70,3 +70,9 @@
   (make 'approximated-set-cardinality
         :registers (hll:new-sketch)
         :hash-fn hash-fn))
+
+
+(defun hyperloglog-jaccard (a b)
+  (check-type a approximated-set-cardinality)
+  (check-type b approximated-set-cardinality)
+  (hll:jaccard (access-registers a) (access-registers b)))
