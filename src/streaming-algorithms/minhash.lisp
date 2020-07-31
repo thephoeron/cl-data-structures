@@ -26,11 +26,14 @@
 
 
 (defmethod minhash-corpus-hash-value ((corpus callback-minhash) element)
+  (declare (optimize (speed 3) (safety 0)))
   (let* ((k (read-k corpus))
          (hash-array (read-hash-array corpus))
-         (result (make-array (read-k corpus) :element-type '(unsigned-byte 64)))
-         (hash (funcall (read-hash-function corpus) element)))
+         (result (make-array k :element-type '(unsigned-byte 64)))
+         (hash (funcall (ensure-function (read-hash-function corpus)) element)))
+    (declare (type fixnum k))
     (iterate
+      (declare (type fixnum i))
       (for i from 0 below k)
       (setf (aref result i) (hashval-no-depth hash-array i hash))
       (finally (return result)))))
@@ -97,13 +100,13 @@
            (minis (make-array count :element-type '(unsigned-byte 64)
                                   :initial-element most-positive-fixnum))
          ((:flet impl (element))
-          (let ((sub (gethash element hash-table)))
+          (let ((sub (the (simple-array (unsigned-byte 64) (*))
+                          (gethash element hash-table))))
             (unless (null sub)
               (iterate
                 (declare (type fixnum i))
                 (for i from 0 below count)
-                (minf (aref minis i) (aref (the (simple-array (unsigned-byte 64) (*)) sub)
-                                           i)))))))
+                (minf (aref minis i) (aref sub i)))))))
     (cl-ds:across elements #'impl)
     minis)))
 
