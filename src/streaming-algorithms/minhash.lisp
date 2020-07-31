@@ -98,7 +98,7 @@
     (bind ((count (the fixnum (read-k corpus)))
            (hash-table table)
            (minis (make-array count :element-type '(unsigned-byte 64)
-                                  :initial-element most-positive-fixnum))
+                                    :initial-element +max-64-bit+))
          ((:flet impl (element))
           (let ((sub (the (simple-array (unsigned-byte 64) (*))
                           (gethash element hash-table))))
@@ -122,7 +122,7 @@
   (declare (optimize (speed 3) (debug 0) (safety 1)))
   (bind ((count (the fixnum (read-k corpus)))
          (minis (make-array count :element-type '(unsigned-byte 64)
-                                  :initial-element most-positive-fixnum))
+                                  :initial-element +max-64-bit+))
          ((:flet impl (element))
           (let ((sub (minhash-corpus-hash-value corpus element)))
             (declare (type (simple-array (unsigned-byte 64) (*)) sub))
@@ -136,7 +136,8 @@
     minis))
 
 
-(-> minhash-jaccard/fixnum ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
+(-> minhash-jaccard/fixnum ((simple-array (unsigned-byte 64) (*))
+                            (simple-array (unsigned-byte 64) (*)))
     fixnum)
 (defun minhash-jaccard/fixnum (a b)
   (declare (optimize (speed 3) (safety 0) (debug 0)))
@@ -158,7 +159,8 @@
       (finally (return result)))))
 
 
-(-> minhash-jaccard/single-float ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
+(-> minhash-jaccard/single-float ((simple-array (unsigned-byte 64) (*))
+                                  (simple-array (unsigned-byte 64) (*)))
     single-float)
 (defun minhash-jaccard/single-float (a b)
   (declare (optimize (speed 3)))
@@ -168,7 +170,8 @@
     (/ (coerce result 'single-float) length)))
 
 
-(-> minhash-jaccard/double-float ((simple-array (unsigned-byte 64) (*)) (simple-array (unsigned-byte 64) (*)))
+(-> minhash-jaccard/double-float ((simple-array (unsigned-byte 64) (*))
+                                  (simple-array (unsigned-byte 64) (*)))
     double-float)
 (defun minhash-jaccard/double-float (a b)
   (declare (optimize (speed 3)))

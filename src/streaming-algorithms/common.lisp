@@ -2,6 +2,7 @@
 
 
 (define-constant +long-prime+ 4294967311)
+(define-constant +max-64-bit+ #XFFFFFFFFFFFFFFFF)
 
 
 (-> hashval-no-depth ((simple-array (unsigned-byte 64) (* 2))
@@ -33,7 +34,7 @@
   (lret ((result (make-array (list count 2) :element-type '(unsigned-byte 64))))
     (map-into (cl-ds.utils:unfold-table result)
               (lambda ()
-                (~> (random most-positive-fixnum)
+                (~> (random +max-64-bit+)
                     (* +long-prime+)
                     (ldb (byte 64 0) _))))))
 
