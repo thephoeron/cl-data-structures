@@ -52,5 +52,3 @@
     (setf (aref result i 0) (random-in-range 1 +long-prime+)
           (aref result i 1) (random-in-range 0 +long-prime+))
     (finally (return result))))
-
-
