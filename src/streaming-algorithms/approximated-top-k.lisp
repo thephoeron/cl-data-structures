@@ -23,7 +23,7 @@
     (:range k &key hash-fn width depth key hashes test data-sketch)
     (:range k &key (hash-fn #'sxhash)
      width depth (key #'identity)
-     (hashes (make-hash-array width))
+     (hashes (ph:make-hash-array width))
      (test 'equal)
      data-sketch)
 

@@ -254,6 +254,7 @@
   serapeum:drop-while
   serapeum:extrema
   serapeum:eval-always
+  serapeum:random-in-range
   serapeum:plist-keys
   serapeum:plist-values
   serapeum:def

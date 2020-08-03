@@ -12,11 +12,11 @@
    #:all-parents
    #:ancestor-p
    #:and*
-   #:at-list
    #:as-cons-tree
+   #:at-list
    #:binary-search
-   #:bucket-sort
    #:bind-lambda
+   #:bucket-sort
    #:cartesian
    #:cartesian-table
    #:cases
@@ -37,13 +37,16 @@
    #:erase-from-vector
    #:extendable-vector
    #:fill-distance-matrix-from-vector
-   #:future-carousel
-   #:half-matrix
-   #:homogenousp
    #:fixnum-hash
+   #:future-carousel
+   #:generator
+   #:half-matrix
+   #:hash-integer
+   #:homogenousp
    #:if-else
    #:ignore-errors*
    #:import-all-package-symbols
+   #:index
    #:insert-or-replace
    #:inverted-hash-table
    #:lambda-list-to-bindings
@@ -52,7 +55,6 @@
    #:lazy-shuffle
    #:let-generator
    #:lexicographic-compare
-   #:index
    #:lolol
    #:lower-bound
    #:lparallel-future
@@ -78,6 +80,7 @@
    #:parallel-make-distance-matrix-from-vector
    #:pipe-fragment
    #:pop-last
+   #:prevent-duplicates
    #:quasi-clone
    #:quasi-clone*
    #:quasi-other-class
@@ -88,7 +91,6 @@
    #:scan
    #:select-top
    #:skip-vector-without
-   #:generator
    #:sref
    #:start-execution
    #:swap-if
@@ -103,5 +105,4 @@
    #:with-rebind
    #:with-slots-for
    #:with-vectors
-   #:prevent-duplicates
-   ))
+   #:xorshift))

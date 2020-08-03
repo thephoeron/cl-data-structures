@@ -13,9 +13,17 @@
 
 (defclass callback-minhash (fundamental-minhash)
   ((%hash-function :initarg :hash-function
-                   :reader read-hash-function)
-   (%hash-array :initarg :hash-array
-                 :reader read-hash-array)))
+                   :reader read-hash-function)))
+
+
+(defclass polynomial-callback-minhash (callback-minhash)
+  ((%hash-array :initarg :hash-array
+                :reader read-hash-array)))
+
+
+(defclass seeds-callback-minhash (callback-minhash)
+  ((%seeds :initarg :seeds
+           :reader read-seeds)))
 
 
 (defgeneric minhash-corpus-hash-value (corpus element))
@@ -25,7 +33,7 @@
   (gethash element (read-table corpus)))
 
 
-(defmethod minhash-corpus-hash-value ((corpus callback-minhash) element)
+(defmethod minhash-corpus-hash-value ((corpus polynomial-callback-minhash) element)
   (declare (optimize (speed 3) (safety 0)))
   (let* ((k (read-k corpus))
          (hash-array (read-hash-array corpus))
@@ -35,7 +43,24 @@
     (iterate
       (declare (type fixnum i))
       (for i from 0 below k)
-      (setf (aref result i) (hashval-no-depth hash-array i hash))
+      (setf (aref result i) (ph:hashval-no-depth hash-array i hash))
+      (finally (return result)))))
+
+
+(defmethod minhash-corpus-hash-value ((corpus seeds-callback-minhash) element)
+  (declare (optimize (speed 3) (safety 0)))
+  (let* ((k (read-k corpus))
+         (seeds (read-seeds corpus))
+         (result (make-array k :element-type '(unsigned-byte 64)))
+         (function (ensure-function (read-hash-function corpus))))
+    (declare (type fixnum k)
+             (type (simple-array (unsigned-byte 64) (*)) seeds))
+    (iterate
+      (declare (type fixnum i))
+      (for i from 0 below k)
+      (for seed = (aref seeds i))
+      (for hash = (funcall function element seed))
+      (setf (aref result i) hash)
       (finally (return result)))))
 
 
@@ -85,10 +110,23 @@
 
 
 (defun make-minhash (k &key
+                         (mode :polynomial)
                          (hash-function #'sxhash)
-                         (hash-array (make-hash-array k)))
-  (make 'callback-minhash :k k :hash-function hash-function
-        :hash-array hash-array))
+                         hash-array
+                         seeds)
+  (check-type mode (member :polynomial :random-seeds))
+  (if (eq mode :polynomial)
+      (make 'polynomial-callback-minhash
+            :k k
+            :hash-function hash-function
+            :hash-array (or hash-array
+                            (ph:make-hash-array k)))
+      (make 'seeds-callback-minhash
+            :k k
+            :hash-function hash-function
+            :seeds (or seeds
+                       (map-into (make-array k :element-type '(unsigned-byte 64))
+                                 (curry #'random ph:+max-64-bits+))))))
 
 
 (-> minhash-corpus-minhash (minhash-corpus list) (simple-array (unsigned-byte 64) (*)))
@@ -125,13 +163,12 @@
                                   :initial-element +max-64-bit+))
          ((:flet impl (element))
           (let ((sub (minhash-corpus-hash-value corpus element)))
-            (declare (type (simple-array (unsigned-byte 64) (*)) sub))
+            (declare (type (or null (simple-array (unsigned-byte 64) (*))) sub))
             (unless (null sub)
               (iterate
                 (declare (type fixnum i))
                 (for i from 0 below count)
-                (minf (aref minis i) (aref (the (simple-array (unsigned-byte 64) (*)) sub)
-                                           i)))))))
+                (minf (aref minis i) (aref sub i)))))))
     (cl-ds:across elements #'impl)
     minis))
 

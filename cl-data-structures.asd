@@ -41,6 +41,7 @@
                              (:file "cloning")
                              (:file "numbers")
                              (:file "bucket-sort")
+                             (:file "hashing")
                              (:file "docstrings")
                              (:module "metric-functions"
                               :components ((:file "package")
@@ -283,6 +284,7 @@
                              ))
                (:module "streaming-algorithms"
                 :components ((:file "hyperloglog")
+                             (:file "polynomial-hashing")
                              (:file "package")
                              (:file "common")
                              (:file "approximated-set-cardinality")

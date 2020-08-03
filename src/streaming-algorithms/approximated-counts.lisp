@@ -78,7 +78,7 @@
     (with width = (access-width container))
     (with depth = (access-depth container))
     (for j from 0 below width)
-    (minimize (aref counts j (hashval hashes depth j hash))
+    (minimize (aref counts j (ph:hashval hashes depth j hash))
               into min)
     (finally (return (values min t)))))
 
@@ -92,7 +92,7 @@
     (with width = (access-width data-sketch))
     (with depth = (access-depth data-sketch))
     (for j from 0 below width)
-    (minimize (incf (aref counts j (hashval hashes depth j hash))
+    (minimize (incf (aref counts j (ph:hashval hashes depth j hash))
                     count))))
 
 
@@ -132,7 +132,7 @@
                    `(,width ,depth)
                    :initial-element 0
                    :element-type 'non-negative-fixnum)
-        :hashes (or hashes (make-hash-array width))
+        :hashes (or hashes (ph:make-hash-array width))
         :hash-fn (ensure-function hash-fn)
         :depth depth
         :width width))

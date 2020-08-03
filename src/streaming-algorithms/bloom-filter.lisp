@@ -40,7 +40,7 @@
     (check-type %width integer)
     (check-type %depth integer)
     (check-type %counters (simple-array bit (*)))
-    (check-type %hashes (simple-array non-negative-fixnum (* 2)))
+    (check-type %hashes ph:hash-array)
     (unless (eql (array-dimension (access-counters sketch) 0)
                  (access-width sketch))
       (error 'cl-ds:incompatible-arguments
@@ -83,7 +83,7 @@
     (with width = (access-width container))
     (with depth = (access-depth container))
     (for j from 0 below width)
-    (for value = (aref counts (hashval hashes depth j hash)))
+    (for value = (aref counts (ph:hashval hashes depth j hash)))
     (when (zerop value)
       (leave (values nil t)))
     (finally (return (values t t)))))
@@ -110,7 +110,7 @@
   ((element)
    (iterate
      (declare (type fixnum j width depth)
-              (type (simple-array non-negative-fixnum (*)) hashes))
+              (type ph:hash-array hashes))
      (with hash = (ldb (byte 32 0)
                        (funcall (access-hash-fn %data-sketch)
                                 element)))
@@ -119,7 +119,7 @@
      (with width = (access-width %data-sketch))
      (with depth = (access-depth %data-sketch))
      (for j from 0 below width)
-     (setf (aref counts (hashval hashes depth j hash)) 1)))
+     (setf (aref counts (ph:hashval hashes depth j hash)) 1)))
 
   (%data-sketch))
 
@@ -130,14 +130,14 @@
   (ensure-functionf hash-fn)
   (check-type depth integer)
   (check-type width integer)
-  (check-type hashes (or null (simple-array fixnum (* 2))))
+  (check-type hashes (or null ph:hash-array))
   (cl-ds:check-argument-bounds depth (<= 1 depth array-total-size-limit))
   (cl-ds:check-argument-bounds width (<= 1 width array-total-size-limit))
   (make 'bloom-filter
         :counters (make-array depth
                    :initial-element 0
                    :element-type 'non-negative-fixnum)
-        :hashes (or hashes (make-hash-array width))
+        :hashes (or hashes (ph:make-hash-array width))
         :hash-fn (ensure-function hash-fn)
         :depth depth
         :width width))
