@@ -1,10 +1,6 @@
 (cl:in-package #:cl-data-structures.streaming-algorithms)
 
 
-(define-constant +long-prime+ 2937759779) ; 2937759779 7822488144566681323 836515013123303
-(define-constant +max-64-bit+ #XFFFFFFFFFFFFFFFF)
-
-
 (defclass fundamental-data-sketch ()
   ((%hash-fn :initarg :hash-fn
              :accessor access-hash-fn)))

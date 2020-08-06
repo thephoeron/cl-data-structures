@@ -11,8 +11,8 @@
 (cl:in-package #:cl-data-structures.streaming-algorithms.polynomial-hashing)
 
 
-(define-constant +long-prime+ 4271887259)
-(define-constant +max-64-bits+ #XFFFFFFFFFFFFFFFF)
+(define-constant +long-prime+ 4294967311)
+(define-constant +max-64-bits+ #xFFFFFFFFFFFFFFFF)
 
 
 (deftype hash ()
@@ -25,18 +25,18 @@
 
 (-> hashval-no-depth (hash-array fixnum (unsigned-byte 64)) hash)
 (defun hashval-no-depth (hashes j hash)
-  (declare (optimize (speed 3) (safety 0))
+  (declare (optimize (speed 3) (safety 1))
            (type hash-array hashes)
            (type (unsigned-byte 64) hash)
            (type fixnum j))
-  (~> (ldb (byte 32 0) hash)
-      (* (aref hashes j 0))
+  (~> (aref hashes j 0)
+      (* hash)
       (+ (aref hashes j 1))
-      (logand +max-64-bits+)
+      (ldb (byte 64 0) _)
       (rem +long-prime+)))
 
 
-(-> hashval (hash-array positive-fixnum non-negative-fixnum) hash)
+(-> hashval (hash-array positive-fixnum non-negative-fixnum (unsigned-byte 64)) hash)
 (defun hashval (hashes depth j hash)
   (declare (type hash-array hashes)
            (type non-negative-fixnum depth j hash))
@@ -47,7 +47,7 @@
 (defun make-hash-array (count)
   (iterate
     (with result = (~> (list count 2)
-                       (make-array :element-type '(unsigned-byte 32))))
+                       (make-array :element-type 'hash)))
     (for i from 0 below count)
     (setf (aref result i 0) (random-in-range 1 +long-prime+)
           (aref result i 1) (random-in-range 0 +long-prime+))
