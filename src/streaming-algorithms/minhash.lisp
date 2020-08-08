@@ -39,7 +39,7 @@
 
 
 (defmethod minhash-corpus-hash-value ((corpus polynomial-callback-minhash) element)
-  (declare (optimize (speed 3) (safety 0)))
+  (declare (optimize (speed 3) (safety 1)))
   (let* ((k (read-k corpus))
          (hash-array (read-hash-array corpus))
          (result (make-array k :element-type '(unsigned-byte 64)))
@@ -70,7 +70,7 @@
 
 
 (defmethod minhash-corpus-hash-value ((corpus xors-callback-minhash) element)
-  (declare (optimize (speed 3) (safety 1)))
+  (declare (optimize (speed 1) (safety 1)))
   (let* ((k (read-k corpus))
          (xors (read-xors corpus))
          (result (make-array k :element-type '(unsigned-byte 64)))
@@ -80,11 +80,12 @@
              (type (unsigned-byte 64) hash)
              (type (simple-array (unsigned-byte 64) (*)) xors))
     (iterate
-      (declare (optimize (speed 3) (safety 0)))
-      (declare (type fixnum i))
+      (declare (type fixnum i)
+               (type (unsigned-byte 64) xor)
+               (optimize (speed 3) (safety 0)))
       (for i from 0 below k)
       (for xor = (aref xors i))
-      (setf (aref result i) (logxor xor hash))
+      (setf (aref result i) (~> (logxor xor hash) cl-ds.utils:hash-integer))
       (finally (return result)))))
 
 
@@ -165,12 +166,12 @@
 
 (-> minhash-corpus-minhash (minhash-corpus list) (simple-array (unsigned-byte 64) (*)))
 (defun minhash-corpus-minhash (corpus elements)
-  (declare (optimize (speed 3) (safety 0) (debug 0)))
+  (declare (optimize (speed 3) (safety 1) (debug 0)))
   (cl-ds.utils:with-slots-for (corpus minhash-corpus)
     (bind ((count (the fixnum (read-k corpus)))
            (hash-table table)
            (minis (make-array count :element-type '(unsigned-byte 64)
-                                    :initial-element most-positive-fixnum))
+                                    :initial-element ph:+max-64-bits+))
          ((:flet impl (element))
           (let ((sub (the (simple-array (unsigned-byte 64) (*))
                           (gethash element hash-table))))
@@ -194,7 +195,7 @@
   (declare (optimize (speed 3) (debug 0) (safety 1)))
   (bind ((count (the fixnum (read-k corpus)))
          (minis (make-array count :element-type '(unsigned-byte 64)
-                                  :initial-element most-positive-fixnum))
+                                  :initial-element ph:+max-64-bits+))
          ((:flet impl (element))
           (let ((sub (minhash-corpus-hash-value corpus element)))
             (declare (type (or null (simple-array (unsigned-byte 64) (*))) sub))

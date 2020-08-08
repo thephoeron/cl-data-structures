@@ -25,14 +25,14 @@
 
 (-> hashval-no-depth (hash-array fixnum (unsigned-byte 64)) hash)
 (defun hashval-no-depth (hashes j hash)
-  (declare (optimize (speed 3) (safety 1))
+  (declare (optimize (speed 3) (safety 0))
            (type hash-array hashes)
-           (type (unsigned-byte 64) hash)
-           (type fixnum j))
+           (type non-negative-fixnum j hash))
   (~> (aref hashes j 0)
       (* hash)
+      (ldb (byte 32 0) _)
       (+ (aref hashes j 1))
-      (ldb (byte 64 0) _)
+      (ldb (byte 32 0) _)
       (rem +long-prime+)))
 
 

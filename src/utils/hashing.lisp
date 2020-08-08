@@ -9,12 +9,9 @@
 
 
 (declaim (inline hash-integer))
-(-> hash-integer (integer) integer)
+(-> hash-integer (integer) (unsigned-byte 64))
 (defun hash-integer (n)
-  "Attempts to randomize bit positions."
+  "Attempts to randomize bits. Uses xorshift* algorithm."
   (declare (optimize (speed 3) (safety 0) (debug 0)))
-  (~> n
-      (xorshift 32) (* #x45d9f3b) (ldb (byte 64 0) _)
-      (xorshift 16) (* #x45d9f3b) (ldb (byte 64 0) _)
-      (xorshift 8)))
-
+  (~> (xorshift n 12) (xorshift -25) (ldb (byte 64 0) _) (xorshift 27)
+      (* #x2545F4914F6CDD1D) (ldb (byte 64 0) _)))
