@@ -19,8 +19,12 @@
    #:hyperloglog-jaccard
    #:make-hash-array
    #:make-minhash
+   #:make-one-bit-minhash
    #:minhash
    #:minhash-jaccard/double-float
    #:minhash-jaccard/fixnum
    #:minhash-jaccard/single-float
+   #:one-bit-minhash-jaccard/single-float
+   #:one-bit-minhash-jaccard/double-float
+   #:one-bit-minhash-jaccard/fixnum
    #:union))

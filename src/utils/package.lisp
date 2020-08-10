@@ -88,6 +88,7 @@
    #:read-size
    #:rebind
    #:remove-fill-pointer
+   #:rol64
    #:scan
    #:select-top
    #:skip-vector-without

@@ -16,6 +16,10 @@
                    :reader read-hash-function)))
 
 
+(defclass one-bit-minhash (callback-minhash)
+  ())
+
+
 (defclass polynomial-callback-minhash (callback-minhash)
   ((%hash-array :initarg :hash-array
                 :reader read-hash-array)))
@@ -29,6 +33,21 @@
 (defclass xors-callback-minhash (callback-minhash)
   ((%xors :initarg :xors
           :reader read-xors)))
+
+
+(defclass polynomial-callback-one-bit-minhash (one-bit-minhash
+                                               polynomial-callback-minhash)
+  ())
+
+
+(defclass seeds-callback-one-bit-minhash (one-bit-minhash
+                                          seeds-callback-minhash)
+  ())
+
+
+(defclass xors-callback-one-bit-minhash (one-bit-minhash
+                                         xors-callback-minhash)
+  ())
 
 
 (defgeneric minhash-corpus-hash-value (corpus element))
@@ -85,7 +104,7 @@
                (optimize (speed 3) (safety 0)))
       (for i from 0 below k)
       (for xor = (aref xors i))
-      (setf (aref result i) (~> (logxor xor hash) cl-ds.utils:hash-integer))
+      (setf (aref result i) (logxor xor hash))
       (finally (return result)))))
 
 
@@ -132,6 +151,36 @@
          (setf (aref value pointer) i)
          (incf (gethash value pointers 0)))
        (finally (return %corpus)))))
+
+
+(defun make-one-bit-minhash (k &key
+                                 (mode :logxor)
+                                 (hash-function #'sxhash)
+                                 hash-array
+                                 xors
+                                 seeds)
+  (check-type mode (member :polynomial :seeds :logxor))
+  (switch (mode)
+    (:polynomial
+     (make 'polynomial-callback-one-bit-minhash
+           :k k
+           :hash-function hash-function
+           :hash-array (or hash-array
+                           (ph:make-hash-array k))))
+    (:logxor
+     (make 'xors-callback-one-bit-minhash
+           :k k
+           :hash-function hash-function
+           :xors (or xors
+                     (map-into (make-array k :element-type '(unsigned-byte 64))
+                               (curry #'random (1+ ph:+max-64-bits+))))))
+    (:seeds
+     (make 'seeds-callback-one-bit-minhash
+           :k k
+           :hash-function hash-function
+           :seeds (or seeds
+                      (map-into (make-array k :element-type '(unsigned-byte 64))
+                                (curry #'random (1+ ph:+max-64-bits+))))))))
 
 
 (defun make-minhash (k &key
@@ -208,6 +257,39 @@
     minis))
 
 
+(defmethod minhash ((corpus one-bit-minhash) elements)
+  (bind ((k (the fixnum (read-k corpus)))
+         (result-size (truncate k 64))
+         (result (make-array result-size :element-type '(unsigned-byte 64)))
+         (minis (make-array k :element-type '(unsigned-byte 64) :initial-element ph:+max-64-bits+))
+         ((:flet mini-impl (x))
+          (declare (optimize (speed 3) (safety 0)))
+          (iterate
+            (declare (type fixnum i)
+                     (type (simple-array (unsigned-byte 64) (*)) hashes))
+            (with hashes = (minhash-corpus-hash-value corpus x))
+            (for i from 0 below k)
+            (minf (aref minis i) (aref hashes i)))))
+    (cl-ds:across elements #'mini-impl)
+    (iterate
+      (declare (type fixnum i array-index)
+               (optimize (speed 3) (safety 0))
+               (type (integer 0 63) bit-index)
+               (type (unsigned-byte 64) min))
+      (with array-index = 0)
+      (with bit-index = 0)
+      (for i from 0 below k)
+      (for min = (aref minis i))
+      (setf (ldb (byte 1 bit-index) (aref result array-index))
+            (ldb (byte 1 0) min))
+      (when (= bit-index 63)
+        (incf array-index)
+        (setf bit-index 0)
+        (next-iteration))
+      (incf bit-index))
+    result))
+
+
 (-> minhash-jaccard/fixnum ((simple-array (unsigned-byte 64) (*))
                             (simple-array (unsigned-byte 64) (*)))
     fixnum)
@@ -251,3 +333,43 @@
         (length (length a)))
     (declare (type fixnum result length))
     (/ (coerce result 'double-float) length)))
+
+
+(-> one-bit-minhash-jaccard/fixnum ((simple-array (unsigned-byte 64) (*))
+                                    (simple-array (unsigned-byte 64) (*)))
+    fixnum)
+(defun one-bit-minhash-jaccard/fixnum (a b)
+  (declare (optimize (speed 3)))
+  (cl-ds.utils:lolol (a b)
+    (check-type a (simple-array (unsigned-byte 64) (*)))
+    (check-type b (simple-array (unsigned-byte 64) (*)))
+    (unless (= (length a) (length b))
+      (error 'cl-ds:incompatible-arguments
+             :parameters '(a b)
+             :values (list a b)
+             :format-control "Lengths of input vectors must be equal."))
+    (iterate
+      (declare (type fixnum i total)
+               (type (unsigned-byte 64) ea eb))
+      (with total = 0)
+      (for i from 0 below (length a))
+      (for ea = (aref a i))
+      (for eb = (aref b i))
+      (incf total (~> (logxor ea eb) logcount))
+      (finally (return total)))))
+
+
+(-> one-bit-minhash-jaccard/single-float ((simple-array (unsigned-byte 64) (*))
+                                          (simple-array (unsigned-byte 64) (*)))
+    single-float)
+(defun one-bit-minhash-jaccard/single-float (a b)
+  (/ (one-bit-minhash-jaccard/fixnum a b)
+     (* 64.0 (length a))))
+
+
+(-> one-bit-minhash-jaccard/double-float ((simple-array (unsigned-byte 64) (*))
+                                          (simple-array (unsigned-byte 64) (*)))
+    double-float)
+(defun one-bit-minhash-jaccard/double-float (a b)
+  (/ (one-bit-minhash-jaccard/fixnum a b)
+     (* 64.0d0 (length a))))
