@@ -62,9 +62,9 @@ This is loglog-beta to be specific.
 
 
 (-> new-register ((unsigned-byte 8) (unsigned-byte 16)) register)
-(defun new-register (lz sig)
+(defun new-register (rank sig)
   (declare (optimize (speed 3)))
-  (logior (ash lz +r+) sig))
+  (logior (ash rank +r+) sig))
 
 
 (declaim (inline reg-sum-and-zeroes))
@@ -106,11 +106,8 @@ This is loglog-beta to be specific.
 (-> hash-shifts ((unsigned-byte 64)) (unsigned-byte 16))
 (defun hash-shifts (y)
   (declare (optimize (speed 3)))
-  (~> (cl-ds.utils:hash-integer y)
-      (ash #.(- 64 +r+))
-      (ldb (byte 64 0) _)
-      (ash #.(- (- 64 +r+)))
-      (ldb (byte 16 0) _)))
+  (~>> y cl-ds.utils:hash-integer
+       (ldb (byte 16 #.(- 64 +r+)))))
 
 
 (-> add-hash (sketch (unsigned-byte 64)) sketch)
@@ -144,28 +141,30 @@ This is loglog-beta to be specific.
 (-> expected-collisions (double-float double-float) double-float)
 (defun expected-collisions (n m)
   (iterate
-    (declare (type double-float i x b1 b2 power1 power2
-                   den1 den2))
+    (declare (type double-float i x b1 b2 power den))
     (for i from 1.0d0 to +2Q+)
     (with x = 0.0d0)
     (with b1 = 0.0d0)
     (with b2 = 0.0d0)
-    (for power1 = (+ +p+ +r+ i -1))
-    (for power2 = (+ +p+ +r+ i))
-    (for den1 = (expt 2.0d0 power1))
-    (for den2 = (expt 2.0d0 power2))
+    (for power = (if (= i +2Q+)
+                     (+ +p+ +r+ i -1)
+                     (+ +p+ +r+ i)))
+    (for den = (expt 2.0d0 power))
     (iterate
       (declare (type double-float j prx pry))
       (for j from 1.0d0 to +2R+)
-      (if (= i +2Q+)
-          (setf b1 (/ j den1)
-                b2 (/ (1+ j) den1))
-          (setf b1 (/ (+ +2R+ j) den2)
-                b2 (/ (+ +2R+ j 1) den2)))
-      (for prx = (- (expt (- 1.0d0 b2) n) (expt (- 1.0d0 b1) n)))
-      (for pry = (- (expt (- 1.0d0 b2) m) (expt (- 1.0d0 b1) m)))
+      (if (not (= i +2Q+))
+          (setf b1 (/ (+ +2R+ j) den)
+                b2 (/ (+ +2R+ j 1) den))
+          (setf b1 (/ j den)
+                b2 (/ (1+ j) den)))
+      (for prx = (- (expt (- 1.0d0 b2) n)
+                    (expt (- 1.0d0 b1) n)))
+      (for pry = (- (expt (- 1.0d0 b2) m)
+                    (expt (- 1.0d0 b1) m)))
       (incf x (* prx pry)))
-    (finally (return (+ 0.5d0 (* x +p+))))))
+    (finally
+     (return (+ 0.5d0 (* x +p+))))))
 
 
 (-> approximated-expected-collisions (double-float double-float) double-float)
@@ -198,14 +197,14 @@ This is loglog-beta to be specific.
       (unless (= ea eb 0)
         (incf n)))
     (when (= c 0)
-      (return-from jaccard 0.0d0))
+      (return-from jaccard 1.0d0))
     (let* ((c1 (cardinality a))
            (c2 (cardinality b))
            (ec (approximated-expected-collisions c1 c2)))
       (declare (type double-float c1 c2 ec))
       (if (< c ec)
-          0.0d0
-          (/ (- c ec) n)))))
+          1.0d0
+          (- 1.0d0 (/ (- c ec) n))))))
 
 
 (-> intersection-cardinality (sketch sketch) double-float)

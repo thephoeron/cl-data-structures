@@ -89,7 +89,6 @@
 
 
 (defmethod minhash-corpus-hash-value ((corpus xors-callback-minhash) element)
-  (declare (optimize (speed 1) (safety 1)))
   (let* ((k (read-k corpus))
          (xors (read-xors corpus))
          (result (make-array k :element-type '(unsigned-byte 64)))

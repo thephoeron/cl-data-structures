@@ -40,13 +40,13 @@
 
 
 (cl-ds.alg.meta:define-aggregation-function
-    approximated-set-cardinality approximated-set-cardinality-function
+  approximated-set-cardinality approximated-set-cardinality-function
 
   (:range &key hash-fn key data-sketch)
-  (:range &key hash-fn (key #'identity)
-          (data-sketch
-           (clean-sketch #'approximated-set-cardinality
-                         :hash-fn hash-fn)))
+  (:range &key (hash-fn #'sxhash) (key #'identity)
+        (data-sketch
+         (clean-sketch #'approximated-set-cardinality
+                       :hash-fn hash-fn)))
 
   (%data-sketch)
 
@@ -76,3 +76,4 @@
   (check-type a approximated-set-cardinality)
   (check-type b approximated-set-cardinality)
   (hll:jaccard (access-registers a) (access-registers b)))
+
