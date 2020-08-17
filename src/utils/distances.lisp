@@ -138,15 +138,17 @@
                                       vector
                                       &key
                                       (:key (-> (t) t))
+                                      (:initial-element t)
                                       (:query-key (-> (t) t)))
     half-matrix)
 (defun make-distance-matrix-from-vector (type function sequence
                                          &key
                                            (key #'identity)
-                                           (query-key #'identity))
+                                           (query-key #'identity)
+                                           (initial-element 0))
   (when (< (length sequence) 2)
     (error "Can't create distance matrix for vector of size ~a" (length sequence)))
-  (let ((result (make-half-matrix type (length sequence))))
+  (let ((result (make-half-matrix type (length sequence) :initial-element initial-element)))
     (fill-distance-matrix-from-vector result function sequence :key key)
     (setf (slot-value result '%key) query-key)
     result))

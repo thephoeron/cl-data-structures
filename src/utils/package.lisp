@@ -44,6 +44,8 @@
    #:hash-integer
    #:homogenousp
    #:if-else
+   #:square
+   #:row-major-index-to-subscripts
    #:ignore-errors*
    #:import-all-package-symbols
    #:index

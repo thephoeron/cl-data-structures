@@ -20,7 +20,7 @@ This is loglog-beta to be specific.
 (define-constant +p+ 14)
 (define-constant +m+ (ash 1 +p+))
 (define-constant +max+ (- 64 +p+))
-(define-constant +maxx+ (ldb (byte +p+ 0) #xffffffffffffffff))
+(define-constant +maxx+ (ldb (byte +p+ 0) #xFFFFFFFFFFFFFFFF))
 (define-constant +alpha+ (/ 0.7213d0 (1+ (/ 1.079d0 +m+))))
 (define-constant +q+ 6)
 (define-constant +r+ 10)
@@ -42,10 +42,10 @@ This is loglog-beta to be specific.
   (make-array +m+ :element-type 'register))
 
 
-(declaim (inline beta))
 (-> beta ((double-float 0.0d0)) double-float)
+(declaim (inline beta))
 (defun beta (ez)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (let ((zl (log (1+ ez))))
     (declare (type double-float ez)
              (type (double-float 0.0d0 *) zl))
@@ -67,10 +67,10 @@ This is loglog-beta to be specific.
   (logior (ash rank +r+) sig))
 
 
-(declaim (inline reg-sum-and-zeroes))
 (-> reg-sum-and-zeroes ((simple-array register (*))) (values double-float double-float))
+(declaim (inline reg-sum-and-zeroes))
 (defun reg-sum-and-zeroes (registers)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (iterate
     (declare (type fixnum i)
              (type double-float sum ez))
@@ -84,8 +84,8 @@ This is loglog-beta to be specific.
     (finally (return (values sum ez)))))
 
 
-(declaim (inline hll-rank))
 (-> hll-rank ((unsigned-byte 64)) (unsigned-byte 8))
+(declaim (inline hll-rank))
 (defun hll-rank (value)
   (declare (type (unsigned-byte 64) value)
            (optimize (speed 3)))
@@ -102,12 +102,11 @@ This is loglog-beta to be specific.
     (finally (return i))))
 
 
-(declaim (inline hash-shifts))
 (-> hash-shifts ((unsigned-byte 64)) (unsigned-byte 16))
+(declaim (inline hash-shifts))
 (defun hash-shifts (y)
   (declare (optimize (speed 3)))
-  (~>> y cl-ds.utils:hash-integer
-       (ldb (byte 16 #.(- 64 +r+)))))
+  (ldb (byte 16 #.(- 64 +r+)) (cl-ds.utils:hash-integer y)))
 
 
 (-> add-hash (sketch (unsigned-byte 64)) sketch)
@@ -119,6 +118,7 @@ This is loglog-beta to be specific.
 
 
 (-> cardinality (sketch) double-float)
+(declaim (inline cardinality))
 (defun cardinality (sketch)
   (declare (optimize (speed 3)))
   (bind (((:values sum ez) (reg-sum-and-zeroes sketch)))
@@ -138,10 +138,12 @@ This is loglog-beta to be specific.
     (finally (return result))))
 
 
-(-> expected-collisions (double-float double-float) double-float)
+(-> expected-collisions ((double-float 0.0d0) (double-float 0.0d0)) double-float)
+(declaim (inline expected-collisions))
 (defun expected-collisions (n m)
   (iterate
-    (declare (type double-float i x b1 b2 power den))
+    (declare (type (double-float 0.0d0) i x b1 b2 power den)
+             (optimize (speed 3) (safety 0)))
     (for i from 1.0d0 to +2Q+)
     (with x = 0.0d0)
     (with b1 = 0.0d0)
@@ -151,23 +153,26 @@ This is loglog-beta to be specific.
                      (+ +p+ +r+ i)))
     (for den = (expt 2.0d0 power))
     (iterate
-      (declare (type double-float j prx pry))
+      (declare (type (double-float 0.0d0) j b2d b1d)
+               (type double-float prx pry))
       (for j from 1.0d0 to +2R+)
       (if (not (= i +2Q+))
           (setf b1 (/ (+ +2R+ j) den)
                 b2 (/ (+ +2R+ j 1) den))
           (setf b1 (/ j den)
                 b2 (/ (1+ j) den)))
-      (for prx = (- (expt (- 1.0d0 b2) n)
-                    (expt (- 1.0d0 b1) n)))
-      (for pry = (- (expt (- 1.0d0 b2) m)
-                    (expt (- 1.0d0 b1) m)))
+      (for b2d = (- 1.0d0 b2))
+      (for b1d = (- 1.0d0 b1))
+      (for prx = (- (expt b2d n)
+                    (expt b1d n)))
+      (for pry = (- (expt b2d m)
+                    (expt b1d m)))
       (incf x (* prx pry)))
-    (finally
-     (return (+ 0.5d0 (* x +p+))))))
+    (finally (return (+ 0.5d0 (* x +p+))))))
 
 
 (-> approximated-expected-collisions (double-float double-float) double-float)
+(declaim (inline approximated-expected-collisions))
 (defun approximated-expected-collisions (first second)
   (bind (((:values n m) (if (< first second)
                             (values second first)
@@ -184,11 +189,12 @@ This is loglog-beta to be specific.
 
 (-> jaccard (sketch sketch) double-float)
 (defun jaccard (a b)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3) (safety 0)))
   (let ((c 0) (n 0))
     (declare (type fixnum c n))
     (iterate
-      (declare (type register ea eb))
+      (declare (type fixnum i)
+               (type register ea eb))
       (for i from 0 below +m+)
       (for ea = (aref a i))
       (for eb = (aref b i))
