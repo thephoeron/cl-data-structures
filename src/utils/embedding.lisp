@@ -5,7 +5,7 @@
   (declare (type vector vector-of-elements))
   (ensure-functionf distance-fn)
   (bind ((length (length vector-of-elements))
-         (m1 (ceiling (1- (/ (log length) (log 2)))))
+         (m1 (floor (/ (log length) (log 2))))
          (m2 (ceiling (log length)))
          (embeddings (make-array (list length (* m1 m2))
                                  :element-type metric-type))
