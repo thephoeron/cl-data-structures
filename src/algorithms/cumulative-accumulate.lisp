@@ -23,8 +23,9 @@
 (defclass cumulative-accumulate-range (cl-ds.alg:proxy-range
                                        cl-ds:fundamental-forward-range
                                        cumulative-state)
-  ((%initial-state :initarg :state
-                   :reader read-initial-state)))
+  ((%initial-state
+    :initarg :state
+    :reader read-initial-state)))
 
 
 (defmethod cl-ds:clone ((range cumulative-accumulate-range))
@@ -126,10 +127,10 @@
      (if initial-value-bound
          (list range function
                :result result
+               :initial-value initial-value
                :key key)
          (list range function
                :result result
-               :initial-value initial-value
                :key key)))))
 
 
@@ -157,21 +158,21 @@
                                                   outer-constructor
                                                   (function aggregation-function)
                                                   (arguments list))
-  (declare (optimize (speed 3) (safety 0)))
-  (let ((function (ensure-function (read-function range)))
+  (declare (optimize (debug 3) (safety 1)))
+  (let ((fn (ensure-function (read-function range)))
         (outer-fn (call-next-method))
         (key (ensure-function (read-cumulative-key range))))
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq #'identity key)))
-       (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn))
-                                       (state (access-state range))
+       (cl-ds.alg.meta:let-aggregator ((state nil)
+                                       (inner (cl-ds.alg.meta:call-constructor outer-fn))
                                        (initialized (slot-boundp range '%state)))
            ((element)
              (if initialized
                  (let* ((next-state
                           (~>> (funcall key element)
-                               (funcall function state))))
+                               (funcall fn state))))
                    (setf state next-state)
                    (cl-ds.alg.meta:pass-to-aggregation inner next-state))
                  (let ((r (funcall key element)))

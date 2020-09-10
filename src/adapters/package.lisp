@@ -6,4 +6,5 @@
   (:nicknames #:cl-ds.adapters)
   (:export
    #:vector-range
+   #:list-range
    #:offset-vector-range))

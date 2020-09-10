@@ -15,13 +15,14 @@
     (finally (return (adjust-array result k)))))
 
 
-(defun select-best-seeds (container data &optional (start 0))
+(defun select-best-seeds (container data &optional (start 0) parallel)
   (declare (type vector data)
            (optimize (speed 3)))
   (let ((samples-count (read-samples-count container))
         (data-count (length data))
         (branching-factor (read-branching-factor container)))
-    (~> (map-into (make-array samples-count)
+    (~> (funcall (if parallel #'lparallel:pmap-into #'map-into)
+                 (make-array samples-count)
                   (lambda ()
                     (iterate
                       (declare (type number final)
@@ -149,8 +150,8 @@
 
 (defun make-egnat-tree (container operation extra-arguments data &optional (parallel nil))
   (if parallel
-      (bind ((seeds (select-best-seeds container data 1))
-             (subtree-contents (assign-children container seeds data 1))
+      (bind ((seeds (select-best-seeds container data 1 parallel))
+             (subtree-contents (assign-children container seeds data 1 parallel))
              (this-content (first-elt data))
              ((:values close distant) (make-ranges container subtree-contents))
              (children (lparallel:pmap-into (make-children-vector container)
@@ -311,7 +312,7 @@
     (map-into #'identity initial-content)))
 
 
-(defun assign-children (container seeds data &optional (start 0))
+(defun assign-children (container seeds data &optional (start 0) parallel)
   (declare (type vector data)
            (type (simple-array fixnum (*)) seeds)
            (type fixnum start))
@@ -327,11 +328,21 @@
       (when (find i seeds :test 'eql)
         (next-iteration))
       (for point = (aref data i))
-      (for target = (extremum result #'< :key
-                              (lambda (x)
-                                (distance container
-                                          (aref x 0)
-                                          point))))
+      (for target = (if parallel
+                        (lparallel:preduce
+                         (lambda (&rest arg)
+                           (declare (dynamic-extent arg))
+                           (extremum arg #'<
+                                     :key (lambda (x)
+                                            (distance container
+                                                      (aref x 0)
+                                                      point))))
+                         result)
+                        (extremum result #'< :key
+                                  (lambda (x)
+                                    (distance container
+                                              (aref x 0)
+                                              point)))))
       (vector-push-extend point target))
     (assert (= (- (length data) start)
                (reduce #'+ result :key #'length)))
