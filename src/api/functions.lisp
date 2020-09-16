@@ -19,7 +19,7 @@
   (check-type to (or null integer))
   (check-type from integer)
   (check-type by integer)
-  (if (or (null to) (< from to))
+  (if (or (null to) (<= from to))
       (progn
         (unless (positive-integer-p by)
           (error 'argument-value-out-of-bounds
