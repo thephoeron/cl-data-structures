@@ -165,9 +165,11 @@
     (cl-ds.alg.meta:aggregator-constructor
      (read-original-range range)
      (cl-ds.utils:cases ((:variant (eq #'identity key)))
-       (cl-ds.alg.meta:let-aggregator ((state nil)
-                                       (inner (cl-ds.alg.meta:call-constructor outer-fn))
-                                       (initialized (slot-boundp range '%state)))
+       (cl-ds.alg.meta:let-aggregator ((inner (cl-ds.alg.meta:call-constructor outer-fn))
+                                       (initialized (slot-boundp range '%state))
+                                       (state (if initialized
+                                                  (read-initial-state range)
+                                                  nil)))
            ((element)
              (if initialized
                  (let* ((next-state
