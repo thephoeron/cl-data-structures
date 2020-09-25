@@ -62,9 +62,7 @@
   (~> node cl-ds.common.rrb:sparse-rrb-node-size (eql 1)))
 
 
-(declaim (inline insert-into-node!))
 (defun insert-into-node! (into new-element index)
-  (declare (optimize (speed 3) (debug 0) (space 0) (safety 0)))
   (assert (not (cl-ds.common.rrb:sparse-rrb-node-contains into index)))
   (let* ((content (cl-ds.common.rrb:sparse-rrb-node-content into))
          (bitmask (cl-ds.common.rrb:sparse-rrb-node-bitmask into))
@@ -79,7 +77,7 @@
                  (setf (cl-ds.common.rrb:sparse-rrb-node-content into) r))
                content)))
     (declare (type fixnum length new-bitmask bitmask position)
-             (type simple-vector new-content content))
+             (type (simple-array * (*)) new-content content))
     (setf (cl-ds.common.rrb:sparse-rrb-node-bitmask into)
           new-bitmask)
     (iterate
@@ -97,7 +95,6 @@
 (-> insert-tail! (mutable-sparse-rrb-vector)
     mutable-sparse-rrb-vector)
 (defun insert-tail! (structure)
-  (declare (optimize (speed 3) (safety 0) (debug 3) (space 0)))
   (let ((tail-mask (access-tail-mask structure))
         (ownership-tag nil))
     (declare (type fixnum tail-mask))
@@ -262,7 +259,6 @@
 (-> transactional-insert-tail! (transactional-sparse-rrb-vector t)
     transactional-sparse-rrb-vector)
 (defun transactional-insert-tail! (structure ownership-tag)
-  (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((tail-mask (access-tail-mask structure)))
     (declare (type fixnum tail-mask))
     (when (zerop tail-mask)
@@ -280,7 +276,7 @@
            ((:labels impl (node byte-position depth))
             (declare (type fixnum byte-position depth))
             (let* ((current-node (if (cl-ds.meta:null-bucket-p node)
-                                     (cl-ds.common.rrb:make-rrb-node
+                                     (cl-ds.common.rrb:make-sparse-rrb-node
                                       :content (make-array 1)
                                       :ownership-tag ownership-tag)
                                      node))
@@ -452,7 +448,6 @@
                   list)
     (values mutable-sparse-rrb-vector t))
 (defun set-in-tail! (structure operation container offset value all)
-  (declare (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (bind (((:accessors (element-type read-element-type)
                       (%tail-mask access-tail-mask)
                       (%tail access-tail))
@@ -1263,8 +1258,7 @@
 (defun transactional-sparse-rrb-vector-grow (operation structure
                                              container position
                                              all value)
-  (declare (optimize (speed 3) (space 0) (debug 0))
-           (type integer position))
+  (declare (type integer position))
   (check-type position integer)
   (let ((tree-bound (access-tree-index-bound structure)))
     (declare (type fixnum tree-bound))
