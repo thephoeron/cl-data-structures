@@ -162,7 +162,7 @@
   ())
 
 
-(define-condition not-implemented (program-error)
+(define-condition not-implemented (simple-error)
   ())
 
 
