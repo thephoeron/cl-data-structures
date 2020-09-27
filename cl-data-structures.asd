@@ -251,8 +251,8 @@
                              (:file "clara")
                              (:file "k-means")
                              (:file "docstrings")))
-               (:module "math"
-                :components ((:module "aux"
+               (:module math
+                :components ((:module gamma
                               :components ((:file "package")
                                            (:file "gamma")))
                              (:file "package")
