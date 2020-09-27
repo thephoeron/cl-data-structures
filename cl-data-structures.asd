@@ -1,21 +1,33 @@
-(cl:in-package #:cl-user)
+(in-package :cl-user)
 
+(defpackage cl-data-structures/asdf
+  (:use cl asdf uiop))
 
-(asdf:defsystem cl-data-structures
+(in-package :cl-data-structures/asdf)
+
+(defsystem cl-data-structures
   :name "cl-data-structures"
-  :version "0.0.0"
+  :version "1.0.0"
   :license "BSD simplified"
   :author "Lisp Mechanics"
   :maintainer "Lisp Mechanics"
-  :depends-on ( :iterate          :alexandria
-                :serapeum         :documentation-utils-extensions
-                :more-conditions  :closer-mop
-                :lparallel        :flexichain
-                :metabang-bind    :bordeaux-threads
-                :scribble         :osicat
-                :cl-fad           :cl-progress-bar
-                :trivial-garbage  :cl-ppcre)
-  :serial T
+  :depends-on (iterate
+               alexandria
+               serapeum
+               documentation-utils-extensions
+               more-conditions
+               closer-mop
+               lparallel
+               flexichain
+               metabang-bind
+               bordeaux-threads
+               scribble
+               osicat
+               cl-fad
+               cl-progress-bar
+               trivial-garbage
+               cl-ppcre)
+  :serial t
   :pathname "src"
   :components ((:file "aux-package")
                (:file "package")
@@ -66,24 +78,20 @@
                                             :components ((:file "package")
                                                          (:file "types")
                                                          (:file "internal")
-                                                         (:file "external")
-                                                         ))
+                                                         (:file "external")))
                                            (:module "clara-pam"
                                             :components ((:file "package")
                                                          (:file "types")
                                                          (:file "internal")
                                                          (:file "external")
-                                                         (:file "docstrings")
-                                                         ))
+                                                         (:file "docstrings")))
                                            (:module "bubble"
                                             :components ((:file "package")
                                                          (:file "cf-tree-protocol")
                                                          (:file "cf-tree-structure")
                                                          (:file "cf-tree-implementation")
                                                          (:file "cf-tree-algorithm")
-                                                         (:file "api")
-                                                         ))))
-                             ))
+                                                         (:file "api")))))))
                (:module "api"
                 :components ((:file "meta")
                              (:file "meta-docstrings")
@@ -96,15 +104,13 @@
                              (:file "macros")
                              (:file "functions")
                              (:file "field")
-                             (:file "aux")
-                             (:file "docstrings")
-                             ))
+                             (:file "ranges")
+                             (:file "docstrings")))
                (:module "adapters"
                 :components ((:file "package")
                              (:file "hash-table")
                              (:file "vector")
-                             (:file "list")
-                             ))
+                             (:file "list")))
                (:module "common"
                 :components ((:file "package")
                              (:file "modification-operation-status")
@@ -120,8 +126,7 @@
                                            (:file "common")))
                              (:module "2-3-tree"
                               :components ((:file "package")
-                                           (:file "common")
-                                           ))
+                                           (:file "common")))
                              (:module "hamt"
                               :components ((:file "package")
                                            (:file "common")))
@@ -130,16 +135,14 @@
                                            (:file "common")))
                              (:module "skip-list"
                               :components ((:file "package")
-                                           (:file "common")
-                                           ))
+                                           (:file "common")))
                              (:module "egnat"
                               :components ((:file "package")
                                            (:file "classes")
                                            (:file "generics")
                                            (:file "common")
                                            (:file "methods")
-                                           (:file "docstrings")
-                                           ))
+                                           (:file "docstrings")))
                              (:file "qp-trie")))
                (:module "dicts"
                 :components ((:file "packages")
@@ -149,28 +152,23 @@
                              (:file "docstrings")
                              (:module "hamt"
                               :components ((:file "api")
-                                           (:file "docstrings")
-                                           ))
+                                           (:file "docstrings")))
                              (:module "srrb"
                               :components ((:file "types")
                                            (:file "internal")
-                                           (:file "api")
-                                           ))
-                             ))
+                                           (:file "api")))))
                (:module "sequences"
                 :components ((:file "packages")
                              (:file "common")
                              (:module "rrb"
                               :components ((:file "api")
-                                           (:file "docstrings")
-                                           ))))
+                                           (:file "docstrings")))))
                (:module "queues"
                 :components ((:file "packages")
                              (:file "common")
                              (:file "docstrings")
                              (:module "2-3-tree"
-                              :components ((:file "api")
-                                           ))))
+                              :components ((:file "api")))))
                (:module "sets"
                 :components ((:file "packages")
                              (:file "common")
@@ -178,8 +176,7 @@
                               :components ((:file "api")
                                            (:file "docstrings")))
                              (:module "skip-list"
-                              :components ((:file "api")
-                                           ))))
+                              :components ((:file "api")))))
                (:module "metric-space"
                 :components ((:file "packages")
                              (:file "trait-classes")
@@ -187,8 +184,7 @@
                              (:file "api")
                              (:file "docstrings")
                              (:module "egnat"
-                              :components ((:file "api")
-                                           ))))
+                              :components ((:file "api")))))
                (:module "algorithms"
                 :components ((:file "package")
                              (:module "meta"
@@ -196,8 +192,7 @@
                                            (:file "classes")
                                            (:file "generics")
                                            (:file "methods")
-                                           (:file "docstrings")
-                                           ))
+                                           (:file "docstrings")))
                              (:file "common")
                              (:file "array-elementwise")
                              (:file "on-each")
@@ -235,8 +230,7 @@
                              (:file "partition-if")
                              (:file "distinct")
                              (:file "first-element")
-                             (:file "docstrings")
-                             ))
+                             (:file "docstrings")))
                (:module "file-system"
                 :components ((:file "package")
                              (:file "common")
@@ -280,8 +274,7 @@
                              (:file "entropy")
                              (:file "fast-map")
                              (:file "sum")
-                             (:file "docstrings")
-                             ))
+                             (:file "docstrings")))
                (:module "streaming-algorithms"
                 :components ((:file "hyperloglog")
                              (:file "polynomial-hashing")
@@ -292,14 +285,4 @@
                              (:file "approximated-top-k")
                              (:file "bloom-filter")
                              (:file "minhash")
-                             (:file "docstrings")))
-               ;; (:module "counting"
-               ;;  :components ((:file "package")
-               ;;               (:file "generics")
-               ;;               (:file "types")
-               ;;               (:file "internal")
-               ;;               (:file "apriori")
-               ;;               (:file "methods")
-               ;;               (:file "docstrings")
-               ;;               ))
-               ))
+                             (:file "docstrings")))))
