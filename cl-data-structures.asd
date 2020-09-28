@@ -155,6 +155,7 @@
                               :components ((:file "types")
                                            (:file "internal")
                                            (:file "api")
+                                           (:file "docstrings")
                                            ))
                              ))
                (:module "sequences"
