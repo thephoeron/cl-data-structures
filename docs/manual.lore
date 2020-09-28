@@ -107,7 +107,7 @@
  @docerror['cl-ds:initialization-error]
  @docerror['cl-ds:unexpected-argument]
  @docerror['cl-ds:out-of-bounds]
- @docerror['cl-ds:argument-out-of-bounds]
+ @docerror['cl-ds:argument-value-out-of-bounds]
  @docerror['cl-ds:initialization-out-of-bounds]
  @docerror['cl-ds:not-implemented]
  @end{documentation}
@@ -137,7 +137,6 @@
    @pack{CL-DATA-STRUCTURES.ALGORITHMS}
    @docfun['cl-ds.alg:accumulate]
    @docfun['cl-ds.alg:cumulative-accumulate]
-   @docfun['cl-ds.alg:hash-join]
    @docfun['cl-ds.alg:count-elements]
    @docfun['cl-ds.alg:extrema]
    @docfun['cl-ds.alg:extremum]
@@ -196,13 +195,11 @@
 @pack{CL-DATA-STRUCTURES.MATH}
 @docgeneric['cl-ds.math:average]
 @docgeneric['cl-ds.math:bootstrap]
-@docgeneric['cl-ds.math:chi-squared]
 @docgeneric['cl-ds.math:hodges-lehmann-estimator]
 @docgeneric['cl-ds.math:moments]
 @docgeneric['cl-ds.math:moving-average]
 @docgeneric['cl-ds.math:mutual-information]
 @docgeneric['cl-ds.math:simple-linear-regression]
-@docgeneric['cl-ds.math:statistical-summary]
 @docgeneric['cl-ds.math:variance]
 @end{documentation}
 @end{section}
@@ -223,7 +220,7 @@
 @begin{documentation}
 @pack{CL-DATA-STRUCTURES.THREADS}
 @docgeneric['cl-ds.threads:thread-buffer]
-@docgeneric['cl-ds.threads:in-parallel]
+@docgeneric['cl-ds.threads:parallel-multiplex]
 @end{documentation}
 @end{section}
 
