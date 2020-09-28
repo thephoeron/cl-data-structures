@@ -1,18 +1,20 @@
 ;; link to java implementation https://github.com/clojure/clojure/blob/0b73494c3c855e54b1da591eeb687f24f608f346/src/jvm/clojure/lang/PersistentVector.java
-(cl:in-package #:cl-data-structures.common.rrb)
+(in-package :cl-data-structures.common.rrb)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant +bit-count+ 5)
 
-(define-constant +bit-count+ 5)
-(define-constant +maximal-shift+ (iterate
-                                   (for c
-                                        initially (ash 1 +bit-count+)
-                                        then (ash c +bit-count+))
-                                   (while (non-negative-fixnum-p c))
-                                   (counting t)))
-(define-constant +maximum-children-count+ (ash 1 +bit-count+))
-(define-constant +tail-mask+ (dpb 0 (byte +bit-count+ 0)
-                                  most-positive-fixnum))
+  (defconstant +maximal-shift+ (iterate
+                                 (for c
+                                      initially (ash 1 +bit-count+)
+                                      then (ash c +bit-count+))
+                                 (while (non-negative-fixnum-p c))
+                                 (counting t)))
 
+  (defconstant +maximum-children-count+ (ash 1 +bit-count+))
+
+  (defconstant +tail-mask+ (dpb 0 (byte +bit-count+ 0)
+                                most-positive-fixnum)))
 
 (deftype node-content ()
   "Vector with content of the node"
@@ -407,7 +409,8 @@
    (%tail :initform nil
           :type (or null simple-array)
           :initarg :tail
-          :accessor access-tail)))
+          :accessor access-tail))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance :after ((container rrb-container) &key &allow-other-keys)
@@ -732,14 +735,16 @@
    (%content :reader read-content)
    (%container :initarg :container
                :accessor access-container))
-  (:default-initargs :mutex (bt:make-lock)))
+  (:default-initargs :mutex (bt:make-lock))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass chunked-rrb-range (cl-ds:fundamental-forward-range)
   ((%vectors-in-chunk :initarg :vectors-in-chunk
                       :reader read-vectors-in-chunk)
    (%rrb-range :initarg :rrb-range
-               :reader read-rrb-range)))
+               :reader read-rrb-range))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((range chunked-rrb-range))
@@ -831,7 +836,8 @@
 
 
 (defclass mutable-rrb-range (rrb-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:whole-range ((container rrb-container))

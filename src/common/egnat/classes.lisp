@@ -26,18 +26,21 @@
    (%root
     :accessor access-root
     :initform nil
-    :initarg :root)))
+    :initarg :root))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-egnat-container (fundamental-egnat-container
                                    cl-ds:mutable)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass egnat-node ()
   ((%content
     :initarg :content
-    :reader read-content)))
+    :reader read-content))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance :after ((instance egnat-node)
@@ -68,7 +71,8 @@
     :type vector
     :initform nil
     :initarg :children
-    :reader read-children)))
+    :reader read-children))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append ((object egnat-subtree))
@@ -86,16 +90,18 @@
                    :initarg :stack)
    (%initial-results :initform '()
                      :initarg :results
-                     :reader read-initial-stack)
+                     :reader read-initial-results)
    (%container :initarg :container
-               :reader read-container)))
+               :reader read-container))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass egnat-range-around (egnat-range)
   ((%near :initarg :near
           :reader read-near)
    (%margin :initarg :margin
-            :reader read-margin)))
+            :reader read-margin))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance

@@ -11,7 +11,8 @@
    (%current-index :initarg :current-index
                    :accessor access-current-index
                    :initform 0)
-   (%initial-to :accessor access-initial-to)))
+   (%initial-to :accessor access-initial-to))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance :after ((instance sequence-window)
@@ -37,15 +38,18 @@
 
 
 (defclass random-access-sequence-window (sequence-window)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass vector-sequence-window (sequence-window)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass list-sequence-window (sequence-window)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric sequence-window (sequence from to))

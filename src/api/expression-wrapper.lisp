@@ -1,9 +1,8 @@
-(cl:in-package #:cl-data-structures)
+(in-package :cl-data-structures)
 
-
-(defclass expression (c2mop:funcallable-standard-object
-                      chunking-mixin
-                      fundamental-forward-range)
+(defclass expression (chunking-mixin
+                      fundamental-forward-range
+                      funcallable-standard-object)
   ((%construct-function :initarg :construct-function
                         :type function
                         :reader read-body)
@@ -16,8 +15,7 @@
                       :initarg :finished-closure)
    (%closure :accessor access-closure
              :initarg :closure))
-  (:metaclass c2mop:funcallable-standard-class))
-
+  (:metaclass funcallable-standard-class))
 
 (defmethod clone ((obj expression))
   (bind (((:slots %construct-function %arguments
@@ -34,14 +32,12 @@
                        :closure result-closure)))
     result))
 
-
 (defmethod initialize-instance :after ((obj expression) &rest all
                                        &key &allow-other-keys)
   (declare (ignore all))
   (if (slot-boundp obj '%closure)
-      (c2mop:set-funcallable-instance-function obj (access-closure obj))
+      (set-funcallable-instance-function obj (access-closure obj))
       (reset! obj)))
-
 
 (defmacro xpr (arguments &body body)
   (let ((keys (plist-keys arguments)))
@@ -57,7 +53,6 @@
                :construct-function (function ,!fn)
                :arguments (list ,@arguments))))))
 
-
 (defmethod traverse ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
   (let ((fn (ensure-function (access-closure obj)))
@@ -69,7 +64,6 @@
       (while not-finished)
       (funcall function value)))
   obj)
-
 
 (defmethod across ((obj expression) function)
   (declare (optimize (speed 3) (debug 0) (space 0)))
@@ -85,10 +79,8 @@
         (funcall function value))
       obj)))
 
-
 (defmethod consume-front ((obj expression))
   (funcall obj))
-
 
 (defmethod peek-front ((obj expression))
   (bind (((:slots %closure %construct-function %arguments-closure %finished-closure)
@@ -96,7 +88,6 @@
     (if (funcall %finished-closure)
         (values nil nil)
         (funcall (apply %construct-function (funcall %arguments-closure))))))
-
 
 (defmethod reset! ((obj expression))
   (declare (optimize (debug 3)))
@@ -108,9 +99,8 @@
     (setf %closure function
           %finished-closure finished-closure
           %arguments-closure arguments-closure)
-    (c2mop:set-funcallable-instance-function obj function))
+    (set-funcallable-instance-function obj function))
   obj)
-
 
 (defmethod drop-front ((obj expression) count)
   (check-type count non-negative-fixnum)

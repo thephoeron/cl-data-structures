@@ -1,12 +1,10 @@
-(cl:in-package #:cl-data-structures.common)
-
+(in-package :cl-data-structures.common)
 
 (defstruct changes
   (content (vect) :type vector)
   (parent nil :type (or changes null))
   (end-index 1 :type fixnum)
   (unique t :type boolean))
-
 
 (defun execute-changes (changes instance)
   (declare (type (or null changes) changes))
@@ -18,7 +16,6 @@
       (iterate
         (for i from 0 below (changes-end-index changes))
         (funcall (content i) instance)))))
-
 
 (defun add-change (changes next)
   (if (null changes)
@@ -32,7 +29,6 @@
           (make-changes :content (vect next)
                         :parent changes))))
 
-
 (defclass lazy-modification-operation-status
     (cl-ds:fundamental-modification-operation-status)
   ((%eager-status :accessor access-eager-status
@@ -40,21 +36,21 @@
                   :initarg :eager-status)
    (%lazy-instance :reader read-lazy-instance
                    :writer write-lazy-instance
-                   :initarg :lazy-instance)))
-
+                   :initarg :lazy-instance))
+  (:metaclass funcallable-standard-class))
 
 (defclass box-container (cl-ds:fundamental-container)
   ((%content :initarg :content
              :type fundamental-container
-             :accessor access-content)))
-
+             :accessor access-content))
+  (:metaclass funcallable-standard-class))
 
 (defclass lazy-box-container (cl-ds:lazy box-container)
   ((%operations :initform nil
                 :type (or null changes)
                 :initarg :operations
-                :accessor access-operations)))
-
+                :accessor access-operations))
+  (:metaclass funcallable-standard-class))
 
 (-> force-version (lazy-box-container) lazy-box-container)
 (defun force-version (instance)
@@ -66,7 +62,6 @@
     (setf operations nil
           content transactional-instance)
     instance))
-
 
 (flet ((enclose-wrapper (container t-operation location lazy-status args)
          (lambda (instance)
@@ -109,31 +104,25 @@
       (values next-instance
               lazy-status))))
 
-
 (defmethod cl-ds:size ((container lazy-box-container))
   (force-version container)
   (cl-ds:size (access-content container)))
-
 
 (defmethod cl-ds:reset! ((container lazy-box-container))
   (force-version container)
   (cl-ds:reset! (access-content container)))
 
-
 (defmethod cl-ds:become-transactional ((container lazy-box-container))
   (force-version container)
   (cl-ds:become-transactional (access-content container)))
-
 
 (defmethod cl-ds:become-functional ((container lazy-box-container))
   (force-version container)
   (cl-ds:become-functional (access-content container)))
 
-
 (defmethod cl-ds:become-mutable ((container lazy-box-container))
   (force-version container)
   (cl-ds:become-mutable (access-content container)))
-
 
 (flet ((force-status (status)
          (unless (slot-boundp status '%eager-status)

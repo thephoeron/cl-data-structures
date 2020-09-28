@@ -1,10 +1,8 @@
-(cl:in-package #:cl-user)
-
+(in-package :cl-user)
 
 (defpackage :cl-data-structures.adapters
-  (:use #:common-lisp #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.adapters)
-  (:export
-   #:vector-range
-   #:list-range
-   #:offset-vector-range))
+  (:nicknames cl-ds.adapters clds.adapters clds/adapters clds-adapters)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:vector-range
+           #:list-range
+           #:offset-vector-range))

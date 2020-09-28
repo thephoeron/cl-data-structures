@@ -1,8 +1,9 @@
-(cl:in-package #:cl-user)
-(defpackage vector-tests
-  (:use #:cl #:prove #:cl-ds #:iterate #:alexandria))
+(in-package :cl-user)
 
-(cl:in-package #:vector-tests)
+(defpackage vector-tests
+  (:use cl prove cl-ds iterate alexandria))
+
+(in-package :vector-tests)
 
 (plan 14)
 (let* ((vector (serapeum:vect 1 2 3 4 5 6 7))

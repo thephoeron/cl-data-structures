@@ -1,30 +1,26 @@
-(cl:in-package #:cl-data-structures.common.abstract)
-
+(in-package :cl-data-structures.common.abstract)
 
 (defun make-ownership-tag ()
   (list t))
 
-
-(defclass fundamental-ownership-tagged-object ()
+(defclass fundamental-ownership-tagged-object (funcallable-standard-object)
   ((%ownership-tag :reader read-ownership-tag
                    :writer write-ownership-tag
                    :initform nil
-                   :initarg :ownership-tag)))
+                   :initarg :ownership-tag))
+  (:metaclass funcallable-standard-class))
 
-
-(defclass tagged-node ()
+(defclass tagged-node (funcallable-standard-object)
   ((%ownership-tag :initarg :ownership-tag
-                   :reader read-ownership-tag)))
-
+                   :reader read-ownership-tag))
+  (:metaclass funcallable-standard-class))
 
 (defstruct tagged-struct-node
   ownership-tag)
 
-
 (defun tagged-node-ownership-tag (node)
   (declare (optimize (speed 3) (safety 0)))
   (slot-value node '%ownership-tag))
-
 
 (declaim (inline acquire-ownership))
 (-> acquire-ownership (t (or list tagged-node t)) boolean)
@@ -36,10 +32,8 @@
     (tagged-node (eq (read-ownership-tag node) ownership-tag))
     (t nil)))
 
-
 (defun reset-ownership-tag (object)
   (write-ownership-tag (make-ownership-tag) object))
-
 
 (defun replica (object isolate)
   (check-type object fundamental-ownership-tagged-object)
@@ -47,11 +41,9 @@
     (when isolate
       (reset-ownership-tag object))))
 
-
 (defun struct-accessor-name (type slot)
   (intern (format nil "~a-~a" type
                     (if (listp slot) (first slot) slot))))
-
 
 (defmacro define-tagged-untagged-node (name &body slots)
   (let* ((string (symbol-name name))

@@ -1,40 +1,35 @@
-(cl:in-package #:cl-data-structures.common.hamt)
+(in-package :cl-data-structures.common.hamt)
 
-#|
+#| Basic types |#
 
-Basic types
+;; @thephoeron: given that hash-level should be a tunable parameter, and that
+;; max-children-count and depth are computed values based on hash-level, why are
+;; these defined as constants?
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant +hash-level+ 5)
 
-|#
+  (defconstant +maximum-children-count+ 32
+    "Computed from `(ash 1 +hash-level+)`")
 
-(define-constant +hash-level+ 5)
-(define-constant +maximum-children-count+ (ash 1 +hash-level+))
-(define-constant +depth+ (floor (/ 64 +hash-level+)))
-
+  (defconstant +depth+ 12
+    "Computed from `(floor (/ 64 +hash-level+))`"))
 
 (deftype hash-node-index ()
   `(integer 0 ,+maximum-children-count+))
 
-
 (deftype hash-node-size ()
   `(integer 0 ,(1+ +maximum-children-count+)))
-
 
 (deftype hash-mask ()
   `(unsigned-byte ,+maximum-children-count+))
 
-
 (deftype node-path ()
   `(simple-vector ,+depth+))
-
 
 (deftype index-path ()
   `(simple-array fixnum (,+depth+)))
 
-#|
-
-Macros
-
-|#
+#| Macros |#
 
 (defmacro hash-do ((node index &optional (count (gensym)))
                    (root hash)
@@ -90,7 +85,8 @@ Macros
 (defmacro with-destructive-erase-hamt (node container hash &key on-leaf on-nil)
   (with-gensyms (!path !depth !indexes !rewrite)
     (once-only (container)
-      `(flet ((,!rewrite (,!indexes ,!path ,!depth conflict) ;path and indexes have constant size BUT only part of it is used, that's why length is passed here
+      ;; path and indexes have constant size BUT only part of it is used, that's why length is passed here
+      `(flet ((,!rewrite (,!indexes ,!path ,!depth conflict)
                 (declare (type index-path ,!indexes)
                          (type node-path ,!path)
                          (type fixnum ,!depth))
@@ -157,7 +153,8 @@ Interface class.
           :initform 0
           :type non-negative-fixnum
           :accessor access-size
-          :documentation "How many elements are in there?")))
+          :documentation "How many elements are in there?"))
+  (:metaclass funcallable-standard-class))
 
 #|
 

@@ -1,5 +1,4 @@
-(cl:in-package #:cl-ds.adapters)
-
+(in-package :cl-ds.adapters)
 
 (defmethod cl-ds:at ((matrix cl-ds.utils:half-matrix) location &rest more)
   (let ((first location)

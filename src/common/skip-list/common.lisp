@@ -1,4 +1,4 @@
-(cl:in-package #:cl-data-structures.common.skip-list)
+(in-package :cl-data-structures.common.skip-list)
 
 
 (defstruct skip-list-node
@@ -200,7 +200,8 @@
                    :accessor access-maximum-level))
   (:default-initargs
    :size 0
-   :maximum-level 32))
+   :maximum-level 32)
+  (:metaclass funcallable-standard-class))
 
 
 (cl-ds.utils:define-list-of-slots fundamental-skip-list ()
@@ -264,7 +265,8 @@
                   :reader cl-ds:peek-front
                   :accessor access-current-node)
    (%initial-current-node :initarg :current-node
-                          :reader read-initial-current-node)))
+                          :reader read-initial-current-node))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information

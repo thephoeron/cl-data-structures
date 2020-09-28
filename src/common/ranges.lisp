@@ -18,7 +18,8 @@
          :reader read-key)
    (%container :type cl-ds:fundamental-container
                :initarg :container
-               :reader read-container)))
+               :reader read-container))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information
@@ -34,7 +35,8 @@
     (cl-ds:fundamental-assignable-forward-range forward-tree-range)
   ((%store-value :type (-> (t t) t)
                  :initarg :store-value
-                 :reader read-store-value)))
+                 :reader read-store-value))
+  (:metaclass funcallable-standard-class))
 
 
 (declaim (inline read-implementation))
