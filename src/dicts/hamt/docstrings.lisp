@@ -30,8 +30,18 @@
 
      :notes "In theory HAMT can use infinite length of hash but this implementation uses 60 oldest bits at most."))
 
-  (type dictionary
-    (:description "Container that provides location to value mapping. Either ordered or unordered."))
+  (function make-transactional-hamt-dictionary
+       (:syntax "make-transactional-hamt-dictionary hash-fn equal-fn &key max-depth => mutable-hamt-dictionary"
+             :arguments-and-values
+             ((hash-fn "function that will be used to hash keys. Should return fixnum and be proper hashing function.")
+              (equal-fn "function used to resolve conflicts."))
+             :description
+             "Constructs and returns a new mutable-hamt-dictionary"
+
+             :returns
+             "new instance of transactional-hamt-dictionary."
+
+             :notes "In theory HAMT can use infinite length of hash but this implementation uses 60 oldest bits at most."))
 
   (type hamt-dictionary
     (:description "Root HAMT dictionary class."))

@@ -156,7 +156,8 @@
                              (:module "srrb"
                               :components ((:file "types")
                                            (:file "internal")
-                                           (:file "api")))))
+                                           (:file "api")
+                                           (:file "docstrings")))))
                (:module "sequences"
                 :components ((:file "packages")
                              (:file "common")

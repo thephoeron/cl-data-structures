@@ -41,3 +41,5 @@
   @include{dicts}
   @include{cl-ds internals}
   )
+
+(build-docs "/home/shka/lore")

@@ -46,7 +46,21 @@
 
 
 @begin{section} @title{Sparse RRB Vector} @label{SRRB}
-@text{Sparse variant of the RRB vector. Unlike the cl:hash-table, this container will guarantee that the content is stored in the ascending order.}
+@text{Sparse variant of the RRB vector. Unlike the CL:HASH-TABLE, this container will guarantee that the content is stored in the ascending order. Just like in the case of the RRB vectors, modification of the tail (which includes pushing new elements to the end) is optimized but put functions are not supported.} 
+@docclass['cl-ds.dicts.srrb:mutable-sparse-rrb-vector]
+@docclass['cl-ds.dicts.srrb:functional-sparse-rrb-vector]
+@docclass['cl-ds.dicts.srrb:transactional-sparse-rrb-vector]
+
+@begin{section}
+@title{Constructing}
+@text{To construct SRRB vector, use following functions.}
+@begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
+@docfun['cl-ds.dicts.srrb:make-functional-sparse-rrb-vector]
+@docfun['cl-ds.dicts.srrb:make-mutable-sparse-rrb-vector]
+@docfun['cl-ds.dicts.srrb:make-transactional-sparse-rrb-vector]
+@end{documentation}
+@end{section}
+
 @end{section}
 
 
@@ -69,6 +83,7 @@
   @begin{documentation} @pack{CL-DATA-STRUCTURES.DICTS.HAMT}
   @docfun['cl-ds.dicts.hamt:make-functional-hamt-dictionary]
   @docfun['cl-ds.dicts.hamt:make-mutable-hamt-dictionary]
+  @docfun['cl-ds.dicts.hamt:make-transactional-hamt-dictionary]
   @end{documentation})
 (level [section]
   @title{POSITION-MODIFICATION contracts}
