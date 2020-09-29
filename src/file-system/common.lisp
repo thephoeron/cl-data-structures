@@ -24,7 +24,7 @@
   '(satisfies stream-designator-p))
 
 
-(defclass file-range-mixin ()
+(defclass file-range-mixin (funcallable-standard-object)
   ((%reached-end :initarg :reached-end
                  :type boolean
                  :accessor access-reached-end
@@ -41,7 +41,8 @@
    (%path :initarg :path
           :reader read-path)
    (%mutex :initform (bt:make-lock)
-           :reader read-mutex)))
+           :reader read-mutex))
+  (:metaclass funcallable-standard-class))
 
 
 (defmacro with-stream-input ((stream range) &body body)

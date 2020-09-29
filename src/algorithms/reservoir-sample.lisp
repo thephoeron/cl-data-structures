@@ -46,7 +46,8 @@
 (defclass forward-with-reservoir-sample-proxy (proxy-range
                                                fundamental-forward-range)
   ((%sample-size :initarg :sample-size
-                 :reader read-sample-size)))
+                 :reader read-sample-size))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -77,7 +78,7 @@
 
 (defclass with-reservoir-sample-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric with-reservoir-sample (range sample-size &key key)

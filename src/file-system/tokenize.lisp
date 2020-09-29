@@ -9,7 +9,8 @@
           :reader read-path)
    (%regex :initarg :regex
            :reader read-regex))
-  (:default-initargs :initial-position 0))
+  (:default-initargs :initial-position 0)
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((range tokenizing-range))

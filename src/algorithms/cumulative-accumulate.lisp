@@ -1,5 +1,4 @@
-(cl:in-package #:cl-data-structures.algorithms)
-
+(in-package :cl-data-structures.algorithms)
 
 (defclass cumulative-state ()
   ((%state :initarg :state
@@ -9,8 +8,8 @@
    (%function :initarg :function
               :reader read-function)
    (%cumulative-key :initarg :cumulative-key
-                    :reader read-cumulative-key)))
-
+                    :reader read-cumulative-key))
+  (:metaclass funcallable-standard-class))
 
 (defmethod cl-ds.utils:cloning-information append
     ((object cumulative-state))
@@ -19,14 +18,13 @@
     (:function read-function)
     (:cumulative-key read-cumulative-key)))
 
-
 (defclass cumulative-accumulate-range (cl-ds.alg:proxy-range
                                        cl-ds:fundamental-forward-range
                                        cumulative-state)
   ((%initial-state
     :initarg :state
-    :reader read-initial-state)))
-
+    :reader read-initial-state))
+  (:metaclass funcallable-standard-class))
 
 (defmethod cl-ds:clone ((range cumulative-accumulate-range))
   (apply #'make (type-of range)
@@ -38,14 +36,12 @@
              (list :state (access-state range))
              nil)))
 
-
 (defmethod cl-ds:reset! ((range cumulative-accumulate-range))
   (call-next-method)
   (if (slot-boundp range '%initial-state)
       (setf (access-state range) (read-initial-state range))
       (slot-makunbound range '%state))
   range)
-
 
 (defmethod cl-ds:peek-front ((range cumulative-accumulate-range))
   (bind (((:values v more) (call-next-method)))
@@ -61,7 +57,6 @@
                     (funcall result))
                v)
            t)))))
-
 
 (defun consume-impl (range v)
   (let* ((key (read-cumulative-key range))
@@ -80,7 +75,6 @@
            r))
      t)))
 
-
 (defmethod cl-ds:consume-front ((range cumulative-accumulate-range))
   (bind (((:values v more) (call-next-method)))
     (if (no more)
@@ -93,7 +87,6 @@
                     (lambda (elt)
                       (funcall function
                                (consume-impl range elt)))))
-
 
 (defmethod cl-ds:across ((range cumulative-accumulate-range) function)
   (let* ((state (apply #'make 'cumulative-state
@@ -108,11 +101,9 @@
                         (funcall function
                                  (consume-impl state elt))))))
 
-
 (defclass cumulative-accumulate-function (cl-ds.alg.meta:layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
+  (:metaclass funcallable-standard-class))
 
 (defgeneric cumulative-accumulate (range function
                                    &key key result initial-value)
@@ -133,7 +124,6 @@
                :result result
                :key key)))))
 
-
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn cumulative-accumulate-function)
                                        all)
@@ -152,7 +142,6 @@
            (if initial-value-bound
                (list :state initial-value)
                nil))))
-
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range cumulative-accumulate-range)
                                                   outer-constructor
@@ -186,7 +175,6 @@
          (cl-ds.alg.meta:cleanup inner)))
      function
      arguments)))
-
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range cumulative-accumulate-function) function)
   (~> range

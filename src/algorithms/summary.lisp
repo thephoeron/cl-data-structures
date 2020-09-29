@@ -3,11 +3,12 @@
 
 (defclass summary-aggregation-function (cl-ds.alg.meta:aggregation-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass summary-result-range (hash-table-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (cl-ds.alg.meta:define-aggregation-function

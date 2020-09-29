@@ -16,7 +16,8 @@
          :accessor access-sum
          :initform 0)
    (%key :initarg :key
-         :reader read-key)))
+         :reader read-key))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append

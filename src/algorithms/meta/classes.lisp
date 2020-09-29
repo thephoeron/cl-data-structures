@@ -1,20 +1,21 @@
 (cl:in-package #:cl-data-structures.algorithms.meta)
 
 
-(defclass range-function (closer-mop:standard-generic-function)
-  ())
+(defclass range-function (standard-generic-function)
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass layer-function (range-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass transformation!-function (range-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass aggregation-function (range-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))

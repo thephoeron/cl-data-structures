@@ -3,7 +3,8 @@
 
 (defclass without-proxy (filtering-proxy)
   ((%predicate :initarg :predicate
-               :reader read-predicate)))
+               :reader read-predicate))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -13,12 +14,14 @@
 
 (defclass forward-without-proxy (without-proxy
                                  forward-filtering-proxy)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-without-proxy (forward-without-proxy
                                        bidirectional-filtering-proxy)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod should-skip ((range without-proxy) element can-mutate)

@@ -6,11 +6,13 @@
             :type hash-table
             :reader read-groups)
    (%key :initarg :key
-         :reader read-key)))
+         :reader read-key))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass group-by-result-range (hash-table-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -21,17 +23,20 @@
 
 (defclass forward-group-by-proxy (group-by-proxy
                                   fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-group-by-proxy (forward-group-by-proxy
                                         bidirectional-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass random-access-group-by-proxy (bidirectional-group-by-proxy
                                         random-access-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance :before ((instance group-by-proxy)

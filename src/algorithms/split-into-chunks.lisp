@@ -1,10 +1,9 @@
-(cl:in-package #:cl-data-structures.algorithms)
-
+(in-package :cl-data-structures.algorithms)
 
 (defclass split-into-chunks-proxy (proxy-range)
   ((%count-in-chunk :initarg :count-in-chunk
-                    :accessor access-count-in-chunk)))
-
+                    :accessor access-count-in-chunk))
+  (:metaclass funcallable-standard-class))
 
 (defmethod initialize-instance :after ((object split-into-chunks-proxy) &key)
   (check-type (access-count-in-chunk object) integer)
@@ -14,27 +13,22 @@
            :bounds '(< 0)
            :value (access-count-in-chunk object))))
 
+(defclass forward-split-into-chunks-proxy (split-into-chunks-proxy fundamental-forward-range)
+  ()
+  (:metaclass funcallable-standard-class))
 
-(defclass forward-split-into-chunks-proxy
-    (split-into-chunks-proxy fundamental-forward-range)
-  ())
+(defclass bidirectional-split-into-chunks-proxy (forward-split-into-chunks-proxy fundamental-bidirectional-range)
+  ()
+  (:metaclass funcallable-standard-class))
 
-
-(defclass bidirectional-split-into-chunks-proxy
-    (forward-split-into-chunks-proxy fundamental-bidirectional-range)
-  ())
-
-
-(defclass random-access-split-into-chunks-proxy
-    (bidirectional-split-into-chunks-proxy fundamental-random-access-range)
-  ())
-
+(defclass random-access-split-into-chunks-proxy (bidirectional-split-into-chunks-proxy fundamental-random-access-range)
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defmethod clone ((range split-into-chunks-proxy))
   (make-instance (type-of range)
                  :original-range (~> range read-original-range clone)
                  :count-in-chunk (access-count-in-chunk range)))
-
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range split-into-chunks-proxy)
                                                   outer-constructor
@@ -67,11 +61,9 @@
      function
      arguments)))
 
-
 (defclass split-into-chunks-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
+  (:metaclass funcallable-standard-class))
 
 (defgeneric split-into-chunks (range chunk-size)
   (:generic-function-class split-into-chunks-function)
@@ -79,20 +71,17 @@
     (apply-range-function range #'split-into-chunks
                           (list range chunk-size))))
 
-
 (defmethod apply-layer ((range fundamental-forward-range)
                         (fn split-into-chunks-function)
                         all)
   (make-proxy range 'forward-split-into-chunks-proxy
               :count-in-chunk (second all)))
 
-
 (defmethod apply-layer ((range fundamental-bidirectional-range)
                         (fn split-into-chunks-function)
                         all)
   (make-proxy range 'bidirectional-split-into-chunks-proxy
               :count-in-chunk (second all)))
-
 
 (defmethod apply-layer ((range fundamental-random-access-range)
                         (fn split-into-chunks-function)

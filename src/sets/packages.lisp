@@ -1,30 +1,21 @@
-(cl:in-package #:cl-user)
-
+(in-package :cl-user)
 
 (defpackage :cl-data-structures.sets
-  (:use #:common-lisp
-        #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.sets)
-  (:export
-   #:fundamental-set
-   #:mutable-set))
-
+  (:nicknames cl-ds.sets)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:fundamental-set
+           #:mutable-set))
 
 (defpackage cl-data-structures.sets.qp-trie
-  (:use #:common-lisp
-        #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.sets.qp-trie)
-  (:export
-   #:empty-array-key
-   #:fundamental-qp-trie-set
-   #:make-mutable-qp-trie-set
-   #:mutable-qp-trie-set))
-
+  (:nicknames cl-ds.sets.qp-trie)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:empty-array-key
+           #:fundamental-qp-trie-set
+           #:make-mutable-qp-trie-set
+           #:mutable-qp-trie-set))
 
 (defpackage cl-data-structures.sets.skip-list
-  (:use #:common-lisp
-        #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.sets.skip-list)
-  (:export
-   #:mutable-skip-list-set
-   #:make-mutable-skip-list-set))
+  (:nicknames cl-ds.sets.skip-list)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:mutable-skip-list-set
+           #:make-mutable-skip-list-set))

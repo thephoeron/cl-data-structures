@@ -1,23 +1,17 @@
-(cl:in-package #:cl-user)
+(in-package :cl-user)
 
+(defpackage cl-data-structures.metric-space
+  (:nicknames cl-ds.ms)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:distance
+           #:metric-space-dictionary
+           #:metric-space-set
+           #:mutable-metric-space-dictionary
+           #:mutable-metric-space-set))
 
-(defpackage :cl-data-structures.metric-space
-  (:use #:common-lisp
-        #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.ms)
-  (:export
-   #:distance
-   #:metric-space-dictionary
-   #:metric-space-set
-   #:mutable-metric-space-dictionary
-   #:mutable-metric-space-set))
-
-
-(defpackage :cl-data-structures.metric-space.egnat
-  (:use #:common-lisp
-        #:cl-data-structures.aux-package)
-  (:nicknames #:cl-ds.ms.egnat)
-  (:export
-   #:make-mutable-egnat-metric-set
-   #:mutable-egnat-metric-set
-   #:egnat-metric-set))
+(defpackage cl-data-structures.metric-space.egnat
+  (:nicknames cl-ds.ms.egnat)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:make-mutable-egnat-metric-set
+           #:mutable-egnat-metric-set
+           #:egnat-metric-set))

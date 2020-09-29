@@ -7,7 +7,8 @@
          :reader read-key)
    (%current :initform nil
              :initarg :current
-             :accessor access-current)))
+             :accessor access-current))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -18,7 +19,8 @@
 
 (defclass forward-flatten-proxy (flatten-proxy
                                  fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (labels ((impl (function x)

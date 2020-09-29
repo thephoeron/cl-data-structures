@@ -5,7 +5,8 @@
   ((%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)
    (%chunk-size :initarg :chunk-size
-                :reader read-chunk-size)))
+                :reader read-chunk-size))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -15,20 +16,23 @@
 
 
 (defclass forward-buffer-range (buffer-range cl-ds.alg:forward-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-buffer-range (buffer-range cl-ds.alg:bidirectional-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass random-access-buffer-range (buffer-range cl-ds.alg:random-access-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass thread-buffer-function (cl-ds.alg.meta:layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric thread-buffer (range &key maximum-queue-size chunk-size)

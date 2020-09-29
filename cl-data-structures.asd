@@ -143,6 +143,7 @@
                                            (:file "common")
                                            (:file "methods")
                                            (:file "docstrings")))
+                             (:file "qp-trie-types")
                              (:file "qp-trie")))
                (:module "dicts"
                 :components ((:file "packages")

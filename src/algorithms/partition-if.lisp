@@ -7,18 +7,21 @@
    (%on-first :initarg :on-first
               :reader read-on-first)
    (%test :initarg :test
-          :reader read-test)))
+          :reader read-test))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass forward-abstract-partition-if-proxy
     (abstract-partition-if-proxy
      fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass partition-if-proxy ()
   ((%chunks :initform (vect)
-            :reader read-chunks)))
+            :reader read-chunks))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass forward-partition-if-proxy
@@ -27,7 +30,8 @@
                :accessor access-collected)
    (%orginal-collected :initarg :collected
                        :reader read-original-collected))
-  (:default-initargs :collected (cl-ds.seqs.rrb:make-functional-rrb-vector)))
+  (:default-initargs :collected (cl-ds.seqs.rrb:make-functional-rrb-vector))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:reset! ((range forward-partition-if-proxy))

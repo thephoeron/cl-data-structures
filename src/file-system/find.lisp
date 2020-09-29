@@ -5,7 +5,8 @@
                       cl-ds:fundamental-forward-range)
   ((%stack :initarg :stack
            :initform nil
-           :accessor access-stack)))
+           :accessor access-stack))
+  (:metaclass funcallable-standard-class))
 
 
 (defun clone-of-stack (range)

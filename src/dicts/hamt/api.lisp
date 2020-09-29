@@ -3,7 +3,8 @@
 
 (defclass hamt-dictionary (cl-ds.common.hamt:hamt-container
                            cl-ds.dicts:fundamental-hashing-dictionary)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:empty-clone ((container hamt-dictionary))
@@ -15,12 +16,14 @@
 
 (defclass functional-hamt-dictionary (cl-ds.dicts:functional-hashing-dictionary
                                       hamt-dictionary)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-hamt-dictionary (cl-ds.dicts:mutable-hashing-dictionary
                                    hamt-dictionary)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmacro with-hash-tree-functions ((container &key (cases nil)) &body body)
@@ -52,7 +55,8 @@
 
 (defclass transactional-hamt-dictionary (mutable-hamt-dictionary
                                          cl-ds.dicts:transactional-hashing-dictionary)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (-> make-functional-hamt-dictionary ((or function symbol) (or function symbol))

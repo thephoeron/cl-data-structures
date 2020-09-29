@@ -1,5 +1,4 @@
-(cl:in-package #:cl-data-structures.algorithms)
-
+(in-package :cl-data-structures.algorithms)
 
 (defclass forward-chain-of-ranges (cl-ds:chunking-mixin
                                    cl-ds:fundamental-forward-range)
@@ -7,18 +6,18 @@
              :reader read-content)
    (%original-content :initarg :original-content
                       :type list
-                      :reader read-original-content)))
-
+                      :reader read-original-content))
+  (:metaclass funcallable-standard-class))
 
 (defclass bidirectional-chain-of-ranges (forward-chain-of-ranges
                                          fundamental-bidirectional-range)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defclass random-access-chain-of-ranges (bidirectional-chain-of-ranges
                                          fundamental-random-access-range)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defmethod cl-ds:forward-call ((range forward-chain-of-ranges)
                                function)
@@ -39,7 +38,6 @@
                             (for i from 0 below (flexichain:nb-elements content))
                             (collecting (clone (flexichain:element* content i))))))
 
-
 (defun init-chain-of-range (obj)
   (bind (((:slots %content %original-content) obj))
     (setf %content (make 'flexichain:standard-flexichain))
@@ -47,11 +45,9 @@
          (lambda (x) (~>> x cl-ds:clone (flexichain:push-end %content)))
          %original-content)))
 
-
 (defmethod initialize-instance :after ((obj forward-chain-of-ranges)
                                        &key &allow-other-keys)
   (init-chain-of-range obj))
-
 
 (defmethod reinitialize-instance ((obj forward-chain-of-ranges)
                                   &key &allow-other-keys)
@@ -70,11 +66,9 @@
             ('fundamental-random-access-range 'random-access-chain-of-ranges))
           :original-content ranges)))
 
-
 (defmethod cl-ds:reset! ((range forward-chain-of-ranges))
   (reinitialize-instance range)
   range)
-
 
 (defmethod cl-ds:at ((range random-access-chain-of-ranges) location &rest more-locations)
   (cl-ds:assert-one-dimension more-locations)
@@ -87,14 +81,12 @@
       (for p-total previous total initially 0)
       (finally (cl-ds:at c (- location p-total))))))
 
-
 (defmethod cl-ds:size ((range random-access-chain-of-ranges))
   (bind (((:slots %content) range)
          (count (flexichain:nb-elements %content)))
     (iterate
       (for i below count)
       (sum (~> %content (flexichain:element* i) cl-ds:size)))))
-
 
 (defmethod cl-ds:consume-front ((range forward-chain-of-ranges))
   (bind (((:slots %content) range))
@@ -107,7 +99,6 @@
                 (leave (values value t))
                 (flexichain:pop-start %content)))))))
 
-
 (defmethod cl-ds:peek-front ((range forward-chain-of-ranges))
   (bind (((:slots %content) range))
     (iterate
@@ -118,7 +109,6 @@
             (if more
                 (leave (values value t))
                 (flexichain:pop-start %content)))))))
-
 
 (defmethod cl-ds:consume-back ((range bidirectional-chain-of-ranges))
   (bind (((:slots %content) range))
@@ -132,7 +122,6 @@
                 (leave (values value t))
                 (flexichain:pop-end %content)))))))
 
-
 (defmethod cl-ds:peek-back ((range bidirectional-chain-of-ranges))
   (bind (((:slots %content) range))
     (iterate
@@ -145,11 +134,9 @@
                 (leave (values value t))
                 (flexichain:pop-end %content)))))))
 
-
 (defmethod cl-ds:empty-clone ((range forward-chain-of-ranges))
   (make (type-of range)
         :original-content (read-original-content range)))
-
 
 (defmethod cl-ds:traverse ((range forward-chain-of-ranges) function)
   (ensure-functionf function)
@@ -158,7 +145,6 @@
       (for i from 0 below (flexichain:nb-elements %content))
       (cl-ds:traverse (flexichain:element* %content i) function))
     range))
-
 
 (defmethod cl-ds:across ((range forward-chain-of-ranges) function)
   (ensure-functionf function)

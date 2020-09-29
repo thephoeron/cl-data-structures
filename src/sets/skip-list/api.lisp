@@ -4,7 +4,8 @@
 (defclass mutable-skip-list-set (cl-ds.sets:mutable-set
                                  cl-ds.common.skip-list:fundamental-skip-list)
   ((%test-function :initarg :test-function
-                   :accessor access-test-function)))
+                   :accessor access-test-function))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((object mutable-skip-list-set))
@@ -18,7 +19,8 @@
 
 
 (defclass mutable-skip-list-set-range (cl-ds.common.skip-list:fundamental-skip-list-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:whole-range ((object mutable-skip-list-set))

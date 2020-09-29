@@ -1,7 +1,8 @@
 (cl:in-package #:cl-data-structures.queues.2-3-tree)
 
 
-(define-constant +buffer-size+ 32)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (define-constant +buffer-size+ 32))
 
 
 (deftype queue-buffer ()
@@ -16,18 +17,21 @@
   ((%lock :initform (bt:make-lock)
           :reader read-lock)
    (%notify-pop :initform (bt:make-condition-variable)
-                :reader read-notify-pop)))
+                :reader read-notify-pop))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass synchronization-mixin (synchronization-primitives-mixin)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fixed-capacity-synchronization-mixin (synchronization-primitives-mixin)
   ((%capacity :initarg :capacity
               :reader read-capacity)
    (%notify-push :initform (bt:make-condition-variable)
-                 :reader read-notify-push)))
+                 :reader read-notify-push))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass 2-3-queue (cl-ds.common.2-3:tree)
@@ -52,12 +56,14 @@
    (%tail-end :accessor access-tail-end
               :initarg :tail-end
               :type buffer-index
-              :initform 0)))
+              :initform 0))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-2-3-queue
     (2-3-queue cl-ds.queues:fundamental-mutable-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass 2-3-queue-range (cl-ds:fundamental-forward-range)
@@ -66,39 +72,46 @@
    (%og-container :initarg :og-container
                   :accessor access-og-container)
    (%container :initarg :container
-               :accessor access-container)))
+               :accessor access-container))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass functional-2-3-queue
     (2-3-queue cl-ds.queues:fundamental-functional-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass transactional-2-3-queue
     (2-3-queue
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      cl-ds.queues:fundamental-transactional-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass synchronized-mutable-2-3-queue
     (synchronization-mixin mutable-2-3-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fixed-capacity-synchronized-mutable-2-3-queue
     (fixed-capacity-synchronization-mixin mutable-2-3-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass synchronized-transactional-2-3-queue
     (synchronization-mixin transactional-2-3-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fixed-capacity-synchronized-transactional-2-3-queue
     (fixed-capacity-synchronization-mixin transactional-2-3-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:become-functional ((container mutable-2-3-queue))

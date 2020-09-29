@@ -12,12 +12,14 @@
            :reader cl-ds:size
            :accessor access-size))
   (:default-initargs
-   :size 0))
+   :size 0)
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-qp-trie-set (fundamental-qp-trie-set
                                cl-ds.sets:mutable-set)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defun make-mutable-qp-trie-set ()

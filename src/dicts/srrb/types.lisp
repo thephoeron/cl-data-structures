@@ -26,7 +26,8 @@
    (%element-type :initarg :element-type
                   :reader read-element-type
                   :reader cl-ds:type-specialization
-                  :initform t)))
+                  :initform t))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -44,13 +45,15 @@
 (defclass mutable-sparse-rrb-vector (cl-ds:mutable
                                      cl-ds.dicts:mutable-sparse-vector
                                      fundamental-sparse-rrb-vector)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass functional-sparse-rrb-vector (cl-ds:functional
                                         cl-ds.dicts:functional-sparse-vector
                                         fundamental-sparse-rrb-vector)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass transactional-sparse-rrb-vector
@@ -59,4 +62,5 @@
      cl-ds.common.abstract:fundamental-ownership-tagged-object
      mutable-sparse-rrb-vector)
   ()
-  (:default-initargs :ownership-tag (cl-ds.common.abstract:make-ownership-tag)))
+  (:default-initargs :ownership-tag (cl-ds.common.abstract:make-ownership-tag))
+  (:metaclass funcallable-standard-class))

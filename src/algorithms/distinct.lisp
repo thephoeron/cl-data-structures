@@ -7,7 +7,8 @@
    (%seen :initarg :seen
           :reader read-seen)
    (%original-seen :initarg :original-seen
-                   :reader read-original-seen)))
+                   :reader read-original-seen))
+  (:metaclass funcallable-standard-class))
 
 
 (defalias replica-of-seen (compose
@@ -25,7 +26,8 @@
 (defclass forward-distinct-proxy (cl-ds:chunking-mixin
                                   distinct-proxy
                                   fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((range distinct-proxy))
@@ -111,7 +113,7 @@
 
 (defclass distinct-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric distinct (range &key key test hash-function)

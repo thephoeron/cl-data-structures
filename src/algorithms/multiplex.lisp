@@ -12,7 +12,8 @@
              :accessor access-current)
    (%initial-current :initform nil
                      :initarg :initial-current
-                     :reader read-initial-current)))
+                     :reader read-initial-current))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -116,7 +117,8 @@
 
 (defclass forward-multiplex-proxy (multiplex-proxy
                                    cl-ds:fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod apply-layer ((range traversable)

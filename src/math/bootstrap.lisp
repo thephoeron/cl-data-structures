@@ -1,5 +1,4 @@
-(cl:in-package #:cl-data-structures.math)
-
+(in-package :cl-data-structures.math)
 
 (defclass bootstrap-proxy (cl-ds.alg:proxy-range)
   ((%sample-size :initarg :sample-size
@@ -15,8 +14,8 @@
    (%context-function :initarg :context-function
                       :reader read-context-function)
    (%samples-count :initarg :samples-count
-                   :reader read-samples-count)))
-
+                   :reader read-samples-count))
+  (:metaclass funcallable-standard-class))
 
 (defmethod cl-ds.utils:cloning-information append
     ((range bootstrap-proxy))
@@ -28,26 +27,24 @@
     (:context-function read-context-function)
     (:samples-count read-samples-count)))
 
-
 (defclass forward-bootstrap-proxy (bootstrap-proxy
                                    cl-ds:fundamental-forward-range)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defclass bidirectional-bootstrap-proxy (bootstrap-proxy
                                          cl-ds:fundamental-bidirectional-range)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defclass random-access-bootstrap-proxy (bootstrap-proxy
                                          cl-ds:fundamental-random-access-range)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defclass bootstrap-function (cl-ds.alg.meta:layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
-
+  (:metaclass funcallable-standard-class))
 
 (defgeneric bootstrap (range sample-size samples-count
                        &key confidence key compare parallel context-function)
@@ -70,7 +67,6 @@
                                                :parallel parallel
                                                :context-function context-function))))
 
-
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-forward-range)
                                        (fn bootstrap-function)
                                        all)
@@ -85,7 +81,6 @@
                                  :context-function context-function
                                  :samples-count samples-count)))
     (apply #'destruct all)))
-
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-bidirectional-range)
                                        (fn bootstrap-function)
@@ -102,7 +97,6 @@
                                  :samples-count samples-count)))
     (apply #'destruct all)))
 
-
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:fundamental-random-access-range)
                                        (fn bootstrap-function)
                                        all)
@@ -117,7 +111,6 @@
                                  :context-function context-function
                                  :samples-count samples-count)))
     (apply #'destruct all)))
-
 
 (defmethod cl-ds.alg.meta:aggregator-constructor ((range bootstrap-proxy)
                                                   outer-constructor

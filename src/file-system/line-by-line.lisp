@@ -5,7 +5,8 @@
                               file-range-mixin
                               cl-ds:fundamental-forward-range)
   ()
-  (:default-initargs :initial-position 0))
+  (:default-initargs :initial-position 0)
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((range line-by-line-range))

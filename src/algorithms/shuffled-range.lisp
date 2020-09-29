@@ -11,7 +11,8 @@
    (%from :reader read-from
           :initarg :from)
    (%to :reader read-to
-        :initarg :to)))
+        :initarg :to))
+  (:metaclass funcallable-standard-class))
 
 
 (defun shuffled-range (from to)

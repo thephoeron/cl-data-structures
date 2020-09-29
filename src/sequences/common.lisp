@@ -2,19 +2,23 @@
 
 
 (defclass fundamental-sequence ()
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass functional-sequence (fundamental-sequence cl-ds:functional)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-sequence (fundamental-sequence cl-ds:mutable)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass transactional-sequence (mutable-sequence cl-ds:transactional)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:grow-function)
@@ -201,7 +205,8 @@
 
 (defclass lazy-box-sequence (cl-ds.common:lazy-box-container
                              functional-sequence)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:at ((container lazy-box-sequence) location &rest more-locations)

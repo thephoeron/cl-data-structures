@@ -3,7 +3,7 @@
 
 (defclass on-each-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric on-each (range function &key key)
@@ -17,7 +17,8 @@
   ((%function :initarg :function
               :reader read-function)
    (%key :initarg :key
-         :reader read-key)))
+         :reader read-key))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -29,17 +30,20 @@
 (defclass forward-proxy-box-range (chunked-proxy-range
                                    proxy-box-range
                                    forward-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-proxy-box-range (forward-proxy-box-range
                                          bidirectional-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass random-access-proxy-box-range (bidirectional-proxy-box-range
                                          random-access-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod wrap-chunk ((range forward-proxy-box-range)

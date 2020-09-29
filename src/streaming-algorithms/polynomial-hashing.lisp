@@ -1,27 +1,28 @@
-(cl:defpackage #:cl-data-structures.streaming-algorithms.polynomial-hashing
-  (:use #:cl #:cl-data-structures.aux-package)
-  (:export
-   #:hashval-no-depth
-   #:hashval
-   #:hash-array
-   #:hash
-   #:+max-64-bits+
-   #:make-hash-array))
+(in-package :cl-user)
 
-(cl:in-package #:cl-data-structures.streaming-algorithms.polynomial-hashing)
+(defpackage cl-data-structures.streaming-algorithms.polynomial-hashing
+  (:nicknames ph)
+  (:use c2cl cl-data-structures.aux-package)
+  (:export #:hashval-no-depth
+           #:hashval
+           #:hash-array
+           #:hash
+           #:+max-64-bits+
+           #:make-hash-array))
 
+(in-package :cl-data-structures.streaming-algorithms.polynomial-hashing)
 
-(define-constant +long-prime+ 4294967311)
-(define-constant +max-64-bits+ #xFFFFFFFFFFFFFFFF)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
+  (define-constant +long-prime+ 4294967311)
+
+  (define-constant +max-64-bits+ #xFFFFFFFFFFFFFFFF))
 
 (deftype hash ()
   `(integer 0 ,+long-prime+))
 
-
 (deftype hash-array ()
   `(simple-array hash (* 2)))
-
 
 (-> hashval-no-depth (hash-array fixnum (unsigned-byte 64)) hash)
 (defun hashval-no-depth (hashes j hash)
@@ -35,14 +36,12 @@
       (ldb (byte 32 0) _)
       (rem +long-prime+)))
 
-
 (-> hashval (hash-array positive-fixnum non-negative-fixnum (unsigned-byte 64)) hash)
 (defun hashval (hashes depth j hash)
   (declare (type hash-array hashes)
            (type non-negative-fixnum depth j hash))
   (~> (hashval-no-depth hashes j hash)
       (rem depth)))
-
 
 (defun make-hash-array (count)
   (iterate

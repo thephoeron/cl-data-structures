@@ -1,13 +1,15 @@
 (cl:in-package #:cl-data-structures.algorithms)
 
 
-(defclass transparent-to-chunking-mixin ()
-  ())
+(defclass transparent-to-chunking-mixin (funcallable-standard-object)
+  ()
+  (:metaclass funcallable-standard-class))
 
 
-(defclass proxy-range ()
+(defclass proxy-range (funcallable-standard-object)
   ((%original-range :initarg :original-range
-                    :reader read-original-range)))
+                    :reader read-original-range))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.alg.meta:across-aggregate ((range proxy-range) function)
@@ -30,7 +32,8 @@
                                proxy-range
                                cl-ds:fundamental-forward-range)
   ((%chunked-range :initarg :chunked-range
-                   :reader read-chunked-range)))
+                   :reader read-chunked-range))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:forward-call ((range proxy-range) function)
@@ -81,15 +84,18 @@
 
 
 (defclass forward-proxy-range (proxy-range fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-proxy-range (proxy-range fundamental-bidirectional-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass random-access-proxy-range (proxy-range fundamental-random-access-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric make-proxy (range class
@@ -117,7 +123,8 @@
          :accessor access-end)
    (%initial-end :initarg :end
                  :type fixnum
-                 :reader read-initial-end)))
+                 :reader read-initial-end))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod print-object ((obj hash-table-range) stream)

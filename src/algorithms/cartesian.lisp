@@ -8,7 +8,8 @@
              :reader read-content)
    (%function :initarg :function
               :type 'function
-              :reader read-function)))
+              :reader read-function))
+  (:metaclass funcallable-standard-class))
 
 
 (defun deep-copy-of-content (range)

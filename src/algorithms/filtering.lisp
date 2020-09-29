@@ -3,7 +3,8 @@
 
 (defclass filtering-proxy (proxy-range)
   ((%key :initarg :key
-         :reader read-key)))
+         :reader read-key))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -13,12 +14,14 @@
 
 (defclass forward-filtering-proxy (filtering-proxy
                                    fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-filtering-proxy (filtering-proxy
                                          fundamental-bidirectional-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric should-skip (range element can-mutate))

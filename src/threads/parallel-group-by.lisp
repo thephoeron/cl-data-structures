@@ -10,7 +10,8 @@
    (%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)
    (%key :initarg :key
-         :reader read-key)))
+         :reader read-key))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -23,17 +24,20 @@
 
 (defclass forward-parallel-group-by-proxy (parallel-group-by-proxy
                                            cl-ds:fundamental-forward-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass bidirectional-parallel-group-by-proxy (forward-parallel-group-by-proxy
                                                  bidirectional-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass random-access-parallel-group-by-proxy (bidirectional-parallel-group-by-proxy
                                                  random-access-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod initialize-instance :before ((instance parallel-group-by-proxy)
@@ -46,7 +50,7 @@
 
 (defclass parallel-group-by-function (cl-ds.alg.meta:layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric parallel-group-by (range &key test key groups chunk-size maximum-queue-size)

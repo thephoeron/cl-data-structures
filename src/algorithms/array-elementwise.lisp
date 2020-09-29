@@ -3,7 +3,7 @@
 
 (defclass array-elementwise-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric array-elementwise (range)
@@ -13,7 +13,8 @@
 
 
 (defclass array-elementwise-forward-proxy (forward-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.alg.meta:apply-layer ((range cl-ds:traversable)

@@ -2,22 +2,26 @@
 
 
 (defclass rrb-vector (cl-ds.common.rrb:rrb-container)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass functional-rrb-vector (rrb-vector
                                  cl-ds.seqs:functional-sequence)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass mutable-rrb-vector (rrb-vector
                               cl-ds.seqs:mutable-sequence)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass transactional-rrb-vector (rrb-vector
                                     cl-ds.seqs:transactional-sequence)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.meta:position-modification ((operation cl-ds.meta:take-out!-function)

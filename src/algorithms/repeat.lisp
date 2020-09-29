@@ -3,7 +3,7 @@
 
 (defclass repeat-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric repeat (range times)
@@ -21,13 +21,15 @@
               :accessor access-position)
    (%initial-position :initform 0
                       :initarg :position
-                      :reader read-initial-position)))
+                      :reader read-initial-position))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass forward-repeat-proxy (cl-ds:chunking-mixin
                                 repeat-proxy
                                 forward-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:clone ((range repeat-proxy))

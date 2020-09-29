@@ -5,19 +5,23 @@
   ((%size :initarg :size
           :initform 0
           :reader cl-ds:size
-          :accessor access-size)))
+          :accessor access-size))
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fundamental-mutable-queue (cl-ds:mutable fundamental-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fundamental-transactional-queue (cl-ds:transactional fundamental-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defclass fundamental-functional-queue (cl-ds:functional fundamental-queue)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:grow-function)

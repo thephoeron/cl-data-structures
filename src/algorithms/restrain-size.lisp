@@ -3,7 +3,7 @@
 
 (defclass restrain-size-function (layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric restrain-size (range size)
@@ -23,7 +23,8 @@
               :accessor access-position)
    (%initial-position :initform 0
                       :initarg :position
-                      :reader read-initial-position)))
+                      :reader read-initial-position))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -35,7 +36,8 @@
 (defclass forward-restrain-size-proxy (cl-ds:chunking-mixin
                                        restrain-size-proxy
                                        forward-proxy-range)
-  ())
+  ()
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds:consume-front ((range restrain-size-proxy))

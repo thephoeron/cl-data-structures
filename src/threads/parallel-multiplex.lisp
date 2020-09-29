@@ -5,7 +5,8 @@
   ((%maximum-queue-size :initarg :maximum-queue-size
                         :reader read-maximum-queue-size)
    (%chunk-size :initarg :chunk-size
-                :reader read-chunk-size)))
+                :reader read-chunk-size))
+  (:metaclass funcallable-standard-class))
 
 
 (defmethod cl-ds.utils:cloning-information append
@@ -16,7 +17,7 @@
 
 (defclass parallel-multiplex-function (cl-ds.alg.meta:layer-function)
   ()
-  (:metaclass closer-mop:funcallable-standard-class))
+  (:metaclass funcallable-standard-class))
 
 
 (defgeneric parallel-multiplex (range &key key function chunk-size

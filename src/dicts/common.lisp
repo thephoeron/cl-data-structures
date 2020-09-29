@@ -1,11 +1,8 @@
-(cl:in-package #:cl-ds.dicts)
-
+(in-package :cl-ds.dicts)
 
 (deftype bucket () 'list)
 
-
 (defgeneric find-content (container bucket location &key &allow-other-keys))
-
 
 (defmethod find-content ((container fundamental-hashing-dictionary)
                          (bucket list) location &rest all &key hash)
@@ -19,7 +16,6 @@
                          location bucket :test #'compare-fn)))
     (values (and f (cl-ds.common:hash-dict-content-value r))
             f)))
-
 
 (defmacro bucket-growing-macro ((container bucket location hash value)
                                 result status changed)
@@ -49,7 +45,6 @@
                (values ,result
                        ,status))))))))
 
-
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
                                      (container fundamental-hashing-dictionary)
                                      (bucket list)
@@ -77,7 +72,6 @@
          bucket
          cl-ds.common:empty-eager-modification-operation-status
          nil))))
-
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-if-function)
                                      (container fundamental-hashing-dictionary)
@@ -114,7 +108,6 @@
          bucket
          cl-ds.common:empty-eager-modification-operation-status))))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
                                    (container fundamental-hashing-dictionary)
                                    (bucket list)
@@ -131,7 +124,6 @@
        t)
       t))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
                                    (container fundamental-hashing-dictionary)
                                    (bucket list)
@@ -147,7 +139,6 @@
        (and ^replaced (cl-ds.common:hash-dict-content-value ^old-value))
        (not ^replaced))
       (not ^replaced)))
-
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if-function)
                                    (container fundamental-hashing-dictionary)
@@ -193,7 +184,6 @@
                (cl-ds.common:hash-dict-content-value node)
                t))))))))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-if!-function)
                                    (container fundamental-hashing-dictionary)
                                    (bucket list)
@@ -225,7 +215,6 @@
                    (cl-ds.common:hash-dict-content-value node)
                    t))))))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
                                    (container fundamental-hashing-dictionary)
                                    (bucket list)
@@ -244,7 +233,6 @@
           cl-ds.common:empty-eager-modification-operation-status)
       ^replaced))
 
-
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:update-function)
                                    (container fundamental-hashing-dictionary)
                                    location
@@ -254,7 +242,6 @@
            (optimize (speed 3) (safety 0) (debug 0) (space 0)))
   (values nil
           cl-ds.common:empty-eager-modification-operation-status))
-
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
                                    (container fundamental-hashing-dictionary)
@@ -279,7 +266,6 @@
                  :hash hash))
           cl-ds.common:empty-changed-eager-modification-operation-status))
 
-
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:insert!-function)
                                     (container fundamental-sparse-vector)
                                     bucket
@@ -289,7 +275,6 @@
   (declare (ignore all))
   (values location
           cl-ds.common:empty-changed-eager-modification-operation-status))
-
 
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update!-function)
                                     (container fundamental-sparse-vector)
@@ -301,7 +286,6 @@
   (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status))
 
-
 (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add!-function)
                                     (container fundamental-sparse-vector)
                                     bucket
@@ -311,7 +295,6 @@
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status))
-
 
 (defmethod cl-ds.meta:shrink-bucket ((operation cl-ds.meta:erase-function)
                                      (container fundamental-sparse-vector)
@@ -325,7 +308,6 @@
                                                                  bucket
                                                                  t)))
 
-
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase!-function)
                                       (container fundamental-sparse-vector)
                                       bucket
@@ -338,7 +320,6 @@
                                                                  bucket
                                                                  t)))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:insert-function)
                                    (container fundamental-sparse-vector)
                                    bucket
@@ -348,7 +329,6 @@
   (declare (ignore all))
   (values location
           cl-ds.common:empty-changed-eager-modification-operation-status))
-
 
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:update-function)
                                    (container fundamental-sparse-vector)
@@ -360,7 +340,6 @@
   (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status))
 
-
 (defmethod cl-ds.meta:grow-bucket ((operation cl-ds.meta:add-function)
                                    (container fundamental-sparse-vector)
                                    bucket
@@ -370,7 +349,6 @@
   (declare (ignore all))
   (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status))
-
 
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:insert-function)
                                    (container fundamental-sparse-vector)
@@ -382,7 +360,6 @@
   (values (cl-ds:force location)
           cl-ds.common:empty-changed-eager-modification-operation-status))
 
-
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:update-function)
                                    (container fundamental-sparse-vector)
                                    location
@@ -392,7 +369,6 @@
   (values cl-ds.meta:null-bucket
           cl-ds.common:empty-eager-modification-operation-status))
 
-
 (defmethod cl-ds.meta:make-bucket ((operation cl-ds.meta:add-function)
                                    (container fundamental-sparse-vector)
                                    location
@@ -401,7 +377,6 @@
   (declare (ignore all))
   (values (cl-ds:force location)
           cl-ds.common:empty-changed-eager-modification-operation-status))
-
 
 (flet ((locate-tuple (container bucket hash location)
          (declare (type fundamental-hashing-dictionary container)
@@ -440,7 +415,6 @@
                   (cl-ds.common:make-eager-modification-operation-status
                    t old-value t)))))
 
-
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:update-function)
                                       (container fundamental-hashing-dictionary)
                                       (bucket list)
@@ -458,7 +432,6 @@
             (values bucket
                     (cl-ds.common:make-eager-modification-operation-status
                      t old-value t))))))
-
 
   (defmethod cl-ds.meta:grow-bucket! ((operation cl-ds.meta:add-function)
                                       (container fundamental-hashing-dictionary)
@@ -482,7 +455,6 @@
                    t
                    old-value
                    nil))))))
-
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-function)
                                       (container fundamental-hashing-dictionary)
@@ -515,7 +487,6 @@
       (finally
        (return (values (or bucket 'cl-ds.meta:null-bucket)
                        cl-ds.common:empty-eager-modification-operation-status))))))
-
 
 (defmethod cl-ds.meta:shrink-bucket! ((operation cl-ds.meta:erase-if-function)
                                       (container fundamental-hashing-dictionary)
@@ -557,27 +528,23 @@
        (return (values bucket
                        cl-ds.common:empty-eager-modification-operation-status))))))
 
-
 (defclass lazy-box-dictionary (cl-ds.common:lazy-box-container lazy-dictionary)
-  ())
-
+  ()
+  (:metaclass funcallable-standard-class))
 
 (defmethod cl-ds:at ((container lazy-box-dictionary) location &rest more-locations)
   (assert (null more-locations))
   (cl-ds.common:force-version container)
   (cl-ds:at (cl-ds.common:access-content container) location))
 
-
 (defmethod cl-ds:become-lazy ((container cl-ds.dicts:fundamental-dictionary))
   (make 'lazy-box-dictionary
         :content (cl-ds:become-transactional container)))
-
 
 (defmethod cl-ds:whole-range ((container lazy-box-dictionary))
   (cl-ds.common:make-lazy-range cl-ds.common:forward-lazy-range
                                 container
                                 (cl-ds:whole-range container)))
-
 
 (defmethod cl-ds.meta:full-bucket-p ((container fundamental-hashing-dictionary)
                                      bucket)
@@ -586,7 +553,6 @@
      (for i from 1)
      (for e in bucket)
      (always (< i (read-bucket-size container))))))
-
 
 (defmethod cl-ds.meta:map-bucket ((container fundamental-hashing-dictionary)
                                   bucket
@@ -597,7 +563,6 @@
                        (cl-ds.common:hash-dict-content-value x)))
        bucket)
   bucket)
-
 
 (defmethod cl-ds.meta:map-bucket ((container fundamental-sparse-vector)
                                   bucket
